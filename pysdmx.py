@@ -7,6 +7,7 @@ import datetime
 import requests
 import json
 import lxml.etree
+import logging
 
 #Utter failure with suds and the SOAP interface. Can anybody explain this to me
 #client = Client("http://ec.europa.eu/eurostat/SDMX/diss-ws/SdmxServiceService?wsdl")
@@ -18,9 +19,17 @@ import lxml.etree
 #GetDataflow.DataflowQuery.Header.Sender = "Michael"
 #GetDataflow.DataflowQuery.Header.DataProvider = "ESTAT"
 
+def query_rest(url):
+	request = requests.get(url)
+	parser = lxml.etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+	return lxml.etree.fromstring(request.text.encode('utf-8'), parser=parser)
+
 class SDMX_ML(object):
     def __init__(self,SDMXML):
         self.SDMXML = SDMXML
+	@property
+	def time_series(self):
+		raise NotImplementedError("Work in progress")
 
 
 class SDMX_REST(object):
@@ -35,28 +44,23 @@ class SDMX_REST(object):
             resource = 'dataflow'
             resourceID = 'all'
             version = 'latest'
-            self._dataflow = requests.get(self.sdmx_url+'/'
-                                          +resource+'/'
-                                          +self.agencyID+'/'
-                                          +resourceID+'/'
-                                          +version)
-            self._dataflow = self._dataflow.text.encode('utf-8')
-            parser = lxml.etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
-            print(self._dataflow)
-            self._dataflow = lxml.etree.fromstring(self._dataflow, parser=parser)
+            url = (self.sdmx_url+'/'
+                               +resource+'/'
+						       +self.agencyID+'/'
+						       +resourceID+'/'
+						       +version)
+            self._dataflow = query_rest(url)
         return self._dataflow
 
     def data_extraction(self, flowRef, key, startperiod, endperiod):
         resource = 'data'
-        request = requests.get(self.sdmx_url+'/'
-                               +resource+'/'
-                               +flowRef+'/'
-                               +key
-                               +'?startperiod='+startperiod
-                               +'&endPeriod='+endperiod)
-        xml_response = request.text.encode('utf-8')
-        parser = lxml.etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
-        SDMXML = lxml.etree.fromstring(xml_response, parser=parser)
+        url = (self.sdmx_url+'/'
+					       +resource+'/'
+					       +flowRef+'/'
+					       +key
+					       +'?startperiod='+startperiod
+					       +'&endPeriod='+endperiod)
+        SDMXML = query_rest(url)
         return SDMXML
 
 eurostat = SDMX_REST("http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest", 'ESTAT')

@@ -3,8 +3,11 @@
 """ Python interface to SDMX """
 
 import requests
+import pandas
 import lxml.etree
 import uuid
+import datetime
+import numpy
 
 #Utter failure with suds and the SOAP interface. Can anybody explain this to me
 #client = Client("http://ec.europa.eu/eurostat/SDMX/diss-ws/SdmxServiceService?wsdl")
@@ -15,6 +18,16 @@ import uuid
 #GetDataflow.DataflowQuery.Header.Prepared = today
 #GetDataflow.DataflowQuery.Header.Sender = "Michael"
 #GetDataflow.DataflowQuery.Header.DataProvider = "ESTAT"
+
+def date_parser(date, frequency):
+    if frequency == 'A':
+        return datetime.datetime.strptime(date, '%Y')
+    if frequency == 'Q':
+        date = date.split('Q')
+        date = str(int(date[1])*3) + date[0]
+        return datetime.datetime.strptime(date, '%m%Y')
+    if frequency == 'M':
+        return datetime.datetime.strptime(date, '%YM%m')
 
 
 def query_rest(url):
@@ -34,11 +47,11 @@ class Data(object):
                 codes = {}
                 for key in series.iterfind(".//generic:Value",namespaces=self.tree.nsmap):
                     codes[key.get('id')] = key.get('value')
-                observations = []
+                time_series_ = []
                 for observation in series.iterfind(".//generic:Obs",namespaces=self.tree.nsmap):
                     dimensions = observation.xpath(".//generic:ObsDimension",namespaces=self.tree.nsmap)
                     dimension = dimensions[0].values()
-                    dimension = dimension[0]
+                    dimension = date_parser(dimension[0],codes['FREQ'])
                     values = observation.xpath(".//generic:ObsValue",namespaces=self.tree.nsmap)
                     value = values[0].values()
                     value = value[0]
@@ -47,9 +60,14 @@ class Data(object):
                         for observation_status_ in attribute.xpath(".//generic:Value[@id='OBS_STATUS']",namespaces=self.tree.nsmap):
                             if observation_status_ != None:
                                 observation_status = observation_status_.get('value')
-                    observations.append((dimension, value,observation_status))
-                self._time_series[str(uuid.uuid1())] = (codes,observations)
-                print([(observation[0],observation[1]) for observation in observations])
+                    time_series_.append((dimension, value,observation_status))
+                time_series_.sort()
+                print([observation[0] for observation in time_series_])
+                print([observation[1] for observation in time_series_])
+                dates = numpy.array([observation[0] for observation in time_series_])
+                values = numpy.array([observation[1] for observation in time_series_])
+                time_series_ = pandas.Series(values, index=dates)
+                self._time_series[str(uuid.uuid1())] = (codes,time_series_)
         return  self._time_series
 
 class Dataflows(object):

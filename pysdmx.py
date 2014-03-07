@@ -68,8 +68,6 @@ class Data(object):
                                     = observation_status_.get('value')
                     time_series_.append((dimension, value, observation_status))
                 time_series_.sort()
-                print([observation[0] for observation in time_series_])
-                print([observation[1] for observation in time_series_])
                 dates = numpy.array(
                     [observation[0] for observation in time_series_])
                 values = numpy.array(

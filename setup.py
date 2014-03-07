@@ -10,6 +10,9 @@ setup(name='pysdmx',
     author_email='dev@michaelmalter.fr',
       py_modules=['pysdmx'],
     install_requires=[
-        'pandas>=0.12'
+        'pandas>=0.12',
+        'numpy',
+        'lxml',
+        'requests'
       ]
 	)

@@ -9,16 +9,6 @@ import uuid
 import datetime
 import numpy
 
-#Utter failure with suds and the SOAP interface. Can anybody explain this to me
-#client = Client("http://ec.europa.eu/eurostat/SDMX/diss-ws/SdmxServiceService?wsdl")
-#GetDataflow = client.factory.create('GetDataflow')
-#GetDataflow.DataflowQuery.Header.ID = "QUERY"
-#GetDataflow.DataflowQuery.Header.Test = False
-#today = datetime.date.today().strftime('%Y-%m-%d')
-#GetDataflow.DataflowQuery.Header.Prepared = today
-#GetDataflow.DataflowQuery.Header.Sender = "Michael"
-#GetDataflow.DataflowQuery.Header.DataProvider = "ESTAT"
-
 def date_parser(date, frequency):
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')

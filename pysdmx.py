@@ -77,6 +77,31 @@ class Data(object):
         return self._time_series
 
 
+class DSD(object):
+    def __init__(self, SDMXML):
+        self.tree = SDMXML
+        self._codes = None
+
+    @property
+    def codes(self)
+        if not self._codes:
+            self._codes = {}
+            codelists = self.tree.iterfind("//str:Codelists",
+                                          namespaces=self.tree.nsmap)
+            for codelist in codelists.iterfind("//str:Codelist",
+                                               namespaces=self.tree.nsmap):
+                name = codelist.xpath('//com:Name', namespaces=self.tree.nsmap)
+                name = name.text
+                for code_ in codelist.iterfind("//str:Code",
+                                               namespaces=self.tree.nsmap):
+                    code_key = code_.get('id')
+                    code_name = code_.xpath('//come:Name',
+                                            namespaces=self.tree.nsmap)
+                    code[code_key] = code_name
+                self._codes[name] = code
+        return self._codes
+
+
 class Dataflows(object):
     def __init__(self, SDMXML):
         self.tree = SDMXML
@@ -120,6 +145,15 @@ class SDMX_REST(object):
                    + version)
             self._dataflow = Dataflows(query_rest(url))
         return self._dataflow
+
+    def data_definition(self, flowRef):
+        resource = 'datastructure'
+        url = (self.sdmx_url + '/'
+               + resource + '/'
+               + self.agencyID + '/'
+               + 'DSD_'
+               + flowRef)
+        return DSD(query_rest(url))
 
     def data_extraction(self, flowRef, key, startperiod, endperiod):
         resource = 'data'

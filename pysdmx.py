@@ -83,22 +83,26 @@ class DSD(object):
         self._codes = None
 
     @property
-    def codes(self)
+    def codes(self):
         if not self._codes:
             self._codes = {}
-            codelists = self.tree.iterfind("//str:Codelists",
+            codelists = self.tree.xpath(".//str:Codelists",
                                           namespaces=self.tree.nsmap)
-            for codelist in codelists.iterfind("//str:Codelist",
-                                               namespaces=self.tree.nsmap):
-                name = codelist.xpath('//com:Name', namespaces=self.tree.nsmap)
-                name = name.text
-                for code_ in codelist.iterfind("//str:Code",
-                                               namespaces=self.tree.nsmap):
-                    code_key = code_.get('id')
-                    code_name = code_.xpath('//come:Name',
-                                            namespaces=self.tree.nsmap)
-                    code[code_key] = code_name
-                self._codes[name] = code
+            for codelists_ in codelists:
+                for codelist in codelists_.iterfind(".//str:Codelist",
+                                                    namespaces=self.tree.nsmap):
+                    name = codelist.xpath('.//com:Name', namespaces=self.tree.nsmap)
+                    name = name[0]
+                    name = name.text
+                    code = []
+                    for code_ in codelist.iterfind(".//str:Code",
+                                                   namespaces=self.tree.nsmap):
+                        code_key = code_.get('id')
+                        code_name = code_.xpath('.//com:Name',
+                                                namespaces=self.tree.nsmap)
+                        code_name = code_name[0]
+                        code.append((code_key,code_name.text))
+                    self._codes[name] = code
         return self._codes
 
 

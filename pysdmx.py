@@ -9,7 +9,6 @@ import uuid
 import datetime
 import numpy
 
-
 def date_parser(date, frequency):
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')
@@ -22,7 +21,10 @@ def date_parser(date, frequency):
 
 
 def query_rest(url):
-    request = requests.get(url)
+ 
+    request = requests.get(url, timeout= 20)
+    if request.status_code != requests.codes.ok:
+        raise ValueError("Error getting client({})".format(request.status_code))      
     parser = lxml.etree.XMLParser(
         ns_clean=True, recover=True, encoding='utf-8')
     return lxml.etree.fromstring(

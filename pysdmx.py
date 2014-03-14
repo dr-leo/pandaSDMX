@@ -161,14 +161,21 @@ class SDMX_REST(object):
                + flowRef)
         return DSD(query_rest(url))
 
-    def data_extraction(self, flowRef, key, startperiod, endperiod):
+    def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
         resource = 'data'
-        url = (self.sdmx_url + '/'
+		if startperiod is not None and endperiod is not None:
+			query = self.sdmx_url + '/'
                + resource + '/'
                + flowRef + '/'
                + key
                + '?startperiod=' + startperiod
-               + '&endPeriod=' + endperiod)
+               + '&endPeriod=' + endperiod
+		else:
+			query = self.sdmx_url + '/'
+               + resource + '/'
+               + flowRef + '/'
+               + key
+        url = (query)
         return Data(query_rest(url))
 
 

@@ -13,11 +13,11 @@ def date_parser(date, frequency):
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')
     if frequency == 'Q':
-        date = date.split('Q')
+        date = date.split('-Q')
         date = str(int(date[1])*3) + date[0]
         return datetime.datetime.strptime(date, '%m%Y')
     if frequency == 'M':
-        return datetime.datetime.strptime(date, '%YM%m')
+        return datetime.datetime.strptime(date, '%Y-%m')
 
 
 def query_rest(url):

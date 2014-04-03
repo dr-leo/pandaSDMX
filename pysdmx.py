@@ -8,6 +8,7 @@ import lxml.etree
 import uuid
 import datetime
 import numpy
+import logging
 
 def date_parser(date, frequency):
     if frequency == 'A':
@@ -21,7 +22,7 @@ def date_parser(date, frequency):
 
 
 def query_rest(url):
- 
+
     request = requests.get(url, timeout= 20)
     if request.status_code != requests.codes.ok:
         raise ValueError("Error getting client({})".format(request.status_code))      
@@ -39,6 +40,7 @@ class Data(object):
     @property
     def time_series(self):
         if not self._time_series:
+
             self._time_series = {}
             for series in self.tree.iterfind(".//generic:Series",
                                              namespaces=self.tree.nsmap):
@@ -115,6 +117,7 @@ class Dataflows(object):
 
     @property
     def all_dataflows(self):
+
         if not self._all_dataflows:
             self._all_dataflows = {}
             for dataflow in self.tree.iterfind(".//str:Dataflow",
@@ -130,6 +133,34 @@ class Dataflows(object):
                     titles[language] = title.text
                 self._all_dataflows[id] = (agencyID, version, titles)
         return self._all_dataflows
+
+class DSD(object):
+    def __init__(self, SDMXML):
+        self.tree = SDMXML
+        self._codes = None
+
+    @property
+    def codes(self):
+        if not self._codes:
+            self._codes = {}
+            codelists = self.tree.xpath(".//str:Codelists",
+                                          namespaces=self.tree.nsmap)
+            for codelists_ in codelists:
+                for codelist in codelists_.iterfind(".//str:Codelist",
+                                                    namespaces=self.tree.nsmap):
+                    name = codelist.xpath('.//com:Name', namespaces=self.tree.nsmap)
+                    name = name[0]
+                    name = name.text
+                    code = []
+                    for code_ in codelist.iterfind(".//str:Code",
+                                                   namespaces=self.tree.nsmap):
+                        code_key = code_.get('id')
+                        code_name = code_.xpath('.//com:Name',
+                                                namespaces=self.tree.nsmap)
+                        code_name = code_name[0]
+                        code.append((code_key,code_name.text))
+                    self._codes[name] = code
+        return self._codes
 
 
 class SDMX_REST(object):
@@ -178,6 +209,137 @@ class SDMX_REST(object):
         url = (query)
         return Data(query_rest(url))
 
+class DataflowsECB(object):  
+    def __init__(self, SDMXML):
+        self.tree = SDMXML
+        self._all_dataflows = None
+
+    @property
+    def all_dataflows(self):  
+
+        if not self._all_dataflows:
+            self._all_dataflows = {}
+            for dataflow in self.tree.iterfind(".//structure:Dataflow",
+                                               namespaces=self.tree.nsmap):
+                id = dataflow.get('id')
+                agencyID = dataflow.get('agencyID')
+                version = dataflow.get('version')
+                #Keyfamilyref = {}
+                name = dataflow.xpath('.//structure:Name', namespaces=self.tree.nsmap)[0].text
+                for keyfamilyref in dataflow.iterfind(".//structure:KeyFamilyRef",
+                                                   namespaces=self.tree.nsmap):
+                    keyfamilyid = dataflow.xpath('.//structure:KeyFamilyID', namespaces=self.tree.nsmap)[0].text
+                    keyfamilyagenceid = dataflow.xpath('.//structure:KeyFamilyAgencyID', namespaces=self.tree.nsmap)[0].text
+                self._all_dataflows[id] = (agencyID, version, name,
+                        keyfamilyid, keyfamilyagenceid)
+        return self._all_dataflows
+
+
+class DataECB(object):
+    def __init__(self, SDMXML):
+        self.tree = SDMXML
+        self._time_series = None
+
+    @property
+    def time_series(self):
+
+        if not self._time_series:
+            self._time_series = {}
+            
+            for group  in self.tree.iterfind(".//generic:Group",
+                                             namespaces=self.tree.nsmap):
+                for series in group.iterfind(".//generic:Series",
+                                                namespaces=self.tree.nsmap):
+                    codes = {}
+                    for key in series.iterfind(".//generic:Value",
+                                            namespaces=self.tree.nsmap):
+                        codes[key.get('concept')] = key.get('value')
+                    time_series_ = []
+                    for observation in series.iterfind(".//generic:Obs",
+                                                    namespaces=self.tree.nsmap):
+                        dimensions = observation.xpath(".//generic:Time",
+                                                    namespaces=self.tree.nsmap)
+                        dimension = dimensions[0].text 
+                        dimension = date_parser(dimension, codes['FREQ'])
+                        values = observation.xpath(".//generic:ObsValue",
+                                                namespaces=self.tree.nsmap)
+                        value = values[0].values()
+                        value = value[0]
+                        observation_status = 'A'
+                        for attribute in \
+                            observation.iterfind(".//generic:Attributes",
+                                                namespaces=self.tree.nsmap):
+                            for observation_status_ in \
+                                attribute.xpath(
+                                    ".//generic:Value[@concept='OBS_STATUS']",
+                                    namespaces=self.tree.nsmap):
+                                if observation_status_ is not None:
+                                    observation_status \
+                                        = observation_status_.get('value')
+                        time_series_.append((dimension, value, observation_status))
+                    time_series_.sort()
+                    dates = numpy.array(
+                        [observation[0] for observation in time_series_])
+                    values = numpy.array(
+                        [observation[1] for observation in time_series_])
+                    time_series_ = pandas.Series(values, index=dates)
+                    self._time_series[str(uuid.uuid1())] = (codes, time_series_)
+        return self._time_series
+
+class SDMX_RESTECB(object): 
+
+    def __init__(self, sdmx_url, agencyID):
+        self.sdmx_url = sdmx_url
+        self.agencyID = agencyID
+        self._dataflow = None
+    def dataflow(self,resourceID = None): 
+        if not self._dataflow:
+            if resourceID is not None :
+                resource = 'Dataflow'
+                url = (self.sdmx_url+'/' 
+                   + resource + '/'
+                   + resourceID)             
+                self._dataflow = DataflowsECB(query_rest(url))
+            else :
+                resource = 'Dataflow'  
+                url = (self.sdmx_url + '/'
+                   + resource  )
+                self._dataflow = DataflowsECB(query_rest(url))    
+        return self._dataflow
+
+
+
+    def data_extraction(self, flowRef, freq, key,  startperiod=None,
+            endperiod=None):
+        resourcetype = 'GenericData'
+        resource ='dataflow'
+
+        if freq is not None and startperiod is not None and endperiod is not None :
+        	query = (self.sdmx_url + '/'
+                    + resourcetype + '?'
+                    + resource + '='
+                    + flowRef + '&'
+                    + 'FREQ=' +  freq 
+                    + '&CURRENCY='+ key
+                    + '&startTime=' + startperiod
+                    + '&endTime=' + endperiod)
+        else:
+        	query = (self.sdmx_url + '/'
+                    + resourcetype + '?'
+                    + resource + '='
+                    + flowRef)
+        url = (query)
+        print('url :',url)
+        return DataECB(query_rest(url))
+
+    def data_definition(self, flowRef):
+        resource = 'CodeList'
+        url = (self.sdmx_url + '/'
+               + resource + '/' 
+               + flowRef)
+        return DSD(query_rest(url))
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                      'ESTAT')
+
+

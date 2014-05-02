@@ -45,9 +45,7 @@ def query_rest(url):
             time.sleep(i)
             i = i+10
             url = matches[0].groups()[0]
-            print(url)
             request = requests.get(url)
-            print(request.headers['content-type'])
             if request.headers['content-type'] == "application/octet-stream":
                 buffer = BytesIO(request.content)
                 file = zipfile.ZipFile(buffer)

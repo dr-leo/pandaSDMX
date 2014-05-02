@@ -8,6 +8,7 @@ import lxml.etree
 import uuid
 import datetime
 import numpy
+from io import BytesIO
 
 def date_parser(date, frequency):
     if frequency == 'A':
@@ -21,14 +22,26 @@ def date_parser(date, frequency):
 
 
 def query_rest(url):
- 
     request = requests.get(url, timeout= 20)
     if request.status_code != requests.codes.ok:
         raise ValueError("Error getting client({})".format(request.status_code))      
     parser = lxml.etree.XMLParser(
         ns_clean=True, recover=True, encoding='utf-8')
-    return lxml.etree.fromstring(
+    response =  lxml.etree.fromstring(
         request.text.encode('utf-8'), parser=parser)
+    #Sometimes, eurostat creates a zipfile when the query is too large.
+    messages = response.tree.xpath('.//footer:Message/common:Text',
+                                   namespaces=response.tree.nsmap)
+    regex_ = re.compile('Due to the large query the response will be written to a file which will be located under URL: (.*)')
+    matches = [regex_.match(element.text) for element in messages]
+    if matches[0] != None:
+        url = matches[0].groups()[0]
+        request = requests.get(url)
+        file = zipfile.ZipFile(BytesIO(request.content))
+        filename = file.namelist()[0]
+        response =  lxml.etree.fromstring(
+            file.read(filename), parser=parser)
+    return response
 
 
 class Data(object):

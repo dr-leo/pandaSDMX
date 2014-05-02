@@ -9,6 +9,9 @@ import uuid
 import datetime
 import numpy
 from io import BytesIO
+import re
+import zipfile
+import time
 
 def date_parser(date, frequency):
     if frequency == 'A':
@@ -29,18 +32,33 @@ def query_rest(url):
         ns_clean=True, recover=True, encoding='utf-8')
     response =  lxml.etree.fromstring(
         request.text.encode('utf-8'), parser=parser)
-    #Sometimes, eurostat creates a zipfile when the query is too large.
-    messages = response.tree.xpath('.//footer:Message/common:Text',
-                                   namespaces=response.tree.nsmap)
-    regex_ = re.compile('Due to the large query the response will be written to a file which will be located under URL: (.*)')
+    #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
+    messages = response.xpath('.//footer:Message/common:Text',
+                                   namespaces=response.nsmap)
+    regex_ = re.compile("Due to the large query the response will be written "
+                        "to a file which will be located under URL: (.*)")
     matches = [regex_.match(element.text) for element in messages]
-    if matches[0] != None:
-        url = matches[0].groups()[0]
-        request = requests.get(url)
-        file = zipfile.ZipFile(BytesIO(request.content))
-        filename = file.namelist()[0]
-        response =  lxml.etree.fromstring(
-            file.read(filename), parser=parser)
+    if bool(matches):
+        response_ = None
+        i = 30
+        while i<101:
+            time.sleep(i)
+            i = i+10
+            url = matches[0].groups()[0]
+            print(url)
+            request = requests.get(url)
+            print(request.headers['content-type'])
+            if request.headers['content-type'] == "application/octet-stream":
+                buffer = BytesIO(request.content)
+                file = zipfile.ZipFile(buffer)
+                filename = file.namelist()[0]
+                response_ =  lxml.etree.fromstring(
+                    file.read(filename), parser=parser)
+                break
+        if response_ is None:
+            raise Exception("Eurostat didn't provide the file you are looking for.")
+        else:
+            response = response_
     return response
 
 

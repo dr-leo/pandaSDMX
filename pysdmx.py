@@ -25,38 +25,40 @@ def date_parser(date, frequency):
 
 
 def query_rest(url):
-    request = requests.get(url, timeout= 20)
-    if request.status_code != requests.codes.ok:
-        raise ValueError("Error getting client({})".format(request.status_code))      
     parser = lxml.etree.XMLParser(
         ns_clean=True, recover=True, encoding='utf-8')
-    response =  lxml.etree.fromstring(
-        request.text.encode('utf-8'), parser=parser)
-    #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
-    messages = response.xpath('.//footer:Message/common:Text',
-                                   namespaces=response.nsmap)
-    regex_ = re.compile("Due to the large query the response will be written "
-                        "to a file which will be located under URL: (.*)")
-    matches = [regex_.match(element.text) for element in messages]
-    if bool(matches):
-        response_ = None
-        i = 30
-        while i<101:
-            time.sleep(i)
-            i = i+10
-            url = matches[0].groups()[0]
-            request = requests.get(url)
-            if request.headers['content-type'] == "application/octet-stream":
-                buffer = BytesIO(request.content)
-                file = zipfile.ZipFile(buffer)
-                filename = file.namelist()[0]
-                response_ =  lxml.etree.fromstring(
-                    file.read(filename), parser=parser)
-                break
-        if response_ is None:
-            raise Exception("Eurostat didn't provide the file you are looking for.")
+    request = requests.get(url, timeout= 20)
+    if request.status_code == requests.codes.ok:
+        response =  lxml.etree.fromstring(
+            request.text.encode('utf-8'), parser=parser)
+    elif request.status_code == 430:
+        #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
+        messages = response.xpath('.//footer:Message/common:Text',
+                                  namespaces=response.nsmap)
+        regex_ = re.compile("Due to the large query the response will be written "
+                            "to a file which will be located under URL: (.*)")
+        matches = [regex_.match(element.text) for element in messages]
+        if bool(matches):
+            response_ = None
+            i = 30
+            while i<101:
+                time.sleep(i)
+                i = i+10
+                url = matches[0].groups()[0]
+                request = requests.get(url)
+                if request.headers['content-type'] == "application/octet-stream":
+                    buffer = BytesIO(request.content)
+                    file = zipfile.ZipFile(buffer)
+                    filename = file.namelist()[0]
+                    response_ =  lxml.etree.fromstring(
+                        file.read(filename), parser=parser)
+                    break
+                    if response_ is None:
+                        raise Exception("Eurostat didn't provide the file you are looking for.")
         else:
-            response = response_
+            raise ValueError("Error getting client({})".format(request.status_code))      
+    else:
+        raise ValueError("Error getting client({})".format(request.status_code))      
     return response
 
 
@@ -125,14 +127,14 @@ class DSD(object):
                     name = codelist.xpath('.//com:Name', namespaces=self.tree.nsmap)
                     name = name[0]
                     name = name.text
-                    code = []
+                    code = {}
                     for code_ in codelist.iterfind(".//str:Code",
                                                    namespaces=self.tree.nsmap):
                         code_key = code_.get('id')
                         code_name = code_.xpath('.//com:Name',
                                                 namespaces=self.tree.nsmap)
                         code_name = code_name[0]
-                        code.append((code_key,code_name.text))
+                        code[code_key] = code_name.text
                     self._codes[name] = code
         return self._codes
 

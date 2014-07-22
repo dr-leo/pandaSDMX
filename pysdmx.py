@@ -127,6 +127,8 @@ class DSD(object):
                     name = codelist.xpath('.//com:Name', namespaces=self.tree.nsmap)
                     name = name[0]
                     name = name.text
+                    # a dot "." can't be part of a JSON field name
+                    name = re.sub(r"\.","",name)
                     code = {}
                     for code_ in codelist.iterfind(".//str:Code",
                                                    namespaces=self.tree.nsmap):

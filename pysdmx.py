@@ -63,9 +63,10 @@ def query_rest(url):
 
 
 class Data(object):
-    def __init__(self, SDMXML):
+    def __init__(self, SDMXML, flowRef):
         self.tree = SDMXML
         self._time_series = None
+        self. key = flowRef
 
     @property
     def time_series(self):
@@ -77,6 +78,7 @@ class Data(object):
                 for key in series.iterfind(".//generic:Value",
                                            namespaces=self.tree.nsmap):
                     codes[key.get('id')] = key.get('value')
+                    self.key += '_'+key.get('value')
                 time_series_ = []
                 for observation in series.iterfind(".//generic:Obs",
                                                    namespaces=self.tree.nsmap):
@@ -209,7 +211,7 @@ class SDMX_REST(object):
                     + flowRef + '/'
                     + key)
         url = (query)
-        return Data(query_rest(url))
+        return Data(query_rest(url),flowRef)
 
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',

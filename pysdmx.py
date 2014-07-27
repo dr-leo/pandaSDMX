@@ -64,8 +64,8 @@ def query_rest(url):
 class Data(object):
     def __init__(self, SDMXML, flowRef):
         self.tree = SDMXML
+        self._key = flowRef
         self._time_series = None
-        self. key = flowRef
 
     @property
     def time_series(self):

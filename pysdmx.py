@@ -5,7 +5,6 @@
 import requests
 import pandas
 import lxml.etree
-import uuid
 import datetime
 import numpy
 from io import BytesIO
@@ -71,7 +70,7 @@ class Data(object):
     @property
     def time_series(self):
         if not self._time_series:
-            self._time_series = {}
+            self._time_series = []
             for series in self.tree.iterfind(".//generic:Series",
                                              namespaces=self.tree.nsmap):
                 codes = {}
@@ -108,7 +107,7 @@ class Data(object):
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
                 time_series_ = pandas.Series(values, index=dates)
-                self._time_series[str(uuid.uuid1())] = (codes, time_series_)
+                self._time_series.append(codes, time_series_)
         return self._time_series
 
 

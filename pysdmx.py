@@ -180,38 +180,24 @@ class SDMX_REST(object):
             resource = 'dataflow'
             resourceID = 'all'
             version = 'latest'
-            url = (self.sdmx_url + '/'
-                   + resource + '/'
-                   + self.agencyID + '/'
-                   + resourceID + '/'
-                   + version)
+            url = '/'.join(self.sdmx_url, resource, self.agencyID, resourceID ,version)
             self._dataflow = self.Dataflows(query_rest(url))
         return self._dataflow
 
     def data_definition(self, flowRef):
         resource = 'datastructure'
-        url = (self.sdmx_url + '/'
-               + resource + '/'
-               + self.agencyID + '/'
-               + 'DSD_'
-               + flowRef)
+        url = '/'.join(self.sdmx_url, resource, self.agencyID, 'DSD_' + flowRef)
         return self.DSD(query_rest(url))
 
     def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
         resource = 'data'
         if startperiod is not None and endperiod is not None:
-        	query = (self.sdmx_url + '/'
-                    + resource + '/'
-                    + flowRef + '/'
-                    + key
+            query = '/'.join(resource, flowRef, key
                     + '?startperiod=' + startperiod
                     + '&endPeriod=' + endperiod)
         else:
-        	query = (self.sdmx_url + '/'
-                    + resource + '/'
-                    + flowRef + '/'
-                    + key)
-        url = (query)
+            query = '/'.join(resource, flowRef, key)
+        url = '/'.join(self.sdmx_url,query)
         return self.Data(query_rest(url),flowRef)
 
 

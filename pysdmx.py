@@ -1,6 +1,12 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-""" Python interface to SDMX """
+"""
+.. module:: pysdmx
+    :platform: Unix, Windows
+    :synopsis: Python interface for SDMX
+
+.. :moduleauthor :: Widukind team <widukind-dev@cepremap.org>
+"""
 
 import requests
 import pandas
@@ -13,6 +19,7 @@ import zipfile
 import time
 
 def date_parser(date, frequency):
+    """Generate proper index for pandas"""
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')
     if frequency == 'Q':
@@ -24,6 +31,10 @@ def date_parser(date, frequency):
 
 
 class Data(object):
+    """Time series from a dataflow
+    :ivar tree: XML tree of the datatflow returned by the statistical provider
+    :type tree: ElementTree
+    """
     def __init__(self, SDMXML, flowRef):
         self.tree = SDMXML
         self._key = flowRef
@@ -31,6 +42,9 @@ class Data(object):
 
     @property
     def time_series(self):
+    """The time series and their codes. This is a list of all the series from the specified dataflow. Each element of this list is a tuple with two elements. The first one is a dictionnary of the codes describing the series (for example GEO:BE). The second element is a pandas.Series object with the actual vectors.
+    :type: list
+    """
         if not self._time_series:
             self._time_series = []
             for series in self.tree.iterfind(".//generic:Series",
@@ -73,12 +87,20 @@ class Data(object):
 
 
 class DSD(object):
+    """Data definition
+    :ivar tree: XML tree returned by the statistical provider
+    :type tree: ElementTree
+    """
     def __init__(self, SDMXML):
         self.tree = SDMXML
         self._codes = None
 
     @property
     def codes(self):
+        """The list of codes and their possible values
+
+        :type dict -- a dictionnary of strings
+        """
         if not self._codes:
             self._codes = {}
             codelists = self.tree.xpath(".//str:Codelists",
@@ -104,12 +126,19 @@ class DSD(object):
 
 
 class Dataflows(object):
+    """Following the SDMX typology, this is a set of time series
+    :ivar tree: XML tree returned by the statistical provider
+    :type tree: ElementTree"""
     def __init__(self, SDMXML):
         self.tree = SDMXML
         self._all_dataflows = None
 
     @property
     def all_dataflows(self):
+        """All available dataflows from a statistical provider. Each tuple contains an identifier of the provider, the version of the data and the titles of the dataflows.
+
+        :type dict -- a dictionnary of tuples
+        """
         if not self._all_dataflows:
             self._all_dataflows = {}
             for dataflow in self.tree.iterfind(".//str:Dataflow",
@@ -128,6 +157,12 @@ class Dataflows(object):
 
 
 class SDMX_REST(object):
+    """Data provider. This is the main class that allows practical access to all the data.
+    :ivar sdmx_url: The URL of the SDMX endpoint, the webservice employed to access the data.
+    :type sdmx_url: str
+    :ivar agencyID: An identifier of the statistical provider.
+    :type agencyID: str
+    """
     def __init__(self, sdmx_url, agencyID):
         self.sdmx_url = sdmx_url
         self.agencyID = agencyID
@@ -138,6 +173,10 @@ class SDMX_REST(object):
 
     @staticmethod
     def query_rest(url):
+    """Retrieve SDMX messages.
+    :param url: The URL of the message.
+    :type url: str
+    """
         parser = lxml.etree.XMLParser(
             ns_clean=True, recover=True, encoding='utf-8')
         request = requests.get(url, timeout= 20)
@@ -176,6 +215,8 @@ class SDMX_REST(object):
 
     @property
     def dataflow(self):
+        """Index of available dataflows
+        :type: Dataflows"""
         if not self._dataflow:
             resource = 'dataflow'
             resourceID = 'all'
@@ -184,12 +225,25 @@ class SDMX_REST(object):
             self._dataflow = self.Dataflows(self.query_rest(url))
         return self._dataflow
 
+    @property
     def data_definition(self, flowRef):
+        """Data definitions
+        :type: DSD"""
         resource = 'datastructure'
         url = '/'.join([self.sdmx_url, resource, self.agencyID, 'DSD_' + flowRef])
         return self.DSD(self.query_rest(url))
 
     def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
+        """Get data
+        :param flowRef: an identifier of the data
+        :type flowRef: str
+        :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium)
+        :type key: str
+        :param startperiod: the starting date of the time series that will be downloaded
+        :type startperiod: datetime
+        :param endperiod: the ending date of the time series that will be downloaded
+        :type endperiod: datetime
+        :return: Data"""
         resource = 'data'
         if startperiod is not None and endperiod is not None:
             query = '/'.join([resource, flowRef, key

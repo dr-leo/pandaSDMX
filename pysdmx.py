@@ -23,44 +23,6 @@ def date_parser(date, frequency):
         return datetime.datetime.strptime(date, '%Y-%m')
 
 
-def query_rest(url):
-    parser = lxml.etree.XMLParser(
-        ns_clean=True, recover=True, encoding='utf-8')
-    request = requests.get(url, timeout= 20)
-    if request.status_code == requests.codes.ok:
-        response =  lxml.etree.fromstring(
-            request.text.encode('utf-8'), parser=parser)
-    elif request.status_code == 430:
-        #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
-        messages = response.xpath('.//footer:Message/common:Text',
-                                  namespaces=response.nsmap)
-        regex_ = re.compile("Due to the large query the response will be written "
-                            "to a file which will be located under URL: (.*)")
-        matches = [regex_.match(element.text) for element in messages]
-        if bool(matches):
-            response_ = None
-            i = 30
-            while i<101:
-                time.sleep(i)
-                i = i+10
-                url = matches[0].groups()[0]
-                request = requests.get(url)
-                if request.headers['content-type'] == "application/octet-stream":
-                    buffer = BytesIO(request.content)
-                    file = zipfile.ZipFile(buffer)
-                    filename = file.namelist()[0]
-                    response_ =  lxml.etree.fromstring(
-                        file.read(filename), parser=parser)
-                    break
-                    if response_ is None:
-                        raise Exception("Eurostat didn't provide the file you are looking for.")
-        else:
-            raise ValueError("Error getting client({})".format(request.status_code))      
-    else:
-        raise ValueError("Error getting client({})".format(request.status_code))      
-    return response
-
-
 class Data(object):
     def __init__(self, SDMXML, flowRef):
         self.tree = SDMXML
@@ -171,6 +133,46 @@ class SDMX_REST(object):
         self.sdmx_url = sdmx_url
         self.agencyID = agencyID
         self._dataflow = None
+        self.Dataflows = Dataflows
+        self.Data = Data
+        self.DSD = DSD
+
+    def query_rest(url):
+        parser = lxml.etree.XMLParser(
+            ns_clean=True, recover=True, encoding='utf-8')
+        request = requests.get(url, timeout= 20)
+        if request.status_code == requests.codes.ok:
+            response =  lxml.etree.fromstring(
+                request.text.encode('utf-8'), parser=parser)
+        elif request.status_code == 430:
+            #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
+            messages = response.xpath('.//footer:Message/common:Text',
+                                      namespaces=response.nsmap)
+            regex_ = re.compile("Due to the large query the response will be written "
+                                "to a file which will be located under URL: (.*)")
+            matches = [regex_.match(element.text) for element in messages]
+            if bool(matches):
+                response_ = None
+                i = 30
+                while i<101:
+                    time.sleep(i)
+                    i = i+10
+                    url = matches[0].groups()[0]
+                    request = requests.get(url)
+                    if request.headers['content-type'] == "application/octet-stream":
+                        buffer = BytesIO(request.content)
+                        file = zipfile.ZipFile(buffer)
+                        filename = file.namelist()[0]
+                        response_ =  lxml.etree.fromstring(
+                            file.read(filename), parser=parser)
+                        break
+                        if response_ is None:
+                            raise Exception("Eurostat didn't provide the file you are looking for.")
+            else:
+                raise ValueError("Error getting client({})".format(request.status_code))      
+        else:
+            raise ValueError("Error getting client({})".format(request.status_code))      
+        return response
 
     @property
     def dataflow(self):
@@ -183,7 +185,7 @@ class SDMX_REST(object):
                    + self.agencyID + '/'
                    + resourceID + '/'
                    + version)
-            self._dataflow = Dataflows(query_rest(url))
+            self._dataflow = self.Dataflows(query_rest(url))
         return self._dataflow
 
     def data_definition(self, flowRef):
@@ -193,7 +195,7 @@ class SDMX_REST(object):
                + self.agencyID + '/'
                + 'DSD_'
                + flowRef)
-        return DSD(query_rest(url))
+        return self.DSD(query_rest(url))
 
     def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
         resource = 'data'
@@ -210,7 +212,7 @@ class SDMX_REST(object):
                     + flowRef + '/'
                     + key)
         url = (query)
-        return Data(query_rest(url),flowRef)
+        return self.Data(query_rest(url),flowRef)
 
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',

@@ -39,7 +39,6 @@ class Data(object):
                 for key in series.iterfind(".//generic:Value",
                                            namespaces=self.tree.nsmap):
                     codes[key.get('id')] = key.get('value')
-                    self.key += '_'+key.get('value')
                 time_series_ = []
                 for observation in series.iterfind(".//generic:Obs",
                                                    namespaces=self.tree.nsmap):
@@ -69,7 +68,7 @@ class Data(object):
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
                 time_series_ = pandas.Series(values, index=dates)
-                self._time_series.append(codes, time_series_)
+                self._time_series.append((codes, time_series_))
         return self._time_series
 
 
@@ -137,6 +136,7 @@ class SDMX_REST(object):
         self.Data = Data
         self.DSD = DSD
 
+    @staticmethod
     def query_rest(url):
         parser = lxml.etree.XMLParser(
             ns_clean=True, recover=True, encoding='utf-8')
@@ -180,25 +180,25 @@ class SDMX_REST(object):
             resource = 'dataflow'
             resourceID = 'all'
             version = 'latest'
-            url = '/'.join(self.sdmx_url, resource, self.agencyID, resourceID ,version)
-            self._dataflow = self.Dataflows(query_rest(url))
+            url = '/'.join([self.sdmx_url, resource, self.agencyID, resourceID ,version])
+            self._dataflow = self.Dataflows(self.query_rest(url))
         return self._dataflow
 
     def data_definition(self, flowRef):
         resource = 'datastructure'
-        url = '/'.join(self.sdmx_url, resource, self.agencyID, 'DSD_' + flowRef)
-        return self.DSD(query_rest(url))
+        url = '/'.join([self.sdmx_url, resource, self.agencyID, 'DSD_' + flowRef])
+        return self.DSD(self.query_rest(url))
 
     def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
         resource = 'data'
         if startperiod is not None and endperiod is not None:
-            query = '/'.join(resource, flowRef, key
+            query = '/'.join([resource, flowRef, key
                     + '?startperiod=' + startperiod
-                    + '&endPeriod=' + endperiod)
+                    + '&endPeriod=' + endperiod])
         else:
-            query = '/'.join(resource, flowRef, key)
-        url = '/'.join(self.sdmx_url,query)
-        return self.Data(query_rest(url),flowRef)
+            query = '/'.join([resource, flowRef, key])
+        url = '/'.join([self.sdmx_url,query])
+        return self.Data(self.query_rest(url),flowRef)
 
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',

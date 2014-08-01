@@ -214,36 +214,29 @@ class SDMX_REST(object):
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
+            GENERIC = '{'+tree.nsmap['generic']+'}'
             self._time_series = []
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
-                codes = {}
-                for key in series.iterfind(".//generic:Value",
-                                           namespaces=tree.nsmap):
-                    codes[key.get('id')] = key.get('value')
                 time_series_ = []
-                for observation in series.iterfind(".//generic:Obs",
-                                                   namespaces=tree.nsmap):
-                    dimensions = observation.xpath(".//generic:ObsDimension",
-                                                   namespaces=tree.nsmap)
-                    dimension = dimensions[0].values()
-                    dimension = date_parser(dimension[0], codes['FREQ'])
-                    values = observation.xpath(".//generic:ObsValue",
-                                               namespaces=tree.nsmap)
-                    value = values[0].values()
-                    value = value[0]
-                    observation_status = 'A'
-                    for attribute in \
-                        observation.iterfind(".//generic:Attributes",
-                                             namespaces=tree.nsmap):
-                        for observation_status_ in \
-                            attribute.xpath(
-                                ".//generic:Value[@id='OBS_STATUS']",
-                                namespaces=tree.nsmap):
-                            if observation_status_ is not None:
-                                observation_status \
-                                    = observation_status_.get('value')
-                    time_series_.append((dimension, value, observation_status))
+                for elem in series.iterchildren():
+                    if elem.tag == GENERIC + 'SeriesKey':
+                        codes = {}
+                        for value in elem.iter(GENERIC + "Value"):
+                            codes[value.get('id')] = value.get('value')
+                    elif elem.tag == GENERIC + 'Obs':
+                        for elem1 in elem.iterchildren():
+                            observation_status = 'A'
+                            if elem1.tag == GENERIC + 'ObsDimension':
+                                dimension = elem1.get('value')
+                                dimension = date_parser(dimension, codes['FREQ'])
+                            elif elem1.tag == GENERIC + 'ObsValue':
+                                value = elem1.get('value')
+                            elif elem1.tag == GENERIC + 'Attibutes':
+                                for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
+                                    namespaces=tree.nsmap):
+                                    observation_status = elem2.get('value')
+                        time_series_.append((dimension, value, observation_status))
                 time_series_.sort()
                 dates = numpy.array(
                     [observation[0] for observation in time_series_])

@@ -17,6 +17,7 @@ from io import BytesIO
 import re
 import zipfile
 import time
+from collections import OrderedDict
 
 def date_parser(date, frequency):
     """Generate proper index for pandas"""
@@ -156,7 +157,7 @@ class SDMX_REST(object):
                     name = name.text
                     # a dot "." can't be part of a JSON field name
                     name = re.sub(r"\.","",name)
-                    code = {}
+                    code = OrderedDict({})
                     for code_ in codelist.iterfind(code_path,
                                                    namespaces=tree.nsmap):
                         code_key = code_.get('id')

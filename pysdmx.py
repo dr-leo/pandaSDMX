@@ -304,6 +304,8 @@ class SDMX_REST(object):
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                      '2_1','ESTAT')
+eurostat_test = SDMX_REST('http://localhost:8800/eurostat',
+                     '2_1','ESTAT')
 ecb = SDMX_REST('http://sdw-ws.ecb.europa.eu',
                      '2_0','ECB')
 ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',

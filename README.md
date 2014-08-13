@@ -14,8 +14,7 @@ For the time being, pysdmx is not on pypi. You can use the standard procedure fr
 Usage
 -----
 
-pysdmx provides a bookmark for the SDMX endpoint provided by Eurostat.
+pysdmx provides a bookmark for the SDMX endpoint provided by Eurostat. You can easily retrieve a pandas.DataFrame()
 
     >>>import pysdmx
-    >>>data = pysdmx.eurostat.data_extraction('cdh_e_fos','..PC.FOS1.BE','2005','2011')
-    >>>data.time_series
+    >>>pysdmx.eurostat.dataframe('cdh_e_fos','..PC.FOS1.BE','2005','2011')

@@ -20,7 +20,16 @@ import time
 from collections import OrderedDict
 
 def date_parser(date, frequency):
-    """Generate proper index for pandas"""
+    """Generate proper index for pandas
+    :param date: A date
+    :type date: str
+    :param frequency: A frequency as specified in SDMX, A for Annual, Q for Quarterly, M for Monthly and D for Daily
+    :type frequency: str
+    :return: datetime.datetime()
+
+    >>> date_parser('1987-02-02','D')
+    datetime.datetime(1987, 2, 2, 0, 0)
+    """
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')
     if frequency == 'Q':
@@ -195,6 +204,16 @@ class SDMX_REST(object):
         return self._codes
 
     def dataframe(self, flowRef, key, startperiod=None, endperiod=None):
+        """Get data
+        :param flowRef: an identifier of the data
+        :type flowRef: str
+        :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
+        :type key: str or dict
+        :param startperiod: the starting date of the time series that will be downloaded
+        :type startperiod: datetime
+        :param endperiod: the ending date of the time series that will be downloaded
+        :type endperiod: datetime
+        :return: DataFrame"""
         raw_data, metadata = self.data(flowRef, key, startperiod=None, endperiod=None)
         column_names = ['__'.join(d.values()) for d in metadata]
         return pandas.DataFrame(dict(zip(column_names, raw_data)))
@@ -209,7 +228,7 @@ class SDMX_REST(object):
         :type startperiod: datetime
         :param endperiod: the ending date of the time series that will be downloaded
         :type endperiod: datetime
-        :return: Data"""
+        :return: list of timeseries, list of metadata"""
         if self.version == '2_1':
             resource = 'data'
             if startperiod is not None and endperiod is not None:

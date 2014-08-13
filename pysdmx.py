@@ -194,7 +194,12 @@ class SDMX_REST(object):
                     self._codes[name] = code
         return self._codes
 
-    def data_extraction(self, flowRef, key, startperiod=None, endperiod=None):
+    def dataframe(self, flowRef, key, startperiod=None, endperiod=None):
+        raw_data, metadata = self.data(flowRef, key, startperiod=None, endperiod=None)
+        column_names = ['__'.join(d.values()) for d in metadata]
+        return pandas.DataFrame(dict(zip(column_names, raw_data)))
+
+    def data(self, flowRef, key, startperiod=None, endperiod=None):
         """Get data
         :param flowRef: an identifier of the data
         :type flowRef: str
@@ -217,6 +222,7 @@ class SDMX_REST(object):
             tree = self.query_rest(url)
             GENERIC = '{'+tree.nsmap['generic']+'}'
             self._time_series = []
+            self._metadata = []
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
                 time_series_ = []
@@ -244,8 +250,9 @@ class SDMX_REST(object):
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
                 time_series_ = pandas.Series(values, index=dates)
-                self._time_series.append((codes, time_series_))
-            return self._time_series
+                self._time_series.append(time_series_)
+                self._metadata.append(codes)
+            return self._time_series,self._metadata
 
         if self.version == '2_0':
             resource = 'GenericData'
@@ -263,6 +270,7 @@ class SDMX_REST(object):
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
             _time_series = []
+            _metadata = []
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
                 codes = {}
@@ -298,8 +306,9 @@ class SDMX_REST(object):
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
                 time_series_ = pandas.Series(values, index=dates)
-                _time_series.append((codes, time_series_))
-            return _time_series
+                _time_series.append(time_series_)
+                _metadata.append(codes)
+            return _time_series, _metadata
 
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',

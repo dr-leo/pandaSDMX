@@ -249,7 +249,7 @@ class SDMX_REST(object):
                     [observation[0] for observation in time_series_])
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
-                time_series_ = pandas.Series(values, index=dates)
+                time_series_ = pandas.Series(values, index=dates, dtype='float64')
                 self._time_series.append(time_series_)
                 self._metadata.append(codes)
             return self._time_series,self._metadata
@@ -305,7 +305,7 @@ class SDMX_REST(object):
                     [observation[0] for observation in time_series_])
                 values = numpy.array(
                     [observation[1] for observation in time_series_])
-                time_series_ = pandas.Series(values, index=dates)
+                time_series_ = pandas.Series(values, index=dates, dtype='float64')
                 _time_series.append(time_series_)
                 _metadata.append(codes)
             return _time_series, _metadata

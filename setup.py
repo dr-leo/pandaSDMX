@@ -8,7 +8,7 @@ setup(name='pysdmx',
     description='A python interface to SDMX',
     author='Widukind team',
     author_email='dev@michaelmalter.fr',
-      py_modules=['pysdmx'],
+      py_modules=['sdmx'],
     install_requires=[
         'pandas>=0.12',
         'numpy',

@@ -21,6 +21,7 @@ from collections import OrderedDict
 
 def date_parser(date, frequency):
     """Generate proper index for pandas
+
     :param date: A date
     :type date: str
     :param frequency: A frequency as specified in SDMX, A for Annual, Q for Quarterly, M for Monthly and D for Daily
@@ -30,6 +31,7 @@ def date_parser(date, frequency):
     >>> date_parser('1987-02-02','D')
     datetime.datetime(1987, 2, 2, 0, 0)
     """
+
     if frequency == 'A':
         return datetime.datetime.strptime(date, '%Y')
     if frequency == 'Q':
@@ -44,6 +46,7 @@ def date_parser(date, frequency):
 
 class SDMX_REST(object):
     """Data provider. This is the main class that allows practical access to all the data.
+
     :ivar sdmx_url: The URL of the SDMX endpoint, the webservice employed to access the data.
     :type sdmx_url: str
     :ivar agencyID: An identifier of the statistical provider.
@@ -58,8 +61,10 @@ class SDMX_REST(object):
     @staticmethod
     def query_rest(url):
         """Retrieve SDMX messages.
+
         :param url: The URL of the message.
         :type url: str
+        :return: An lxml.etree.ElementTree() of the SDMX message
         """
         parser = lxml.etree.XMLParser(
             ns_clean=True, recover=True, encoding='utf-8')
@@ -100,6 +105,7 @@ class SDMX_REST(object):
     @property
     def dataflows(self):
         """Index of available dataflows
+
         :type: dict"""
         if not self._dataflows:
             if self.version == '2_1':
@@ -145,6 +151,9 @@ class SDMX_REST(object):
 
     def codes(self, flowRef):
         """Data definitions
+
+        Returns a dictionnary describing the available dimensions for a specific flowRef.
+
         :param flowRef: Identifier of the dataflow
         :type flowRef: str
         :return: dict"""
@@ -205,14 +214,15 @@ class SDMX_REST(object):
 
     def dataframe(self, flowRef, key, startperiod=None, endperiod=None):
         """Get data
+
         :param flowRef: an identifier of the data
         :type flowRef: str
         :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
         :type key: str or dict
-        :param startperiod: the starting date of the time series that will be downloaded
-        :type startperiod: datetime
-        :param endperiod: the ending date of the time series that will be downloaded
-        :type endperiod: datetime
+        :param startperiod: the starting date of the time series that will be downloaded (optional, default: None)
+        :type startperiod: datetime.datetime()
+        :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
+        :type endperiod: datetime.datetime()
         :return: DataFrame"""
         raw_data, metadata = self.data(flowRef, key, startperiod=None, endperiod=None)
         column_names = ['__'.join(d.values()) for d in metadata]
@@ -220,14 +230,15 @@ class SDMX_REST(object):
 
     def data(self, flowRef, key, startperiod=None, endperiod=None):
         """Get data
+
         :param flowRef: an identifier of the data
         :type flowRef: str
         :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
         :type key: str or dict
-        :param startperiod: the starting date of the time series that will be downloaded
-        :type startperiod: datetime
-        :param endperiod: the ending date of the time series that will be downloaded
-        :type endperiod: datetime
+        :param startperiod: the starting date of the time series that will be downloaded (optional, default: None)
+        :type startperiod: datetime.datetime()
+        :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
+        :type endperiod: datetime.datetime()
         :return: list of timeseries, list of metadata"""
         if self.version == '2_1':
             resource = 'data'

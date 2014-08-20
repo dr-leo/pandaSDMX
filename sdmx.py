@@ -17,7 +17,7 @@ from io import BytesIO
 import re
 import zipfile
 import time
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 def date_parser(date, frequency):
     """Generate proper index for pandas
@@ -212,6 +212,7 @@ class SDMX_REST(object):
                     self._codes[name] = code
         return self._codes
 
+
     def dataframe(self, flowRef, key, startperiod=None, endperiod=None):
         """Get data
 
@@ -239,7 +240,12 @@ class SDMX_REST(object):
         :type startperiod: datetime.datetime()
         :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
         :type endperiod: datetime.datetime()
-        :return: list of timeseries, list of metadata"""
+        :return: list of 1-dimensional DataFrames."""
+        
+        # Container for namedtuple classes for metadata of each column
+        tuple_classes = []
+        result = []
+        
         if self.version == '2_1':
             resource = 'data'
             if startperiod is not None and endperiod is not None:
@@ -251,8 +257,7 @@ class SDMX_REST(object):
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
             GENERIC = '{'+tree.nsmap['generic']+'}'
-            self._time_series = []
-            self._metadata = []
+
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
                 time_series_ = []
@@ -274,15 +279,9 @@ class SDMX_REST(object):
                                     namespaces=tree.nsmap):
                                     observation_status = elem2.get('value')
                         time_series_.append((dimension, value, observation_status))
-                time_series_.sort()
-                dates = numpy.array(
-                    [observation[0] for observation in time_series_])
-                values = numpy.array(
-                    [observation[1] for observation in time_series_])
-                time_series_ = pandas.Series(values, index=dates, dtype='float64')
-                self._time_series.append(time_series_)
-                self._metadata.append(codes)
-            return self._time_series,self._metadata
+                time_series_ = self.make_dataframe      (time_series_, codes, 
+                tuple_classes)
+                result.append(time_series_)    
 
         if self.version == '2_0':
             resource = 'GenericData'
@@ -330,16 +329,33 @@ class SDMX_REST(object):
                                 observation_status \
                                     = observation_status_.get('value')
                     time_series_.append((dimension, value, observation_status))
-                time_series_.sort()
-                dates = numpy.array(
-                    [observation[0] for observation in time_series_])
-                values = numpy.array(
-                    [observation[1] for observation in time_series_])
-                time_series_ = pandas.Series(values, index=dates, dtype='float64')
-                _time_series.append(time_series_)
-                _metadata.append(codes)
-            return _time_series, _metadata
+                time_series_ = self.make_dataframe(time_series_, codes, 
+                    tuple_classes)
+                result.append(time_series_)    
+        return result
 
+    def make_dataframe(self, raw_series, codes, tuple_classes):
+        raw_series.sort()
+        for t in tuple_classes:
+                try:
+                    code_tuple = t(**codes)
+                    break
+                except TypeError:
+                    if t is tuple_classes[-1]: 
+                        tuple_classes.append(namedtuple(
+                        'CodeTuple' + str(len(tuple_classes)), codes.keys()))
+                        code_tuple = tuple_classes[-1](**codes)
+        else:
+            tuple_classes.append(namedtuple(
+                'CodeTuple' + str(len(tuple_classes)), codes.keys()))
+            code_tuple = tuple_classes[0](**codes)
+        dates = numpy.array(
+            [observation[0] for observation in raw_series])
+        values = numpy.array(
+            [observation[1] for observation in raw_series])
+        return pandas.DataFrame(values, columns = [code_tuple], index=dates, dtype = numpy.float64)
+                
+        
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                      '2_1','ESTAT')

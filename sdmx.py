@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+    #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 .. module:: pysdmx
@@ -12,13 +12,18 @@ import requests
 import pandas
 import lxml.etree
 import datetime
-import numpy
 from io import BytesIO
 import re
 import zipfile
 import time
 from collections import OrderedDict, namedtuple
 
+
+# Allow easy checking for existing namedtuple classes that can be reused for column metadata  
+tuple_classes = []
+        
+        
+        
 def date_parser(date, frequency):
     """Generate proper index for pandas
 
@@ -213,22 +218,6 @@ class SDMX_REST(object):
         return self._codes
 
 
-    def dataframe(self, flowRef, key, startperiod=None, endperiod=None):
-        """Get data
-
-        :param flowRef: an identifier of the data
-        :type flowRef: str
-        :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
-        :type key: str or dict
-        :param startperiod: the starting date of the time series that will be downloaded (optional, default: None)
-        :type startperiod: datetime.datetime()
-        :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
-        :type endperiod: datetime.datetime()
-        :return: DataFrame"""
-        raw_data, metadata = self.data(flowRef, key, startperiod=None, endperiod=None)
-        column_names = ['__'.join(d.values()) for d in metadata]
-        return pandas.DataFrame(dict(zip(column_names, raw_data)))
-
     def data(self, flowRef, key, startperiod=None, endperiod=None):
         """Get data
 
@@ -240,13 +229,15 @@ class SDMX_REST(object):
         :type startperiod: datetime.datetime()
         :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
         :type endperiod: datetime.datetime()
-        :return: list of 1-dimensional DataFrames."""
+        :return: DataFrame whose column index are namedtuples storing the full metadata.
+        """
         
-        # Container for namedtuple classes for metadata of each column
-        tuple_classes = []
-        result = []
+        raw_dates = []
+        raw_values = []
+        raw_status = []
+        df = pandas.DataFrame()
         
-        if self.version == '2_1':
+        if self.    version == '2_1':
             resource = 'data'
             if startperiod is not None and endperiod is not None:
                 query = '/'.join([resource, flowRef, key
@@ -256,14 +247,15 @@ class SDMX_REST(object):
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
-            GENERIC = '{'+tree.nsmap['generic']+'}'
-
+                        GENERIC = '{'+tree.nsmap['generic']+'}'
+            print('1.')
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
-                time_series_ = []
+                print('a ')
                 for elem in series.iterchildren():
+                    
                     if elem.tag == GENERIC + 'SeriesKey':
-                        codes = {}
+                        codes = OrderedDict()
                         for value in elem.iter(GENERIC + "Value"):
                             codes[value.get('id')] = value.get('value')
                     elif elem.tag == GENERIC + 'Obs':
@@ -278,12 +270,15 @@ class SDMX_REST(object):
                                 for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
                                     namespaces=tree.nsmap):
                                     observation_status = elem2.get('value')
-                        time_series_.append((dimension, value, observation_status))
-                time_series_ = self.make_dataframe      (time_series_, codes, 
-                tuple_classes)
-                result.append(time_series_)    
-
-        if self.version == '2_0':
+                    raw_dates.append(dimension)
+                    raw_values.append(value)
+                    raw_status.append(observation_status)
+                dates = pandas.to_datetime(raw_dates)
+                code_tuple = self.to_namedtuple(codes)
+                series_ = pandas.TimeSeries(raw_values, dates)
+                df[code_tuple] = series_ 
+                
+        elif self.version == '2_0':
             resource = 'GenericData'
             key__ = ''
             for key_, value_ in key.items():
@@ -308,7 +303,6 @@ class SDMX_REST(object):
                     for key in codes_.iterfind(".//generic:Value",
                                                namespaces=tree.nsmap):
                         codes[key.get('concept')] = key.get('value')
-                time_series_ = []
                 for observation in series.iterfind(".//generic:Obs",
                                                    namespaces=tree.nsmap):
                     dimensions = observation.xpath(".//generic:Time",
@@ -325,17 +319,32 @@ class SDMX_REST(object):
                             attribute.xpath(
                                 ".//generic:Value[@concept='OBS_STATUS']",
                                 namespaces=tree.nsmap):
-                            if observation_status_ is not None:
+                            if observation_status_:
                                 observation_status \
                                     = observation_status_.get('value')
-                    time_series_.append((dimension, value, observation_status))
-                time_series_ = self.make_dataframe(time_series_, codes, 
-                    tuple_classes)
-                result.append(time_series_)    
-        return result
 
-    def make_dataframe(self, raw_series, codes, tuple_classes):
-        raw_series.sort()
+                    raw_dates.append(dimension)
+                    raw_values.append(value)
+                    raw_status.append(observation_status)
+                    
+                dates = pandas.to_datetime(raw_dates)
+                code_tuple = to_namedtuple(codes)
+                series_ = pandas.TimeSeries(raw_values, dates)
+                df[code_tuple] = series_ 
+                
+                
+        else: raise ValueError('Unsupported SDMX version: %s' % self.version)
+           
+        return df
+
+    def to_namedtuple(self, codes):
+        """
+        Convert a dict into a namedtuple. If there is not already 
+        a suitable class in 'tuple_classes', Create a new class first and append it to the list.
+            
+        return a namedtuple instance
+        """
+
         for t in tuple_classes:
                 try:
                     code_tuple = t(**codes)
@@ -349,11 +358,8 @@ class SDMX_REST(object):
             tuple_classes.append(namedtuple(
                 'CodeTuple' + str(len(tuple_classes)), codes.keys()))
             code_tuple = tuple_classes[0](**codes)
-        dates = numpy.array(
-            [observation[0] for observation in raw_series])
-        values = numpy.array(
-            [observation[1] for observation in raw_series])
-        return pandas.DataFrame(values, columns = [code_tuple], index=dates, dtype = numpy.float64)
+        print('.')
+        return code_tuple
                 
         
 
@@ -367,3 +373,6 @@ ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
                      '2_1','ILO')
 fao = SDMX_REST('http://data.fao.org/sdmx',
                      '2_1','FAO')
+
+d=eurostat.data('ei_mfir_m', '')
+

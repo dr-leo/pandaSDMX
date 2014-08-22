@@ -21,6 +21,30 @@ from collections import OrderedDict, namedtuple
 
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
 tuple_classes = []
+
+def to_namedtuple(codes):
+    """
+    Convert a dict into a namedtuple. If there is not already 
+    a suitable class in 'tuple_classes', Create a new class first and append it to the list.
+        
+    return a namedtuple instance
+    """
+
+    for t in tuple_classes:
+            try:
+                code_tuple = t(**codes)
+                break
+            except TypeError:
+                if t is tuple_classes[-1]: 
+                    tuple_classes.append(namedtuple(
+                    'CodeTuple' + str(len(tuple_classes)), codes.keys()))
+                    code_tuple = tuple_classes[-1](**codes)
+    else:
+        tuple_classes.append(namedtuple(
+            'CodeTuple' + str(len(tuple_classes)), codes.keys()))
+        code_tuple = tuple_classes[0](**codes)
+    return code_tuple
+            
         
         
         
@@ -180,7 +204,7 @@ class SDMX_REST(object):
                     name = name.text
                     # a dot "." can't be part of a JSON field name
                     name = re.sub(r"\.","",name)
-                    code = OrderedDict({})
+                    code = OrderedDict()
                     for code_ in codelist.iterfind(code_path,
                                                    namespaces=tree.nsmap):
                         code_key = code_.get('id')
@@ -218,7 +242,8 @@ class SDMX_REST(object):
         return self._codes
 
 
-    def data(self, flowRef, key, startperiod=None, endperiod=None):
+    def data(self, flowRef, key, startperiod=None, endperiod=None, 
+                with_status = False, concat = False):
         """Get data
 
         :param flowRef: an identifier of the data
@@ -231,15 +256,12 @@ class SDMX_REST(object):
         :type endperiod: datetime.datetime()
         :return: DataFrame whose column index are namedtuples storing the full metadata.
         """
-        
-        raw_dates = []
-        raw_values = []
-        raw_status = []
-        df = pandas.DataFrame()
+       
+        series_list = [] 
         
         if self.    version == '2_1':
             resource = 'data'
-            if startperiod is not None and endperiod is not None:
+            if startperiod and endperiod:
                 query = '/'.join([resource, flowRef, key
                         + '?startperiod=' + startperiod
                         + '&endPeriod=' + endperiod])
@@ -247,11 +269,14 @@ class SDMX_REST(object):
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
-                        GENERIC = '{'+tree.nsmap['generic']+'}'
-            print('1.')
+            GENERIC = '{'+tree.nsmap['generic']+'}'
+            
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
-                print('a ')
+                raw_dates = []
+                raw_values = []
+                raw_status = []
+                
                 for elem in series.iterchildren():
                     
                     if elem.tag == GENERIC + 'SeriesKey':
@@ -270,13 +295,22 @@ class SDMX_REST(object):
                                 for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
                                     namespaces=tree.nsmap):
                                     observation_status = elem2.get('value')
-                    raw_dates.append(dimension)
-                    raw_values.append(value)
-                    raw_status.append(observation_status)
+                        raw_dates.append(dimension)
+                        raw_values.append(value)
+                        raw_status.append(observation_status)
                 dates = pandas.to_datetime(raw_dates)
-                code_tuple = self.to_namedtuple(codes)
-                series_ = pandas.TimeSeries(raw_values, dates)
-                df[code_tuple] = series_ 
+                metadata = to_namedtuple(codes)
+                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64')
+                if with_status:
+                    col_index = pandas.MultiIndex(
+                        levels = [[metadata], ['values', 'status']],
+                        labels = [[0, 0], [0, 1]])
+                    list_item = pandas.DataFrame([value_series, raw_status], 
+                        columns = col_index)
+                else:
+                    value_series.name = metadata
+                    list_item = value_series
+                series_list.append(list_item) 
                 
         elif self.version == '2_0':
             resource = 'GenericData'
@@ -285,7 +319,7 @@ class SDMX_REST(object):
                 key__ += '&' + key_ + '=' + value_
             key = key__
 
-            if startperiod is not None and endperiod is not None:
+            if startperiod and endperiod:
                 query = (resource + '?dataflow=' + flowRef + key
                         + 'startperiod=' + startperiod
                         + '&endPeriod=' + endperiod)
@@ -297,7 +331,11 @@ class SDMX_REST(object):
             _metadata = []
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
-                codes = {}
+                raw_dates = []
+                raw_values = []
+                raw_status = []
+                
+                codes = OrderedDict()
                 for codes_ in series.iterfind(".//generic:SeriesKey",
                                            namespaces=tree.nsmap):
                     for key in codes_.iterfind(".//generic:Value",
@@ -323,44 +361,20 @@ class SDMX_REST(object):
                                 observation_status \
                                     = observation_status_.get('value')
 
-                    raw_dates.append(dimension)
-                    raw_values.append(value)
-                    raw_status.append(observation_status)
+                        raw_dates.append(dimension)
+                        raw_values.append(value)
+                        raw_status.append(observation_status)
                     
                 dates = pandas.to_datetime(raw_dates)
                 code_tuple = to_namedtuple(codes)
-                series_ = pandas.TimeSeries(raw_values, dates)
+                series_ = pandas.DataFrame(raw_values, index = dates)
                 df[code_tuple] = series_ 
-                
-                
+
         else: raise ValueError('Unsupported SDMX version: %s' % self.version)
-           
-        return df
+        
+        if concat: return pandas.concat(series_list, axis = 1)   
+        else: return series_list
 
-    def to_namedtuple(self, codes):
-        """
-        Convert a dict into a namedtuple. If there is not already 
-        a suitable class in 'tuple_classes', Create a new class first and append it to the list.
-            
-        return a namedtuple instance
-        """
-
-        for t in tuple_classes:
-                try:
-                    code_tuple = t(**codes)
-                    break
-                except TypeError:
-                    if t is tuple_classes[-1]: 
-                        tuple_classes.append(namedtuple(
-                        'CodeTuple' + str(len(tuple_classes)), codes.keys()))
-                        code_tuple = tuple_classes[-1](**codes)
-        else:
-            tuple_classes.append(namedtuple(
-                'CodeTuple' + str(len(tuple_classes)), codes.keys()))
-            code_tuple = tuple_classes[0](**codes)
-        print('.')
-        return code_tuple
-                
         
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
@@ -374,5 +388,5 @@ ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
 fao = SDMX_REST('http://data.fao.org/sdmx',
                      '2_1','FAO')
 
-d=eurostat.data('ei_mfir_m', '')
+d=eurostat.data('ei_nagt_q_r2', '', concat = False)  
 

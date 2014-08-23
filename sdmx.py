@@ -87,8 +87,8 @@ class SDMX_REST(object):
         self._dataflows = None
         self.version = version
 
-    @staticmethod
-    def query_rest(url):
+    
+    def query_rest(self, url, to_file = None, from_file = None):
         """Retrieve SDMX messages.
 
         :param url: The URL of the message.
@@ -97,10 +97,16 @@ class SDMX_REST(object):
         """
         parser = lxml.etree.XMLParser(
             ns_clean=True, recover=True, encoding='utf-8')
+        if from_file:
+            # Load data from local file and parse it. 
+            with open(from_file, 'b') as f:
+                return lxml.etree.fromstring(f.read(), parser = parser) 
+                    
+        # Fetch data from the provider    
         request = requests.get(url, timeout= 20)
         if request.status_code == requests.codes.ok:
-            response =  lxml.etree.fromstring(
-                request.text.encode('utf-8'), parser=parser)
+            response_str = request.text.encode('utf-8')
+            response = lxml.etree.fromstring(response_str, parser = parser)
         elif request.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
             messages = response.xpath('.//footer:Message/common:Text',
@@ -120,15 +126,23 @@ class SDMX_REST(object):
                         buffer = BytesIO(request.content)
                         file = zipfile.ZipFile(buffer)
                         filename = file.namelist()[0]
-                        response_ =  lxml.etree.fromstring(
-                            file.read(filename), parser=parser)
+                        response_str = file.read(filename)
+                        response_ = lxml.etree.fromstring(response_str, parser = parser)
                         break
                         if response_ is None:
-                            raise Exception("Eurostat didn't provide the file you are looking for.")
+                            raise Exception("The provider has not delivered the file you are looking for.")
             else:
                 raise ValueError("Error getting client({})".format(request.status_code))      
         else:
-            raise ValueError("Error getting client({})".format(request.status_code))      
+            raise ValueError("Error getting client({})".format(request.status_code))
+        if to_file:
+            if not isinstance(to_file, bool): # so it must be str or unicode
+                filename = to_file
+            else:
+                filename = self.agencyID + '.sdmx'
+            with open(filename, 'wb') as f:
+                f.write(response_str)
+                                     
         return response
 
     @property
@@ -243,7 +257,8 @@ class SDMX_REST(object):
 
 
     def data(self, flowRef, key, startperiod=None, endperiod=None, 
-                with_status = False, concat = False):
+        to_file = None, from_file = None, 
+        with_status = False, concat = False):
         """Get data
 
         :param flowRef: an identifier of the data
@@ -268,7 +283,7 @@ class SDMX_REST(object):
             else:
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
-            tree = self.query_rest(url)
+            tree = self.query_rest(url, to_file = to_file)
             GENERIC = '{'+tree.nsmap['generic']+'}'
             
             for series in tree.iterfind(".//generic:Series",
@@ -388,5 +403,5 @@ ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
 fao = SDMX_REST('http://data.fao.org/sdmx',
                      '2_1','FAO')
 
-d=eurostat.data('ei_nagt_q_r2', '', concat = False)  
+d=eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
 

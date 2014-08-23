@@ -99,7 +99,7 @@ class SDMX_REST(object):
             ns_clean=True, recover=True, encoding='utf-8')
         if from_file:
             # Load data from local file and parse it. 
-            with open(from_file, 'b') as f:
+            with open(from_file, 'rb') as f:
                 return lxml.etree.fromstring(f.read(), parser = parser) 
                     
         # Fetch data from the provider    
@@ -136,24 +136,20 @@ class SDMX_REST(object):
         else:
             raise ValueError("Error getting client({})".format(request.status_code))
         if to_file:
-            if not isinstance(to_file, bool): # so it must be str or unicode
-                filename = to_file
-            else:
-                filename = self.agencyID + '.sdmx'
-            with open(filename, 'wb') as f:
+            with open(to_file, 'wb') as f:
                 f.write(response_str)
                                      
         return response
 
     @property
-    def dataflows(self):
+    def dataflows(self, to_file = None, from_file = None):
         """Index of available dataflows
 
         :type: dict"""
         if not self._dataflows:
             if self.version == '2_1':
                 url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
-                tree = self.query_rest(url)
+                tree = self.query_rest(url, to_file = to_file, from_file = from_file)
                 dataflow_path = ".//str:Dataflow"
                 name_path = ".//com:Name"
                 if not self._dataflows:
@@ -172,7 +168,7 @@ class SDMX_REST(object):
                         self._dataflows[id] = (agencyID, version, titles)
             if self.version == '2_0':
                 url = '/'.join([self.sdmx_url, 'Dataflow'])
-                tree = self.query_rest(url)
+                tree = self.query_rest(url, to_file = to_file, from_file = from_file)
                 dataflow_path = ".//structure:Dataflow"
                 name_path = ".//structure:Name"
                 keyid_path = ".//structure:KeyFamilyID"
@@ -192,7 +188,7 @@ class SDMX_REST(object):
                         self._dataflows[id] = (agencyID, version, titles)
         return self._dataflows
 
-    def codes(self, flowRef):
+    def codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions
 
         Returns a dictionnary describing the available dimensions for a specific flowRef.
@@ -202,7 +198,7 @@ class SDMX_REST(object):
         :return: dict"""
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
-            tree = self.query_rest(url)
+            tree = self.query_rest(url, to_file = to_file, from_file = from_file)
             codelists_path = ".//str:Codelists"
             codelist_path = ".//str:Codelist"
             name_path = ".//com:Name"
@@ -283,7 +279,7 @@ class SDMX_REST(object):
             else:
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
-            tree = self.query_rest(url, to_file = to_file)
+            tree = self.query_rest(url, to_file = to_file, from_file = from_file)
             GENERIC = '{'+tree.nsmap['generic']+'}'
             
             for series in tree.iterfind(".//generic:Series",
@@ -303,7 +299,8 @@ class SDMX_REST(object):
                             observation_status = 'A'
                             if elem1.tag == GENERIC + 'ObsDimension':
                                 dimension = elem1.get('value')
-                                dimension = date_parser(dimension, codes['FREQ'])
+                                # I've commented this out as pandas.to_dates seems to do a better and much faster job.
+                                # dimension = date_parser(dimension, codes['FREQ'])
                             elif elem1.tag == GENERIC + 'ObsValue':
                                 value = elem1.get('value')
                             elif elem1.tag == GENERIC + 'Attibutes':
@@ -317,11 +314,13 @@ class SDMX_REST(object):
                 metadata = to_namedtuple(codes)
                 value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64')
                 if with_status:
+                    status_series = pandas.Series(raw_status, index = value_series.index)
                     col_index = pandas.MultiIndex(
                         levels = [[metadata], ['values', 'status']],
                         labels = [[0, 0], [0, 1]])
-                    list_item = pandas.DataFrame([value_series, raw_status], 
+                    list_item = pandas.DataFrame({(0,0) : value_series, (0,1) : status_series}, 
                         columns = col_index)
+                        # index = value_series.index)
                 else:
                     value_series.name = metadata
                     list_item = value_series
@@ -360,7 +359,8 @@ class SDMX_REST(object):
                                                    namespaces=tree.nsmap):
                     dimensions = observation.xpath(".//generic:Time",
                                                    namespaces=tree.nsmap)
-                    dimension = date_parser(dimensions[0].text, codes['FREQ'])
+                    # I've commented this out as pandas.to_dates seems to do a better job.
+                    # dimension = date_parser(dimensions[0].text, codes['FREQ'])
                     values = observation.xpath(".//generic:ObsValue",
                                                namespaces=tree.nsmap)
                     value = values[0].get('value')
@@ -403,5 +403,7 @@ ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
 fao = SDMX_REST('http://data.fao.org/sdmx',
                      '2_1','FAO')
 
-d=eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
+# This is for easier testing during development. 
+# Play around with the args concat, with_status, to_file and from_file, and remove this line before release.
+d=eurostat.data('ei_nagt_q_r2', '', concat = False, with_status = True, from_file = 'ESTAT.sdmx')  
 

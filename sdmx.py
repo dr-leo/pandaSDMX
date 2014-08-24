@@ -47,7 +47,8 @@ def to_namedtuple(codes):
             
         
         
-        
+        # This function is no longer used as pandas.to_dates seems to be much faster and powerful. 
+        # Remove it after more testing if it is really not needed. 
 def date_parser(date, frequency):
     """Generate proper index for pandas
 
@@ -254,7 +255,7 @@ class SDMX_REST(object):
 
     def data(self, flowRef, key, startperiod=None, endperiod=None, 
         to_file = None, from_file = None, 
-        with_status = False, concat = False):
+        concat = False):
         """Get data
 
         :param flowRef: an identifier of the data
@@ -265,7 +266,24 @@ class SDMX_REST(object):
         :type startperiod: datetime.datetime()
         :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
         :type endperiod: datetime.datetime()
-        :return: DataFrame whose column index are namedtuples storing the full metadata.
+        :param to_file: if it is a string, the xml file is, after parsing it,
+        written to a file with this name. Default: None
+        :param from_file: if it is a string, the xml file is read from a file with that name instead of
+        requesting the data via http. Default: None
+        :concat: If True, generate a multi-indexed DataFrame 
+        instead of a list of Series. Default: False
+        
+        :return: if concat is False: a list of TimeSeries. Their
+        name attribute contains a namedtuple with the full metadata for each series.
+        If concat is True: return a tuple of 2 items:
+        Item 0: dict of global metadata describing all series of the 
+        requested dataset.
+        Item 1: multi-indexed DataFrame. Its structure can be derived from:
+        - df.columns.names
+        - df.columns.levels
+        Access individual serieses or groups of series by doing something like:
+        df[('PC_GDP', 'F4', 'FR')]
+        See the pandas docs on multi-indexes for more information.  
         """
        
         series_list = [] 
@@ -289,7 +307,6 @@ class SDMX_REST(object):
                 raw_status = []
                 
                 for elem in series.iterchildren():
-                    
                     if elem.tag == GENERIC + 'SeriesKey':
                         codes = OrderedDict()
                         for value in elem.iter(GENERIC + "Value"):
@@ -312,19 +329,8 @@ class SDMX_REST(object):
                         raw_status.append(observation_status)
                 dates = pandas.to_datetime(raw_dates)
                 metadata = to_namedtuple(codes)
-                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64')
-                if with_status:
-                    status_series = pandas.Series(raw_status, index = value_series.index)
-                    col_index = pandas.MultiIndex(
-                        levels = [[metadata], ['values', 'status']],
-                        labels = [[0, 0], [0, 1]])
-                    list_item = pandas.DataFrame({(0,0) : value_series, (0,1) : status_series}, 
-                        columns = col_index)
-                        # index = value_series.index)
-                else:
-                    value_series.name = metadata
-                    list_item = value_series
-                series_list.append(list_item) 
+                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = metadata)
+                series_list.append(value_series)
                 
         elif self.version == '2_0':
             resource = 'GenericData'
@@ -341,8 +347,7 @@ class SDMX_REST(object):
                 query = resource + '?dataflow=' + flowRef + key
             url = '/'.join([self.sdmx_url,query])
             tree = self.query_rest(url)
-            _time_series = []
-            _metadata = []
+
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
                 raw_dates = []
@@ -379,18 +384,62 @@ class SDMX_REST(object):
                         raw_dates.append(dimension)
                         raw_values.append(value)
                         raw_status.append(observation_status)
-                    
                 dates = pandas.to_datetime(raw_dates)
-                code_tuple = to_namedtuple(codes)
-                series_ = pandas.DataFrame(raw_values, index = dates)
-                df[code_tuple] = series_ 
-
+                metadata = to_namedtuple(codes)
+                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = metadata)
+                series_list.append(value_series)
+              
         else: raise ValueError('Unsupported SDMX version: %s' % self.version)
         
-        if concat: return pandas.concat(series_list, axis = 1)   
-        else: return series_list
-
+        if concat:
+            return self.make_dataframe(series_list)
+        else:
+            return series_list
+                               
+                
+    def make_dataframe(self, series_list):
+        '''
+        return a tuple: 
+        first item: dict of codes 
+        describing all series.
+        Second item: DataFrame of all Series multi-indexed by 
+        the series' metadata.
+        '''
         
+        # Construct the multi-index from the non-global codes, i.e. those having more than 1 value.
+        # We use a dict mapping each key to a set of all its actual values.
+        # Gleen the keys from the first series in the list. 
+        # We assume that keys are the same for all series.
+        code_sets = series_list[0].name._asdict()
+        for key in code_sets:
+            code_sets[key] = set([getattr(s.name, key) for s in series_list])
+        global_codes = {k : getattr(series_list[0].name, k) for k in code_sets 
+                            if len(code_sets[k]) == 1}
+        # Remove the sets with only 1 element
+        for k in global_codes: code_sets.pop(k)
+        # pandas cannot digest sets. So convert them to lists.
+        for k in code_sets: 
+            code_sets[k] = list(code_sets[k])
+            # Construct the multi-index from the Cartesian product of the sets.
+            # This may generate too many columns if not all possible 
+            # tuples are needed. But it seems very difficult to construct a
+            # minimal multi-index from the series_list.
+            # Another useful feature would be to reorder the levels of the multi-index. Currently
+            # they are determined by the order found in the xml file which is preserved by the OrderedDicts, here
+            # the 'name' attribute of each series. But it could be useful to allow the
+            # user to reorder them or reorder them automatically, e.g. by length of the value sets.    
+        column_index = pandas.MultiIndex.from_product(code_sets.values())
+        column_index.names = code_sets.keys()
+        df = pandas.DataFrame(columns = column_index, index = series_list[0].index)
+        for s in series_list:
+            codes = s.name._asdict()
+            for k in global_codes: codes.pop(k)
+            s.name = None
+            column_pos = tuple(codes.values())
+            df[column_pos] = s
+              
+        return global_codes, df
+
 
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                      '2_1','ESTAT')
@@ -403,7 +452,7 @@ ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
 fao = SDMX_REST('http://data.fao.org/sdmx',
                      '2_1','FAO')
 
-# This is for easier testing during development. 
-# Play around with the args concat, with_status, to_file and from_file, and remove this line before release.
-d=eurostat.data('ei_nagt_q_r2', '', concat = False, with_status = True, from_file = 'ESTAT.sdmx')  
+# This is for easier testing during development. Run it as a script. 
+# Play around with the args concat, to_file and from_file, and remove this line before release.
+# d=eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
 

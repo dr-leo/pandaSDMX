@@ -6,7 +6,7 @@ import os
 
 # Publish README on PYPI when uploading.
 # Need to expand it and rewrite it in reStructuredText 
-long_descr = open('README.MD', 'r').read()
+long_descr = open('README.md', 'r').read()
 
 setup(name='pysdmx',
 	version='0.1',

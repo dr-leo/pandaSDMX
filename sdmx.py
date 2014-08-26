@@ -1,4 +1,4 @@
-    #! /usr/bin/env python3
+        #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 .. module:: pysdmx
@@ -328,8 +328,7 @@ class SDMX_REST(object):
                         raw_values.append(value)
                         raw_status.append(observation_status)
                 dates = pandas.to_datetime(raw_dates)
-                metadata = to_namedtuple(codes)
-                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = metadata)
+                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = codes)
                 series_list.append(value_series)
                 
         elif self.version == '2_0':
@@ -385,19 +384,18 @@ class SDMX_REST(object):
                         raw_values.append(value)
                         raw_status.append(observation_status)
                 dates = pandas.to_datetime(raw_dates)
-                metadata = to_namedtuple(codes)
-                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = metadata)
+                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = codes)
                 series_list.append(value_series)
               
-        else: raise ValueError('Unsupported SDMX version: %s' % self.version)
+        else: raise ValueError("SDMX version must be either '2_0' or '2_1'. %s given." % self.version)
         
         if concat:
-            return self.make_dataframe(series_list)
+            return self.make_dataframe(series_list, concat)
         else:
             return series_list
                                
                 
-    def make_dataframe(self, series_list):
+    def make_dataframe(self, series_list, concat):
         '''
         return a tuple: 
         first item: dict of codes 
@@ -406,41 +404,48 @@ class SDMX_REST(object):
         the series' metadata.
         '''
         
+        # Handle empty lists
+        if series_list == []:
+            return {}, pandas.DataFrame()
         # Construct the multi-index from the non-global codes, i.e. those having more than 1 value.
         # We use a dict mapping each key to a set of all its actual values.
         # Gleen the keys from the first series in the list. 
         # We assume that keys are the same for all series.
-        code_sets = series_list[0].name._asdict()
-        for key in code_sets:
-            code_sets[key] = set([getattr(s.name, key) for s in series_list])
-        global_codes = {k : getattr(series_list[0].name, k) for k in code_sets 
+        code_sets = {k : list(set([s.name[k] for s in series_list])) 
+                     for k in series_list[0].name}
+            
+        global_codes = {k : code_sets[k][0] for k in code_sets 
                             if len(code_sets[k]) == 1}
-        # Remove the sets with only 1 element
+        # Remove global codes as they should not lead to index levels in the DataFrame 
         for k in global_codes: code_sets.pop(k)
-        # pandas cannot digest sets. So convert them to lists.
-        for k in code_sets: 
-            code_sets[k] = list(code_sets[k])
-            # Construct the multi-index from the Cartesian product of the sets.
-            # This may generate too many columns if not all possible 
-            # tuples are needed. But it seems very difficult to construct a
-            # minimal multi-index from the series_list.
-            # Another useful feature would be to reorder the levels of the multi-index. Currently
-            # they are determined by the order found in the xml file which is preserved by the OrderedDicts, here
-            # the 'name' attribute of each series. But it could be useful to allow the
-            # user to reorder them or reorder them automatically, e.g. by length of the value sets.    
-        column_index = pandas.MultiIndex.from_product(code_sets.values())
-        column_index.names = code_sets.keys()
+        
+        # Sort the keys with llargest set first unless concat defines the order. 
+        if concat == True:
+            lengths = [(len(code_sets[k]), k) for k in code_sets]
+            lengths.sort(reverse = True)
+            sorted_keys = [k[1] for k in lengths]
+        else: # so concat must be a list containing exactly the non-global keys in the desired order
+            # Remove any global codes from the list
+            sorted_keys = [k for k in concat if k not in global_codes.keys()] 
+            
+        # Construct the multi-index from the Cartesian product of the sets.
+        # This may generate too many columns if not all possible 
+        # tuples are needed. But it seems very difficult to construct a
+        # minimal multi-index from the series_list.
+        column_index = pandas.MultiIndex.from_product(
+            [code_sets[k] for k in sorted_keys])
+        column_index.names = sorted_keys 
         df = pandas.DataFrame(columns = column_index, index = series_list[0].index)
+            # Add the series to the DataFrame. Generate column keys from the metadata        
         for s in series_list:
-            codes = s.name._asdict()
-            for k in global_codes: codes.pop(k)
-            s.name = None
-            column_pos = tuple(codes.values())
-            df[column_pos] = s
+            column_pos = [s.name[k] for k in sorted_keys]
+            # s.name = None 
+            df[tuple(column_pos)] = s
               
-        return global_codes, df
-
-
+        return df, global_codes
+    
+    
+    
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                      '2_1','ESTAT')
 eurostat_test = SDMX_REST('http://localhost:8800/eurostat',
@@ -454,5 +459,5 @@ fao = SDMX_REST('http://data.fao.org/sdmx',
 
 # This is for easier testing during development. Run it as a script. 
 # Play around with the args concat, to_file and from_file, and remove this line before release.
-# d=eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
-
+d=eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
+        

@@ -11,11 +11,10 @@
 import requests
 import pandas
 import lxml.etree
-import datetime
+import datetime, time
 from io import BytesIO
 import re
 import zipfile
-import time
 from collections import OrderedDict, namedtuple
 
 
@@ -270,20 +269,19 @@ class SDMX_REST(object):
         written to a file with this name. Default: None
         :param from_file: if it is a string, the xml file is read from a file with that name instead of
         requesting the data via http. Default: None
-        :concat: If True, generate a multi-indexed DataFrame 
-        instead of a list of Series. Default: False
+        :concat: If False, return a tuple (l, d) where
+        l is a list of the series whose name attributes contain 
+        the metadata as namedtuple, and d is a dict containing any global metadata.
+        If True: return a tuple (df, d) where df is a pandas.DataFrame
+        with hierarchical index generated from the metadata. Explore the
+        structure by issuing 'df.columns.names' and 'df.columns.levels'.
+        The order of index levels is determined by the number of actual values 
+        found in the series' metadata for each key.
+        If concat is a list of metadata keys, they determine the order of index levels.
+        d: a dict of global metadata.    
         
-        :return: if concat is False: a list of TimeSeries. Their
-        name attribute contains a namedtuple with the full metadata for each series.
-        If concat is True: return a tuple of 2 items:
-        Item 0: dict of global metadata describing all series of the 
-        requested dataset.
-        Item 1: multi-indexed DataFrame. Its structure can be derived from:
-        - df.columns.names
-        - df.columns.levels
-        Access individual serieses or groups of series by doing something like:
-        df[('PC_GDP', 'F4', 'FR')]
-        See the pandas docs on multi-indexes for more information.  
+        return tuple of the form (l, d) or (df, d)
+        depending on the value of 'concat'.
         """
        
         series_list = [] 
@@ -388,29 +386,14 @@ class SDMX_REST(object):
                 series_list.append(value_series)
               
         else: raise ValueError("SDMX version must be either '2_0' or '2_1'. %s given." % self.version)
-        
-        if concat:
-            return self.make_dataframe(series_list, concat)
-        else:
-            return series_list
-                               
-                
-    def make_dataframe(self, series_list, concat):
-        '''
-        return a tuple: 
-        first item: dict of codes 
-        describing all series.
-        Second item: DataFrame of all Series multi-indexed by 
-        the series' metadata.
-        '''
-        
         # Handle empty lists
-        if series_list == []:
-            return {}, pandas.DataFrame()
-        # Construct the multi-index from the non-global codes, i.e. those having more than 1 value.
-        # We use a dict mapping each key to a set of all its actual values.
-        # Gleen the keys from the first series in the list. 
-        # We assume that keys are the same for all series.
+        if series_list == []: 
+            if concat:
+                return pandas.DataFrame(), {}
+            else:
+                return [], {}
+            
+        # Prepare the codes, remove global codes applying to all series.
         code_sets = {k : list(set([s.name[k] for s in series_list])) 
                      for k in series_list[0].name}
             
@@ -419,31 +402,37 @@ class SDMX_REST(object):
         # Remove global codes as they should not lead to index levels in the DataFrame 
         for k in global_codes: code_sets.pop(k)
         
-        # Sort the keys with llargest set first unless concat defines the order. 
-        if concat == True:
-            lengths = [(len(code_sets[k]), k) for k in code_sets]
-            lengths.sort(reverse = True)
-            sorted_keys = [k[1] for k in lengths]
-        else: # so concat must be a list containing exactly the non-global keys in the desired order
-            # Remove any global codes from the list
-            sorted_keys = [k for k in concat if k not in global_codes.keys()] 
+        if concat:
+            # Sort the keys with llargest set first unless concat defines the order. 
+            if concat == True:
+                lengths = [(len(code_sets[k]), k) for k in code_sets]
+                lengths.sort(reverse = True)
+                sorted_keys = [k[1] for k in lengths]
+            else: # so concat must be a list containing exactly the non-global keys in the desired order
+                # Remove any global codes from the list
+                sorted_keys = [k for k in concat if k not in global_codes.keys()] 
+                
+            # Construct the multi-index from the Cartesian product of the sets.
+            # This may generate too many columns if not all possible 
+            # tuples are needed. But it seems very difficult to construct a
+            # minimal multi-index from the series_list.
+            column_index = pandas.MultiIndex.from_product(
+                [code_sets[k] for k in sorted_keys])
+            column_index.names = sorted_keys 
+            df = pandas.DataFrame(columns = column_index, index = series_list[0].index)
+                # Add the series to the DataFrame. Generate column keys from the metadata        
+            for s in series_list:
+                column_pos = [s.name[k] for k in sorted_keys]
+                # s.name = None 
+                df[tuple(column_pos)] = s
+            return df, global_codes
             
-        # Construct the multi-index from the Cartesian product of the sets.
-        # This may generate too many columns if not all possible 
-        # tuples are needed. But it seems very difficult to construct a
-        # minimal multi-index from the series_list.
-        column_index = pandas.MultiIndex.from_product(
-            [code_sets[k] for k in sorted_keys])
-        column_index.names = sorted_keys 
-        df = pandas.DataFrame(columns = column_index, index = series_list[0].index)
-            # Add the series to the DataFrame. Generate column keys from the metadata        
-        for s in series_list:
-            column_pos = [s.name[k] for k in sorted_keys]
-            # s.name = None 
-            df[tuple(column_pos)] = s
-              
-        return df, global_codes
-    
+        else:
+            # Prepare the metadata of each series
+            for s in series_list:
+                for k in global_codes: s.name.pop(k)
+                s.name = to_namedtuple(s.name)             
+            return series_list, global_codes
     
     
 eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',

@@ -21,23 +21,27 @@ from collections import OrderedDict, namedtuple
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
 tuple_classes = []
 
-def to_namedtuple(codes):
+def to_namedtuple(mapping):
     """
-    Convert a dict into a namedtuple. If there is not already 
+    Convert a list of (key,value) tuples into a namedtuple. If there is not already 
     a suitable class in 'tuple_classes', Create a new class first and append it to the list.
         
     return a namedtuple instance
     """
-
+    # convert to OrderedDict
+    codes = OrderedDict()
+    for k,v in mapping: 
+        codes[k] = v
+    # Check if there is already a suitable class
     for t in tuple_classes:
-            try:
-                code_tuple = t(**codes)
-                break
-            except TypeError:
-                if t is tuple_classes[-1]: 
-                    tuple_classes.append(namedtuple(
-                    'CodeTuple' + str(len(tuple_classes)), codes.keys()))
-                    code_tuple = tuple_classes[-1](**codes)
+        try:
+            code_tuple = t(**codes)
+            break
+        except TypeError:
+            if t is tuple_classes[-1]: 
+                tuple_classes.append(namedtuple(
+                'CodeTuple' + str(len(tuple_classes)), codes.keys()))
+                code_tuple = tuple_classes[-1](**codes)
     else:
         tuple_classes.append(namedtuple(
             'CodeTuple' + str(len(tuple_classes)), codes.keys()))
@@ -306,7 +310,7 @@ class SDMX_REST(object):
                 
                 for elem in series.iterchildren():
                     if elem.tag == GENERIC + 'SeriesKey':
-                        codes = OrderedDict()
+                        codes = {}
                         for value in elem.iter(GENERIC + "Value"):
                             codes[value.get('id')] = value.get('value')
                     elif elem.tag == GENERIC + 'Obs':
@@ -351,7 +355,7 @@ class SDMX_REST(object):
                 raw_values = []
                 raw_status = []
                 
-                codes = OrderedDict()
+                codes = {}
                 for codes_ in series.iterfind(".//generic:SeriesKey",
                                            namespaces=tree.nsmap):
                     for key in codes_.iterfind(".//generic:Value",
@@ -402,20 +406,20 @@ class SDMX_REST(object):
         # Remove global codes as they should not lead to index levels in the DataFrame 
         for k in global_codes: code_sets.pop(k)
         
-        if concat:
-            # Sort the keys with llargest set first unless concat defines the order. 
-            if concat == True:
-                lengths = [(len(code_sets[k]), k) for k in code_sets]
-                lengths.sort(reverse = True)
-                sorted_keys = [k[1] for k in lengths]
-            else: # so concat must be a list containing exactly the non-global keys in the desired order
-                # Remove any global codes from the list
-                sorted_keys = [k for k in concat if k not in global_codes.keys()] 
-                
+        if type(concat) == bool:
+            # Sort the keys with llargest set first unless concat defines the order through a list. 
+            lengths = [(len(code_sets[k]), k) for k in code_sets]
+            lengths.sort(reverse = True)
+            sorted_keys = [k[1] for k in lengths]
+        else: # so concat must be a list containing exactly the non-global keys in the desired order
+            # Remove any global codes from the list
+            sorted_keys = [k for k in concat if k not in global_codes.keys()] 
+        if concat:    
             # Construct the multi-index from the Cartesian product of the sets.
             # This may generate too many columns if not all possible 
             # tuples are needed. But it seems very difficult to construct a
             # minimal multi-index from the series_list.
+            
             column_index = pandas.MultiIndex.from_product(
                 [code_sets[k] for k in sorted_keys])
             column_index.names = sorted_keys 
@@ -428,10 +432,11 @@ class SDMX_REST(object):
             return df, global_codes
             
         else:
-            # Prepare the metadata of each series
+            # Create a list of Series
+            # Prepare the sorted metadata of each series
             for s in series_list:
                 for k in global_codes: s.name.pop(k)
-                s.name = to_namedtuple(s.name)             
+                s.name = to_namedtuple([(k, s.name[k]) for k in sorted_keys])             
             return series_list, global_codes
     
     
@@ -448,5 +453,5 @@ fao = SDMX_REST('http://data.fao.org/sdmx',
 
 # This is for easier testing during development. Run it as a script. 
 # Play around with the args concat, to_file and from_file, and remove this line before release.
-d=eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
+d=eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
         

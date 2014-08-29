@@ -92,25 +92,39 @@ class SDMX_REST(object):
         self.version = version
 
     
-    def query_rest(self, url, to_file = None, from_file = None):
+    def get_tree(self, url, to_file = None, from_file = None):
+        '''
+        Read xml data from URL or local file.
+        Store the fetched string in a local file if specified to save download time next time.
+        Return lxml ElementTree instance after parsing
+        Raise error if file could not be obtained.
+ '''
+        if from_file:
+            # Load data from local file 
+            with open(from_file, 'rb') as f:
+                xml_str = f.read()
+        else:
+            xml_str = self.request(url)
+        parser = lxml.etree.XMLParser(
+            ns_clean=True, recover=True, encoding='utf-8')
+        tree = lxml.etree.fromstring(xml_str, parser = parser)
+        if to_file:
+            with open(to_file, 'wb') as f:
+                f.write(xml_str)
+        return tree
+         
+    
+    def request(self, url):
         """Retrieve SDMX messages.
 
         :param url: The URL of the message.
         :type url: str
-        :return: An lxml.etree.ElementTree() of the SDMX message
+        :return: the xml data as string
         """
-        parser = lxml.etree.XMLParser(
-            ns_clean=True, recover=True, encoding='utf-8')
-        if from_file:
-            # Load data from local file and parse it. 
-            with open(from_file, 'rb') as f:
-                return lxml.etree.fromstring(f.read(), parser = parser) 
-                    
-        # Fetch data from the provider    
+        
         request = requests.get(url, timeout= 20)
         if request.status_code == requests.codes.ok:
             response_str = request.text.encode('utf-8')
-            response = lxml.etree.fromstring(response_str, parser = parser)
         elif request.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
             messages = response.xpath('.//footer:Message/common:Text',
@@ -119,7 +133,7 @@ class SDMX_REST(object):
                                 "to a file which will be located under URL: (.*)")
             matches = [regex_.match(element.text) for element in messages]
             if bool(matches):
-                response_ = None
+                response_str = None
                 i = 30
                 while i<101:
                     time.sleep(i)
@@ -131,21 +145,15 @@ class SDMX_REST(object):
                         file = zipfile.ZipFile(buffer)
                         filename = file.namelist()[0]
                         response_str = file.read(filename)
-                        response_ = lxml.etree.fromstring(response_str, parser = parser)
                         break
-                        if response_ is None:
-                            raise Exception("The provider has not delivered the file you are looking for.")
+                        if response_str is None:
+                            raise Exception("The web server didn't provide the file you are looking for.")
             else:
                 raise ValueError("Error getting client({})".format(request.status_code))      
         else:
-            raise ValueError("Error getting client({})".format(request.status_code))
-        if to_file:
-            with open(to_file, 'wb') as f:
-                f.write(response_str)
-                                     
-        return response
-
-    @property
+            raise ValueError("Error getting client({})".format(request.status_code))      
+        return response_str
+    
     def dataflows(self, to_file = None, from_file = None):
         """Index of available dataflows
 
@@ -153,7 +161,7 @@ class SDMX_REST(object):
         if not self._dataflows:
             if self.version == '2_1':
                 url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
-                tree = self.query_rest(url, to_file = to_file, from_file = from_file)
+                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
                 dataflow_path = ".//str:Dataflow"
                 name_path = ".//com:Name"
                 if not self._dataflows:
@@ -172,7 +180,7 @@ class SDMX_REST(object):
                         self._dataflows[id] = (agencyID, version, titles)
             if self.version == '2_0':
                 url = '/'.join([self.sdmx_url, 'Dataflow'])
-                tree = self.query_rest(url, to_file = to_file, from_file = from_file)
+                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
                 dataflow_path = ".//structure:Dataflow"
                 name_path = ".//structure:Name"
                 keyid_path = ".//structure:KeyFamilyID"
@@ -202,7 +210,7 @@ class SDMX_REST(object):
         :return: dict"""
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
-            tree = self.query_rest(url, to_file = to_file, from_file = from_file)
+            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             codelists_path = ".//str:Codelists"
             codelist_path = ".//str:Codelist"
             name_path = ".//com:Name"
@@ -233,7 +241,7 @@ class SDMX_REST(object):
             code_path = ".//structure:Code"
             description_path = ".//structure:Description"
             url = '/'.join([self.sdmx_url, 'KeyFamily', flowRef])
-            tree = self.query_rest(url)
+            tree = self.get_tree(url)
             self._codes = {}
             codelists = tree.xpath(codelists_path,
                                           namespaces=tree.nsmap)
@@ -299,7 +307,7 @@ class SDMX_REST(object):
             else:
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
-            tree = self.query_rest(url, to_file = to_file, from_file = from_file)
+            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             GENERIC = '{'+tree.nsmap['generic']+'}'
             
             for series in tree.iterfind(".//generic:Series",
@@ -347,7 +355,7 @@ class SDMX_REST(object):
             else:
                 query = resource + '?dataflow=' + flowRef + key
             url = '/'.join([self.sdmx_url,query])
-            tree = self.query_rest(url)
+            tree = self.get_tree(url)
 
             for series in tree.iterfind(".//generic:Series",
                                              namespaces=tree.nsmap):
@@ -453,5 +461,5 @@ fao = SDMX_REST('http://data.fao.org/sdmx',
 
 # This is for easier testing during development. Run it as a script. 
 # Play around with the args concat, to_file and from_file, and remove this line before release.
-d=eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
+d,meta =eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
         

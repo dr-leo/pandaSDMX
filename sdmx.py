@@ -9,13 +9,16 @@
 """
 
 import requests
-import pandas
+import pandas as PD
+import numpy as NP
 import lxml.etree
-import datetime, time
+import sqlite3
 from io import BytesIO
-import re
-import zipfile
+import re, zipfile
 from collections import OrderedDict, namedtuple
+
+
+__all__ = ['eurostat', 'ecb', 'fao', 'ilo']
 
 
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
@@ -49,34 +52,7 @@ def to_namedtuple(mapping):
     return code_tuple
             
         
-        
-        # This function is no longer used as pandas.to_dates seems to be much faster and powerful. 
-        # Remove it after more testing if it is really not needed. 
-def date_parser(date, frequency):
-    """Generate proper index for pandas
-
-    :param date: A date
-    :type date: str
-    :param frequency: A frequency as specified in SDMX, A for Annual, Q for Quarterly, M for Monthly and D for Daily
-    :type frequency: str
-    :return: datetime.datetime()
-
-    >>> date_parser('1987-02-02','D')
-    datetime.datetime(1987, 2, 2, 0, 0)
-    """
-
-    if frequency == 'A':
-        return datetime.datetime.strptime(date, '%Y')
-    if frequency == 'Q':
-        date = date.split('-Q')
-        date = str(int(date[1])*3) + date[0]
-        return datetime.datetime.strptime(date, '%m%Y')
-    if frequency == 'M':
-        return datetime.datetime.strptime(date, '%Y-%m')
-    if frequency == 'D':
-        return datetime.datetime.strptime(date, '%Y-%m-%d')
-
-
+               
 class SDMX_REST(object):
     """Data provider. This is the main class that allows practical access to all the data.
 
@@ -88,7 +64,6 @@ class SDMX_REST(object):
     def __init__(self, sdmx_url, version, agencyID):
         self.sdmx_url = sdmx_url
         self.agencyID = agencyID
-        self._dataflows = None
         self.version = version
 
     
@@ -115,7 +90,9 @@ class SDMX_REST(object):
          
     
     def request(self, url):
-        """Retrieve SDMX messages.
+        """
+        Retrieve SDMX messages.
+        If needed, override in subclasses to support other data providers.
 
         :param url: The URL of the message.
         :type url: str
@@ -124,16 +101,19 @@ class SDMX_REST(object):
         
         request = requests.get(url, timeout= 20)
         if request.status_code == requests.codes.ok:
-            response_str = request.text.encode('utf-8')
+            xml_str = request.text.encode('utf-8')
         elif request.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
-            messages = response.xpath('.//footer:Message/common:Text',
-                                      namespaces=response.nsmap)
+            parser = lxml.etree.XMLParser(
+                                          ns_clean=True, recover=True, encoding='utf-8')
+            tree = lxml.etree.fromstring(xml_str, parser = parser)
+            messages = tree.xpath('.//footer:Message/common:Text',
+                                      namespaces = tree.nsmap)
             regex_ = re.compile("Due to the large query the response will be written "
                                 "to a file which will be located under URL: (.*)")
             matches = [regex_.match(element.text) for element in messages]
-            if bool(matches):
-                response_str = None
+            if matches:
+                xml_str = None
                 i = 30
                 while i<101:
                     time.sleep(i)
@@ -144,61 +124,138 @@ class SDMX_REST(object):
                         buffer = BytesIO(request.content)
                         file = zipfile.ZipFile(buffer)
                         filename = file.namelist()[0]
-                        response_str = file.read(filename)
+                        xml_str = file.read(filename)
                         break
-                        if response_str is None:
+                        if xml_str is None:
                             raise Exception("The web server didn't provide the file you are looking for.")
             else:
                 raise ValueError("Error getting client({})".format(request.status_code))      
         else:
             raise ValueError("Error getting client({})".format(request.status_code))      
-        return response_str
+        return xml_str
     
-    def dataflows(self, to_file = None, from_file = None):
-        """Index of available dataflows
+    
+    def _init_database(self, filename, tablename):
+        '''
+        Helper method to initialize database.
+        Called by dataflows()
+        Return: sqlite3.Connection
+        '''
+        conn = sqlite3.connect(filename)
+        conn.row_factory = sqlite3.Row
+        # Check if table already exists
+        contents = conn.execute('select * from SQLITE_MASTER')
+        exists = [row for row in contents
+            if row['type'] == 'table' and row['name'] == tablename]
+        if not exists:
+            conn.execute(u'''create table {0} 
+                (id primary key, agency, version, title)'''.format( 
+                tablename))
+        return conn
 
-        :type: dict"""
-        if not self._dataflows:
-            if self.version == '2_1':
-                url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
-                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+    def dataflows(self, language = 'en', to_file = ':memory:', from_file = None,
+                  table = None):
+        """
+        Get list of available dataflows 
+        Arguments:
+        :param: language: keyword argument specifying the language of the 
+        dataflow titles to be stored. This feature is not supported by 
+        SDMX v2.0.  
+        Used only when sqlite3 is used to store
+        the data. See the semantics of the 'to_file' argument.
+        Defaults to 'en' for English.
+        :type: str
+        :param: to_file: keyword argument specifying the filename of a file 
+        to write the dataflows list to. If it ends with '.xml',
+        the requested xml file is stored locally and None is returned. 
+        Otherwise an sqlite database is created and the dataflows are inserted 
+        into a table whose name is specified by the 'table' argument.
+        If that table does not yet exist, it is first created.
+        (defaults to ':memory:' for an in memory sqlite database.
+        :type: str
+        :param: 'from_file': Read the xml data from an xml file rather than 
+        requesting the xml data via http from the data provider. 
+        By convention, 'from_file' should have the 
+        extension '.xml' as such file can conveniently be written by passing
+        a filename through the 'to_file' keyword argument.    
+        Use 'sqlite3.connect()' to connect to an existing database containing dataflows.
+        :param: table: name of the table into which the dataflow descriptions will be inserted.
+        If the database does not contain a table of this name, it is first created.
+        Defaults to self.agencyID
+        :type: str 
+     
+        return: sqlite3.Connection or None (if data is written to '.xml' file
+        """
+        
+        # Write to local xml file if file extension is '.xml'. 
+        # Otherwise write the dataflows to an existing or newly created 
+        # sqlite database with the specified filename.
+        if to_file.endswith('.xml'):
+            to_file_arg = to_file # will be passed to get_tree() 
+        else:
+            to_file_arg = None # do not store the xml file as we use sqlite
+            if not table: table = self.agencyID # set to default 
+            
+        if self.version == '2_1':
+            url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
+            tree = self.get_tree(url, to_file = to_file_arg, from_file = from_file)
+            if to_file_arg:
+                # local .xml file has already been stored. So do nothing.
+                return None
+            else: 
+                # Init the database and store 
+                # the parsed data in it
+                conn = self._init_database(to_file, table)
+                cur = conn.cursor()
                 dataflow_path = ".//str:Dataflow"
                 name_path = ".//com:Name"
-                if not self._dataflows:
-                    self._dataflows = {}
-                    for dataflow in tree.iterfind(dataflow_path,
-                                                       namespaces=tree.nsmap):
-                        id = dataflow.get('id')
-                        agencyID = dataflow.get('agencyID')
-                        version = dataflow.get('version')
-                        titles = {}
-                        for title in dataflow.iterfind(name_path,
-                                                       namespaces=tree.nsmap):
-                            language = title.values()
-                            language = language[0]
-                            titles[language] = title.text
-                        self._dataflows[id] = (agencyID, version, titles)
-            if self.version == '2_0':
-                url = '/'.join([self.sdmx_url, 'Dataflow'])
-                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+                for dataflow in tree.iterfind(dataflow_path,
+                                                   namespaces=tree.nsmap):
+                    id = dataflow.get('id')
+                    agencyID = dataflow.get('agencyID')
+                    version = dataflow.get('version')
+                    for title in dataflow.iterfind(name_path,
+                                                   namespaces=tree.nsmap):
+                        descr_lang = title.values()[0]
+                        if descr_lang == language: 
+                            row = ('"' + id + '"', '"' + agencyID + '"', 
+                                   version, '"""' + title.text + '"""')
+                            cur.execute(u'''INSERT INTO {0} VALUES 
+                            ({1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
+                                           self.agencyID, row))
+                    
+        elif self.version == '2_0':
+            url = '/'.join([self.sdmx_url, 'Dataflow'])
+            tree = self.get_tree(url, to_file = to_file_arg, from_file = from_file)
+            if to_file_arg:
+                # local .xml file has already been stored. So do nothing.
+                return None
+            else: 
+                # Init the database and store 
+                # the parsed data in it
+                conn = self._init_database(to_file, table)
+                cur = conn.cursor()
                 dataflow_path = ".//structure:Dataflow"
                 name_path = ".//structure:Name"
                 keyid_path = ".//structure:KeyFamilyID"
-                if not self._dataflows:
-                    self._dataflows = {}
-                    for dataflow in tree.iterfind(dataflow_path,
-                                                       namespaces=tree.nsmap):
-                        for id in dataflow.iterfind(keyid_path,
-                                                       namespaces=tree.nsmap):
-                            id = id.text
-                        agencyID = dataflow.get('agencyID')
-                        version = dataflow.get('version')
-                        titles = {}
-                        for title in dataflow.iterfind(name_path,
-                                                       namespaces=tree.nsmap):
-                            titles['en'] = title.text
-                        self._dataflows[id] = (agencyID, version, titles)
-        return self._dataflows
+                for dataflow in tree.iterfind(dataflow_path,
+                                                   namespaces=tree.nsmap):
+                    for id in dataflow.iterfind(keyid_path,
+                                                   namespaces=tree.nsmap):
+                        key = id.text
+                    agencyID = dataflow.get('agencyID')
+                    version = dataflow.get('version')
+                    for title in dataflow.iterfind(name_path,
+                                                   namespaces=tree.nsmap):
+                        row = ('"' + key + '"', '"' + agencyID + '"', 
+                                   version, '"""' + title.text + '"""')
+                        cur.execute(u'''INSERT INTO {0} VALUES 
+                            ({1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
+                            self.agencyID, row))
+
+                        
+        conn.commit()        
+        return conn 
 
     def codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions
@@ -206,8 +263,10 @@ class SDMX_REST(object):
         Returns a dictionnary describing the available dimensions for a specific flowRef.
 
         :param flowRef: Identifier of the dataflow
-        :type flowRef: str
+        :type flowRef: str or sqlite3.Row
         :return: dict"""
+        if isinstance(flowRef, sqlite3.Row):
+            flowRef = flowRef['id']
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
             tree = self.get_tree(url, to_file = to_file, from_file = from_file)
@@ -270,7 +329,8 @@ class SDMX_REST(object):
         """Get data
 
         :param flowRef: an identifier of the data
-        :type flowRef: str
+        :type flowRef: str or sqlite3.Row from the table created 
+        by the dataflows() method 
         :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
         :type key: str or dict
         :param startperiod: the starting date of the time series that will be downloaded (optional, default: None)
@@ -286,7 +346,7 @@ class SDMX_REST(object):
         the metadata as namedtuple, and d is a dict containing any global metadata.
         If True: return a tuple (df, d) where df is a pandas.DataFrame
         with hierarchical index generated from the metadata. Explore the
-        structure by issuing 'df.columns.names' and 'df.columns.levels'.
+        structure by issuing 'df.columns'.
         The order of index levels is determined by the number of actual values 
         found in the series' metadata for each key.
         If concat is a list of metadata keys, they determine the order of index levels.
@@ -295,8 +355,12 @@ class SDMX_REST(object):
         return tuple of the form (l, d) or (df, d)
         depending on the value of 'concat'.
         """
-       
-        series_list = [] 
+        if isinstance(flowRef, sqlite3.Row):
+            flowRef = flowRef['id']
+        series_list = []
+        # dtype for Series. Future versions should support other dtypes 
+        # such as int or categorical.
+        datatype = NP.float64 
         
         if self.    version == '2_1':
             resource = 'data'
@@ -326,8 +390,6 @@ class SDMX_REST(object):
                             observation_status = 'A'
                             if elem1.tag == GENERIC + 'ObsDimension':
                                 dimension = elem1.get('value')
-                                # I've commented this out as pandas.to_dates seems to do a better and much faster job.
-                                # dimension = date_parser(dimension, codes['FREQ'])
                             elif elem1.tag == GENERIC + 'ObsValue':
                                 value = elem1.get('value')
                             elif elem1.tag == GENERIC + 'Attibutes':
@@ -337,8 +399,8 @@ class SDMX_REST(object):
                         raw_dates.append(dimension)
                         raw_values.append(value)
                         raw_status.append(observation_status)
-                dates = pandas.to_datetime(raw_dates)
-                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = codes)
+                dates = PD.to_datetime(raw_dates)
+                value_series = PD.TimeSeries(raw_values, index = dates, dtype = datatype, name = codes)
                 series_list.append(value_series)
                 
         elif self.version == '2_0':
@@ -373,8 +435,6 @@ class SDMX_REST(object):
                                                    namespaces=tree.nsmap):
                     dimensions = observation.xpath(".//generic:Time",
                                                    namespaces=tree.nsmap)
-                    # I've commented this out as pandas.to_dates seems to do a better job.
-                    # dimension = date_parser(dimensions[0].text, codes['FREQ'])
                     values = observation.xpath(".//generic:ObsValue",
                                                namespaces=tree.nsmap)
                     value = values[0].get('value')
@@ -393,15 +453,15 @@ class SDMX_REST(object):
                         raw_dates.append(dimension)
                         raw_values.append(value)
                         raw_status.append(observation_status)
-                dates = pandas.to_datetime(raw_dates)
-                value_series = pandas.TimeSeries(raw_values, index = dates, dtype = 'float64', name = codes)
+                dates = PD.to_datetime(raw_dates)
+                value_series = PD.TimeSeries(raw_values, index = dates, dtype = datatype, name = codes)
                 series_list.append(value_series)
               
         else: raise ValueError("SDMX version must be either '2_0' or '2_1'. %s given." % self.version)
         # Handle empty lists
         if series_list == []: 
             if concat:
-                return pandas.DataFrame(), {}
+                return PD.DataFrame(), {}
             else:
                 return [], {}
             
@@ -428,10 +488,10 @@ class SDMX_REST(object):
             # tuples are needed. But it seems very difficult to construct a
             # minimal multi-index from the series_list.
             
-            column_index = pandas.MultiIndex.from_product(
+            column_index = PD.MultiIndex.from_product(
                 [code_sets[k] for k in sorted_keys])
             column_index.names = sorted_keys 
-            df = pandas.DataFrame(columns = column_index, index = series_list[0].index)
+            df = PD.DataFrame(columns = column_index, index = series_list[0].index)
                 # Add the series to the DataFrame. Generate column keys from the metadata        
             for s in series_list:
                 column_pos = [s.name[k] for k in sorted_keys]
@@ -461,5 +521,6 @@ fao = SDMX_REST('http://data.fao.org/sdmx',
 
 # This is for easier testing during development. Run it as a script. 
 # Play around with the args concat, to_file and from_file, and remove this line before release.
-d,meta =eurostat.data('ei_nagt_q_r2', '', concat = False, from_file = 'ESTAT.sdmx')  
-        
+# d, meta =eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
+conn = eurostat.dataflows()
+# conn = ecb.dataflows()

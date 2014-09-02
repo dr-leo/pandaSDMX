@@ -1,5 +1,3 @@
-        #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 .. module:: pysdmx
     :platform: Unix, Windows
@@ -8,13 +6,14 @@
 .. :moduleauthor :: Widukind team <widukind-dev@cepremap.org>
 """
 
+from IPython import embed
 import requests
 import pandas as PD
 import numpy as NP
 import lxml.etree
 import sqlite3
 from io import BytesIO
-import re, zipfile
+import re, zipfile, time
 from collections import OrderedDict, namedtuple
 
 
@@ -53,18 +52,21 @@ def to_namedtuple(mapping):
             
         
                
-class SDMX_REST(object):
+class Client:
     """Data provider. This is the main class that allows practical access to all the data.
 
     :ivar sdmx_url: The URL of the SDMX endpoint, the webservice employed to access the data.
     :type sdmx_url: str
     :ivar agencyID: An identifier of the statistical provider.
     :type agencyID: str
+    :param: db_filename: filename of the local database for dataflows. 
+    Default: ':memory:' for an sqlite in-memory database
     """
-    def __init__(self, sdmx_url, version, agencyID):
+    def __init__(self, sdmx_url, version, agencyID, db_filename = ':memory:'):
         self.sdmx_url = sdmx_url
         self.agencyID = agencyID
         self.version = version
+        self.db_filename = db_filename
 
     
     def get_tree(self, url, to_file = None, from_file = None):
@@ -115,7 +117,7 @@ class SDMX_REST(object):
             if matches:
                 xml_str = None
                 i = 30
-                while i<101:
+                while i < 51:
                     time.sleep(i)
                     i = i+10
                     url = matches[0].groups()[0]
@@ -149,11 +151,11 @@ class SDMX_REST(object):
             if row['type'] == 'table' and row['name'] == tablename]
         if not exists:
             conn.execute(u'''create table {0} 
-                (id primary key, agency, version, title)'''.format( 
+                (id INTEGER PRIMARY KEY, agencyID, flowref, version, title)'''.format( 
                 tablename))
         return conn
 
-    def dataflows(self, language = 'en', to_file = ':memory:', from_file = None,
+    def get_dataflows(self, language = 'en', to_file = ':memory:', from_file = None,
                   table = None):
         """
         Get list of available dataflows 
@@ -211,17 +213,17 @@ class SDMX_REST(object):
                 name_path = ".//com:Name"
                 for dataflow in tree.iterfind(dataflow_path,
                                                    namespaces=tree.nsmap):
-                    id = dataflow.get('id')
+                    flowref = dataflow.get('id')
                     agencyID = dataflow.get('agencyID')
                     version = dataflow.get('version')
                     for title in dataflow.iterfind(name_path,
                                                    namespaces=tree.nsmap):
                         descr_lang = title.values()[0]
                         if descr_lang == language: 
-                            row = ('"' + id + '"', '"' + agencyID + '"', 
-                                   version, '"""' + title.text + '"""')
-                            cur.execute(u'''INSERT INTO {0} VALUES 
-                            ({1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
+                            row = ('"' + agencyID + '"', '"' + flowref + '"', 
+                                   version, '"' + title.text + '"')
+                            cur.execute(u'''INSERT INTO     {0} VALUES 
+                            (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
                                            self.agencyID, row))
                     
         elif self.version == '2_0':
@@ -242,22 +244,24 @@ class SDMX_REST(object):
                                                    namespaces=tree.nsmap):
                     for id in dataflow.iterfind(keyid_path,
                                                    namespaces=tree.nsmap):
-                        key = id.text
+                        flowref = id.text               
+                        # embed()
                     agencyID = dataflow.get('agencyID')
                     version = dataflow.get('version')
                     for title in dataflow.iterfind(name_path,
                                                    namespaces=tree.nsmap):
-                        row = ('"' + key + '"', '"' + agencyID + '"', 
-                                   version, '"""' + title.text + '"""')
-                        cur.execute(u'''INSERT INTO {0} VALUES 
-                            ({1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
-                            self.agencyID, row))
-
+                        title_text = title.text
+                    row = ('"' + agencyID + '"', '"' + flowref + '"', 
+                                   version, '"' + title_text + '"')
+                    cur.execute(u'''INSERT INTO {0} VALUES 
+                            (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
+                            table, row))
                         
-        conn.commit()        
+        conn.commit()
+        print(i)        
         return conn 
 
-    def codes(self, flowRef, to_file = None, from_file = None):
+    def get_codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions
 
         Returns a dictionnary describing the available dimensions for a specific flowRef.
@@ -266,7 +270,7 @@ class SDMX_REST(object):
         :type flowRef: str or sqlite3.Row
         :return: dict"""
         if isinstance(flowRef, sqlite3.Row):
-            flowRef = flowRef['id']
+            flowRef = flowRef['flowref']
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
             tree = self.get_tree(url, to_file = to_file, from_file = from_file)
@@ -323,7 +327,7 @@ class SDMX_REST(object):
         return self._codes
 
 
-    def data(self, flowRef, key, startperiod=None, endperiod=None, 
+    def get_data(self, flowRef, key, startperiod=None, endperiod=None, 
         to_file = None, from_file = None, 
         concat = False):
         """Get data
@@ -356,7 +360,7 @@ class SDMX_REST(object):
         depending on the value of 'concat'.
         """
         if isinstance(flowRef, sqlite3.Row):
-            flowRef = flowRef['id']
+            flowRef = flowRef['flowref']
         series_list = []
         # dtype for Series. Future versions should support other dtypes 
         # such as int or categorical.
@@ -507,20 +511,24 @@ class SDMX_REST(object):
                 s.name = to_namedtuple([(k, s.name[k]) for k in sorted_keys])             
             return series_list, global_codes
     
-    
-eurostat = SDMX_REST('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
-                     '2_1','ESTAT')
-eurostat_test = SDMX_REST('http://localhost:8800/eurostat',
-                     '2_1','ESTAT')
-ecb = SDMX_REST('http://sdw-ws.ecb.europa.eu',
-                     '2_0','ECB')
-ilo = SDMX_REST('http://www.ilo.org/ilostat/sdmx/ws/rest/',
-                     '2_1','ILO')
-fao = SDMX_REST('http://data.fao.org/sdmx',
+providers = {
+    'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
+                    '2_1','ESTAT'),
+    'ECB' : ('http://sdw-ws.ecb.europa.eu',
+                     '2_0','ECB'),
+    'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
+                            '2_1','ILO'),
+    'FAO' : ('http://data.fao.org/sdmx',
                      '2_1','FAO')
+    }    
 
-# This is for easier testing during development. Run it as a script. 
-# Play around with the args concat, to_file and from_file, and remove this line before release.
-# d, meta =eurostat.data('ei_nagt_q_r2', '', concat = True, from_file = 'ESTAT.sdmx')  
-conn = eurostat.dataflows()
-# conn = ecb.dataflows()
+def client(name):
+    '''
+    'Client' factory (convenience function).
+    Usage: my_client = client(sdmx.providers['provider_name'])
+    To get standard provider names, print(sdmx.providers.keys())
+    ''' 
+    return Client(*providers[name])
+
+eurostat = client('Eurostat')
+conn=eurostat.get_dataflows()

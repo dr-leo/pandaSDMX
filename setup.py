@@ -7,17 +7,16 @@ from codecs import open
 
 
 # Publish README on PYPI when uploading.
-# Need to expand it and rewrite it in reStructuredText 
-long_descr = open('README.rst', 'r').read()
+long_descr = open('description.rst', 'r').read()
 
-setup(name='PySDMX',
+setup(name='pandaSDMX',
 	version='0.1',
-    description='A client for statistical data and metadata exchange based on pandas and SQLite',
+    description='A pandas-powered client for statistical data and metadata exchange',
     long_description = long_descr,
     author='Dr. Leo',
     author_email='fhaxbox66@gmail.com',
       py_modules=['sdmx'],
-      url = 'https://github.com/widukind/pysdmx',
+      url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',
         'lxml',

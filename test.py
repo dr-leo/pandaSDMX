@@ -1,7 +1,26 @@
-!#('http://data.fao.org/sdmx',
-                     '2_1','FAO')
+'''
+Created on 04.09.2014
 
-from sdmx import client
+@author: Dr. Leo
+'''
+import unittest
+import sdmx
 
-ecb = client('ECB')
-flows = ecb.dataflows())
+class Test(unittest.TestCase):
+
+
+    def setUp(self):
+        pass
+
+
+    def tearDown(self):
+        pass
+
+
+    def testName(self):
+        pass
+
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

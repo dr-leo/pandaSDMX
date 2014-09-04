@@ -1,12 +1,11 @@
 """
 .. module:: pysdmx
     :platform: Unix, Windows
-    :synopsis: Python interface for SDMX
+    :synopsis: A pandas-powered SDMX client
 
-.. :moduleauthor :: Widukind team <widukind-dev@cepremap.org>
+.. :moduleauthor :: eam <widukind-dev@cepremap.org>; fhaxbox66@gmail.com
 """
 
-from IPython import embed
 import requests
 import pandas as PD
 import numpy as NP
@@ -17,7 +16,7 @@ import re, zipfile, time
 from collections import OrderedDict, namedtuple
 
 
-__all__ = ['eurostat', 'ecb', 'fao', 'ilo']
+__all__ = ['client', 'Client']
 
 
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
@@ -67,8 +66,15 @@ class Client:
         self.agencyID = agencyID
         self.version = version
         self.db_filename = db_filename
+        self.db = None # database connector
 
-    
+
+    def __repr__(self):
+        return '''sdmx.Client instance - agencyID: {1} SDMX URL: {2} database filename: {3} 
+        database: {4}'''.format(
+                                                                                              (None, self.agencyID, self.sdmx_url,  self.db_filename, self.db))
+        
+         
     def get_tree(self, url, to_file = None, from_file = None):
         '''
         Read xml data from URL or local file.
@@ -137,78 +143,67 @@ class Client:
         return xml_str
     
     
-    def _init_database(self, filename, tablename):
+    def _init_database(self, tablename):
         '''
         Helper method to initialize database.
         Called by dataflows()
         Return: sqlite3.Connection
         '''
-        conn = sqlite3.connect(filename)
-        conn.row_factory = sqlite3.Row
-        # Check if table already exists
-        contents = conn.execute('select * from SQLITE_MASTER')
-        exists = [row for row in contents
-            if row['type'] == 'table' and row['name'] == tablename]
-        if not exists:
-            conn.execute(u'''create table {0} 
-                (id INTEGER PRIMARY KEY, agencyID, flowref, version, title)'''.format( 
-                tablename))
-        return conn
+        if not self.db:
+            self.db = sqlite3.connect(self.db_filename)
+            self.db.row_factory = sqlite3.Row
+        self.db.execute(u'''CREATE TABLE IF NOT EXISTS {0} 
+            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text)'''.format( 
+            tablename))
+        # Delete any pre-existing rows
+        anyrows = self.db.execute('SELECT * FROM {0}'.format(
+            tablename)).fetchone()
+        if anyrows:
+            self.db.execute('DELETE FROM {0}'.format(tablename))
+        return self.db
 
-    def get_dataflows(self, language = 'en', to_file = ':memory:', from_file = None,
-                  table = None):
+    def get_dataflows(self, language = 'en', to_file = None, from_file = None,
+                  to_database = True, table = None):
         """
         Get list of available dataflows 
         Arguments:
         :param: language: keyword argument specifying the language of the 
         dataflow titles to be stored. This feature is not supported by 
-        SDMX v2.0.  
-        Used only when sqlite3 is used to store
-        the data. See the semantics of the 'to_file' argument.
-        Defaults to 'en' for English.
+        SDMX 2.0. Defaults to 'en' for English.
         :type: str
         :param: to_file: keyword argument specifying the filename of a file 
-        to write the dataflows list to. If it ends with '.xml',
-        the requested xml file is stored locally and None is returned. 
-        Otherwise an sqlite database is created and the dataflows are inserted 
-        into a table whose name is specified by the 'table' argument.
-        If that table does not yet exist, it is first created.
-        (defaults to ':memory:' for an in memory sqlite database.
+        to write the dataflows list in xml-format.  
         :type: str
         :param: 'from_file': Read the xml data from an xml file rather than 
         requesting the xml data via http from the data provider. 
         By convention, 'from_file' should have the 
-        extension '.xml' as such file can conveniently be written by passing
-        a filename through the 'to_file' keyword argument.    
-        Use 'sqlite3.connect()' to connect to an existing database containing dataflows.
+        extension '.xml'.     
+        :param: to_database: if True (default), the received dataflows are 
+        stored in a database in the table. The 'table' keyword argument specifies
+        the table's name. The instance variable
+        self.db is a connector to the database. It is also returned. 
+        If the database connection in self.db is None, it is first opened.
+        :type: str   
         :param: table: name of the table into which the dataflow descriptions will be inserted.
         If the database does not contain a table of this name, it is first created.
-        Defaults to self.agencyID
+        If it does, that table is dropped first. Hence, append is not supported.
+        Defaults to self.agencyID + '_dataflows'
         :type: str 
      
         return: sqlite3.Connection or None (if data is written to '.xml' file
         """
         
-        # Write to local xml file if file extension is '.xml'. 
-        # Otherwise write the dataflows to an existing or newly created 
-        # sqlite database with the specified filename.
-        if to_file.endswith('.xml'):
-            to_file_arg = to_file # will be passed to get_tree() 
-        else:
-            to_file_arg = None # do not store the xml file as we use sqlite
-            if not table: table = self.agencyID # set to default 
+        
+        if not table: table = self.agencyID + '_dataflows' # set to default 
             
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
-            tree = self.get_tree(url, to_file = to_file_arg, from_file = from_file)
-            if to_file_arg:
-                # local .xml file has already been stored. So do nothing.
-                return None
-            else: 
-                # Init the database and store 
-                # the parsed data in it
-                conn = self._init_database(to_file, table)
-                cur = conn.cursor()
+            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+             
+            # Init the database and store the parsed data in it 
+            if to_database: 
+                self._init_database(table)
+                cur = self.db.cursor()
                 dataflow_path = ".//str:Dataflow"
                 name_path = ".//com:Name"
                 for dataflow in tree.iterfind(dataflow_path,
@@ -224,19 +219,16 @@ class Client:
                                    version, '"' + title.text + '"')
                             cur.execute(u'''INSERT INTO     {0} VALUES 
                             (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
-                                           self.agencyID, row))
+                                           table, row))
                     
         elif self.version == '2_0':
             url = '/'.join([self.sdmx_url, 'Dataflow'])
-            tree = self.get_tree(url, to_file = to_file_arg, from_file = from_file)
-            if to_file_arg:
-                # local .xml file has already been stored. So do nothing.
-                return None
-            else: 
-                # Init the database and store 
-                # the parsed data in it
-                conn = self._init_database(to_file, table)
-                cur = conn.cursor()
+            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+            # Init the database and store the parsed data in it 
+            if to_database:
+                self._init_database(table)
+                            
+                cur = self.db.cursor()
                 dataflow_path = ".//structure:Dataflow"
                 name_path = ".//structure:Name"
                 keyid_path = ".//structure:KeyFamilyID"
@@ -245,7 +237,6 @@ class Client:
                     for id in dataflow.iterfind(keyid_path,
                                                    namespaces=tree.nsmap):
                         flowref = id.text               
-                        # embed()
                     agencyID = dataflow.get('agencyID')
                     version = dataflow.get('version')
                     for title in dataflow.iterfind(name_path,
@@ -257,9 +248,8 @@ class Client:
                             (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
                             table, row))
                         
-        conn.commit()
-        print(i)        
-        return conn 
+        self.db.commit()
+        return self.db 
 
     def get_codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions
@@ -525,10 +515,10 @@ providers = {
 def client(name):
     '''
     'Client' factory (convenience function).
-    Usage: my_client = client(sdmx.providers['provider_name'])
+    Usage: my_client = client(<provider_name>)
     To get standard provider names, print(sdmx.providers.keys())
     ''' 
     return Client(*providers[name])
 
-eurostat = client('Eurostat')
-conn=eurostat.get_dataflows()
+estat = client('Eurostat')
+# conn=estat.get_dataflows()

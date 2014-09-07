@@ -11,18 +11,18 @@ long_descr = open('description.rst', 'r').read()
 
 setup(name='pandaSDMX',
 	version='0.1',
-    description='A pandas-powered client for statistical data and metadata exchange',
+    description='A Python- and pandas-powered client for statistical data and metadata exchange',
     long_description = long_descr,
     author='Dr. Leo',
     author_email='fhaxbox66@gmail.com',
-      py_modules=['sdmx'],
+      py_modules=['pandasdmx'],
       url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',
         'lxml',
         'requests'
       ],
-      provides = ['sdmx'],
+      provides = ['pandasdmx'],
       classifiers = [
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',

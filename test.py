@@ -4,7 +4,7 @@ Created on 04.09.2014
 @author: Dr. Leo
 '''
 import unittest
-import sdmx
+import pandasdmx
 
 class Test(unittest.TestCase):
 

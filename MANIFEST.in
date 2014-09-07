@@ -1,1 +1,3 @@
-include MANIFEST *.rst setup.py setup.cfg test.py sdmx.py 
+include *.rst setup.py pandasdmx.py LICENSE.txt 
+exclude test.py setup.cfg
+

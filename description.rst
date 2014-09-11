@@ -48,16 +48,16 @@ For other Python distributions (not only scientific) see
 `here <https://wiki.python.org/moin/PythonDistributions>`_.  
   
   
-3. Usage
-==========
+3. Tutorial
+=============
 
 Suppose we wanted to conduct some research on the European dairy industry. As pandaSDMX's support for FAO is still 
 experimental (or indeed not working), we will look for relevant data from Eurostat, 
 the European statistics office. It provides data from national statistics offices of the 28 EU countries and more. 
 
-Step 1: Instantiate a 'Client' for it
------------------------------------------------------------------
-
+Step 1: Instantiate a 'Client' for Eurostat
+-----------------------------------------------------------------========
+..
 ::
 
     >>> from pandasdmx import client
@@ -66,14 +66,14 @@ Step 1: Instantiate a 'Client' for it
 Here, we have used the factory function 'client'. It instantiates the 'Client' class
 using the values hard-coded in pandasdmx.providers.
  
-Step 2: Get the available dataflows and download interesting datasets
+Step 2: Get the available dataflows and identify interesting datasets
 -----------------------------------------------------------------------
 
 Now that we have an SDMX client for Eurostat, we call its 'get_dataflows' method
-to download the complete list of dataflows. A dataflow is essentially a table of all
-available datasets referenced by their flow references plus a human-readable description. 
+to download the complete list of dataflows. A dataflow is essentially a tuple describing
+a dataset. Its main fields are a flow reference ('flowref')and a human-readable description ('title'). 
 Eurostat offers about 4500 datasets. Downloading the complete
-list may take a while.   
+list of dataflows may take a while.   
 
 ::
 
@@ -97,17 +97,15 @@ Next, we select dataflows whose title (description) contains the word 'milk'.
 
     >>> milk_list[1]['title']
     "Cows'milk collection and products obtained - annual data"
-    >>> milk_list[1]['flowref']
+    >>> cows_milk = milk_list[1]
+    >>> cows_milk['flowref']
     'apro_mk_cola'
 
+Step 3: Download the dataset into a pandas datastructure
+------------------------------------------------------------------
+
 Next, we use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
-containing a key named 'flowref' as shown above. get_data() returns
-a 2-tuple: its first element is either a list of pandas timeseries (concat = False) or a DataFrame (if concat = True). The structural metadata
-attached to the data is used to create a multi-level column index for the DataFrame. When returning a list of timeseries, their 'name' attributes contain the non-global metadata as
-hashable NamedTuples (dicts would cause problems when concatenating the series later).
-The second element of the 2-tuple is a dict
-containing global metadata describing the entire dataset. As each key takes on only one value,
-it is unsuitable to structure the data. Hence, it is disregarded when creating the column index.
+containing a key named 'flowref' as shown above. 
 
 ::
 
@@ -119,11 +117,18 @@ it is unsuitable to structure the data. Hence, it is disregarded when creating t
     >>> df.columns.names
     FrozenList(['GEO', 'PRODMILK'])
 
-The second argument is used to narrow down the datasets using structural
+get_data() returns
+a 2-tuple: its first element is either a list of pandas timeseries (concat = False) or a DataFrame (if concat = True). The structural metadata
+attached to the data is used to create a multi-level column index for the DataFrame. When returning a list of timeseries, their 'name' attributes contain the non-global metadata as
+hashable NamedTuples (dicts would cause problems when concatenating the series later).
+The second element of the 2-tuple is a dict
+containing global metadata describing the entire dataset. As each key takes on only one value,
+it is unsuitable to structure the data. Hence, it is disregarded when creating the column index.
+The second argument of get_data() (here: an empty string) is used to narrow down the datasets using structural
 metadata. E.g., '...NL' would yield data solely on the Netherlands.
 
      
-Step 3: Get human-readable descriptions of the content metadata
+Step 4: Get human-readable descriptions of the content metadata
 -----------------------------------------------------------------------------
     
     From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
@@ -137,7 +142,12 @@ Step 3: Get human-readable descriptions of the content metadata
     al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
     S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
 
+Step 5: Analyze the data with pandas
+  ----------------------------------------------
   
+  The plain language descriptions of the metadata allows you to select relevant columns in pandas. Be sure to read the
+  pandas docs, specifically on hierarchical indexing and time series.
+   
 4. Next steps, known issues, ToDo's
 ====================================== 
   

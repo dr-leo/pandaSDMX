@@ -13,15 +13,14 @@ pandaSDMX
 ====================
  
 pandaSDMX is an endeavor to create an `SDMX <http://www.sdmx.org/>`_ 
-client that facilitates the management, acquisition and analysis of large datasets
+client that facilitates the acquisition, management, and analysis of large datasets
 disseminated according to the SDMX standard by national statistics offices, central banks and international organisations. Notable SDMX data providers are 
 `Eurostat <https://webgate.ec.europa.eu/fpfis/mwikis/sdmx/index.php/Main_Page>`_,
 the `European Central Bank <http://www.ecb.europa.eu/stats/services/sdmx/html/index.en.html>`_, 
 the `Bank for International Settlements <http://www.bis.org/statistics/sdmx.htm>`_, 
 the `International Monetary Fund <http://sdmxws.imf.org/IMFStatWS_SDMX2/sdmx.asmx>`_, and
 the `OECD <http://stats.oecd.org/SDMXWS/sdmx.asmx>`_, 
-to name but a few. pandaSDMX reads datasets and converts them into 
-pandas time series or DataFrames with hierarchical indexes created from structural metadata.
+to name but a few. pandaSDMX downloads datasets and exposes them as pandas time series or DataFrames with hierarchical indexes created from structural metadata.
 Metadata on the content of datasets (so-called dataflows) is stored locally using SQLite. 
   
 
@@ -36,12 +35,13 @@ pandaSDMX has the following dependencies:
 
 * the data analysis library  
   `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages, and
-* `requests <https://pypi.python.org/pypi/requests/>`_ 
+* `requests <https://pypi.python.org/pypi/requests/>`_
+* `LXML <https://pypi.python.org/pypi/lxml/>`_ 
 
-It is highly recommended to use one of the pre-packaged Python distributions
-for scientific computing and data analysis rather than installing those dependencies separately. 
+It is recommended to use one of the pre-packaged Python distributions
+for scientific computing and data analysis rather than having pip install those dependencies. 
 Scientific Python distributions include, 
-among many other useful things, the interactive, web-based Python shell `IPython <http://ipython.org/>`_ 
+among many other useful things, the interactive Python shell `IPython <http://ipython.org/>`_ 
 which is a must-have when working with data. The author uses 
 `Anaconda <https://store.continuum.io/cshop/anaconda/>`_. 
 For other Python distributions (not only scientific) see
@@ -57,6 +57,8 @@ the European statistics office. It provides data from national statistics office
 
 Step 1: Instantiate a 'Client' for Eurostat
 -----------------------------------------------------------------========
+
+..
 ..
 ::
 
@@ -64,7 +66,7 @@ Step 1: Instantiate a 'Client' for Eurostat
     >>> estat = client('Eurostat', 'milk.db')
 
 Here, we have used the factory function 'client'. It instantiates the 'Client' class
-using the values hard-coded in pandasdmx.providers.
+using the values required for Eurostat as hard-coded in 'pandasdmx.providers'.
  
 Step 2: Get the available dataflows and identify interesting datasets
 -----------------------------------------------------------------------
@@ -99,9 +101,25 @@ Next, we select dataflows whose title (description) contains the word 'milk'.
     "Cows'milk collection and products obtained - annual data"
     >>> cows_milk = milk_list[1]
     >>> cows_milk['flowref']
-    'apro_mk_cola'
+        
 
-Step 3: Download the dataset into a pandas datastructure
+
+Step 3: Get human-readable descriptions of the content metadata
+-----------------------------------------------------------------------------
+    
+    From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
+    in so-called code-lists. You can download them as follows:
+
+::
+    
+    >>> milk_codes = estat.get_codes(milk_list[1])
+    >>> milk_codes
+    Out[14]: OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
+    al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
+    S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
+
+
+Step 4: Download the dataset into a pandas datastructure
 ------------------------------------------------------------------
 
 Next, we use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
@@ -128,19 +146,6 @@ The second argument of get_data() (here: an empty string) is used to narrow down
 metadata. E.g., '...NL' would yield data solely on the Netherlands.
 
      
-Step 4: Get human-readable descriptions of the content metadata
------------------------------------------------------------------------------
-    
-    From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
-    in so-called code-lists. You can download them as follows:
-
-::
-    
-    >>> milk_codes = estat.get_codes(milk_list[1])
-    >>> milk_codes
-    Out[14]: OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
-    al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
-    S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
 
 Step 5: Analyze the data with pandas
   ----------------------------------------------

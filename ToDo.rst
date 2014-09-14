@@ -12,14 +12,22 @@ Eurostat works quite well though.
 ~~~~~~~~~~~~~~
 
 * data: observation status and observation flags are ignored. Decide how best to
-  get these into DataFrames. Option 1: Generate a separate df with identical column index 
+  expose these as DataFrames. Option 1: Generate a separate df with identical column index 
   for obs_status. Option 2: add a new index level to distinguish data and obs_status so as to
   add a column for obs_status next to each data column
 * datatypes: currently, all data is converted to float64. Infer other dypes and make
   conversion configurable. Handle categorical data if any
 * handle non-time series data
 
-   1.2 dataflows
+1.2 code lists
+   ~~~~~~~~~~~~~
+
+The order of keys in the OrderedDict returned by the get_codes mdthod
+does not correspond to the actual order required to construct the 'key' string
+to pas to the get_data method as second argument. Find out why and how to fix it.
+Do we have to request the list of keys in correct order separately?
+
+   1.3 dataflows
    ~~~~~~~~~~~~~~
    
    * in v0.1, categories are ignored. 
@@ -30,7 +38,7 @@ Eurostat works quite well though.
   solve this problem.
 
    
-   1.3 Web service / http
+   1.4 Web service / http
    ~~~~~~~~~~~~~~~
    
    * in v0.1, only Eurostats works well. FAO, ILO etc. cause errors.

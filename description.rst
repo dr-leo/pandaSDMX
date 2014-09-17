@@ -39,7 +39,7 @@ pandaSDMX has the following dependencies:
 * `LXML <https://pypi.python.org/pypi/lxml/>`_ 
 
 It is recommended to use one of the pre-packaged Python distributions
-for scientific computing and data analysis rather than having pip install those dependencies. 
+for scientific computing and data analysis rather than having pip install the dependencies. 
 Scientific Python distributions include, 
 among many other useful things, the interactive Python shell `IPython <http://ipython.org/>`_ 
 which is a must-have when working with data. The author uses 
@@ -56,16 +56,17 @@ experimental (or indeed not working), we will look for relevant data from Eurost
 the European statistics office. It provides data from national statistics offices of the 28 EU countries and more. 
 
 Step 1: Instantiate a 'Client' for Eurostat
------------------------------------------------------------------========
+--------------------------------------------
 
 ..
 ..
+
 ::
 
     >>> from pandasdmx import client
     >>> estat = client('Eurostat', 'milk.db')
 
-Here, we have used the factory function 'client'. It instantiates the 'Client' class
+We have used the factory function 'client'. It instantiates the 'Client' class
 using the values required for Eurostat as hard-coded in 'pandasdmx.providers'.
  
 Step 2: Get the available dataflows and identify interesting datasets
@@ -101,28 +102,41 @@ Next, we select dataflows whose title (description) contains the word 'milk'.
     "Cows'milk collection and products obtained - annual data"
     >>> cows_milk = milk_list[1]
     >>> cows_milk['flowref']
-        
+    'apro_mk_cola'      
 
 
 Step 3: Get human-readable descriptions of the content metadata
 -----------------------------------------------------------------------------
     
-    From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
-    in so-called code-lists. You can download them as follows:
+From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
+in so-called code-lists. You can download them as follows:
 
 ::
     
-    >>> milk_codes = estat.get_codes(milk_list[1])
+    >>> milk_codes = estat.get_codes(cows_milk)
     >>> milk_codes
-    Out[14]: OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
+    OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
     al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
     S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
 
+'milk_codes' is an OrderdDict whose keys are the dimensions of the metadata.
+Eachvalue is a dict mapping possible values to human-readable descriptions.
+type 'list(milk_codes.keys())' to obtain the order of the codes. Due to a bug, keys are
+not ordered correctly. Otherwise we could have used the order to
+construct a filter to download only some series from the large dataset, e.g. only series
+on a small group of countries or milk products. To work around the bug, you can look up the 
+correct order of keys in the data-browser on Eurostat's website. 
 
-Step 4: Download the dataset into a pandas datastructure
-------------------------------------------------------------------
 
-Next, we use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
+Instead of an empty string pass the filter string of the form 'val1.val2.val3...' 
+to the get_data method. Here, we will simply download
+the entire dataset as shown in the next step.
+
+
+Step 4: Download the dataset into a pandas DataFrame or a list of pandas series
+-------------------------------------------------------------------------------
+
+We shall use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
 containing a key named 'flowref' as shown above. 
 
 ::
@@ -135,25 +149,65 @@ containing a key named 'flowref' as shown above.
     >>> df.columns.names
     FrozenList(['GEO', 'PRODMILK'])
 
-get_data() returns
-a 2-tuple: its first element is either a list of pandas timeseries (concat = False) or a DataFrame (if concat = True). The structural metadata
-attached to the data is used to create a multi-level column index for the DataFrame. When returning a list of timeseries, their 'name' attributes contain the non-global metadata as
-hashable NamedTuples (dicts would cause problems when concatenating the series later).
-The second element of the 2-tuple is a dict
-containing global metadata describing the entire dataset. As each key takes on only one value,
-it is unsuitable to structure the data. Hence, it is disregarded when creating the column index.
-The second argument of get_data() (here: an empty string) is used to narrow down the datasets using structural
-metadata. E.g., '...NL' would yield data solely on the Netherlands.
+Note that the first level of the column index distinguishes groups of columns by country and regions such as EU25, while the
+second orders the series on a given country or region by milk product. 
 
+get_data() returns
+a 2-tuple: its first element is either a list of pandas timeseries 
+(concat = False) or a DataFrame (if concat = True). The structural metadata
+attached to the data is used to create a 
+multi-level column index for the DataFrame. 
+When returning a list of timeseries, their 'name' attributes contain the non-global metadata as
+NamedTuples.
+The second element of the 2-tuple is a dict
+containing global metadata describing the entire dataset. As each global key by definition takes on only one value,
+it is unsuitable to structure the data. Hence, it is disregarded when creating the column index.
+The second argument of get_data() (here: an empty string) could be used to narrow down the datasets using structural
+metadata. E.g., '...NL' would yield data solely on the Netherlands. 
      
 
 Step 5: Analyze the data with pandas
-  ----------------------------------------------
+----------------------------------------------
   
-  The plain language descriptions of the metadata allows you to select relevant columns in pandas. Be sure to read the
-  pandas docs, specifically on hierarchical indexing and time series.
-   
-4. Next steps, known issues, ToDo's
+The plain language descriptions obtained by calling the 'get_codes' method 
+allow you to select relevant columns in pandas. Be sure to read the
+`pandas docs <http://pandas.pydata.org/pandas-docs/stable/>`_, specifically on 
+hierarchical indexing and time series.
+  
+::
+  
+    >>> df, md = estat.get_data(cows_milk, '', concat=True)
+    >>> md 
+    {'FREQ': 'A', 'UNIT': 'THS_T'}
+
+Hence all series have annual data. The unit is "thousand tons".
+
+::
+
+    >>> cheese_fr = df[('FR', 'MM241')]
+    >>> cheese_de = df[('DE', 'MM241')]
+
+    >>> cheese_de.head()
+    2013-01-01    2258
+    2012-01-01    2240
+    2011-01-01    2196
+    2010-01-01    2169
+    2009-01-01    2086
+    Name: (DE, MM241), dtype: float64
+
+    >>> ratio = cheese_fr / cheese_de
+
+    >>> ratio.head()
+    2013-01-01    0.810895
+    2012-01-01    0.811161
+    2011-01-01    0.819672
+    2010-01-01    0.829876
+    2009-01-01    0.820709
+    dtype: float64
+
+
+
+4. Known issues, ToDo's
 ====================================== 
   
 While pandasdmx works well with Eurostat data, other institutions cause problems. Moreover, content metadata
@@ -166,6 +220,9 @@ For a more detailed ToDo list consider the ToDo.rst file in the source distribut
 5. Change log
 ========================
 
-Version 0.1 (2014-09-07)
+Version 0.1.2 (2014-09-17)
 
-initial release
+* fix xml encoding. This brings dramatic speedups when downloading and parsing data
+* extend tutorial
+
+The complete changelog is part of the source distribution.

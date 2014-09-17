@@ -58,16 +58,14 @@ the European statistics office. It provides data from national statistics office
 Step 1: Instantiate a 'Client' for Eurostat
 --------------------------------------------
 
-..
-..
+To instantiate an SDMX Client for Eurostat, we use the factory function 'client'. It 
+simply takes a name of a known SDMX provider 
+and passes the hard-coded parameters in 'pandasdmx.providers' to the 'Client' class's constructor.
 
-::
 
-    >>> from pandasdmx import client
-    >>> estat = client('Eurostat', 'milk.db')
+>>> from pandasdmx import client
+>>> estat = client('Eurostat', 'milk.db')
 
-We have used the factory function 'client'. It instantiates the 'Client' class
-using the values required for Eurostat as hard-coded in 'pandasdmx.providers'.
  
 Step 2: Get the available dataflows and identify interesting datasets
 -----------------------------------------------------------------------
@@ -78,57 +76,50 @@ a dataset. Its main fields are a flow reference ('flowref')and a human-readable 
 Eurostat offers about 4500 datasets. Downloading the complete
 list of dataflows may take a while.   
 
-::
-
-    >>> db = estat.get_dataflows()
-    >>> str(estat)
-    "<class 'pandasdmx.Client'>('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest', 'ESTAT', db_filename = 'milk.db') Database: <sqlite3.Connection object at 0x0501A130> ['table: ESTAT_dataflows SQL: CREATE TABLE ESTAT_dataflows \\n            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text); ']"
+>>> db = estat.get_dataflows()
+>>> str(estat)
+"<class 'pandasdmx.Client'>('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest', 'ESTAT', db_filename = 'milk.db') Database: <sqlite3.Connection object at 0x0501A130> ['table: ESTAT_dataflows SQL: CREATE TABLE ESTAT_dataflows \\n            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text); ']"
 
 The string representation of 'Client' shows the attached SQLite database and the tables. Note
 that the get_dataflows() method has just created the 'ESTAT_dataflows' table.
 
 Next, we select dataflows whose title (description) contains the word 'milk'.
 
-::
-
-    >>> milk_table = db.execute('CREATE TABLE milk AS SELECT * FROM ESTAT_dataflows WHERE title LIKE "%milk%"')
-    >>> milk_list = milk_table.fetchall()
+>>> milk_table = db.execute('CREATE TABLE milk AS SELECT * FROM ESTAT_dataflows WHERE title LIKE "%milk%"')
+>>> milk_list = milk_table.fetchall()
 
 'milk_list' is a list of sqlite3.Row instances. They allow dict-like access using column names:
 
-::
-
-    >>> milk_list[1]['title']
-    "Cows'milk collection and products obtained - annual data"
-    >>> cows_milk = milk_list[1]
-    >>> cows_milk['flowref']
-    'apro_mk_cola'      
+>>> milk_list[1]['title']
+"Cows'milk collection and products obtained - annual data"
+>>> cows_milk = milk_list[1]
+>>> cows_milk['flowref']
+'apro_mk_cola'      
 
 
 Step 3: Get human-readable descriptions of the content metadata
 -----------------------------------------------------------------------------
     
-From 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
+By printing 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
 in so-called code-lists. You can download them as follows:
 
-::
-    
-    >>> milk_codes = estat.get_codes(cows_milk)
-    >>> milk_codes
-    OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
-    al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
-    S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
+>>> milk_codes = estat.get_codes(cows_milk)
+>>> milk_codes
+OrderedDict([('FREQ', {'Q': 'Quarterly', 'W': 'Weekly', 'H': 'Semi-annu
+al', 'M': 'Monthly', 'A': 'Annual', 'D': 'Daily'}), ('GEO', {'FI': 'Finland', 'E
+S': 'Spain', 'DK': 'Denmark', 'BG': 'Bulgaria', 'FR': 'France', 'MT': 'Malta', ' [omitted]
 
 'milk_codes' is an OrderdDict whose keys are the dimensions of the metadata.
-Eachvalue is a dict mapping possible values to human-readable descriptions.
-type 'list(milk_codes.keys())' to obtain the order of the codes. Due to a bug, keys are
-not ordered correctly. Otherwise we could have used the order to
+Each value is a dict mapping possible values to human-readable descriptions.
+type 'list(milk_codes.keys())' to obtain the order of the codes. 
+However, note that these keys are
+not ordered correctly as this feature has yet to be implemented. 
+Otherwise we could have used the order to
 construct a filter to download only some series from the large dataset, e.g. only series
-on a small group of countries or milk products. To work around the bug, you can look up the 
+on a small group of countries or milk products. To work around this, you can look up the 
 correct order of keys in the data-browser on Eurostat's website. 
-
-
-Instead of an empty string pass the filter string of the form 'val1.val2.val3...' 
+Once you know the right order, you can pass a filter string 
+of the form 'val1.val2.val3...' 
 to the get_data method. Here, we will simply download
 the entire dataset as shown in the next step.
 
@@ -139,15 +130,14 @@ Step 4: Download the dataset into a pandas DataFrame or a list of pandas series
 We shall use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
 containing a key named 'flowref' as shown above. 
 
-::
 
-    >>> df, md = estat.get_data(milk_list[1], '', concat = True)
-    >>> md
-    {'FREQ': 'A', 'UNIT': 'THS_T'}
-    >>> df.shape
-    (46, 492)
-    >>> df.columns.names
-    FrozenList(['GEO', 'PRODMILK'])
+>>> df, md = estat.get_data(milk_list[1], '', concat = True)
+>>> md
+{'FREQ': 'A', 'UNIT': 'THS_T'}
+>>> df.shape
+(46, 492)
+>>> df.columns.names
+FrozenList(['GEO', 'PRODMILK'])
 
 Note that the first level of the column index distinguishes groups of columns by country and regions such as EU25, while the
 second orders the series on a given country or region by milk product. 
@@ -174,37 +164,33 @@ allow you to select relevant columns in pandas. Be sure to read the
 `pandas docs <http://pandas.pydata.org/pandas-docs/stable/>`_, specifically on 
 hierarchical indexing and time series.
   
-::
-  
-    >>> df, md = estat.get_data(cows_milk, '', concat=True)
-    >>> md 
-    {'FREQ': 'A', 'UNIT': 'THS_T'}
+>>> df, md = estat.get_data(cows_milk, '', concat=True)
+>>> md 
+{'FREQ': 'A', 'UNIT': 'THS_T'}
 
 Hence all series have annual data. The unit is "thousand tons".
 
-::
+>>> cheese_fr = df[('FR', 'MM241')]
+>>> cheese_de = df[('DE', 'MM241')]
 
-    >>> cheese_fr = df[('FR', 'MM241')]
-    >>> cheese_de = df[('DE', 'MM241')]
+>>> cheese_de.head()
+2013-01-01    2258
+2012-01-01    2240
+2011-01-01    2196
+2010-01-01    2169
+2009-01-01    2086
+Name: (DE, MM241), dtype: float64
 
-    >>> cheese_de.head()
-    2013-01-01    2258
-    2012-01-01    2240
-    2011-01-01    2196
-    2010-01-01    2169
-    2009-01-01    2086
-    Name: (DE, MM241), dtype: float64
-
-    >>> ratio = cheese_fr / cheese_de
-
-    >>> ratio.head()
-    2013-01-01    0.810895
-    2012-01-01    0.811161
-    2011-01-01    0.819672
-    2010-01-01    0.829876
-    2009-01-01    0.820709
-    dtype: float64
-
+Above we have used dict-like syntax. But pandas even allows attribute-like column selection:
+    
+>>> ratio = df.DE.MM241 / df.FR.MM241
+>>> ratio.head()
+2013-01-01    0.810895
+2012-01-01    0.811161
+2011-01-01    0.819672
+2010-01-01    0.829876
+2009-01-01    0.820709
+dtype: float64
 
 
 4. Known issues, ToDo's

@@ -18,10 +18,11 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         del self.estat
+        del self.ecb
         
 
 
-    def _testEurostatFlows(self):
+    def testEurostatFlows(self):
         db = self.estat.get_dataflows()
         cur = db.execute('SELECT * FROM SQLITE_MASTER')
         print([str(i) for i in cur.fetchall()])

@@ -18,6 +18,8 @@ Eurostat works quite well though.
 * datatypes: currently, all data is converted to float64. Infer other dypes and make
   conversion configurable. Handle categorical data if any
 * handle non-time series data
+* handle mixed-frequency data: return a list of DataFrames rather than trying to 
+  cooerce them into one.
 
 1.2 code lists
    ~~~~~~~~~~~~~
@@ -26,6 +28,9 @@ The order of keys in the OrderedDict returned by the get_codes mdthod
 does not correspond to the actual order required to construct the 'key' string
 to pas to the get_data method as second argument. Find out why and how to fix it.
 Do we have to request the list of keys in correct order separately?
+
+Add attribute syntax by subclassing OrderedDict. Or is that possible already?
+
 
    1.3 dataflows
    ~~~~~~~~~~~~~~
@@ -48,7 +53,9 @@ Do we have to request the list of keys in correct order separately?
 2. pandas output
 --------------------
 
-* construct datetime index specifying freq or reindex with asfreq()
+* handle mixed-frequency data.
+* when constructing PeriodIndex, make sure the right strings are passed as freq. Currently,
+  only 'A' is converted to 'Y'.  
     
    
     3. Database support

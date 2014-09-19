@@ -34,7 +34,7 @@ and issuing "python setup.py install" from the command line.
 pandaSDMX has the following dependencies:
 
 * the data analysis library  
-  `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages, and
+  `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages
 * `requests <https://pypi.python.org/pypi/requests/>`_
 * `LXML <https://pypi.python.org/pypi/lxml/>`_ 
 

@@ -1,10 +1,13 @@
-"""
-.. module:: pysdmx
-    :platform: Unix, Windows
-    :synopsis: A pandas-powered SDMX client
+'''
+.. module:: pandasdmx
+    
+    :synopsis: A Python- and pandas-powered client for statistical data and metadata exchange 
+    For more details on SDMX see www.sdmx.org
 
-.. :moduleauthor :: eam <widukind-dev@cepremap.org>; fhaxbox66@gmail.com
-"""
+.. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
+'''
+# uncomment this for debugging and use embed() to invoke an ipython shell
+from IPython import embed
 
 import requests
 import pandas as PD
@@ -18,14 +21,15 @@ from collections import OrderedDict, namedtuple
 
 __all__ = ['client', 'Client']
 
-
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
 tuple_classes = []
 
 def to_namedtuple(mapping):
     """
-    Convert a list of (key,value) tuples into a namedtuple. If there is not already 
-    a suitable class in 'tuple_classes', Create a new class first and append it to the list.
+    Convert a list of (key,value) tuples into a namedtuple. 
+    If there is not already 
+    a suitable class in 'tuple_classes', Create a new class first 
+    and append it to the list.
         
     return a namedtuple instance
     """
@@ -70,11 +74,23 @@ class Client:
 
 
     def __repr__(self):
-        return '''sdmx.Client instance - agencyID: {1} SDMX URL: {2} database filename: {3} 
-        database: {4}'''.format(
-                                                                                              (None, self.agencyID, self.sdmx_url,  self.db_filename, self.db))
-        
+        return ''.join((str(self.__class__), "('", self.sdmx_url, "', '",
+            self.agencyID, "', db_filename = '", str(self.db_filename), "')"))
          
+    def __str__(self):
+        if self.db:
+            table_list = self.db.execute(
+                    'SELECT * FROM SQLITE_MASTER').fetchall()
+        else: table_list = []
+        return ''.join((self.__repr__(), ' Database: ', 
+            str(self.db), ' ', str((
+                ['table: ' + t['tbl_name'] + ' SQL: ' + 
+                t['sql'] + '; ' for t in table_list] or ''))))
+             
+    def __del__(self):
+        if self.db: self.db.close()
+        
+                     
     def get_tree(self, url, to_file = None, from_file = None):
         '''
         Read xml data from URL or local file.
@@ -87,9 +103,9 @@ class Client:
             with open(from_file, 'rb') as f:
                 xml_str = f.read()
         else:
-            xml_str = self.request(url)
+            xml_str = self.request(url) 
         parser = lxml.etree.XMLParser(
-            ns_clean=True, recover=True, encoding='utf-8')
+            ns_clean=True, recover=True)
         tree = lxml.etree.fromstring(xml_str, parser = parser)
         if to_file:
             with open(to_file, 'wb') as f:
@@ -107,13 +123,15 @@ class Client:
         :return: the xml data as string
         """
         
-        request = requests.get(url, timeout= 20)
-        if request.status_code == requests.codes.ok:
-            xml_str = request.text.encode('utf-8')
-        elif request.status_code == 430:
+        response = requests.get(url, timeout= 40)
+        
+        if response.status_code == requests.codes.ok:
+            xml_str = response.content
+            embed()
+        elif response.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
             parser = lxml.etree.XMLParser(
-                                          ns_clean=True, recover=True, encoding='utf-8')
+                                          ns_clean=True, recover=True)
             tree = lxml.etree.fromstring(xml_str, parser = parser)
             messages = tree.xpath('.//footer:Message/common:Text',
                                       namespaces = tree.nsmap)
@@ -127,19 +145,23 @@ class Client:
                     time.sleep(i)
                     i = i+10
                     url = matches[0].groups()[0]
-                    request = requests.get(url)
-                    if request.headers['content-type'] == "application/octet-stream":
-                        buffer = BytesIO(request.content)
+                    response = requests.get(url)
+                    if response.headers['content-type'] == "application/octet-stream":
+                        buffer = BytesIO(response.content)
                         file = zipfile.ZipFile(buffer)
                         filename = file.namelist()[0]
                         xml_str = file.read(filename)
                         break
-                        if xml_str is None:
-                            raise Exception("The web server didn't provide the file you are looking for.")
+                if xml_str is None:
+                    raise requests.exceptions.HTTPError("The SDMX server didn't provide the requested file. Error code: {0}" 
+                                                            .format(response.status_code))
             else:
-                raise ValueError("Error getting client({})".format(request.status_code))      
+                raise requests.exceptions.HTTPError(
+                        "SDMX server returned an error message. Code: {0}"
+                        .format(response.status_code))      
         else:
-            raise ValueError("Error getting client({})".format(request.status_code))      
+            raise requests.exceptions.HTTPError("SDMX server returned an error message. Code: {0}"
+                    .format(response.status_code))      
         return xml_str
     
     
@@ -194,7 +216,7 @@ class Client:
         """
         
         
-        if not table: table = self.agencyID + '_dataflows' # set to default 
+        if not table: table = self.agencyID + '_dataflows' # default value for table name 
             
         if self.version == '2_1':
             url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
@@ -234,14 +256,14 @@ class Client:
                 keyid_path = ".//structure:KeyFamilyID"
                 for dataflow in tree.iterfind(dataflow_path,
                                                    namespaces=tree.nsmap):
-                    for id in dataflow.iterfind(keyid_path,
-                                                   namespaces=tree.nsmap):
-                        flowref = id.text               
+                    flowref = dataflow.find(keyid_path,
+                                                   namespaces=tree.nsmap).text
+               
                     agencyID = dataflow.get('agencyID')
                     version = dataflow.get('version')
-                    for title in dataflow.iterfind(name_path,
-                                                   namespaces=tree.nsmap):
-                        title_text = title.text
+                    title_text = dataflow.find(name_path,
+                                                   namespaces=tree.nsmap).text
+
                     row = ('"' + agencyID + '"', '"' + flowref + '"', 
                                    version, '"' + title_text + '"')
                     cur.execute(u'''INSERT INTO {0} VALUES 
@@ -258,7 +280,7 @@ class Client:
 
         :param flowRef: Identifier of the dataflow
         :type flowRef: str or sqlite3.Row
-        :return: dict"""
+        :return: OrderedDict"""
         if isinstance(flowRef, sqlite3.Row):
             flowRef = flowRef['flowref']
         if self.version == '2_1':
@@ -268,7 +290,7 @@ class Client:
             codelist_path = ".//str:Codelist"
             name_path = ".//com:Name"
             code_path = ".//str:Code"
-            self._codes = {}
+            _codes = OrderedDict()
             codelists = tree.xpath(codelists_path,
                                           namespaces=tree.nsmap)
             for codelists_ in codelists:
@@ -279,7 +301,7 @@ class Client:
                     name = name.text
                     # a dot "." can't be part of a JSON field name
                     name = re.sub(r"\.","",name)
-                    code = OrderedDict()
+                    code = {}
                     for code_ in codelist.iterfind(code_path,
                                                    namespaces=tree.nsmap):
                         code_key = code_.get('id')
@@ -287,7 +309,7 @@ class Client:
                                                 namespaces=tree.nsmap)
                         code_name = code_name[0]
                         code[code_key] = code_name.text
-                    self._codes[name] = code
+                    _codes[name] = code
         if self.version == '2_0':
             codelists_path = ".//message:CodeLists"
             codelist_path = ".//structure:CodeList"
@@ -295,7 +317,7 @@ class Client:
             description_path = ".//structure:Description"
             url = '/'.join([self.sdmx_url, 'KeyFamily', flowRef])
             tree = self.get_tree(url)
-            self._codes = {}
+            _codes = OrderedDict()
             codelists = tree.xpath(codelists_path,
                                           namespaces=tree.nsmap)
             for codelists_ in codelists:
@@ -313,8 +335,8 @@ class Client:
                                                 namespaces=tree.nsmap)
                         code_name = code_name[0]
                         code[code_key] = code_name.text
-                    self._codes[name] = code
-        return self._codes
+                    _codes[name] = code
+        return _codes
 
 
     def get_data(self, flowRef, key, startperiod=None, endperiod=None, 
@@ -393,7 +415,14 @@ class Client:
                         raw_dates.append(dimension)
                         raw_values.append(value)
                         raw_status.append(observation_status)
-                dates = PD.to_datetime(raw_dates)
+                if 'FREQ' in codes:
+                    if codes['FREQ'] == 'A':
+                        freq_str = 'Y'
+                    else: 
+                        freq_str = codes['FREQ']
+                    dates = PD.PeriodIndex(raw_dates, freq = freq_str)
+                else:
+                    dates = PD.to_datetime(raw_dates)
                 value_series = PD.TimeSeries(raw_values, index = dates, dtype = datatype, name = codes)
                 series_list.append(value_series)
                 
@@ -447,7 +476,14 @@ class Client:
                         raw_dates.append(dimension)
                         raw_values.append(value)
                         raw_status.append(observation_status)
-                dates = PD.to_datetime(raw_dates)
+                if 'FREQ' in codes:
+                    if codes['FREQ'] == 'A':
+                        freq_str = 'Y'
+                    else: 
+                        freq_str = codes['FREQ']
+                    dates = PD.PeriodIndex(raw_dates, freq = freq_str)
+                else:
+                    dates = PD.to_datetime(raw_dates)
                 value_series = PD.TimeSeries(raw_values, index = dates, dtype = datatype, name = codes)
                 series_list.append(value_series)
               
@@ -512,13 +548,13 @@ providers = {
                      '2_1','FAO')
     }    
 
-def client(name):
+def client(name, db_filename = ':memory:'):
     '''
     'Client' factory (convenience function).
-    Usage: my_client = client(<provider_name>)
+    Usage: my_client = client(<provider_name>, <database_filename>)
     To get standard provider names, print(sdmx.providers.keys())
+    'database_filename defaults to ':memory:' for an in-memory SQLite db.
     ''' 
-    return Client(*providers[name])
+    return Client(*providers[name], db_filename = db_filename)
 
-estat = client('Eurostat')
-# conn=estat.get_dataflows()
+        

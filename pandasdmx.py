@@ -540,8 +540,8 @@ class Client:
 providers = {
     'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                     '2_1','ESTAT'),
-    'ECB' : ('http://sdw-ws.ecb.europa.eu',
-                     '2_0','ECB'),
+    'ECB' : ('http://sdw-wsrest.ecb.europa.eu/service/',
+                     '2_1','ECB'),
     'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
                             '2_1','ILO'),
     'FAO' : ('http://data.fao.org/sdmx',

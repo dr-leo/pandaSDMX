@@ -58,9 +58,9 @@ the European statistics office. It provides data from national statistics office
 Step 1: Instantiate a 'Client' for Eurostat
 --------------------------------------------
 
-To instantiate an SDMX Client for Eurostat, we use the factory function 'client'. It 
-simply takes a name of a known SDMX provider 
-and passes the hard-coded parameters in 'pandasdmx.providers' to the 'Client' class's constructor.
+To instantiate an SDMX Client for Eurostat, we use the factory function 'client'. It takes a name of a known SDMX provider 
+and passes the parameters hard-coded in 'pandasdmx.providers' to the 'Client' class's constructor. Its
+second argument will be the filename of the SQLite database for the dataflows table.
 
 
 >>> from pandasdmx import client
@@ -100,7 +100,7 @@ Next, we select dataflows whose title (description) contains the word 'milk'.
 Step 3: Get human-readable descriptions of the content metadata
 -----------------------------------------------------------------------------
     
-By printing 'df.columns.levels' we can see the values of the structural metadata. Their meanings are explained
+The complete set of structural metadata is annotated in natural language 
 in so-called code-lists. You can download them as follows:
 
 >>> milk_codes = estat.get_codes(cows_milk)
@@ -127,13 +127,11 @@ the entire dataset as shown in the next step.
 Step 4: Download the dataset into a pandas DataFrame or a list of pandas series
 -------------------------------------------------------------------------------
 
-We shall use the get_data() method to actually download a dataset referenced by a flowref or a Row instance
+We shall use the get_data() method to actually download a dataset referenced by 
+a flowref or a Row instance
 containing a key named 'flowref' as shown above. 
 
-
->>> df, md = estat.get_data(milk_list[1], '', concat = True)
->>> md
-{'FREQ': 'A', 'UNIT': 'THS_T'}
+>>> df, md = estat.get_data(cows_milk, '', concat = True)
 >>> df.shape
 (46, 492)
 >>> df.columns.names
@@ -146,12 +144,13 @@ get_data() returns
 a 2-tuple: its first element is either a list of pandas timeseries 
 (concat = False) or a DataFrame (if concat = True). The structural metadata
 attached to the data is used to create a 
-multi-level column index for the DataFrame. 
+multi-level a.k.a. hierarchical column index for the DataFrame. 
 When returning a list of timeseries, their 'name' attributes contain the non-global metadata as
 NamedTuples.
 The second element of the 2-tuple is a dict
 containing global metadata describing the entire dataset. As each global key by definition takes on only one value,
 it is unsuitable to structure the data. Hence, it is disregarded when creating the column index.
+
 The second argument of get_data() (here: an empty string) could be used to narrow down the datasets using structural
 metadata. E.g., '...NL' would yield data solely on the Netherlands. 
      
@@ -200,10 +199,17 @@ While pandasdmx works well with Eurostat data, other institutions cause problems
 such as on data quality is currently ignored. So are categories, i.e. folders of dataflows; they are considered as a flat list. 
 For other features such as writing data to a local file, see the doc strings of the get_data and get_dataflows methods. 
  
-For a more detailed ToDo list consider the ToDo.rst file in the source distribution. Any help is much appreciated. 
+For a more detailed ToDo list consider the ToDo.rst file in the source distribution.
+
+5. How to contribute
+======================
+
+Development takes place on github. Feel free to file an
+`issue <https://github.com/dr-leo/pandaSDMX/issues>`_.  
+The author welcomes feedback by `e-mail <fhaxbox66@gmail.com>`_.  
   
   
-5. Change log
+6. Recent changes 
 ========================
 
 Version 0.1.2 (2014-09-17)

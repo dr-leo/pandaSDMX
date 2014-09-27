@@ -23,7 +23,7 @@ __all__ = ['client', 'Client']
 
 # Some constants
 
-# Descriptors of some data providers. Pass values to client() 
+# Descriptors for some data providers. Pass values to client() 
 providers = {
     'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                     '2_1','ESTAT'),
@@ -315,7 +315,7 @@ class Client:
             try:
                 url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
                 tree = self.get_tree(url, to_file = to_file, from_file = from_file)
-            except Error:
+            except Exception:
                 url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
                 tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             codelists_path = ".//str:Codelists"

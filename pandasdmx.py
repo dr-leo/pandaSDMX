@@ -21,6 +21,31 @@ from collections import OrderedDict, namedtuple
 
 __all__ = ['client', 'Client']
 
+# Some constants
+
+# Descriptors of some data providers. Pass values to client() 
+providers = {
+    'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
+                    '2_1','ESTAT'),
+    'ECB' : ('http://sdw-wsrest.ecb.int/service',
+                     '2_1','ECB'),
+    'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
+                            '2_1','ILO'),
+    'FAO' : ('http://data.fao.org/sdmx',
+                     '2_1','FAO')
+    }    
+
+# Time span conversions not supported by pandas:
+
+time_spans = {
+    'Q1' : '01-01',
+    'Q2' : '04-01',
+    'Q3' : '07-01',
+    'Q4' : '10-01',
+    'S1' : '01-01',
+    'S2' : '07-01'
+}    
+
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
 tuple_classes = []
 
@@ -123,11 +148,11 @@ class Client:
         :return: the xml data as string
         """
         
-        response = requests.get(url, timeout= 40)
+        response = requests.get(url, timeout= 400)
         
         if response.status_code == requests.codes.ok:
             xml_str = response.content
-            embed()
+            # embed()
         elif response.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
             parser = lxml.etree.XMLParser(
@@ -280,12 +305,19 @@ class Client:
 
         :param flowRef: Identifier of the dataflow
         :type flowRef: str or sqlite3.Row
-        :return: OrderedDict"""
+        :return: OrderedDict
+        """
+        
         if isinstance(flowRef, sqlite3.Row):
             flowRef = flowRef['flowref']
         if self.version == '2_1':
-            url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
-            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+            # Try with content constraint, otherwise get all codes
+            try:
+                url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
+                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+            except Error:
+                url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
+                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             codelists_path = ".//str:Codelists"
             codelist_path = ".//str:Codelist"
             name_path = ".//com:Name"
@@ -406,6 +438,10 @@ class Client:
                             observation_status = 'A'
                             if elem1.tag == GENERIC + 'ObsDimension':
                                 dimension = elem1.get('value')
+                                # Prepare time spans such as Q1 or S2 to make it parsable
+                                suffix = dimension[-2:]
+                                if suffix in time_spans:
+                                    dimension = dimension[:-2] + time_spans[suffix] 
                             elif elem1.tag == GENERIC + 'ObsValue':
                                 value = elem1.get('value')
                             elif elem1.tag == GENERIC + 'Attibutes':
@@ -537,17 +573,6 @@ class Client:
                 s.name = to_namedtuple([(k, s.name[k]) for k in sorted_keys])             
             return series_list, global_codes
     
-providers = {
-    'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
-                    '2_1','ESTAT'),
-    'ECB' : ('http://sdw-wsrest.ecb.europa.eu/service/',
-                     '2_1','ECB'),
-    'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
-                            '2_1','ILO'),
-    'FAO' : ('http://data.fao.org/sdmx',
-                     '2_1','FAO')
-    }    
-
 def client(name, db_filename = ':memory:'):
     '''
     'Client' factory (convenience function).

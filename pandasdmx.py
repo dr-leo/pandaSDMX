@@ -27,7 +27,7 @@ __all__ = ['client', 'Client']
 providers = {
     'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
                     '2_1','ESTAT'),
-    'ECB' : ('http://sdw-wsrest.ecb.int/service',
+    'ECB' : ('http://sdw-wsrest.ecb    .int/service',
                      '2_1','ECB'),
     'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
                             '2_1','ILO'),
@@ -190,10 +190,10 @@ class Client:
         return xml_str
     
     
-    def _init_database(self, tablename):
+    def _init_database(self, tablename, delete_rows = True):
         '''
         Helper method to initialize database.
-        Called by dataflows()
+        Called by get_dataflows()
         Return: sqlite3.Connection
         '''
         if not self.db:
@@ -203,10 +203,11 @@ class Client:
             (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text)'''.format( 
             tablename))
         # Delete any pre-existing rows
-        anyrows = self.db.execute('SELECT * FROM {0}'.format(
-            tablename)).fetchone()
-        if anyrows:
-            self.db.execute('DELETE FROM {0}'.format(tablename))
+        if delete_rows:
+            anyrows = self.db.execute('SELECT * FROM {0}'.format(
+                tablename)).fetchone()
+            if anyrows:
+                self.db.execute('DELETE FROM {0}'.format(tablename))
         return self.db
 
     def get_dataflows(self, language = 'en', to_file = None, from_file = None,
@@ -311,13 +312,8 @@ class Client:
         if isinstance(flowRef, sqlite3.Row):
             flowRef = flowRef['flowref']
         if self.version == '2_1':
-            # Try with content constraint, otherwise get all codes
-            try:
-                url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
-                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
-            except Exception:
-                url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
-                tree = self.get_tree(url, to_file = to_file, from_file = from_file)
+            url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID, 'DSD_' + flowRef])
+            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             codelists_path = ".//str:Codelists"
             codelist_path = ".//str:Codelist"
             name_path = ".//com:Name"
@@ -370,7 +366,14 @@ class Client:
                     _codes[name] = code
         return _codes
 
-
+    def get_constraints(self, flowref):
+        """
+        return content constraints i.e. codes available
+        for a given dataflow.
+        to be completed.
+        """
+        
+        url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
     def get_data(self, flowRef, key, startperiod=None, endperiod=None, 
         to_file = None, from_file = None, 
         concat = False):
@@ -572,6 +575,30 @@ class Client:
                 for k in global_codes: s.name.pop(k)
                 s.name = to_namedtuple([(k, s.name[k]) for k in sorted_keys])             
             return series_list, global_codes
+
+    def find(self, keyword):
+        """
+        Wrapper for SQL query in "SELECT * FROM <AgencyID>_dataflows
+        WHERE title LIKE '%<keyword>%'")
+        If dataflows have not been downloaded, get_dataflows method is called first.
+        return search result as list of sqlite3.Row instances
+        """
+        name = self.agencyID + "_dataflows"
+        if not self.db:
+            self._init_database(name, delete_rows = False)
+        # Is list of dataflows already in the database?
+        cur = self.db.cursor()
+        tables = cur.execute("SELECT * FROM SQLITE_MASTER")
+        exists = [t for t in tables if t['name'] == name]
+        # is it empty?
+        if exists:
+            first_row = cur.execute("SELECT * FROM {0}".format(name)).fetchone() 
+        if not exists or not first_row: 
+            self.get_dataflows()
+        cur = self.db.execute(u"SELECT * FROM {0} WHERE title LIKE '%{1}%'"
+        .format(name, keyword))
+        return cur.fetchall()
+    
     
 def client(name, db_filename = ':memory:'):
     '''

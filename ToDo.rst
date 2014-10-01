@@ -8,7 +8,7 @@ pandaSDMX - ToDo
 In v0.1, only a fraction of the SDMX standards is supported. v2.0 support is experimental. 
 Eurostat works quite well though. 
  
-1.1 data acquisition
+1.1 get_data 
 ~~~~~~~~~~~~~~
 
 * data: observation status and observation flags are ignored. Decide how best to
@@ -19,28 +19,32 @@ Eurostat works quite well though.
   conversion configurable. Handle categorical data if any
 * handle non-time series data
 * handle mixed-frequency data: return a list of DataFrames rather than trying to 
-  cooerce them into one.
+  coerce them into one. Allow to specify thru concat arg a key such as GEO whose values will 
+  make a dataframe.
+  * keys (= filter data by code value): abolish the '...DE' syntax. Use
+  kwargs instead. Validate them using content constraints (= dataset-specific codes)
 
-1.2 code lists
-   ~~~~~~~~~~~~~
 
-The order of keys in the OrderedDict returned by the get_codes mdthod
+1.2 get_codes
+   ~~~~~~~~~
+
+The order of keys in the OrderedDict returned by the get_codes method
 does not correspond to the actual order required to construct the 'key' string
 to pas to the get_data method as second argument. Find out why and how to fix it.
 Do we have to request the list of keys in correct order separately?
 
+
 Add attribute syntax by subclassing OrderedDict. Or is that possible already?
 
+* add get_constraints method for the list of codes used by a specified dataset (without
+natural language description which are only contained in code_lists
+* add feature to request items from an item scheme. Do not quite understand this yet.
 
-   1.3 dataflows
+   1.3 get_dataflows
    ~~~~~~~~~~~~~~
    
-   * in v0.1, categories are ignored. 
-* ECB: flowrefs are not unique. Do categories solve this problem?
-  There are 46 unique dataflows and 666 dataflows returned. Titles are often identical.
-  Do not understand this. Maybe categories will solve this problem. But a flowref does not uniquely identify
-  a dataset. Call get_data() differently? Need to better understand SDMX 2.0 to
-  solve this problem.
+   * add feature: Get categories and make table of dategories in the database 
+   * get categorizations linking dataflows to categories
 
    
    1.4 Web service / http
@@ -54,8 +58,9 @@ Add attribute syntax by subclassing OrderedDict. Or is that possible already?
 --------------------
 
 * handle mixed-frequency data.
-* when constructing PeriodIndex, make sure the right strings are passed as freq. Currently,
-  only 'A' is converted to 'Y'.  
+    handle non-timeseries data
+    attach global metadata to df rather than as separate dict
+    handle obs_status etc.
     
    
     3. Database support

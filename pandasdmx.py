@@ -565,14 +565,10 @@ class Client:
             # Remove any global codes from the list
             sorted_keys = [k for k in concat if k not in global_codes.keys()] 
         if concat:    
-            # Construct the multi-index from the Cartesian product of the sets.
-            # This may generate too many columns if not all possible 
-            # tuples are needed. But it seems very difficult to construct a
-            # minimal multi-index from the series_list.
-            
-            column_index = PD.MultiIndex.from_product(
-                [code_sets[k] for k in sorted_keys])
-            column_index.names = sorted_keys 
+            # Construct the multi-index from the Series.name tuples
+            raw_index = [tuple([getattr(s.name, k) for k in sorted_keys]) 
+                          for s in series_list]  
+            column_index = PD.MultiIndex.from_tuples(raw_index, names = sorted_keys)
             df = PD.DataFrame(columns = column_index, index = series_list[0].index)
                 # Add the series to the DataFrame. Generate column keys from the metadata        
             for s in series_list:

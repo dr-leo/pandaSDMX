@@ -182,7 +182,7 @@ Name: (DE, MM241), dtype: float64
 
 Above we have used dict-like syntax. But pandas even allows attribute-like column selection:
     
->>> ratio = df.DE.MM241 / df.FR.MM241
+>>> ratio = df.FR.MM241 / df.DE.MM241
 >>> ratio.head()
 2013-01-01    0.810895
 2012-01-01    0.811161

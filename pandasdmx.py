@@ -548,10 +548,10 @@ class Client:
                 return [], {}
             
         # Prepare the codes, remove global codes applying to all series.
-        code_sets = {k : list(set([getattr(s.name, k) for s in series_list])) 
+        code_sets = {k : set([getattr(s.name, k) for s in series_list]) 
                      for k in series_list[0].name._fields}
             
-        global_codes = {k : code_sets[k][0] for k in code_sets 
+        global_codes = {k : code_sets[k].pop() for k in code_sets 
                             if len(code_sets[k]) == 1}
         # Remove global codes as they should not lead to index levels in the DataFrame 
         for k in global_codes: code_sets.pop(k)
@@ -570,10 +570,9 @@ class Client:
                           for s in series_list]  
             column_index = PD.MultiIndex.from_tuples(raw_index, names = sorted_keys)
             df = PD.DataFrame(columns = column_index, index = series_list[0].index)
-                # Add the series to the DataFrame. Generate column keys from the metadata        
-            for s in series_list:
-                column_pos = [getattr(s.name, k) for k in sorted_keys]
-                df[tuple(column_pos)] = s
+            # Add the series to the DataFrame
+            for pos, s in zip(raw_index, series_list): df[pos] = s       
+            
             #  Attach global metadata
             df.metadata = global_codes 
             return df

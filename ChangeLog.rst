@@ -12,8 +12,8 @@ v0.2dev
 * attach global codes to DataFrame by setting
   a custom metadata attribute. In v0.1.2, global metadata was returned as a separate dict
 * refactor get_data to delegate parsing of xml tree to a separate
-  parse_data generator function. 
-  
+  parse_data generator function. Enable overriding in subclasses
+    * generate multi-index much more efficiently using from_tuples instead of from_product  
 
 
 

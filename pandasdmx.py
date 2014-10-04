@@ -381,7 +381,7 @@ class Client:
         """
         generator to parse data from xml. Iterate over series
         """
-        
+        CodeTuple = None
         GENERIC = '{'+tree.nsmap['generic']+'}'
         for series in tree.iterfind(".//generic:Series",
                                          namespaces=tree.nsmap):
@@ -391,9 +391,12 @@ class Client:
             
             for elem in series.iterchildren():
                 if elem.tag == GENERIC + 'SeriesKey':
-                    codes = {}
+                    code_keys = [] 
+                    code_values = []
                     for value in elem.iter(GENERIC + "Value"):
-                        codes[value.get('id')] = value.get('value')
+                        if not CodeTuple:
+                            code_keys.append(value.get('id')) 
+                        code_values.append(value.get('value'))
                 elif elem.tag == GENERIC + 'Obs':
                     for elem1 in elem.iterchildren():
                         observation_status = 'A'
@@ -409,6 +412,9 @@ class Client:
                             for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
                                 namespaces=tree.nsmap):
                                 observation_status = elem2.get('value')
+                    if not CodeTuple:
+                        CodeTuple = namedtuple('CodeTuple', code_keys) 
+                    codes = CodeTuple(*tuple(code_values))
                     raw_dates.append(dimension)
                     raw_values.append(value)
                     raw_status.append(observation_status)
@@ -466,16 +472,16 @@ class Client:
             tree = self.get_tree(url, to_file = to_file, from_file = from_file)
             # Iterate over the series  
             for codes, raw_dates, raw_values, raw_status in self.parse_data(tree):
-                if 'FREQ' in codes:
-                    if codes['FREQ'] == 'A':
+                if 'FREQ' in codes._fields:
+                    if codes.FREQ == 'A':
                         freq_str = 'Y'
                     else: 
-                        freq_str = codes['FREQ']
+                        freq_str = codes.FREQ
                     dates = PD.PeriodIndex(raw_dates, freq = freq_str)
                 else:
                     dates = PD.to_datetime(raw_dates)
                 value_series = PD.TimeSeries(raw_values, index = dates, 
-                            dtype = datatype, name = to_namedtuple(codes))
+                            dtype = datatype, name = codes)
                 series_list.append(value_series)
                 
         elif self.version == '2_0':

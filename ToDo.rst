@@ -53,6 +53,8 @@ natural language description which are only contained in code_lists
    * in v0.1, only Eurostats works well. FAO, ILO etc. cause errors.
 * either generalize Client.request() or subclass Client for providers other than Eurostat.
 * use WADL and/or WSDL to make requests according to the service's properties
+* consider RESTful client libs such as docar, wac or alfresco, restclient,
+  py-restclient, drest (sounds good).  
 
 2. pandas output
 --------------------

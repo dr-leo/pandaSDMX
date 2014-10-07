@@ -10,7 +10,7 @@ from codecs import open
 long_descr = open('description.rst', 'r').read()
 
 setup(name='pandaSDMX',
-	version='0.1.2',
+	version='0.2dev',
     description='A Python- and pandas-powered client for Statistical Data and Metadata eXchange',
     long_description = long_descr,
     author='Dr. Leo',

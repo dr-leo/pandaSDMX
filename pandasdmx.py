@@ -47,40 +47,115 @@ time_spans = {
 }    
 
 # Allow easy checking for existing namedtuple classes that can be reused for column metadata  
-tuple_classes = []
+tuple_classes = {}
 
-def to_namedtuple(mapping):
+def make_namedtuple(fields):
     """
-    Convert a list of (key,value) tuples into a namedtuple. 
-    If there is not already 
-    a suitable class in 'tuple_classes', Create a new class first 
-    and append it to the list.
+    Wrap namedtuple function from the collections stdlib module
+    to return a singleton if a nametuple with the same field names
+    has already been created. 
         
-    return a namedtuple instance
+    return a subclass of tuple instance as does namedtuple
     """
-    # convert to OrderedDict
-    codes = OrderedDict()
-    for k,v in mapping.items(): 
-        codes[k] = v
-    # Check if there is already a suitable class
-    for t in tuple_classes:
-        try:
-            code_tuple = t(**codes)
-            break
-        except TypeError:
-            if t is tuple_classes[-1]: 
-                tuple_classes.append(namedtuple(
-                'CodeTuple' + str(len(tuple_classes)), codes.keys()))
-                code_tuple = tuple_classes[-1](**codes)
-    else:
-        tuple_classes.append(namedtuple(
-            'CodeTuple' + str(len(tuple_classes)), codes.keys()))
-        code_tuple = tuple_classes[0](**codes)
-    return code_tuple
+    fields = tuple(fields)
+    if not fields in tuple_classes: 
+        tuple_classes[fields] = namedtuple(
+            'SDMXMetadata', fields)
+    return tuple_classes[fields]
+
+class Data20:
+    """
+    Data parser for SDMX 2.0
+    """
+    
+    def parse_data(self, tree):
+        CodeTuple = None
+        for series in tree.iterfind(".//generic:Series",
+                                 namespaces=tree.nsmap):
+            raw_dates, raw_values, raw_status = [], [], []
+            code_keys, code_values = [], []
+            for codes_ in series.iterfind(".//generic:SeriesKey",
+                                       namespaces=tree.nsmap):
+                for key in codes_.iterfind(".//generic:Value",
+                                           namespaces=tree.nsmap):
+                    
+                    if not CodeTuple: code_keys.append(key.get('concept')) 
+                    code_values.append(key.get('value'))
+            if not CodeTuple:
+                CodeTuple = make_namedtuple(code_keys) 
+            codes = CodeTuple._make(code_values)
+                           
+            for observation in series.iterfind(".//generic:Obs",
+                                               namespaces=tree.nsmap):
+                dimensions = observation.xpath(".//generic:Time",
+                                               namespaces=tree.nsmap)
+                values = observation.xpath(".//generic:ObsValue",
+                                           namespaces=tree.nsmap)
+                value = values[0].get('value')
+                observation_status = 'A'
+                for attribute in \
+                    observation.iterfind(".//generic:Attributes",
+                                         namespaces=tree.nsmap):
+                    for observation_status_ in \
+                        attribute.xpath(
+                            ".//generic:Value[@concept='OBS_STATUS']",
+                            namespaces=tree.nsmap):
+                        if observation_status_:
+                            observation_status \
+                                = observation_status_.get('value')
+                                
+                raw_dates.append(dimensions)
+                raw_values.append(value)
+                raw_status.append(observation_status)
+            yield codes, raw_dates, raw_values, raw_status
+        
             
+class Data21:
+    """
+    Data-related methods
+    """
+    
+    def parse_data(self, tree):
+        """
+        generator to parse data from xml. Iterate over series
+        """
+        CodeTuple = None
+        GENERIC = '{'+tree.nsmap['generic']+'}'
+        for series in tree.iterfind(".//generic:Series",
+                                         namespaces=tree.nsmap):
+            raw_dates, raw_values, raw_status = [], [], []
+            
+            for elem in series.iterchildren():
+                if elem.tag == GENERIC + 'SeriesKey':
+                    code_keys, code_values = [], []
+                    for value in elem.iter(GENERIC + "Value"):
+                        if not CodeTuple: code_keys.append(value.get('id')) 
+                        code_values.append(value.get('value'))
+                elif elem.tag == GENERIC + 'Obs':
+                    for elem1 in elem.iterchildren():
+                        observation_status = 'A'
+                        if elem1.tag == GENERIC + 'ObsDimension':
+                            dimension = elem1.get('value')
+                            # Prepare time spans such as Q1 or S2 to make it parsable
+                            suffix = dimension[-2:]
+                            if suffix in time_spans:
+                                dimension = dimension[:-2] + time_spans[suffix]
+                            raw_dates.append(dimension) 
+                        elif elem1.tag == GENERIC + 'ObsValue':
+                            value = elem1.get('value')
+                            raw_values.append(value)
+                        elif elem1.tag == GENERIC + 'Attibutes':
+                            for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
+                                namespaces=tree.nsmap):
+                                observation_status = elem2.get('value')
+                            raw_status.append(observation_status)
+            if not CodeTuple:
+                CodeTuple = make_namedtuple(code_keys) 
+            codes = CodeTuple._make(code_values)
+            yield codes, raw_dates, raw_values, raw_status 
         
                
-class Client:
+class Client(Data21):
     """Data provider. This is the main class that allows practical access to all the data.
 
     :ivar sdmx_url: The URL of the SDMX endpoint, the webservice employed to access the data.
@@ -96,6 +171,7 @@ class Client:
         self.version = version
         self.db_filename = db_filename
         self.db = None # database connector
+        self.data = Data21()
 
 
     def __repr__(self):
@@ -148,7 +224,7 @@ class Client:
         :return: the xml data as string
         """
         
-        response = requests.get(url, timeout= 400)
+        response = requests.get(url, timeout= 15.1)
         
         if response.status_code == requests.codes.ok:
             xml_str = response.content
@@ -377,55 +453,11 @@ class Client:
         
         url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
         
-    def parse_data(self, tree):
-        """
-        generator to parse data from xml. Iterate over series
-        """
-        CodeTuple = None
-        GENERIC = '{'+tree.nsmap['generic']+'}'
-        for series in tree.iterfind(".//generic:Series",
-                                         namespaces=tree.nsmap):
-            raw_dates = []
-            raw_values = []
-            raw_status = []
-            
-            for elem in series.iterchildren():
-                if elem.tag == GENERIC + 'SeriesKey':
-                    code_keys = [] 
-                    code_values = []
-                    for value in elem.iter(GENERIC + "Value"):
-                        if not CodeTuple:
-                            code_keys.append(value.get('id')) 
-                        code_values.append(value.get('value'))
-                elif elem.tag == GENERIC + 'Obs':
-                    for elem1 in elem.iterchildren():
-                        observation_status = 'A'
-                        if elem1.tag == GENERIC + 'ObsDimension':
-                            dimension = elem1.get('value')
-                            # Prepare time spans such as Q1 or S2 to make it parsable
-                            suffix = dimension[-2:]
-                            if suffix in time_spans:
-                                dimension = dimension[:-2] + time_spans[suffix] 
-                        elif elem1.tag == GENERIC + 'ObsValue':
-                            value = elem1.get('value')
-                        elif elem1.tag == GENERIC + 'Attibutes':
-                            for elem2 in elem1.iter(".//generic:Value[@id='OBS_STATUS']",
-                                namespaces=tree.nsmap):
-                                observation_status = elem2.get('value')
-                    if not CodeTuple:
-                        CodeTuple = namedtuple('CodeTuple', code_keys) 
-                    codes = CodeTuple(*tuple(code_values))
-                    raw_dates.append(dimension)
-                    raw_values.append(value)
-                    raw_status.append(observation_status)
-            yield codes, raw_dates, raw_values, raw_status 
-                
         
     def get_data(self, flowRef, key, startperiod=None, endperiod=None, 
         to_file = None, from_file = None, 
         concat = False):
-        """Get data
-
+        """
         :param flowRef: an identifier of the data
         :type flowRef: str or sqlite3.Row from the table created 
         by the dataflows() method 
@@ -469,21 +501,7 @@ class Client:
             else:
                 query = '/'.join([resource, flowRef, key])
             url = '/'.join([self.sdmx_url,query])
-            tree = self.get_tree(url, to_file = to_file, from_file = from_file)
-            # Iterate over the series  
-            for codes, raw_dates, raw_values, raw_status in self.parse_data(tree):
-                if 'FREQ' in codes._fields:
-                    if codes.FREQ == 'A':
-                        freq_str = 'Y'
-                    else: 
-                        freq_str = codes.FREQ
-                    dates = PD.PeriodIndex(raw_dates, freq = freq_str)
-                else:
-                    dates = PD.to_datetime(raw_dates)
-                value_series = PD.TimeSeries(raw_values, index = dates, 
-                            dtype = datatype, name = codes)
-                series_list.append(value_series)
-                
+            
         elif self.version == '2_0':
             resource = 'GenericData'
             key__ = ''
@@ -498,60 +516,31 @@ class Client:
             else:
                 query = resource + '?dataflow=' + flowRef + key
             url = '/'.join([self.sdmx_url,query])
-            tree = self.get_tree(url)
+            
+        tree = self.get_tree(url, to_file = to_file, from_file = from_file)
 
-            for series in tree.iterfind(".//generic:Series",
-                                             namespaces=tree.nsmap):
-                raw_dates = []
-                raw_values = []
-                raw_status = []
-                
-                codes = {}
-                for codes_ in series.iterfind(".//generic:SeriesKey",
-                                           namespaces=tree.nsmap):
-                    for key in codes_.iterfind(".//generic:Value",
-                                               namespaces=tree.nsmap):
-                        codes[key.get('concept')] = key.get('value')
-                for observation in series.iterfind(".//generic:Obs",
-                                                   namespaces=tree.nsmap):
-                    dimensions = observation.xpath(".//generic:Time",
-                                                   namespaces=tree.nsmap)
-                    values = observation.xpath(".//generic:ObsValue",
-                                               namespaces=tree.nsmap)
-                    value = values[0].get('value')
-                    observation_status = 'A'
-                    for attribute in \
-                        observation.iterfind(".//generic:Attributes",
-                                             namespaces=tree.nsmap):
-                        for observation_status_ in \
-                            attribute.xpath(
-                                ".//generic:Value[@concept='OBS_STATUS']",
-                                namespaces=tree.nsmap):
-                            if observation_status_:
-                                observation_status \
-                                    = observation_status_.get('value')
-
-                        raw_dates.append(dimension)
-                        raw_values.append(value)
-                        raw_status.append(observation_status)
-                if 'FREQ' in codes:
-                    if codes['FREQ'] == 'A':
-                        freq_str = 'Y'
-                    else: 
-                        freq_str = codes['FREQ']
-                    dates = PD.PeriodIndex(raw_dates, freq = freq_str)
-                else:
-                    dates = PD.to_datetime(raw_dates)
-                value_series = PD.TimeSeries(raw_values, index = dates, dtype = datatype, name = codes)
-                series_list.append(value_series)
-              
-        else: raise ValueError("SDMX version must be either '2_0' or '2_1'. %s given." % self.version)
+            
+        # Iterate over the series  
+        for codes, raw_dates, raw_values, raw_status in self.data.parse_data(tree):
+            if 'FREQ' in codes._fields:
+                if codes.FREQ == 'A':
+                    freq_str = 'Y'
+                else: 
+                    freq_str = codes.FREQ
+                dates = PD.PeriodIndex(raw_dates, freq = freq_str)
+            else:
+                dates = PD.to_datetime(raw_dates)
+            value_series = PD.TimeSeries(raw_values, index = dates, 
+                        dtype = datatype, name = codes)
+            series_list.append(value_series)
+            
+            
         # Handle empty lists
         if series_list == []: 
             if concat:
-                return PD.DataFrame(), {}
+                return PD.DataFrame()
             else:
-                return [], {}
+                return [] 
             
         # Prepare the codes, remove global codes applying to all series.
         code_sets = {k : set([getattr(s.name, k) for s in series_list]) 
@@ -580,7 +569,7 @@ class Client:
             for pos, s in zip(raw_index, series_list): df[pos] = s       
             
             #  Attach global metadata
-            df.metadata = global_codes 
+            # df.metadata = global_codes 
             return df
             
         else:
@@ -608,7 +597,8 @@ class Client:
         cur = self.db.execute(u"SELECT * FROM {0} WHERE title LIKE '%{1}%'"
         .format(name, keyword))
         return cur.fetchall()
-    
+
+        
     
 def client(name, db_filename = ':memory:'):
     '''

@@ -38,12 +38,13 @@ pandaSDMX has the following dependencies:
 * `requests <https://pypi.python.org/pypi/requests/>`_
 * `LXML <https://pypi.python.org/pypi/lxml/>`_ 
 
-It is recommended to use one of the pre-packaged Python distributions
-for scientific computing and data analysis rather than having pip install the dependencies. 
+Instead of pip-installing the dependencies, it is recommended to use a Python distribution
+for scientific computing and data analysis such as 
+`Anaconda <https://store.continuum.io/cshop/anaconda/>`_ or
+`Canopy <https://www.enthought.com/products/canopy/>`_. 
 Scientific Python distributions include, 
 among many other useful things, the interactive Python shell `IPython <http://ipython.org/>`_ 
-which is a must-have when working with data. The author uses 
-`Anaconda <https://store.continuum.io/cshop/anaconda/>`_. 
+which is a must-have when working with data. 
 For other Python distributions (not only scientific) see
 `here <https://wiki.python.org/moin/PythonDistributions>`_.  
   

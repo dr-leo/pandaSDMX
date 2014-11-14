@@ -1,5 +1,4 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 
 from setuptools import setup
@@ -15,7 +14,7 @@ setup(name='pandaSDMX',
     long_description = long_descr,
     author='Dr. Leo',
     author_email='fhaxbox66@gmail.com',
-      py_modules=['pandasdmx'],
+    packages =['pandasdmx'],
       url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',

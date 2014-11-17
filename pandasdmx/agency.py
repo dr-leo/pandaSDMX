@@ -17,27 +17,14 @@ from pandasdmx import resource, client
 
 
 
-# # Descriptors for some data providers. Pass values to client() 
-# providers = {
-#     'Eurostat' : ('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest',
-#                     '2_1','ESTAT'),
-#     'ECB' : ('http://sdw-wsrest.ecb.int/service',
-#                      '2_1','ECB'),
-#     'ILO' : ('http://www.ilo.org/ilostat/sdmx/ws/rest/',
-#                             '2_1','ILO'),
-#     'FAO' : ('http://data.fao.org/sdmx',
-#                      '2_1','FAO')
-#     }    
-
-
 class Agency(Configurable):
     """
     Base class for agencies. Contains data on the web service.
     """
    
 
-    client = Instance('pandasdmx.client.BaseClient', config = True, help = """
-    client to communicate with the web service""")
+    client = Instance(client.BaseClient, config = True, help = """
+    REST or similar client to communicate with the web service""")
     data = Instance('pandasdmx.resource.Data21', config = True, help = 
         """class path of the data resource""")
     
@@ -53,19 +40,21 @@ class ECB(Agency):
     European Central Bank
     """
 
-    url = 'http://sdw-wsrest.ecb.int/service'
+    base_url = 'http://sdw-wsrest.ecb.int/service'
     id = 'ECB'
     
     def __init__(self):
         super(ECB, self).__init__()
+        self.client = client.BaseClient(self.base_url)
+        self.data = resource.Data21(self.client)
 
 
-class Eurostat(Agency):
+class Eurostat(ECB):
     """
     Statistical office of the European Union
     """
 
-    url = 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'
+    base_url = 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'
     id = 'ESTAT'
     
     def __init__(self):

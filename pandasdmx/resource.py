@@ -40,24 +40,22 @@ def make_namedtuple(fields):
 
 
 class Resource(Configurable):
-    base_url = Unicode(config = True, help="""
-    Base URL of the web service for this SDMX resource""")
     
-    def __init__(self):
+    def __init__(self, client):
         super(Resource, self).__init__()
+        self.client = client
     
-    @classmethod
-    def get_source(cls, func):
-        def wrap(self, *args, **kwds): pass
-        return wrap
+    
+    def download(self, *args, **kwargs):
+        url = self.make_url(*args, **kwargs)
         
-    
+
     def make_url(self): pass
     
     def parse(self): raise NotImplemented
     
     def render(self, source, combine = False):
-        result_list = [self.transform(l) for l in self.parse(source)]
+        result_list = [self.transform(*l) for l in self.parse(source)]
         if combine: return self.combine(result_list)
         else: return result_list
 
@@ -69,25 +67,27 @@ class Resource(Configurable):
 class Data21(Resource):
     resource_name = 'data'
     """
-    Data in SDMX v2.1
+    Data resource in SDMX v2.1
     """
     
-    def __init__(self, base_url):
-        super(Data21, self).__init__()
-        self.base_url = base_url
+    def __init__(self, client):
+        super(Data21, self).__init__(client)
+        
     
 
     def make_url(self, *args, **kwargs):
-        flowref, key = args
-        query_url = '/'.join([self.base_url, self.resource_name, flowRef, key])
+        flowref = args[0]
         try:
+            key = args[1]
+        except IndexError: key = ''
+        query_url = '/'.join([self.resource_name, flowref, key])
+        if kwargs['startperiod'] and kwargs['endperiod']: 
             query_url += '?startperiod={0}&endPeriod={1}'.format(
                                                 kwargs['startperiod'], kwargs['endperiod'])
-        except KeyError: pass
         return query_url
     
-    @get_source
-    def get(self, source, startperiod=None, endperiod=None, 
+    
+    def get(self, *args, startperiod=None, endperiod=None, 
             to_file = None, from_file = None, 
             concat = False):
         """
@@ -116,14 +116,13 @@ class Data21(Resource):
         to the dataframe in a special attribute meta.
         """
         
-        if isinstance(flowRef, sqlite3.Row):
-            flowRef = flowRef['flowref']
-        
         # dtype for Series. Future versions should support other dtypes 
         # such as int or categorical.
-        self.datatype = NP.float64            
-        # Iterate over the series
-        self.render()
+        self.datatype = NP.float64
+        # Construct the URL and get source file
+        url = self.make_url(*args, startperiod = startperiod, endperiod = endperiod)
+        source = self.client.get(url)
+        return self.render(source, combine = concat)
  
     def parse(self, source):
         """
@@ -403,7 +402,7 @@ class Dataflow:
         self.db.commit()
         return self.db 
         
-        class Codes:
+class Codes:
     def get_codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions
 

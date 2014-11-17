@@ -1,7 +1,9 @@
 # encoding: utf-8
 
-from IPython.config.configurable import Configurable 
+from IPython.config.configurable import Configurable
+from IPython.utils.traitlets import Int 
 import requests
+from tempfile import SpooledTemporaryFile as STF
 from io import BytesIO
 import re, zipfile, time
 
@@ -12,9 +14,16 @@ class BaseClient(Configurable):
     """
     Query resources via REST
     """
+    max_size = Int(2**24, config=True, 
+                   help='max size of in-memory file before spooling to disk')
             
-                     
-    def get_source(self, url, to_file = None, from_file = None):
+    def __init__(self, base_url):
+        super(BaseClient, self).__init__()
+        self.base_url = base_url
+        
+        
+                             
+    def get(self, url, to_file = None, from_file = None):
         '''
         Read file from URL or local file.
         Store the fetched string in a local file if specified to save download time next time.
@@ -26,7 +35,8 @@ class BaseClient(Configurable):
             source = open(from_file, 'rb')
                 
         else:
-            source = self.request(url) 
+            final_url = '/'.join([self.base_url, url])
+            source = self.request(final_url) 
         
         if to_file:
             with open(to_file, 'wb') as f:
@@ -49,7 +59,10 @@ class BaseClient(Configurable):
         response = requests.get(url, stream = True, timeout= 30.1)
         
         if response.status_code == requests.codes.ok:
-            source  = response.raw 
+            source  = STF(max_size = self.max_size)
+            for c in response.iter_content(chunk_size = 1000000):
+                source.write(c)
+            source.seek(0)
         elif response.status_code == 430:
             #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
             parser = lxml.etree.XMLParser(

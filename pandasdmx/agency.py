@@ -8,13 +8,15 @@
 
 .. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
 '''
-# uncomment this for debugging and use embed() to invoke an ipython shell
-# from IPython import embed
+
+
 
 from IPython.config.configurable import Configurable
 from IPython.utils.traitlets import Instance
 from pandasdmx import resource, client 
 
+
+__all__ = ['ECB', 'Eurostat']
 
 
 class Agency(Configurable):

@@ -10,7 +10,7 @@ import re, zipfile, time
 
 
 
-class BaseClient(Configurable):
+class REST(Configurable):
     """
     Query resources via REST
     """
@@ -18,7 +18,7 @@ class BaseClient(Configurable):
                    help='max size of in-memory file before spooling to disk')
             
     def __init__(self, base_url):
-        super(BaseClient, self).__init__()
+        super(REST, self).__init__()
         self.base_url = base_url
         
         

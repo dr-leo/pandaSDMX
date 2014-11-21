@@ -12,7 +12,7 @@
 
 
 from IPython.config.configurable import Configurable
-from IPython.utils.traitlets import Instance
+from IPython.utils.traitlets import Instance, Unicode
 from pandasdmx import resource, client 
 
 
@@ -25,7 +25,7 @@ class Agency(Configurable):
     """
    
 
-    client = Instance(client.BaseClient, config = True, help = """
+    client = Instance(client.REST, config = True, help = """
     REST or similar client to communicate with the web service""")
     data = Instance('pandasdmx.resource.Data21', config = True, help = 
         """class path of the data resource""")
@@ -42,13 +42,15 @@ class ECB(Agency):
     European Central Bank
     """
 
-    base_url = 'http://sdw-wsrest.ecb.int/service'
-    id = 'ECB'
+    base_url = Unicode('http://sdw-wsrest.ecb.int/service')
+    agency_id = Unicode('ECB')
+    client = Instance(client.REST, config=True, help='client class e.g. for REST access')
     
     def __init__(self):
         super(ECB, self).__init__()
-        self.client = client.BaseClient(self.base_url)
-        self.data = resource.Data21(self.client)
+        self.client = client.REST(self.base_url)
+        self.data = resource.Data21(self.agency_id, self.client)
+        self.catalogue = resource.Dataflow21(self.agency_id, self.client)
 
 
 class Eurostat(ECB):
@@ -57,7 +59,7 @@ class Eurostat(ECB):
     """
 
     base_url = 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'
-    id = 'ESTAT'
+    agency_id = 'ESTAT'
     
     def __init__(self):
         super(Eurostat, self).__init__()

@@ -22,7 +22,7 @@ class Storage(Configurable):
     def __init__(self, params):
         super(Storage, self).__init__()
         
-    def find(selfself, word):
+    def find(self, word):
         return Storage.backend.find(word)
     
                 
@@ -81,3 +81,24 @@ class SQLite(Backend):
         .format(name, keyword))
         return cur.fetchall()
 
+    def _init_database(self, tablename, delete_rows = True):
+        
+        '''
+        Helper method to initialize database.
+        Called by get_dataflows()
+        Return: sqlite3.Connection
+        '''
+        if not self.db:
+            self.db = sqlite3.connect(self.db_filename)
+            self.db.row_factory = sqlite3.Row
+        self.db.execute(u'''CREATE TABLE IF NOT EXISTS {0} 
+            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text)'''.format( 
+            tablename))
+        # Delete any pre-existing rows
+        if delete_rows:
+            anyrows = self.db.execute('SELECT * FROM {0}'.format(
+                tablename)).fetchone()
+            if anyrows:
+                self.db.execute('DELETE FROM {0}'.format(tablename))
+        return self.db
+        

@@ -9,6 +9,8 @@
 .. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
 '''
   
+__all__ = ['ECB', 'Eurostat']
 
+from pandasdmx.agency import *
 
 

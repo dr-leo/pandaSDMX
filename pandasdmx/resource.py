@@ -3,7 +3,7 @@
 import pandas as PD
 import numpy as NP
 import lxml.etree
-from IPython.utils.traitlets import Instance, Unicode
+from IPython.utils.traitlets import Unicode
 from IPython.config.configurable import Configurable
 from collections import OrderedDict, namedtuple
 
@@ -41,26 +41,31 @@ def make_namedtuple(fields):
 
 class Resource(Configurable):
     
-    def __init__(self, client):
+    def __init__(self, agency_id, client, **kwargs):
         super(Resource, self).__init__()
         self.client = client
+        self.agency_id = agency_id
     
-    
-    def download(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
+        # Construct the URL and get source file
         url = self.make_url(*args, **kwargs)
-        
+        source = self.client.get(url)
+        return self.render(source)
+    
 
     def make_url(self): pass
     
     def parse(self): raise NotImplemented
     
-    def render(self, source, combine = False):
-        result_list = [self.transform(*l) for l in self.parse(source)]
-        if combine: return self.combine(result_list)
+    def render(self, source, **kwargs):
+        result_list = [self.transform(*l, **kwargs) for l in self.parse(source)]
+        
+        if 'merge' in kwargs and kwargs['merge']: 
+            return self.combine(result_list, **kwargs)
         else: return result_list
 
     
-    def combine(self, result_list): 
+    def combine(self, result_list, **kwargs): 
         return result_list 
     
                 
@@ -70,59 +75,22 @@ class Data21(Resource):
     Data resource in SDMX v2.1
     """
     
-    def __init__(self, client):
-        super(Data21, self).__init__(client)
-        
-    
-
-    def make_url(self, *args, **kwargs):
-        flowref = args[0]
-        try:
-            key = args[1]
-        except IndexError: key = ''
-        query_url = '/'.join([self.resource_name, flowref, key])
-        if kwargs['startperiod'] and kwargs['endperiod']: 
-            query_url += '?startperiod={0}&endPeriod={1}'.format(
-                                                kwargs['startperiod'], kwargs['endperiod'])
-        return query_url
-    
-    
-    def get(self, *args, startperiod=None, endperiod=None, 
-            to_file = None, from_file = None, 
-            concat = False):
-        """
-        :param flowRef: an identifier of the data
-        :type flowRef: str or sqlite3.Row from the table created 
-        by the dataflows() method 
-        :param key: a filter using codes (for example, .... for no filter ...BE for all the series related to Belgium) if using v2_1. In 2_0, you should be providing a dict following that syntax {dimension:value}
-        :type key: str or dict
-        :param startperiod: the starting date of the time series that will be downloaded (optional, default: None)
-        :type startperiod: datetime.datetime()
-        :param endperiod: the ending date of the time series that will be downloaded (optional, default: None)
-        :type endperiod: datetime.datetime()
-        :param to_file: if it is a string, the xml file is, after parsing it,
-        written to a file with this name. Default: None
-        :param from_file: if it is a string, the xml file is read from a file with that name instead of
-        requesting the data via http. Default: None
-        :concat: If False, return 
-        a list of the series whose name attributes contain 
-        the metadata as namedtuple
-        If True: return a pandas.DataFrame
-        with hierarchical index generated from the metadata. Explore the
-        structure by issuing 'df.columns'.
-        The order of index levels is determined by the number of actual values 
-        found in the series' metadata for each key.
-        Metadata describing the entire dataset is attached
-        to the dataframe in a special attribute meta.
-        """
-        
+    def __init__(self, *args, **kwargs):
+        super(Data21, self).__init__(*args, **kwargs)
         # dtype for Series. Future versions should support other dtypes 
         # such as int or categorical.
         self.datatype = NP.float64
-        # Construct the URL and get source file
-        url = self.make_url(*args, startperiod = startperiod, endperiod = endperiod)
-        source = self.client.get(url)
-        return self.render(source, combine = concat)
+        
+    
+
+    def make_url(self, flowref, *args, key = '', startperiod = None, endperiod = None, **kwargs):
+        parts = [self.resource_name, flowref]
+        if key: parts.append(key)
+        query_url = '/'.join(parts)
+        if startperiod: query_url += '?startperiod={0}'.format(startperiod)
+        if endperiod: query_url += '&endperiod={0}'.format(endperiod) 
+        return query_url
+    
  
     def parse(self, source):
         """
@@ -172,11 +140,11 @@ class Data21(Resource):
             yield codes, raw_dates, raw_values, raw_status 
     
     
-    def transform(self, codes, raw_dates, raw_values, raw_status):
+    def transform(self, *args, **kwargs):
         """
         Transform the 5-tuple returned by self.parse into PD.Series
         """ 
-         
+        codes, raw_dates, raw_values, raw_status = args 
         if 'FREQ' in codes._fields:
             if codes.FREQ == 'A':
                 freq_str = 'Y'
@@ -190,7 +158,7 @@ class Data21(Resource):
         return value_series
 
     
-    def combine(self, series_list):
+    def combine(self, series_list, **args):
         # Generate DataFrame    
             
         # Use the codes to generate the MultiIndex levels
@@ -290,89 +258,42 @@ class Data20(Resource):
             yield codes, raw_dates, raw_values, raw_status
         
         
-class Dataflow:    
-    def _init_database(self, tablename, delete_rows = True):
+class Dataflow21(Resource):
+    language = Unicode('en', config = True)
+    
+    def __init__(self, *args, **kwargs):
+        super(Dataflow21, self).__init__(*args, **kwargs)
         
-        '''
-        Helper method to initialize database.
-        Called by get_dataflows()
-        Return: sqlite3.Connection
-        '''
-        if not self.db:
-            self.db = sqlite3.connect(self.db_filename)
-            self.db.row_factory = sqlite3.Row
-        self.db.execute(u'''CREATE TABLE IF NOT EXISTS {0} 
-            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text)'''.format( 
-            tablename))
-        # Delete any pre-existing rows
-        if delete_rows:
-            anyrows = self.db.execute('SELECT * FROM {0}'.format(
-                tablename)).fetchone()
-            if anyrows:
-                self.db.execute('DELETE FROM {0}'.format(tablename))
-        return self.db
-        
-        
-    def get_dataflows(self, language = 'en', to_file = None, from_file = None,
-                  to_database = True, table = None):
-        """
-        Get list of available dataflows 
-        Arguments:
-        :param: language: keyword argument specifying the language of the 
-        dataflow titles to be stored. This feature is not supported by 
-        SDMX 2.0. Defaults to 'en' for English.
-        :type: str
-        :param: to_file: keyword argument specifying the filename of a file 
-        to write the dataflows list in xml-format.  
-        :type: str
-        :param: 'from_file': Read the xml data from an xml file rather than 
-        requesting the xml data via http from the data provider. 
-        By convention, 'from_file' should have the 
-        extension '.xml'.     
-        :param: to_database: if True (default), the received dataflows are 
-        stored in a database in the table. The 'table' keyword argument specifies
-        the table's name. The instance variable
-        self.db is a connector to the database. It is also returned. 
-        If the database connection in self.db is None, it is first opened.
-        :type: str   
-        :param: table: name of the table into which the dataflow descriptions will be inserted.
-        If the database does not contain a table of this name, it is first created.
-        If it does, that table is dropped first. Hence, append is not supported.
-        Defaults to self.agencyID + '_dataflows'
-        :type: str 
-     
-        return: sqlite3.Connection or None (if data is written to '.xml' file
-        """
-        
-        
-        if not table: table = self.agencyID + '_dataflows' # default value for table name 
             
-        if self.version == '2_1':
-            url = '/'.join([self.sdmx_url, 'dataflow', self.agencyID, 'all', 'latest'])
-            tree = self.get_source(url, to_file = to_file, from_file = from_file)
-             
-            # Init the database and store the parsed data in it 
-            if to_database: 
-                self._init_database(table)
-                cur = self.db.cursor()
-                dataflow_path = ".//str:Dataflow"
-                name_path = ".//com:Name"
-                for dataflow in tree.iterfind(dataflow_path,
-                                                   namespaces=tree.nsmap):
-                    flowref = dataflow.get('id')
-                    agencyID = dataflow.get('agencyID')
-                    version = dataflow.get('version')
-                    for title in dataflow.iterfind(name_path,
-                                                   namespaces=tree.nsmap):
-                        descr_lang = title.values()[0]
-                        if descr_lang == language: 
-                            row = ('"' + agencyID + '"', '"' + flowref + '"', 
-                                   version, '"' + title.text + '"')
-                            cur.execute(u'''INSERT INTO     {0} VALUES 
-                            (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
-                                           table, row))
-                    
-        elif self.version == '2_0':
+    def make_url(self):
+        return '/'.join(['dataflow', self.agency_id, 'all', 'latest'])        
+        
+            
+    def parse(self, source):        
+            
+        tree = lxml.etree.parse(source).getroot() 
+         
+        dataflow_path = ".//str:Dataflow"
+        name_path = ".//com:Name"
+        for dataflow in tree.iterfind(dataflow_path,
+                                               namespaces=tree.nsmap):
+            flowref = dataflow.get('id')
+            agencyID = dataflow.get('agencyID')
+            version = dataflow.get('version')
+            for title in dataflow.iterfind(name_path,
+                namespaces=tree.nsmap):
+                descr_lang = title.values()[0]
+                if descr_lang == self.language: 
+                    row = ('"' + agencyID + '"', '"' + flowref + '"', 
+                               version, '"' + title.text + '"')
+            yield row
+                        
+    def transform(self, *args):
+        return args                        
+                                   
+class Dataflow20(Resource):
+                        
+    def parse(self, source):        
             url = '/'.join([self.sdmx_url, 'Dataflow'])
             tree = self.get_source(url, to_file = to_file, from_file = from_file)
             # Init the database and store the parsed data in it 
@@ -403,9 +324,6 @@ class Dataflow:
         
 
                         
-        self.db.commit()
-        return self.db 
-        
 class Codes:
     def get_codes(self, flowRef, to_file = None, from_file = None):
         """Data definitions

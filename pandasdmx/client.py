@@ -41,7 +41,8 @@ class REST(Configurable):
         if to_file:
             with open(to_file, 'wb') as f:
                 f.write(source.read())
-            source = to_file
+                source.close()
+            source = open(to_file, 'rb')
             
         return source
          

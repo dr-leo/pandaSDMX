@@ -83,12 +83,14 @@ class Data21(Resource):
         
     
 
-    def make_url(self, flowref, *args, key = '', startperiod = None, endperiod = None, **kwargs):
+    def make_url(self, flowref, key = '', startperiod = None, endperiod = None):
         parts = [self.resource_name, flowref]
         if key: parts.append(key)
         query_url = '/'.join(parts)
-        if startperiod: query_url += '?startperiod={0}'.format(startperiod)
-        if endperiod: query_url += '&endperiod={0}'.format(endperiod) 
+        if startperiod: 
+            query_url += '?startperiod={0}'.format(startperiod)
+            if endperiod: query_url += '&endperiod={0}'.format(endperiod)
+        elif endperiod: query_url += '?endperiod={0}'.format(endperiod) 
         return query_url
     
  
@@ -186,83 +188,12 @@ class Data21(Resource):
         # df.meta = global_codes 
         return df
             
-
-
-class Data20(Resource):
-    """
-    Data parser for SDMX 2.0
-    """
-    
-    def url(self, *args):
-        """
-        generate URL for REST query
-        """
-        flowref, key = args
-        resource = 'GenericData'
-        key__ = ''
-        for key_, value_ in key.items():
-            key__ += '&' + key_ + '=' + value_
-        key = key__
         
-        if startperiod and endperiod:
-            query = (resource + '?dataflow=' + flowRef + key
-            + 'startperiod=' + startperiod
-            + '&endPeriod=' + endperiod)
-        else:
-            query = resource + '?dataflow=' + flowRef + key
-        return '/'.join([self.sdmx_url,query])
-
-
-    def parse(self, source):
-        CodeTuple = None
-        parser = lxml.etree.XMLParser(
-            ns_clean=True, recover=True)
-        tree = lxml.etree.fromstring(source, parser = parser)
-        for series in tree.iterfind(".//generic:Series",
-                                 namespaces=tree.nsmap):
-            raw_dates, raw_values, raw_status = [], [], []
-            code_keys, code_values = [], []
-            for codes_ in series.iterfind(".//generic:SeriesKey",
-                                       namespaces=tree.nsmap):
-                for key in codes_.iterfind(".//generic:Value",
-                                           namespaces=tree.nsmap):
-                    
-                    if not CodeTuple: code_keys.append(key.get('concept')) 
-                    code_values.append(key.get('value'))
-            if not CodeTuple:
-                CodeTuple = make_namedtuple(code_keys) 
-            codes = CodeTuple._make(code_values)
-                           
-            for observation in series.iterfind(".//generic:Obs",
-                                               namespaces=tree.nsmap):
-                dimensions = observation.xpath(".//generic:Time",
-                                               namespaces=tree.nsmap)
-                values = observation.xpath(".//generic:ObsValue",
-                                           namespaces=tree.nsmap)
-                value = values[0].get('value')
-                observation_status = 'A'
-                for attribute in \
-                    observation.iterfind(".//generic:Attributes",
-                                         namespaces=tree.nsmap):
-                    for observation_status_ in \
-                        attribute.xpath(
-                            ".//generic:Value[@concept='OBS_STATUS']",
-                            namespaces=tree.nsmap):
-                        if observation_status_:
-                            observation_status \
-                                = observation_status_.get('value')
-                                
-                raw_dates.append(dimensions)
-                raw_values.append(value)
-                raw_status.append(observation_status)
-            yield codes, raw_dates, raw_values, raw_status
-        
-        
-class Dataflow21(Resource):
+class CodeList21(Resource):
     language = Unicode('en', config = True)
     
     def __init__(self, *args, **kwargs):
-        super(Dataflow21, self).__init__(*args, **kwargs)
+        super(CodeList21, self).__init__(*args, **kwargs)
         
             
     def make_url(self):
@@ -277,130 +208,65 @@ class Dataflow21(Resource):
         name_path = ".//com:Name"
         for dataflow in tree.iterfind(dataflow_path,
                                                namespaces=tree.nsmap):
-            flowref = dataflow.get('id')
+            flowref = dataflow.get('id')[1:-2]
             agencyID = dataflow.get('agencyID')
             version = dataflow.get('version')
+            row = None
             for title in dataflow.iterfind(name_path,
                 namespaces=tree.nsmap):
                 descr_lang = title.values()[0]
                 if descr_lang == self.language: 
-                    row = ('"' + agencyID + '"', '"' + flowref + '"', 
-                               version, '"' + title.text + '"')
-            yield row
+                    row = (agencyID, flowref, 
+                               version, title.text)
+                    break
+            if row: yield row
+            else: raise ValueError('No description for dataflow_id {0} and language {1}.'.format(
+                                            flowref, self.language))
                         
     def transform(self, *args):
         return args                        
-                                   
-class Dataflow20(Resource):
-                        
-    def parse(self, source):        
-            url = '/'.join([self.sdmx_url, 'Dataflow'])
-            tree = self.get_source(url, to_file = to_file, from_file = from_file)
-            # Init the database and store the parsed data in it 
-            if to_database:
-                self._init_database(table)
-                            
-                cur = self.db.cursor()
-                dataflow_path = ".//structure:Dataflow"
-                name_path = ".//structure:Name"
-                keyid_path = ".//structure:KeyFamilyID"
-                for dataflow in tree.iterfind(dataflow_path,
-                                                   namespaces=tree.nsmap):
-                    flowref = dataflow.find(keyid_path,
-                                                   namespaces=tree.nsmap).text
-               
-                    agencyID = dataflow.get('agencyID')
-                    version = dataflow.get('version')
-                    title_text = dataflow.find(name_path,
-                                                   namespaces=tree.nsmap).text
 
-                    row = ('"' + agencyID + '"', '"' + flowref + '"', 
-                                   version, '"' + title_text + '"')
-                    cur.execute(u'''INSERT INTO {0} VALUES 
-                            (NULL, {1[0]}, {1[1]}, {1[2]}, {1[3]})'''.format(
-                            table, row))
-                   
-                           
-        
 
-                        
-class Codes:
-    def get_codes(self, flowRef, to_file = None, from_file = None):
-        """Data definitions
 
-        Returns a dictionnary describing the available dimensions for a specific flowRef.
-
-        :param flowRef: Identifier of the dataflow
-        :type flowRef: str or sqlite3.Row
-        :return: OrderedDict
-        """
-        
-        if isinstance(flowRef, sqlite3.Row):
-            flowRef = flowRef['flowref']
-        if self.version == '2_1':
-            url = '/'.join([self.sdmx_url, 'datastructure', self.agencyID,
-                            self.agencyID + '_' + flowRef])
-            tree = self.get_source(url, to_file = to_file, from_file = from_file)
-            codelists_path = ".//str:Codelists"
-            codelist_path = ".//str:Codelist"
-            name_path = ".//com:Name"
-            code_path = ".//str:Code"
-            _codes = OrderedDict()
-            codelists = tree.xpath(codelists_path,
-                                          namespaces=tree.nsmap)
-            for codelists_ in codelists:
-                for codelist in codelists_.iterfind(codelist_path,
-                                                    namespaces=tree.nsmap):
-                    name = codelist.xpath(name_path, namespaces=tree.nsmap)
-                    name = name[0]
-                    name = name.text
-                    # a dot "." can't be part of a JSON field name
-                    name = re.sub(r"\.","",name)
-                    code = {}
-                    for code_ in codelist.iterfind(code_path,
-                                                   namespaces=tree.nsmap):
-                        code_key = code_.get('id')
-                        code_name = code_.xpath(name_path,
-                                                namespaces=tree.nsmap)
-                        code_name = code_name[0]
-                        code[code_key] = code_name.text
-                    _codes[name] = code
-        if self.version == '2_0':
-            codelists_path = ".//message:CodeLists"
-            codelist_path = ".//structure:CodeList"
-            code_path = ".//structure:Code"
-            description_path = ".//structure:Description"
-            url = '/'.join([self.sdmx_url, 'KeyFamily', flowRef])
-            tree = self.get_source(url)
-            _codes = OrderedDict()
-            codelists = tree.xpath(codelists_path,
-                                          namespaces=tree.nsmap)
-            for codelists_ in codelists:
-                for codelist in codelists_.iterfind(codelist_path,
-                                                    namespaces=tree.nsmap):
-                    name = codelist.get('id')
-                    name = name[3:]
-                    # a dot "." can't be part of a JSON field name
-                    name = re.sub(r"\.","",name)
-                    code = {}
-                    for code_ in codelist.iterfind(code_path,
-                                                   namespaces=tree.nsmap):
-                        code_key = code_.get('value')
-                        code_name = code_.xpath(description_path,
-                                                namespaces=tree.nsmap)
-                        code_name = code_name[0]
-                        code[code_key] = code_name.text
-                    _codes[name] = code
-        return _codes
-
-class constraints:
+class Structure21(CodeList21):
     
-    def get_constraints(self, flowref):
-        """
-        return content constraints i.e. codes available
-        for a given dataflow.
-        to be completed.
-        """
+    def __init__(self, *args, **kwargs):
+        super(Structure21, self).__init__(*args, **kwargs)
+
         
-        url = '/'.join([self.sdmx_url, 'contentconstraint', self.agencyID, flowRef + '_CONSTRAINTS'])
         
+    def make_url(self, flowref):
+        return '/'.join(['datastructure', self.agency_id, 'DSD_' + flowref])
+        
+    def render(self, source, language = None):
+        if not language: language = self.language
+        return self.parse(source, language)       
+        
+    def parse(self, source, language):
+        parser = lxml.etree.XMLParser(ns_clean=True)
+        tree = lxml.etree.parse(source, parser).getroot()
+        
+        # nsmap = {k : v for k,v in tree.nsmap.items() if k}
+        nsmap = tree.nsmap
+       
+        dimensions = OrderedDict()
+        
+        for dimensions_list_ in  tree.iterfind("{*}CodeLists",namespaces=nsmap):
+            print('hello')
+            for dimensions_list in dimensions_list_.iterfind(".//structure:CodeList",
+                                                namespaces=nsmap):
+                name = dimensions_list.get('id')
+                # truncate intial "CL_" in name
+                name = name[3:]
+                print(name)
+                dimension = []
+                for dimension_ in dimensions_list.iterfind(".//structure:Code",
+                                               namespaces=nsmap):
+                    dimension_key = dimension_.get("value")
+                    for desc in dimension_:
+                        if desc.attrib.items()[0][1] == language:
+                            dimension.append([dimension_key, desc.text])
+                            break
+                dimensions[name] = dimension
+        return dimensions
+

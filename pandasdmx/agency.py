@@ -50,8 +50,8 @@ class ECB(Agency):
         super(ECB, self).__init__()
         self.client = client.REST(self.base_url)
         self.data = resource.Data21(self.agency_id, self.client)
-        self.catalogue = resource.Dataflow21(self.agency_id, self.client)
-
+        self.catalogue = resource.CodeList21(self.agency_id, self.client)
+        self.struct = resource.Structure21(self.agency_id, self.client)
 
 class Eurostat(ECB):
     """

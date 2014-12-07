@@ -4,7 +4,7 @@ import pandas as PD
 import numpy as NP
 import lxml.etree
 from IPython.utils.traitlets import Unicode
-from IPython.config.configurable import Configurable
+from IPython.config.configurable import Configurable, LoggingConfigurable
 from collections import OrderedDict, namedtuple
 
 
@@ -39,17 +39,22 @@ def make_namedtuple(fields):
 
 
 
-class Resource(Configurable):
+class Resource(LoggingConfigurable):
     
     def __init__(self, agency_id, client, **kwargs):
         super(Resource, self).__init__()
         self.client = client
         self.agency_id = agency_id
     
-    def get(self, *args, **kwargs):
+    def get(self, *args, from_file = None, to_file = None, **kwargs):
         # Construct the URL and get source file
-        url = self.make_url(*args, **kwargs)
-        source = self.client.get(url)
+        url_suffix = self.make_url(*args, **kwargs)
+        source = self.client.get(url_suffix, from_file = from_file)
+        if to_file:
+            with open(to_file, 'wb') as dest:
+                dest.write(source.read())
+                source.seek(0)
+
         return self.render(source)
     
 
@@ -270,3 +275,13 @@ class Structure21(CodeList21):
                 dimensions[name] = dimension
         return dimensions
 
+class Categories(Resource):
+    def __init__(self, *args, **kwargs):
+        super(Categories, self).__init__(*args, **kwargs)
+    
+    def make_url(self):
+        return 'categoryscheme'
+    
+    def render(self, source):
+        return source
+    

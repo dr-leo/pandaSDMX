@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from IPython.config.configurable import Configurable
+from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Int 
 import requests
 from tempfile import SpooledTemporaryFile as STF
@@ -10,10 +10,12 @@ import re, zipfile, time
 
 
 
-class REST(Configurable):
+class REST(LoggingConfigurable):
     """
     Query resources via REST
     """
+    
+    name = Unicode('pandasdmx.client.REST')
     max_size = Int(2**24, config=True, 
                    help='max size of in-memory file before spooling to disk')
             
@@ -23,10 +25,10 @@ class REST(Configurable):
         
         
                              
-    def get(self, url, to_file = None, from_file = None):
+    def get(self, url_suffix, from_file = None):
         '''
         Read file from URL or local file.
-        Store the fetched string in a local file if specified to save download time next time.
+        
         Return file-like for parsing
         Raise error if file could not be obtained.
  '''
@@ -35,14 +37,9 @@ class REST(Configurable):
             source = open(from_file, 'rb')
                 
         else:
-            final_url = '/'.join([self.base_url, url])
+            final_url = '/'.join([self.base_url, url_suffix])
+            self.log.debug('Requesting %s', final_url)
             source = self.request(final_url) 
-        
-        if to_file:
-            with open(to_file, 'wb') as f:
-                f.write(source.read())
-                source.close()
-            source = open(to_file, 'rb')
             
         return source
          

@@ -11,7 +11,7 @@
 
 
 
-from IPython.config.configurable import Configurable
+from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Instance, Unicode
 from pandasdmx import resource, client 
 
@@ -19,7 +19,7 @@ from pandasdmx import resource, client
 __all__ = ['ECB', 'Eurostat']
 
 
-class Agency(Configurable):
+class Agency(LoggingConfigurable):
     """
     Base class for agencies. Contains data on the web service.
     """
@@ -51,7 +51,8 @@ class ECB(Agency):
         self.client = client.REST(self.base_url)
         self.data = resource.Data21(self.agency_id, self.client)
         self.catalogue = resource.CodeList21(self.agency_id, self.client)
-        self.struct = resource.Structure21(self.agency_id, self.client)
+        self.dsd = resource.Structure21(self.agency_id, self.client)
+        self.categories = resource.Categories(self.agency_id, self.client) 
 
 class Eurostat(ECB):
     """

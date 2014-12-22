@@ -10,14 +10,13 @@ SDMX 2.1 information model
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils import IsIterable
-from IPython.config.loader import Config 
+from pandasdmx.utils    import IsIterable, DictLike
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool, 
             Any, This, Enum, Dict)
 
 
 
-class InternationalString(Config):
+class InternationalString(DictLike):
     
     def __init__(self, *args, **kwargs):
         super(InternationalString, self).__init__(*args, **kwargs)
@@ -124,11 +123,11 @@ class Structure(MaintainableArtefact):
     pass
 
 class StructureUsage(MaintainableArtefact):
-    structure = Instance(Structure)
+    struct = Instance(Structure)
     
-    def __init__(self, structure, *args, **kwargs):
+    def __init__(self, structure = None, *args, **kwargs):
         super(StructureUsage, self).__init__(*args, **kwargs)
-        self.structure = structure
+        self.struct = structure
     
     
 class Componentlist(IdentifiableArtefact, IsIterable): pass
@@ -147,10 +146,10 @@ class Representation(HasTraits):
         
 class Facet(HasTraits):
     facet_type = Dict # for attributes such as isSequence, interval 
-    facet_value_type = Enum('String', 'Big Integer', 'Integer', 'Long',
+    facet_value_type = Enum(('String', 'Big Integer', 'Integer', 'Long',
                             'Short', 'Double', 'Boolean', 'URI', 'DateTime', 
                 'Time', 'GregorianYear', 'GregorianMonth', 'GregorianDate', 
-                'Day', 'MonthDay', 'Duration')
+                'Day', 'MonthDay', 'Duration'))
     itemscheme_facet = Unicode # to be completed
     
     def __init__(self, *args, facet_type = None, facet_value_type = u'', 
@@ -161,6 +160,17 @@ class Facet(HasTraits):
         self.itemscheme_facet = itemschemefacet
                
         
+class IsoConceptReference: pass # to be completed
+
+class Concept(Item):
+    core_repr = Instance(Representation)
+    iso_concept = Instance(IsoConceptReference) 
+    
+    def __init__(self, *args, core_repr =None, iso_concept =None, **kwargs):
+        super(Concept, self).__init__(*args, **kwargs)
+        self.core_repr = core_repr
+        self.iso_concept = iso_concept
+
 
 class Component(IdentifiableArtefact):
     concept_id = Instance(Concept)
@@ -174,23 +184,10 @@ class Component(IdentifiableArtefact):
 class Codelist(ItemScheme): pass
 class Code(Item): pass
 
-
 class ConceptScheme(ItemScheme): pass
 
 
-class IsoConceptReference: pass # to be completed
 
-
-class Concept(Item):
-    core_repr = Instance(Representation)
-    iso_concept = Instance(IsoConceptReference) 
-    
-    def __init__(self, *args, core_repr =None, iso_concept =None, **kwargs):
-        super(Concept, self).__init__(*args, **kwargs)
-        self.core_repr = core_repr
-        self.iso_concept = iso_concept
-        
-        
 
 
 
@@ -210,27 +207,9 @@ class Categorization(MaintainableArtefact):
 class IdentifiableObjectType: pass
 class ConstraintRoleType: pass    
 
-class DataSet: pass 
 
-    
-class StructureSpecificDataSet: pass
- 
-class GenericDataSet: pass
-
-class GenericTimeSeriesDataSet: pass 
- 
-class StructureSpecificTimeSeriesDataSet: pass
-
-
-class Key: pass
-class SeriesKey: pass
-class GroupKey: pass
-
-class DataflowDefinition(MaintainableArtefact, StructureUsage): pass 
-    # really inherit from maintainableartefact? 
-
-    
-    
+class DataflowDefinition(StructureUsage): pass 
+     
 
 class DataStructureDefinition(Structure):
     grouping = Any
@@ -285,18 +264,35 @@ class MeasureDescriptor(Componentlist):
 
 class AttributeDescriptor(Componentlist): pass
     
+class AttributeRelationship: pass
+class NoSpecifiedRelationship(AttributeRelationship): pass
+class PrimaryMeasureRelationship(AttributeRelationship): pass
 
 
-class DataAttribute(Component):
-    # relationship may be None, dataset, list of dimensions, group or primary measure
-    # We represent this as Enum rather than superclasses as in the model. to be reconsidered.
-    relationship = Enum('None', 'dataset', 'dimensions', 'group', 'primaryMeasure')  
-    role = Instance(Concept)
-    usage_status = Enum('mandatory', 'conditional') # generalise this through constraint?
+class GroupRelationship(AttributeRelationship):
+    groupkey = Instance(GroupDimensionDescriptor)
     
-    def __init__(self, *args, role =None, relationship = 'None', **kwargs):
+    def __init__(self, groupkey = None):
+        super().__init__()
+        self.groupkey = groupkey
+        
+    
+class DimensionRelationship(GroupRelationship):
+    dimensions = List # of dimensions
+    
+    def __init__(self, dimensions = [], **kwargs):
+        super().__init__(**kwargs)
+        self.dimensions = dimensions
+        
+        
+class DataAttribute(Component):
+    related_to = Instance(AttributeRelationship)  
+    role = Instance(Concept)
+    usage_status = Enum(('mandatory', 'conditional')) # generalise this through constraint?
+    
+    def __init__(self, *args, role =None, related_to = None, **kwargs):
         super(DataAttribute, self).__init__(*args, **kwargs)
-        self.relationship = relationship
+        self.related_to = related_to
         self.role = role
 
 class ReportingYearStartDay(DataAttribute): pass
@@ -318,3 +314,71 @@ class MeasureDimension(DimensionComponent): pass
     # inheritance from concept
     
     
+class DataSet(HasTraits):
+    reporting_begin = Any 
+    reporting_end = Any
+    valid_from = Any
+    valid_to = Any
+    data_extraction_date = Any
+    publication_year = Any
+    publication_period = Any
+    set_id = Unicode
+    action = Enum(('update', 'append', 'delete'))
+    described_by = Instance(DataflowDefinition)
+    structured_by = Instance(DataStructureDefinition)
+    published_by = Any
+    attached_attribute = Any
+    
+    def __init__(self, reporting_begin = None, 
+                 reporting_end = None,
+                 valid_from = None,
+                 valid_to = None,
+                 data_extraction_date = None,
+                 publication_year = None,
+                 publication_period = None,
+                 set_id = u'',
+                 action = None,
+                 described_by = None,
+                 structured_by = None,
+                 published_by = None,
+                 attached_attribute = None):
+        super(DataSet, self).__init__()
+        self.reporting_begin = reporting_begin  
+        self.reporting_end = reporting_end 
+        self.valid_from = valid_from 
+        self.valid_to = valid_to 
+        self.data_extraction_date = data_extraction_date 
+        self.publication_year = publication_year 
+        self.publication_period = publication_period 
+        self.set_id = set_id 
+        self.action = action
+        self.described_by = described_by 
+        self.structured_by = structured_by 
+        self.published_by = published_by 
+        self.attached_attribute = attached_attribute 
+    
+
+    
+class StructureSpecificDataSet(DataSet): pass
+ 
+class GenericDataSet(DataSet): pass
+
+class GenericTimeSeriesDataSet(DataSet): pass 
+ 
+class StructureSpecificTimeSeriesDataSet(DataSet): pass
+
+class Key:
+    key_values = List
+    attached_attribute = Any
+    
+    def __init__(self, key_balues = [], 
+            attached_attribute = None):
+        self.key_values = key_values
+        self.attached_attribute = attached_attribute
+
+class KeyValue: pass
+
+
+class SeriesKey(Key): pass
+class GroupKey(Key): pass
+

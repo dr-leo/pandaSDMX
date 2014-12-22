@@ -14,13 +14,13 @@ class REST(LoggingConfigurable):
     """
     Query resources via REST
     """
-    
-    name = Unicode('pandasdmx.client.REST')
+
     max_size = Int(2**24, config=True, 
                    help='max size of in-memory file before spooling to disk')
             
     def __init__(self, base_url):
         super(REST, self).__init__()
+        self.name = 'pandasdmx.client.REST'
         self.base_url = base_url
         
         

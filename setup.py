@@ -14,7 +14,7 @@ setup(name='pandaSDMX',
     long_description = long_descr,
     author='Dr. Leo',
     author_email='fhaxbox66@gmail.com',
-    packages =['pandasdmx'],
+    packages =['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer'],
       url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',

@@ -3,7 +3,7 @@
 '''
 .. module:: pandasdmx.agency
     
-    :synopsis: A Python- and pandas-powered client for statistical data and metadata exchange 
+     
     For more details on SDMX see www.sdmx.org
 
 .. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
@@ -13,7 +13,8 @@
 
 from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Instance, Unicode
-from pandasdmx import resource, client 
+from pandasdmx import client
+from pandasdmx.reader.sdmxml import SDMXMLReader 
 
 
 __all__ = ['ECB', 'Eurostat']
@@ -27,8 +28,8 @@ class Agency(LoggingConfigurable):
 
     client = Instance(client.REST, config = True, help = """
     REST or similar client to communicate with the web service""")
-    data = Instance('pandasdmx.resource.Data21', config = True, help = 
-        """class path of the data resource""")
+    reader = Instance('pandasdmx.reader.common.Reader', config = True, help = 
+        """class path to the Reader subclass""")
     
  
 
@@ -49,11 +50,8 @@ class ECB(Agency):
     def __init__(self):
         super(ECB, self).__init__()
         self.client = client.REST(self.base_url)
-        self.data = resource.Data21(self.agency_id, self.client)
-        self.catalogue = resource.CodeList21(self.agency_id, self.client)
-        self.dsd = resource.Structure21(self.agency_id, self.client)
-        self.categories = resource.Categories(self.agency_id, self.client) 
-
+        
+        
 class Eurostat(ECB):
     """
     Statistical office of the European Union

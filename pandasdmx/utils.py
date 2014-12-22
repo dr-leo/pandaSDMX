@@ -1,13 +1,37 @@
 '''
 module pandasdmx.utils - helper classes and functions
 
-
-
-
 '''
 
 
-from IPython.utils.traitlets import HasTraits 
+from IPython.utils.traitlets import HasTraits, Any
+from IPython.config.loader import Config 
+from collections import namedtuple
+
+
+class DictLike(Config): pass
+
+class NamedTupleFactory:
+    """
+Wrap namedtuple function from the collections stdlib module
+to return a singleton if a nametuple with the same field names
+has already been created. 
+    """
+    
+    cache = {}
+        
+    def get(self, fields):
+        """
+        return a subclass of tuple instance as does namedtuple
+        """
+
+        fields = tuple(fields)
+        if not fields in self.cache: 
+            self.cache[fields] = namedtuple(
+                'SDMXMetadata', fields)
+        return self.cache[fields]
+    
+
 
 class IsIterable(HasTraits):
     _items = Any 

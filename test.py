@@ -14,8 +14,8 @@ class Test(unittest.TestCase):
 
 
     def setUp(self):
-        self.estat = pandasdmx.client('Eurostat')
-        self.ecb = pandasdmx.client('ECB')
+        self.ecb = pandasdmx.ECB()
+        
 
 
     def tearDown(self):

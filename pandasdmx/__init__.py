@@ -11,7 +11,7 @@
   
 
 from pandasdmx.application import app
-from .agency import *
+from pandasdmx.agency import *
 
 __all__ = ['ECB', 'Eurostat']
 

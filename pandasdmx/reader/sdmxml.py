@@ -13,13 +13,8 @@ class SDMXMLReader(Reader):
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
     """
     
-    def __init__(self, *args, **kwargs):
-        super(SDMXMLReader, self).__init__(*args, **kwargs)
-        self.tree = objectify.parse(self.source)
-        return self.tree 
-    
-    
-
+    def parse(self, source):
+        return objectify.parse(self.source).getroot() 
         
         
         

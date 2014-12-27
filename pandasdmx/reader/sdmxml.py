@@ -44,9 +44,20 @@ class SDMXMLReader(Reader):
     def identity(self, elem):
         return elem.ID[0].text 
         
+    def _international_string(self, elem, tagname):
+        languages = elem.xpath('com:{0}/@xml:lang'.format(tagname), 
+                               namespaces = elem.nsmap)
+        strings = elem.xpath('com:{0}/text()'.format(tagname), 
+                             namespaces = elem.nsmap)
+        return DictLike(zip(languages, strings))
+
+    def description(self, elem):
+        return self._international_string(elem, 'Description') 
+        
     def name(self, elem):
-        return elem.xpath('com:Name/@xml:lang | com:Name/text()', namespaces = elem.nsmap)
-    
+        return self._international_string(elem, 'Name') 
+        
+
     def header_prepared(self, elem):
         return elem.Prepared[0].text # convert this to datetime obj?
         
@@ -63,8 +74,14 @@ class SDMXMLReader(Reader):
         'return iterator of codelists in a message'
         return map(model.Codelist, repeat(self), 
         elem.xpath('mes:Structures/str:Codelists/*', namespaces = elem.nsmap)) 
-         
-    
+        
+    def iter_items(self, elem, target_cls):
+        return map(target_cls, repeat(self), 
+                   elem.xpath('str:Code', namespaces = elem.nsmap))
+        
+    def isfinal(self, elem):
+        return bool(elem.get('isFinal')) 
+        
         
 
  

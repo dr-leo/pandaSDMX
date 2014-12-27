@@ -17,37 +17,37 @@ from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool,
 
 class SDMXObject:
     def __init__(self, reader, elem, **kwargs):
-        self.reader = reader
-        self.elem = elem
+        self._reader = reader
+        self._elem = elem
         super(SDMXObject, self).__init__(**kwargs)
       
 class Message(SDMXObject):
             
     @property
     def header(self):
-        return self.reader.mes_header(self.elem)
+        return self._reader.mes_header(self._elem)
     
     @property
     def codelists(self):
-        return self.reader.codelists(self.elem)
+        return self._reader.codelists(self._elem)
         
         
 class Header(SDMXObject):
     @property
     def id(self):
-        return self.reader.identity(self.elem)
+        return self._reader.identity(self._elem)
     
     @property
     def prepared(self):
-        return self.reader.header_prepared(self.elem) 
+        return self._reader.header_prepared(self._elem) 
 
     @property
     def sender(self):
-        return self.reader.header_sender(self.elem) 
+        return self._reader.header_sender(self._elem) 
 
     @property
     def error(self):
-        return self.reader.header_error(self.elem) 
+        return self._reader.header_error(self._elem) 
 
 
 
@@ -61,36 +61,37 @@ class InternationalString(DictLike):
     def get_labels(self): return self.values()
     
         
-class Annotation(HasTraits):
-    identity = Unicode()
-    title = Unicode()
-    atype = Unicode()
-    url = Unicode()
-    text = Instance(InternationalString)
-        
-    def __init__(self, *args, identity= u'', title= u'', atype= u'', url= u'', text =None, **kwargs):
-        super(Annotation, self).__init__(*args, **kwargs)
-        self.identity, self.title, self.atype, self.url, self.text = (identity, title,
-                                                               atype, url, text)
+class Annotation(SDMXObject):
+    @property
+    def id(self): 
+        return self._reader.id(self._elem)
+    @property
+    def title(self):
+        return self._reader.title(self._elem)
+    @property
+    def annotype(self):
+        return self._reader.annotationtype(self._elem)
+    @property
+    def url(self):
+        return self._reader.url(self._elem)
+    @property
+    def text(self):
+        return self._reader.text(self._elem)
         
     def __str__(self):
         return 'Annotation: title=%s' , self.title  
 
-class AnnotableArtefact(HasTraits):
-    annotations = List()
+
+class AnnotableArtefact(SDMXObject):
+    @property
+    def annotations(self):
+        return self._reader.annotations(self._elem)
     
-    def __init__(self, *args, **kwargs):
-        super(AnnotableArtefact, self).__init__(*args, **kwargs)
-        for a in args:
-            if isinstance(a, Annotation): self.annotations.append(a)
-            else: raise TypeError(
-                "Positional arguments must be of type 'Annotation'. %s given.", 
-                type(a))
         
 class IdentifiableArtefact(SDMXObject):
     @property
     def id(self):
-        return self.reader.identity(self.elem)
+        return self._reader.identity(self._elem)
 
     def __eq__(self, value):
         if isinstance(value, str_type):
@@ -107,21 +108,21 @@ class IdentifiableArtefact(SDMXObject):
     
     @property
     def urn(self):
-        return self.reader.urn(self.elem)
+        return self._reader.urn(self._elem)
     
     @property
     def uri(self):
-        return self.reader.uri(self.elem)
+        return self._reader.uri(self._elem)
     
     
 class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
-        return self.reader.name(self.elem)
+        return self._reader.name(self._elem)
     
     @property
     def description(self):
-        return self.reader.description(self.elem)    
+        return self._reader.description(self._elem)    
     
     
 class VersionableArtefact(NameableArtefact):
@@ -151,19 +152,27 @@ class MaintainableArtefact(VersionableArtefact):
         self.maintainer = maintainer 
     
     
-class ItemScheme(NameableArtefact, IsIterable): # make it inherit from MaintainableArtefact
-    is_partial = None
-
-        
-class Item(NameableArtefact, IsIterable):
-    parent = This # should include subclasses of Item
-    children = List 
+class ItemScheme(NameableArtefact): # make it inherit from MaintainableArtefact
+    child_cls = None
+    @property
+    def is_partial(self):
+        return self._reader.is_partial(self._elem)
     
-    def __init__(self, *args, parent = None, children = [], **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
-        self.parent = parent
-        self.children = children
-         
+    @property
+    def items(self):
+        return self._reader.iter_items(self._elem, self.child_cls)
+        
+class Item(NameableArtefact):
+    
+    @property
+    def parent(self):
+        return self._reader._item_parent(self._elem)
+    
+    @property
+    def children(self):
+        return self._reader._iterm_children(self._elem) 
+    
+
 class Structure(MaintainableArtefact):
     # the groupings are added in subclasses as class attributes. 
     # This deviates from the info model
@@ -227,20 +236,22 @@ class Component(IdentifiableArtefact):
         super(Component, self).__init__(*args, **kwargs)
         self.concept_id = concept_id
         self.local_repr = local_repr
-
-class Codelist(ItemScheme): pass
+        
 class Code(Item): pass
 
-class ConceptScheme(ItemScheme): pass
+class Codelist(ItemScheme):
+    child_cls = Code
+    
 
 
-
-
-
-
-class CategoryScheme(ItemScheme): pass
+class ConceptScheme(ItemScheme):
+    child_cls = Concept 
 
 class Category(Item): pass
+class CategoryScheme(ItemScheme):
+    child_cls = Category
+
+
 
 class Categorization(MaintainableArtefact):
     artefact = Instance(IdentifiableArtefact)

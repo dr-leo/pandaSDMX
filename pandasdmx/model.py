@@ -10,9 +10,44 @@ SDMX 2.1 information model
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils    import IsIterable, DictLike
+from pandasdmx.utils    import IsIterable, DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool, 
             Any, This, Enum, Dict)
+
+
+class SDMXObject:
+    def __init__(self, reader, elem, **kwargs):
+        self.reader = reader
+        self.elem = elem
+        super(SDMXObject, self).__init__(**kwargs)
+      
+class Message(SDMXObject):
+            
+    @property
+    def header(self):
+        return self.reader.mes_header(self.elem)
+    
+    @property
+    def codelists(self):
+        return self.reader.codelists(self.elem)
+        
+        
+class Header(SDMXObject):
+    @property
+    def id(self):
+        return self.reader.identity(self.elem)
+    
+    @property
+    def prepared(self):
+        return self.reader.header_prepared(self.elem) 
+
+    @property
+    def sender(self):
+        return self.reader.header_sender(self.elem) 
+
+    @property
+    def error(self):
+        return self.reader.header_error(self.elem) 
 
 
 
@@ -52,27 +87,43 @@ class AnnotableArtefact(HasTraits):
                 "Positional arguments must be of type 'Annotation'. %s given.", 
                 type(a))
         
-class IdentifiableArtefact(AnnotableArtefact):
-    identity = Unicode()
-    urn = Unicode
-    uri = Unicode
+class IdentifiableArtefact(SDMXObject):
+    @property
+    def id(self):
+        return self.reader.identity(self.elem)
+
+    def __eq__(self, value):
+        if isinstance(value, str_type):
+            return (self.id == value)
+        else: raise TypeError('{} not supported for comparison with IdentifiableArtefact'.format(type(value)))
+
+    def __ne__(self, value):
+        if isinstance(value, str_type):
+            return (self.id != value)
+        else: raise TypeError('{} not supported for comparison with IdentifiableArtefact'.format(type(value)))
+
+    def __hash__(self): 
+        return super(IdentifiableArtefact, self).__hash__()
     
-    def __init__(self, *args, identity = u'', urn = u'', uri = u'', **kwargs):
-        super(IdentifiableArtefact, self).__init__(*args, **kwargs)
-        self.identity = identity
-        self.urn = urn
-        self.uri = uri
-        
+    @property
+    def urn(self):
+        return self.reader.urn(self.elem)
+    
+    @property
+    def uri(self):
+        return self.reader.uri(self.elem)
+    
+    
 class NameableArtefact(IdentifiableArtefact):
-    name = Instance(InternationalString)
-    description = Instance(InternationalString)
+    @property
+    def name(self):
+        return self.reader.name(self.elem)
     
-    def __init__(self, *args, name=None, 
-                 description =None, **kwargs):
-        super(NameableArtefact, self).__init__(*args, **kwargs)
-        self.name = name
-        self.description = description
-        
+    @property
+    def description(self):
+        return self.reader.description(self.elem)    
+    
+    
 class VersionableArtefact(NameableArtefact):
     version = Unicode
     valid_from = Unicode
@@ -100,12 +151,8 @@ class MaintainableArtefact(VersionableArtefact):
         self.maintainer = maintainer 
     
     
-class ItemScheme(MaintainableArtefact, IsIterable):
-    is_partial = Bool
-            
-    def __init__(self, *args, is_partial = False, **kwargs):
-        super(ItemScheme, self).__init__(*args, **kwargs)
-        self.is_partial = is_partial
+class ItemScheme(NameableArtefact, IsIterable): # make it inherit from MaintainableArtefact
+    is_partial = None
 
         
 class Item(NameableArtefact, IsIterable):

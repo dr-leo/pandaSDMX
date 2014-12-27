@@ -7,7 +7,7 @@ module pandasdmx.utils - helper classes and functions
 from IPython.utils.traitlets import HasTraits, Any
 from IPython.config.loader import Config 
 from collections import namedtuple
-
+import sys
 
 class DictLike(Config): pass
 
@@ -55,10 +55,13 @@ class IsIterable(HasTraits):
         
     def __setitem__(self, item, value):
         return self._items.__setitem__(item, value)
-        
+    
     def __getitem__(self, item):
         return self._items.__getitem__(item)
 
     def __len__(self):
         return self._items.__len__()
         
+# 2to3 compatibility
+if sys.version[0] == '3': str_type = str
+else: str_type = unicode 

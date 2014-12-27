@@ -36,7 +36,7 @@ class REST(LoggingConfigurable):
         
         
                              
-    def get(self, url_suffix, from_file = None):
+    def get(self, url_suffix = None, from_file = None):
         '''
         Read file from URL or local file.
         

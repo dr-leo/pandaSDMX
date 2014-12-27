@@ -1,24 +1,71 @@
 # encoding: utf-8
 
-from lxml import objectify
-from IPython.utils.traitlets import Unicode
+
+from pandasdmx.utils import DictLike
 from pandasdmx import model
 from .common import Reader
+from lxml import objectify
+from itertools import repeat
 
 
-      
+ 
 class SDMXMLReader(Reader):
     
     """
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
     """
     
-    def parse(self, source):
-        return objectify.parse(self.source).getroot() 
-        
-        
-        
+    namespaces = {
+        'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
+        'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
+        'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'}
+
+
+    model_map = {
+        '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure}DataStructureDefinition' : model.DataStructureDefinition
+                 
+                 }
     
+    def parse(self, source):
+        root = objectify.parse(source).getroot()
+        return model.Message(self, root) 
+        
+    def dispatch(self, elem):
+        model_class = self.model_map.get(elem.tag)
+        if model_class: return model_class(self, elem)
+        else: return elem
+         
+        
+        
+    def mes_header(self, elem):
+        'return a message header. elem must be the document root.'
+        return model.Header(self, elem.xpath('mes:Header', namespaces = elem.nsmap)[0])
+    
+    def identity(self, elem):
+        return elem.ID[0].text 
+        
+    def name(self, elem):
+        return elem.xpath('com:Name/@xml:lang | com:Name/text()', namespaces = elem.nsmap)
+    
+    def header_prepared(self, elem):
+        return elem.Prepared[0].text # convert this to datetime obj?
+        
+    def header_sender(self, elem):
+        return DictLike(elem.Sender.attrib)
+
+    def header_error(self, elem):
+        try:
+            return DictLike(elem.Error.attrib)
+        except AttributeError: return None
+                     
+                     
+    def codelists(self, elem):
+        'return iterator of codelists in a message'
+        return map(model.Codelist, repeat(self), 
+        elem.xpath('mes:Structures/str:Codelists/*', namespaces = elem.nsmap)) 
+         
+    
+        
 
  
     def parse_series(self, source):

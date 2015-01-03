@@ -10,7 +10,7 @@ SDMX 2.1 information model
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils    import IsIterable, DictLike, str_type
+from pandasdmx.utils    import HasItems, DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool, 
             Any, This, Enum, Dict)
 
@@ -30,12 +30,16 @@ class Message(SDMXObject):
     @property
     def codelists(self):
         return self._reader.codelists(self._elem)
+
+    @property
+    def concept_schemes(self):
+        return self._reader.concept_schemes(self._elem)
         
         
 class Header(SDMXObject):
     @property
     def id(self):
-        return self._reader.identity(self._elem)
+        return self._reader.header_id(self._elem)
     
     @property
     def prepared(self):
@@ -126,45 +130,55 @@ class NameableArtefact(IdentifiableArtefact):
     
     
 class VersionableArtefact(NameableArtefact):
-    version = Unicode
-    valid_from = Unicode
-    valid_to = Unicode
+
+    @property
+    def version(self):
+        return self._reader.version(self._elem)
     
-    def __init__(self, *args, version = u'', valid_from = u'', valid_to = u'', **kwargs):
-        super(VersionableArtefact, self).__init__(*args, **kwargs)
-        self.version = version
-        self.valid_from = valid_from
-        self.valid_to = valid_to        
+    @property
+    def valid_from(self):
+        return self._reader.valid_from(self._elem)
+    
+    @property
+    def valid_to(self):
+        return self._reader.valid_to(self._elem)
+    
 
 class MaintainableArtefact(VersionableArtefact):
-    final = Bool
-    is_external_ref = Bool
-    structure_url = Unicode
-    service_url = Unicode
-    maintainer = Unicode() # Should be a reference?
-    def __init__(self, *args, final = True, is_external_ref = False,
-                 structure_url = u'', service_url = u'', maintainer = u'', **kwargs):
-        super(MaintainableArtefact, self).__init__(*args, **kwargs)
-        self.final = final
-        self.is_external_ref = is_external_ref               
-        self.structure_url = structure_url
-        self.service_url = service_url
-        self.maintainer = maintainer 
+    
+    @property
+    def is_final(self):
+        return self._reader.is_final(self._elem)
+    
+    @property
+    def is_external_ref(self):
+        return self._reader.is_external_ref(self._elem)
+    
+    @property
+    def structure_url(self):
+        return self._reader.structure_url(self._elem)
+    
+    @property
+    def service_url(self):
+        return self._reader.service_url(self._elem)
+    
+    @property
+    def maintainer(self):
+        return self._reader.maintainer(self._elem)
     
     
-class ItemScheme(NameableArtefact): # make it inherit from MaintainableArtefact
-    child_cls = None
+class ItemScheme(MaintainableArtefact, HasItems): 
+    
     @property
     def is_partial(self):
         return self._reader.is_partial(self._elem)
     
-    @property
-    def items(self):
-        return self._reader.iter_items(self._elem, self.child_cls)
-        
+    
+         
+         
 class Item(NameableArtefact):
     
-    @property
+    @property       
     def parent(self):
         return self._reader._item_parent(self._elem)
     
@@ -191,13 +205,9 @@ class Componentlist(IdentifiableArtefact, IsIterable): pass
 # The 'components' attribute foreseen in the model is thus omitted. 
 
 
-class Representation(HasTraits):
+class Representation(SDMXObject):
     enumerated = Instance(ItemScheme)
     not_enumerated = List # of facets
-    def __init__(self, *args, enumerated =None, not_enumerated = [], **kwargs):
-        super(Representation, self).__init__(*args, **kwargs)
-        self.enumerated = enumerated
-        self.not_enumerated = not_enumerated
         
         
 class Facet(HasTraits):
@@ -218,16 +228,11 @@ class Facet(HasTraits):
         
 class IsoConceptReference: pass # to be completed
 
-class Concept(Item):
-    core_repr = Instance(Representation)
-    iso_concept = Instance(IsoConceptReference) 
+class Concept(Item): pass
+    # core_repr = Instance(Representation)
+    # iso_concept = Instance(IsoConceptReference) 
+        
     
-    def __init__(self, *args, core_repr =None, iso_concept =None, **kwargs):
-        super(Concept, self).__init__(*args, **kwargs)
-        self.core_repr = core_repr
-        self.iso_concept = iso_concept
-
-
 class Component(IdentifiableArtefact):
     concept_id = Instance(Concept)
     local_repr = Instance(Representation)
@@ -240,12 +245,20 @@ class Component(IdentifiableArtefact):
 class Code(Item): pass
 
 class Codelist(ItemScheme):
-    child_cls = Code
     
+    @property
+    def items_by_slice(self, items): # to be reviewed
+        return self._reader.codes_by_slice(s)
+        
+        return self._reader.iter_codes(self._elem)
+
 
 
 class ConceptScheme(ItemScheme):
-    child_cls = Concept 
+    @property
+    def items(self):
+        return self._reader.iter_concepts(self._elem)
+     
 
 class Category(Item): pass
 class CategoryScheme(ItemScheme):

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 
-from pandasdmx.utils import DictLike
+from pandasdmx.utils import DictLike, str_type
 from pandasdmx import model
 from .common import Reader
 from lxml import objectify
@@ -41,9 +41,23 @@ class SDMXMLReader(Reader):
         'return a message header. elem must be the document root.'
         return model.Header(self, elem.xpath('mes:Header', namespaces = elem.nsmap)[0])
     
-    def identity(self, elem):
+    def header_id(self, elem):
         return elem.ID[0].text 
         
+    def identity(self, elem):
+        return elem.get('id')
+    
+    def urn(self, elem):
+        return elem.get('urn')
+
+    def uri(self, elem):
+        return elem.get('uri')
+        
+        
+    def agencyID(self, elem):
+        return elem.get('agencyID')
+    
+    
     def _international_string(self, elem, tagname):
         languages = elem.xpath('com:{0}/@xml:lang'.format(tagname), 
                                namespaces = elem.nsmap)
@@ -69,15 +83,32 @@ class SDMXMLReader(Reader):
             return DictLike(elem.Error.attrib)
         except AttributeError: return None
                      
+    def get_items(self, elem, tagname = None, target_cls = None, arg = None):
+        if arg:
+            if isinstance(arg, str_type):
+                return target_cls(self, elem.xpath('str:{0}[@ID = $value]'.format(tagname), 
+                    value = arg, namespaces = elem.nsmap)) 
+            else: 
+                return target_cls(self, elem.xpath('str:{0}[$value]'.format(tagname),
+                    value = arg, namespaces = elem.nsmap))
+        else: return map(target_cls, repeat(self), elem.xpath('str:{0}'.format(tagname), 
+                    namespaces = elem.nsmap)) 
                      
-    def codelists(self, elem):
-        'return iterator of codelists in a message'
-        return map(model.Codelist, repeat(self), 
-        elem.xpath('mes:Structures/str:Codelists/*', namespaces = elem.nsmap)) 
+    def codelists(self, elem, value = None):
+        'return Codelist by ID or index or iterator of all codelists in a message'
+        return self.get_items(elem, tagname = 'Codelist', target_cls = model.Codelist, value = value)
+      
         
-    def iter_items(self, elem, target_cls):
-        return map(target_cls, repeat(self), 
-                   elem.xpath('str:Code', namespaces = elem.nsmap))
+    def iter_codes(self, elem, value = None):
+        return self.get_items(elem, tagname = 'Code', target_cls = model.Code, value = value)
+    
+    def concept_schemes(self, elem, value = None):
+        'return scheme by index or ID or iterator of concept schemes in a message'
+        return self.get_items(elem, tagname = 'Concepts', target_cls = model.ConceptScheme, value = value) 
+        
+    def iter_concepts(self, elem, value = None):
+        return self.get_items(elem, tagname = 'Concept', target_cls = model.Concept, value = value)
+
         
     def isfinal(self, elem):
         return bool(elem.get('isFinal')) 

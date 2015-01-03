@@ -33,34 +33,36 @@ has already been created.
     
 
 
-class IsIterable(HasTraits):
-    _items = Any 
+class HasItems:
+    _items = None
+     
     
     def __init__(self, *args, items = [], **kwargs):
         super(IsIterable, self).__init__(*args, **kwargs)
         self._items = items
     
-    def append(self, item):
-        return self._items.append(item) 
+    def append(self, item):        return self._items.append(item) 
             
     def remove(self, item):
         return self._items.remove(item) 
                 
     def __iter__(self):
-        # handle iterables and generator functions
-        try:
-            return self._items.__iter__()
-        except AttributeError:
-            return self._items().__iter__()
+        return self[:]
         
     def __setitem__(self, item, value):
         return self._items.__setitem__(item, value)
     
     def __getitem__(self, item):
-        return self._items.__getitem__(item)
+        if isinstance(item, str_type):
+            return self._item_by_id(item)
+        elif isinstance(item, int):
+            return self._item_by_index(item)
+        elif isinstance(item, slice):
+            return self._items_by_slice(item) 
+        
 
     def __len__(self):
-        return self._items.__len__()
+        return len(list(self))
         
 # 2to3 compatibility
 if sys.version[0] == '3': str_type = str

@@ -115,7 +115,18 @@ class SDMXMLReader(Reader):
     def isfinal(self, elem):
         return bool(elem.get('isFinal')) 
         
-        
+    def dataflows(self, elem):
+        return self._structures(elem, 'mes:Structures/str:Dataflows/str:Dataflow', model.DataflowDefinition)
+    
+    def structure(self, elem):
+        '''
+        return content of a model.Structure.  
+        '''
+        return model.Structure(self, elem.xpath('str:Structure', 
+                                                namespaces = elem.nsmap))
+     
+    
+
 
  
     def parse_series(self, source):

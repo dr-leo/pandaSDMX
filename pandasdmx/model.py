@@ -24,7 +24,7 @@ class SDMXObject(object):
       
 class Message(SDMXObject):
     
-    _structure_names = {'codelists', 'concept_schemes'}
+    _structure_names = {'codelists', 'concept_schemes', 'dataflows'}
     
     def __getattr__(self, name):
         if name in self._structure_names:
@@ -203,11 +203,10 @@ class Structure(MaintainableArtefact):
     pass
 
 class StructureUsage(MaintainableArtefact):
-    struct = Instance(Structure)
     
-    def __init__(self, structure = None, *args, **kwargs):
-        super(StructureUsage, self).__init__(*args, **kwargs)
-        self.struct = structure
+    @property
+    def structure(self):
+        return self._reader.structure(self._elem) 
     
     
 class Componentlist(IdentifiableArtefact, HasItems): pass

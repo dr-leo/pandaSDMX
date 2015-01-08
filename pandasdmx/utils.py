@@ -9,7 +9,19 @@ from IPython.config.loader import Config
 from collections import namedtuple
 import sys
 
-class DictLike(Config): pass
+class DictLike(Config):
+    
+    def findname(self, search_str, language = 'en'):
+        '''
+        return new DictLike of items where 'search_str' is a substring of 'name'
+        in the specified language (defaults to 'en'). self.values() should therefore contain model.NameableArtefact subclass instances.
+        Any capitalization is disregarded. Hence 'a' == 'A'.
+        '''
+        s = search_str.lower()
+        return DictLike(result for result in self.items() 
+                        if s in result[1].name[language].lower())
+        
+        
 
 class NamedTupleFactory:
     """

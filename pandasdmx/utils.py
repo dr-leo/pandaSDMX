@@ -38,7 +38,7 @@ class HasItems:
      
     
     def __init__(self, *args, items = [], **kwargs):
-        super(IsIterable, self).__init__(*args, **kwargs)
+        super(HasItems, self).__init__(*args, **kwargs)
         self._items = items
     
     def append(self, item):        return self._items.append(item) 

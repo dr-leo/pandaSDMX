@@ -15,27 +15,31 @@ from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool,
             Any, This, Enum, Dict)
 
 
-class SDMXObject:
+class SDMXObject(object):
     def __init__(self, reader, elem, **kwargs):
-        self._reader = reader
-        self._elem = elem
         super(SDMXObject, self).__init__(**kwargs)
+        object.__setattr__(self, '_reader', reader)
+        object.__setattr__(self, '_elem', elem)
+        
       
 class Message(SDMXObject):
+    
+    _structure_names = {'codelists', 'concept_schemes'}
+    
+    def __getattr__(self, name):
+        if name in self._structure_names:
+            value = getattr(self._reader, name)(self._elem)
+            setattr(self, name, value)
+            return value
+        else: raise AttributeError('{0} not found.'.format(value))
+            
+            
             
     @property
     def header(self):
         return self._reader.mes_header(self._elem)
     
-    @property
-    def codelists(self):
-        return self._reader.codelists(self._elem)
 
-    @property
-    def concept_schemes(self):
-        return self._reader.concept_schemes(self._elem)
-        
-        
 class Header(SDMXObject):
     @property
     def id(self):
@@ -167,7 +171,13 @@ class MaintainableArtefact(VersionableArtefact):
         return self._reader.maintainer(self._elem)
     
     
-class ItemScheme(MaintainableArtefact, HasItems): 
+class ItemScheme(MaintainableArtefact, DictLike):
+    _get_items = None # subclasses must set this to the name of the reader method 
+    
+    def __init__(self, *args, **kwargs):
+        super(ItemScheme, self).__init__(*args, **kwargs)
+        self.update(getattr(self._reader, self._get_items)(self._elem)) 
+    
     
     @property
     def is_partial(self):
@@ -200,8 +210,8 @@ class StructureUsage(MaintainableArtefact):
         self.struct = structure
     
     
-class Componentlist(IdentifiableArtefact, IsIterable): pass
-# Components are passed through the items attribute required by the IsIterable superclass.
+class Componentlist(IdentifiableArtefact, HasItems): pass
+# Components are passed through the items attribute required by the HasItems superclass.
 # The 'components' attribute foreseen in the model is thus omitted. 
 
 
@@ -246,25 +256,23 @@ class Code(Item): pass
 
 class Codelist(ItemScheme):
     
-    @property
-    def items_by_slice(self, items): # to be reviewed
-        return self._reader.codes_by_slice(s)
+    _get_items = 'codes'
+    
         
-        return self._reader.iter_codes(self._elem)
+        
 
 
 
 class ConceptScheme(ItemScheme):
-    @property
-    def items(self):
-        return self._reader.iter_concepts(self._elem)
+    _get_items = 'concepts'
      
 
 class Category(Item): pass
+
 class CategoryScheme(ItemScheme):
-    child_cls = Category
+    _get_items = 'categories'
 
-
+    
 
 class Categorization(MaintainableArtefact):
     artefact = Instance(IdentifiableArtefact)

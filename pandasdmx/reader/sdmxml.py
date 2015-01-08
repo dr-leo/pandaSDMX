@@ -10,6 +10,7 @@ from itertools import repeat
 
  
 class SDMXMLReader(Reader):
+
     
     """
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
@@ -20,20 +21,15 @@ class SDMXMLReader(Reader):
         'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
         'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'}
 
-
-    model_map = {
-        '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure}DataStructureDefinition' : model.DataStructureDefinition
-                 
-                 }
-    
     def parse(self, source):
         root = objectify.parse(source).getroot()
         return model.Message(self, root) 
+    
         
     def dispatch(self, elem):
         model_class = self.model_map.get(elem.tag)
         if model_class: return model_class(self, elem)
-        else: return elem
+        else: return elem   
          
         
         
@@ -83,31 +79,37 @@ class SDMXMLReader(Reader):
             return DictLike(elem.Error.attrib)
         except AttributeError: return None
                      
-    def get_items(self, elem, tagname = None, target_cls = None, arg = None):
-        if arg:
-            if isinstance(arg, str_type):
-                return target_cls(self, elem.xpath('str:{0}[@ID = $value]'.format(tagname), 
-                    value = arg, namespaces = elem.nsmap)) 
-            else: 
-                return target_cls(self, elem.xpath('str:{0}[$value]'.format(tagname),
-                    value = arg, namespaces = elem.nsmap))
-        else: return map(target_cls, repeat(self), elem.xpath('str:{0}'.format(tagname), 
-                    namespaces = elem.nsmap)) 
+    def _items(self, elem, path, model_cls):
+        '''
+        return dict mapping IDs to item instances from model.
+        elem must be an item scheme
+        '''    
+        return {e.get('id') : model_cls(self, e) for e in elem.xpath(path, 
+                    namespaces = elem.nsmap)} 
                      
-    def codelists(self, elem, value = None):
-        'return Codelist by ID or index or iterator of all codelists in a message'
-        return self.get_items(elem, tagname = 'Codelist', target_cls = model.Codelist, value = value)
-      
-        
-    def iter_codes(self, elem, value = None):
-        return self.get_items(elem, tagname = 'Code', target_cls = model.Code, value = value)
+    def _structures(self, elem, path, model_cls):
     
-    def concept_schemes(self, elem, value = None):
-        'return scheme by index or ID or iterator of concept schemes in a message'
-        return self.get_items(elem, tagname = 'Concepts', target_cls = model.ConceptScheme, value = value) 
+        '''
+        Helper method called by codelists() etc.
+        return DictLike mapping structure IDs to model claas for the structure
+        '''
+        return DictLike({e.get('id') : model_cls(self, e) for e in  
+                    elem.xpath(path, namespaces = elem.nsmap)})
+      
+    def codelists(self, elem):
+        return self._structures(elem, 'mes:Structures/str:Codelists/str:Codelist', model.Codelist)
+    
+    
+    def codes(self, elem):
+        return self._items(elem, 'str:Code', model.Code)
+
+    
+    def concept_schemes(self, elem):
+        return self._structures(elem, 'mes:Structures/str:Concepts/str:ConceptScheme', model.ConceptScheme)
         
-    def iter_concepts(self, elem, value = None):
-        return self.get_items(elem, tagname = 'Concept', target_cls = model.Concept, value = value)
+        
+    def concepts(self, elem):
+        return self._items(elem, 'str:Concept', model.Concept)
 
         
     def isfinal(self, elem):

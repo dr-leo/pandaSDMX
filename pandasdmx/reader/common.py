@@ -5,7 +5,7 @@
 @author: Dr. Leo
 '''
 
-from IPython.utils.traitlets import Unicode
+
 from IPython.config.configurable import LoggingConfigurable
 
 
@@ -17,5 +17,5 @@ class Reader(LoggingConfigurable):
         self.agency_id = agency_id
         
     
-    def parse(self, source): raise NotImplemented
+    def initialize(self, source): raise NotImplemented
     

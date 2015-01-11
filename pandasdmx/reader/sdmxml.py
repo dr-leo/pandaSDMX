@@ -21,9 +21,10 @@ class SDMXMLReader(Reader):
         'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
         'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'}
 
-    def parse(self, source):
+    def initialize(self, source):
         root = objectify.parse(source).getroot()
-        return model.Message(self, root) 
+        self.response = model.Response(self, root)
+        return self.response 
     
         
     def dispatch(self, elem):
@@ -95,9 +96,10 @@ class SDMXMLReader(Reader):
         '''
         return DictLike({e.get('id') : model_cls(self, e) for e in  
                     elem.xpath(path, namespaces = elem.nsmap)})
-      
+        
     def codelists(self, elem):
-        return self._structures(elem, 'mes:Structures/str:Codelists/str:Codelist', model.Codelist)
+        return self._structures(elem, 'mes:Structures/str:Codelists/str:Codelist', 
+                                model.Codelist)
     
     
     def codes(self, elem):
@@ -116,7 +118,8 @@ class SDMXMLReader(Reader):
         return bool(elem.get('isFinal')) 
         
     def dataflows(self, elem):
-        return self._structures(elem, 'mes:Structures/str:Dataflows/str:Dataflow', model.DataflowDefinition)
+        return self._structures(elem, 'mes:Structures/str:Dataflows/str:Dataflow', 
+                                model.DataflowDefinition)
     
     def structure(self, elem):
         '''
@@ -125,7 +128,11 @@ class SDMXMLReader(Reader):
         return model.Structure(self, elem.xpath('str:Structure', 
                                                 namespaces = elem.nsmap))
      
+    def datastructures(self, elem):
+        return self._structures(elem, 'mes:Structures/str:DataStructures/str:DataStructure', 
+                                model.DataStructureDefinition)
     
+        
 
 
  

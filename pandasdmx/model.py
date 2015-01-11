@@ -10,9 +10,9 @@ SDMX 2.1 information model
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils    import HasItems, DictLike, str_type
-from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, Bool, 
-            Any, This, Enum, Dict)
+from pandasdmx.utils    import DictLike, str_type
+from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
+            Any, Enum, Dict)
 
 
 class SDMXObject(object):
@@ -22,9 +22,9 @@ class SDMXObject(object):
         object.__setattr__(self, '_elem', elem)
         
       
-class Message(SDMXObject):
+class Response(SDMXObject):
     
-    _structure_names = {'codelists', 'concept_schemes', 'dataflows'}
+    _structure_names = {'codelists', 'concept_schemes', 'dataflows', 'datastructures'}
     
     def __getattr__(self, name):
         if name in self._structure_names:
@@ -61,8 +61,8 @@ class Header(SDMXObject):
 
 class InternationalString(DictLike):
     
-    def __init__(self, *args, **kwargs):
-        super(InternationalString, self).__init__(*args, **kwargs)
+    def __init__(self,  **kwargs):
+        super(InternationalString, self).__init__( **kwargs)
     
     def get_locales(self): return self.keys()
     
@@ -131,6 +131,9 @@ class NameableArtefact(IdentifiableArtefact):
     @property
     def description(self):
         return self._reader.description(self._elem)    
+    
+    def __str__(self):
+        return ' '.join((self.__class__.__name__, 'ID:', self.id, 'name:', self.name.en))
     
     
 class VersionableArtefact(NameableArtefact):
@@ -209,7 +212,7 @@ class StructureUsage(MaintainableArtefact):
         return self._reader.structure(self._elem) 
     
     
-class Componentlist(IdentifiableArtefact, HasItems): pass
+class Componentlist(IdentifiableArtefact): pass
 # Components are passed through the items attribute required by the HasItems superclass.
 # The 'components' attribute foreseen in the model is thus omitted. 
 
@@ -227,8 +230,8 @@ class Facet(HasTraits):
                 'Day', 'MonthDay', 'Duration'))
     itemscheme_facet = Unicode # to be completed
     
-    def __init__(self, *args, facet_type = None, facet_value_type = u'', 
-                 itemscheme_facet = u'', **kwargs):
+    def __init__(self, facet_type = None, facet_value_type = u'', 
+                 itemscheme_facet = u'', *args, **kwargs):
         super(Facet, self).__init__(*args, **kwargs)
         self.facet_type = facet_type
         self.facet_value_type = facet_value_type
@@ -246,8 +249,8 @@ class Component(IdentifiableArtefact):
     concept_id = Instance(Concept)
     local_repr = Instance(Representation)
 
-    def __init__(self, *args, concept_id =None, local_repr =None, **kwargs):
-        super(Component, self).__init__(*args, **kwargs)
+    def __init__(self, concept_id =None, local_repr =None, **kwargs):
+        super(Component, self).__init__(**kwargs)
         self.concept_id = concept_id
         self.local_repr = local_repr
         
@@ -257,10 +260,6 @@ class Codelist(ItemScheme):
     
     _get_items = 'codes'
     
-        
-        
-
-
 
 class ConceptScheme(ItemScheme):
     _get_items = 'concepts'
@@ -277,8 +276,8 @@ class Categorization(MaintainableArtefact):
     artefact = Instance(IdentifiableArtefact)
     categorized_by = Instance(Category)
     
-    def __init__(self, id_artefact, category, *args, **kwargs):
-        super(Categorization, self).__init__(*args, **kwargs)
+    def __init__(self, id_artefact, category,  **kwargs):
+        super(Categorization, self).__init__( **kwargs)
         self.artefact = id_artefact
         self.categorized_by = category
         
@@ -289,18 +288,15 @@ class ConstraintRoleType: pass
 class DataflowDefinition(StructureUsage): pass 
      
 
-class DataStructureDefinition(Structure):
-    grouping = Any
-    def __init__(self, *args, grouping = u'', **kwargs):
-        super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.grouping = grouping
+class DataStructureDefinition(Structure): pass
+    # grouping make property for this
         
         
 class GroupDimensionDescriptor(Componentlist):
     constraint = Any
     
-    def __init__(self, *args, constraint = u'', components = u'', **kwargs):
-        super(GroupDimensionDescriptor, self).__init__(*args, **kwargs)
+    def __init__(self,  constraint = u'', components = u'', **kwargs):
+        super(GroupDimensionDescriptor, self).__init__( **kwargs)
         self.constraint = constraint
         self.components = components # not understood. Assign to self._items?
 
@@ -310,9 +306,9 @@ class DimensionDescriptor(Componentlist):
     measure_dimension = Instance(Component)
     time_dimension = Instance(Component)
     
-    def __init__(self, *args, dimension =None, measure_dimension =None,
+    def __init__(self,  dimension =None, measure_dimension =None,
                 time_dimension =None, **kwargs):
-        super(DimensionDescriptor, self).__init__(*args, **kwargs)
+        super(DimensionDescriptor, self).__init__( **kwargs)
         self.dimension = dimension
         self.measure_dimension = measure_dimension
         self.time_dimension = time_dimension
@@ -324,9 +320,9 @@ class DimensionGroupDescriptor(Componentlist):
     measure_dimension = Instance(Component)
     time_dimension = Instance(Component)
     
-    def __init__(self, *args, dimension =None, measure_dimension =None, 
+    def __init__(self,  dimension =None, measure_dimension =None, 
                  time_dimension =None, **kwargs):
-        super(DimensionGroupDescriptor, self).__init__(*args, **kwargs)
+        super(DimensionGroupDescriptor, self).__init__( **kwargs)
         self.dimension = dimension
         self.measure_dimension = measure_dimension
         self.time_dimension = time_dimension
@@ -336,8 +332,8 @@ class PrimaryMeasure(Component): pass
 class MeasureDescriptor(Componentlist):
     primary_measure = Instance(PrimaryMeasure)
     
-    def __init__(self, *args, primary_measure =None, **kwargs):
-        super(MeasureDescriptor, self).__init__(*args, **kwargs)
+    def __init__(self,  primary_measure =None, **kwargs):
+        super(MeasureDescriptor, self).__init__( **kwargs)
         self.primary_measure = primary_measure
 
 class AttributeDescriptor(Componentlist): pass
@@ -368,8 +364,8 @@ class DataAttribute(Component):
     role = Instance(Concept)
     usage_status = Enum(('mandatory', 'conditional')) # generalise this through constraint?
     
-    def __init__(self, *args, role =None, related_to = None, **kwargs):
-        super(DataAttribute, self).__init__(*args, **kwargs)
+    def __init__(self,  role =None, related_to = None, **kwargs):
+        super(DataAttribute, self).__init__( **kwargs)
         self.related_to = related_to
         self.role = role
 
@@ -379,8 +375,8 @@ class ReportingYearStartDay(DataAttribute): pass
 class DimensionComponent(Component): # rename this to Dimension? 
     role = Instance(Concept)
     
-    def __init__(self, *args, role =None, **kwargs):
-        super(DimensionComponent, self).__init__(*args, **kwargs)
+    def __init__(self,  role =None, **kwargs):
+        super(DimensionComponent, self).__init__( **kwargs)
         self.role = role
 
 

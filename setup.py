@@ -19,7 +19,8 @@ setup(name='pandaSDMX',
     install_requires=[
         'pandas',
         'lxml',
-        'requests'
+        'requests',
+        'aadict'
       ],
       provides = ['pandasdmx'],
       classifiers = [

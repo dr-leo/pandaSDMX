@@ -29,16 +29,18 @@ class Agency(LoggingConfigurable):
     client = Instance(REST, config = True, help = """
     REST or similar client to communicate with the web service""")
     base_url = Unicode
-    reader = Instance('pandasdmx.reader.common.Reader', config = True, help = 
-    ''
-        """class path to the Reader subclass""")
 
+
+    def get_reader(self):
+        return SDMXMLReader(self.agency_id, self.client)
+    
+    
     def get(self, url_suffix = u'', from_file = None, to_file = None, **kwargs):
         '''
         Load a source file identified by the URL suffix or filename given as from_file kwarg.
         If to_file is not None, save the file under that name.
-        return the downloaded file as stored by self.client (mostly in a Spooled TempFile, or, if
-        the downloaded file has been saved to a permanent local file, return that file.
+        return a reader for the file as stored by self.client (mostly in a Spooled TempFile, or, if
+        the downloaded file has been saved to a permanent local file, for that file.
         '''
          
         source = self.client.get(url_suffix = url_suffix, from_file = from_file)
@@ -46,7 +48,7 @@ class Agency(LoggingConfigurable):
             with open(to_file, 'wb') as dest:
                 dest.write(source.read())
                 source.seek(0)
-        return self.reader.parse(source)  
+        return self.get_reader().initialize(source)  
          
     def dataflows(self, **kwargs):
         url_suffix = '/'.join(['dataflow', self.agency_id, 'all', 'latest'])
@@ -63,11 +65,11 @@ class Agency(LoggingConfigurable):
         if startperiod: 
             url_suffix += '?startperiod={0}'.format(startperiod)
             if endperiod: url_suffix += '&endperiod={0}'.format(endperiod)
-        elif endperiod: query_url += '?endperiod={0}'.format(endperiod) 
+        elif endperiod: url_suffix += '?endperiod={0}'.format(endperiod) 
         return self.get(url_suffix = url_suffix, **kwargs)
 
     def categories(self, **kwargs):
-        return self.get(url_suffix = 'categories', **kwargs)
+        return self.get(url_suffix = 'category', **kwargs)
             
 
 class ECB(Agency):
@@ -81,7 +83,7 @@ class ECB(Agency):
         self.base_url = 'http://sdw-wsrest.ecb.int/service'
         self.agency_id = 'ECB'
         self.client = REST(self.base_url)
-        self.reader = SDMXMLReader(self.agency_id, self.client)
+         
                     
         
 class Eurostat(Agency):
@@ -94,6 +96,6 @@ class Eurostat(Agency):
         self.base_url = 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'
         self.agency_id = 'ESTAT'
         self.client = REST(self.base_url)
-        self.reader = SDMXMLReader(self.agency_id, self.client)
+        
     
     

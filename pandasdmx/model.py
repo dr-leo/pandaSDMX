@@ -5,11 +5,11 @@
 
 This module is part of the pandaSDMX package
 
-SDMX 2.1 information model
+        SDMX 2.1 information model
 
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
-
+import pdb
 from pandasdmx.utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
             Any, Enum, Dict)
@@ -17,21 +17,36 @@ from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List,
 
 class SDMXObject(object):
     def __init__(self, reader, elem, **kwargs):
-        super(SDMXObject, self).__init__(**kwargs)
+        
         object.__setattr__(self, '_reader', reader)
         object.__setattr__(self, '_elem', elem)
+        super(SDMXObject, self).__init__(**kwargs)
         
       
 class Response(SDMXObject):
     
-    _structure_names = {'codelists', 'concept_schemes', 'dataflows', 'datastructures'}
+    _structure_names = ['codelists', 'conceptschemes', 'dataflows', 'datastructures']
     
+    def __init__(self, *args, **kwargs):
+        super(Response, self).__init__(*args, **kwargs)
+        # Initialize data attributes for which the response contains payload
+        for name in self._structure_names:
+            try:
+                getattr(self, name)
+            except ValueError: pass 
+        
     def __getattr__(self, name):
         if name in self._structure_names:
             value = getattr(self._reader, name)(self._elem)
-            setattr(self, name, value)
-            return value
-        else: raise AttributeError('{0} not found.'.format(value))
+            if value:
+                setattr(self, name, value) 
+                return value
+            else:
+                raise ValueError(
+                    'SDMX response does not containe any payload of type %s.' 
+                    % name)
+        else:
+            raise AttributeError('{0} not found.'.format(name)) 
             
             
             
@@ -96,7 +111,7 @@ class AnnotableArtefact(SDMXObject):
         return self._reader.annotations(self._elem)
     
         
-class IdentifiableArtefact(SDMXObject):
+class IdentifiableArtefact(AnnotableArtefact):
     @property
     def id(self):
         return self._reader.identity(self._elem)
@@ -173,21 +188,24 @@ class MaintainableArtefact(VersionableArtefact):
     def maintainer(self):
         return self._reader.maintainer(self._elem)
     
-    
-class ItemScheme(MaintainableArtefact, DictLike):
+# Helper class for ItemScheme and ComponentList. 
+# This is not specifically mentioned in the SDMX info-model. 
+# ItemSchemes and ComponentList differ only in that ItemScheme is Nameable, whereas
+# ComponentList is only identifiable. Therefore, ComponentList cannot
+# inherit from ItemScheme.     
+class Scheme(DictLike):
     _get_items = None # subclasses must set this to the name of the reader method 
     
     def __init__(self, *args, **kwargs):
-        super(ItemScheme, self).__init__(*args, **kwargs)
-        self.update(getattr(self._reader, self._get_items)(self._elem)) 
+        super(Scheme, self).__init__(*args, **kwargs)
+        self.update(getattr(self._reader, self._get_items)(self._elem))
     
+class ItemScheme(MaintainableArtefact, Scheme):
     
     @property
     def is_partial(self):
         return self._reader.is_partial(self._elem)
     
-    
-         
          
 class Item(NameableArtefact):
     
@@ -212,13 +230,18 @@ class StructureUsage(MaintainableArtefact):
         return self._reader.structure(self._elem) 
     
     
-class Componentlist(IdentifiableArtefact): pass
-# Components are passed through the items attribute required by the HasItems superclass.
-# The 'components' attribute foreseen in the model is thus omitted. 
+class ComponentList(IdentifiableArtefact, Scheme):
+        _get_items = 'components'
 
 
 class Representation(SDMXObject):
-    enumerated = Instance(ItemScheme)
+    def __init__(self, *args, enum = None, **kwargs):
+        super(Representation, self).__init__(*args)
+        self.enum = enum
+        
+    
+    
+    
     not_enumerated = List # of facets
         
         
@@ -246,14 +269,15 @@ class Concept(Item): pass
         
     
 class Component(IdentifiableArtefact):
-    concept_id = Instance(Concept)
-    local_repr = Instance(Representation)
+    
+    @property
+    def concept(self):
+        return self._reader.concept_id(self._elem)
+    
+    @property
+    def local_repr(self):
+        return self._reader.localrepr(self._elem)
 
-    def __init__(self, concept_id =None, local_repr =None, **kwargs):
-        super(Component, self).__init__(**kwargs)
-        self.concept_id = concept_id
-        self.local_repr = local_repr
-        
 class Code(Item): pass
 
 class Codelist(ItemScheme):
@@ -288,55 +312,33 @@ class ConstraintRoleType: pass
 class DataflowDefinition(StructureUsage): pass 
      
 
-class DataStructureDefinition(Structure): pass
-    # grouping make property for this
-        
-        
-class GroupDimensionDescriptor(Componentlist):
-    constraint = Any
-    
-    def __init__(self,  constraint = u'', components = u'', **kwargs):
-        super(GroupDimensionDescriptor, self).__init__( **kwargs)
-        self.constraint = constraint
-        self.components = components # not understood. Assign to self._items?
+class DataStructureDefinition(Structure):
+    def __init__(self, *args, **kwargs):
+        super(DataStructureDefinition, self).__init__(*args, **kwargs)
+        self.dimensions= self._reader.dimdescriptor(self._elem)
+        # self.measures = self._reader.measures(self._elem)
+        # self.attributes = self._reader.attributes(self._elem)
 
 
-class DimensionDescriptor(Componentlist):
-    dimension = Instance(Component)
-    measure_dimension = Instance(Component)
-    time_dimension = Instance(Component)
+class DimensionDescriptor(ComponentList):
+    _get_items = 'dimension_items'
     
-    def __init__(self,  dimension =None, measure_dimension =None,
-                time_dimension =None, **kwargs):
-        super(DimensionDescriptor, self).__init__( **kwargs)
-        self.dimension = dimension
-        self.measure_dimension = measure_dimension
-        self.time_dimension = time_dimension
-        
-class DimensionGroupDescriptor(Componentlist):
+class GroupDimensionDescriptor(ComponentList):
     # Associations to dimension etc. are not distinguished from
     # the actual dimensions. This differs technically from the model specification
     dimension = Instance(Component)
     measure_dimension = Instance(Component)
     time_dimension = Instance(Component)
+    # constraint to be added
     
-    def __init__(self,  dimension =None, measure_dimension =None, 
-                 time_dimension =None, **kwargs):
-        super(DimensionGroupDescriptor, self).__init__( **kwargs)
-        self.dimension = dimension
-        self.measure_dimension = measure_dimension
-        self.time_dimension = time_dimension
         
 class PrimaryMeasure(Component): pass
 
-class MeasureDescriptor(Componentlist):
-    primary_measure = Instance(PrimaryMeasure)
+class MeasureDescriptor(ComponentList):
+    _get_items = 'primarymeasure'
     
-    def __init__(self,  primary_measure =None, **kwargs):
-        super(MeasureDescriptor, self).__init__( **kwargs)
-        self.primary_measure = primary_measure
 
-class AttributeDescriptor(Componentlist): pass
+class AttributeDescriptor(ComponentList): pass
     
 class AttributeRelationship: pass
 class NoSpecifiedRelationship(AttributeRelationship): pass
@@ -372,18 +374,17 @@ class DataAttribute(Component):
 class ReportingYearStartDay(DataAttribute): pass
 
 
-class DimensionComponent(Component): # rename this to Dimension? 
-    role = Instance(Concept)
+class Dimension(Component):   
+    # role = Instance(Concept)
     
-    def __init__(self,  role =None, **kwargs):
-        super(DimensionComponent, self).__init__( **kwargs)
-        self.role = role
+    @property
+    def _position(self):
+        return self._reader.position(self._elem)
 
-
-class TimeDimension(DimensionComponent): pass 
+class TimeDimension(Dimension): pass 
     # role must be None. Enforce this in future versions.
 
-class MeasureDimension(DimensionComponent): pass 
+class MeasureDimension(Dimension): pass 
     # representation: must be concept scheme and local, i.e. no
     # inheritance from concept
     

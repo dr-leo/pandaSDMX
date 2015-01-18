@@ -55,6 +55,11 @@ class Agency(LoggingConfigurable):
         return self.get(url_suffix = url_suffix, **kwargs)
     
     def datastructure(self, flowref, **kwargs):
+        # First, we handle the case that flowref is an
+        # IdentifiableArtefact. If so, we take the id string as dataflow id.
+        try:
+            flowref = flowref.id
+        except AttributeError: pass
         url_suffix = '/'.join(['datastructure', self.agency_id, 'DSD_' + flowref])
         return self.get(url_suffix = url_suffix, **kwargs)
     

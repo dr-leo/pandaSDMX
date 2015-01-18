@@ -1,11 +1,11 @@
 # encoding: utf-8
 
 
-from pandasdmx.utils import DictLike, str_type
+from pandasdmx.utils import DictLike
 from pandasdmx import model
 from .common import Reader
 from lxml import objectify
-from itertools import repeat
+
 
 
  
@@ -16,10 +16,6 @@ class SDMXMLReader(Reader):
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
     """
     
-    namespaces = {
-        'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-        'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-        'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'}
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
@@ -40,7 +36,12 @@ class SDMXMLReader(Reader):
     
     def header_id(self, elem):
         return elem.ID[0].text 
-        
+
+    def annotations(self, elem):
+        return self._structures(elem, 'com:Annotations/com:Annotation', 
+                                model.Annotation)
+                
+                
     def identity(self, elem):
         return elem.get('id')
     
@@ -106,7 +107,7 @@ class SDMXMLReader(Reader):
         return self._items(elem, 'str:Code', model.Code)
 
     
-    def concept_schemes(self, elem):
+    def conceptschemes(self, elem):
         return self._structures(elem, 'mes:Structures/str:Concepts/str:ConceptScheme', model.ConceptScheme)
         
         
@@ -132,7 +133,47 @@ class SDMXMLReader(Reader):
         return self._structures(elem, 'mes:Structures/str:DataStructures/str:DataStructure', 
                                 model.DataStructureDefinition)
     
+    def dimdescriptor(self, elem):
+        nodes = elem.xpath('str:DataStructureComponents/str:DimensionList',
+                          namespaces = elem.nsmap) 
+        return model.DimensionDescriptor(self, nodes[0])
+    
+    def dimension_items(self, elem):
+        d = self._structures(elem, 'str:Dimension', model.Dimension)
+        d.update(self._structures(elem, 'str:TimeDimension', model.TimeDimension))
+        d.update(self._structures(elem, 'str:MeasureDimension', model.MeasureDimension))
+        return d
+         
+    def concept_id(self, elem):
+        # called by model.Component.concept
+        c_id = elem.xpath('str:ConceptIdentity/Ref/@id', 
+                          namespaces = elem.nsmap)[0]
+        parent_id = elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
+                               namespaces = elem.nsmap)[0]
+        return self.response.conceptschemes[parent_id][c_id]
         
+    def position(self, elem):
+        # called by model.Dimension
+        return int(elem.get('position')) 
+    
+    def localrepr(self, elem):
+        node = elem.xpath('str:LocalRepresentation',
+                          namespaces = elem.nsmap)[0]
+        enum = node.xpath('str:Enumeration/Ref/@id',
+                          namespaces = node.nsmap)
+        if enum: enum = self.response.codelists[enum[0]]
+        else: enum = None
+        return model.Representation(self, node, enum = enum)
+         
+        
+    def attributes(self, elem):
+        return self._structures(elem, 'str:DataStructureComponents/str:AttributeList', 
+                                model.AttributeDescriptor)
+    
+    def measures(self, elem):
+        return self._structures(elem, 'str:DataStructureComponents/str:MeasureList', 
+                                model.MeasureDescriptor)
+    
 
 
  

@@ -167,12 +167,24 @@ class SDMXMLReader(Reader):
          
         
     def attributes(self, elem):
-        return self._structures(elem, 'str:DataStructureComponents/str:AttributeList', 
-                                model.AttributeDescriptor)
+        nodes = elem.xpath('str:DataStructureComponents/str:AttributeList',
+                          namespaces = elem.nsmap) 
+        return model.AttributeDescriptor(self, nodes[0])
+
+    def attribute_items(self, elem):
+        return self._structures(elem, 'str:Attribute', model.DataAttribute)
     
+    def assignment_status(self, elem):
+        return elem.xpath('@assignmentStatus')[0]
+        
+        
     def measures(self, elem):
-        return self._structures(elem, 'str:DataStructureComponents/str:MeasureList', 
-                                model.MeasureDescriptor)
+        nodes = elem.xpath('str:DataStructureComponents/str:MeasureList',
+                          namespaces = elem.nsmap) 
+        return model.MeasureDescriptor(self, nodes[0])
+
+    def measure_items(self, elem):
+        return self._structures(elem, 'str:PrimaryMeasure', model.PrimaryMeasure)
     
 
 
@@ -225,4 +237,3 @@ class SDMXMLReader(Reader):
             yield codes, raw_dates, raw_values, raw_status 
     
     
-        

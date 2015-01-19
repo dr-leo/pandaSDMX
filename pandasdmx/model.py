@@ -13,6 +13,7 @@ import pdb
 from pandasdmx.utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
             Any, Enum, Dict)
+ 
 
 
 class SDMXObject(object):
@@ -200,6 +201,29 @@ class Scheme(DictLike):
         super(Scheme, self).__init__(*args, **kwargs)
         self.update(getattr(self._reader, self._get_items)(self._elem))
     
+    def find(self, search_str, by = 'name', language = 'en'):
+        '''
+        return new DictLike of items where value.<by> contains the search_str. 'by' defaults to 'name'. 
+        If the <by> attribute is an international string,
+        'language' (defaults to 'en') is used to select the desired language. self.values() should therefore contain model.NameableArtefact subclass instances.
+        Any capitalization is disregarded. Hence 'a' == 'A'.
+        '''
+        s = search_str.lower()
+        # We distinguish between international strings stored as dict such as 
+        # name.en, name.fr, and normal strings.
+        if by in ['name', 'description']:
+            get_field = lambda obj: getattr(obj, by)[language]
+        else: # normal string
+            get_field = lambda obj: getattr(obj, by)
+        return DictLike(result for result in self.items() 
+                        if s in get_field(result[1]).lower())
+    
+    # DictLike.aslist returns a list sorted by _sort_key. 
+    # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this 
+    # to sort by position. 
+    _sort_key = 'id'
+    
+    
 class ItemScheme(MaintainableArtefact, Scheme):
     
     @property
@@ -230,19 +254,15 @@ class StructureUsage(MaintainableArtefact):
         return self._reader.structure(self._elem) 
     
     
-class ComponentList(IdentifiableArtefact, Scheme):
-        _get_items = 'components'
-
+class ComponentList(IdentifiableArtefact, Scheme): pass
+        
 
 class Representation(SDMXObject):
     def __init__(self, *args, enum = None, **kwargs):
         super(Representation, self).__init__(*args)
         self.enum = enum
-        
     
-    
-    
-    not_enumerated = List # of facets
+    # not_enumerated = List # of facets
         
         
 class Facet(HasTraits):
@@ -316,12 +336,14 @@ class DataStructureDefinition(Structure):
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
         self.dimensions= self._reader.dimdescriptor(self._elem)
-        # self.measures = self._reader.measures(self._elem)
-        # self.attributes = self._reader.attributes(self._elem)
+        self.measures = self._reader.measures(self._elem)
+        self.attributes = self._reader.attributes(self._elem)
 
 
 class DimensionDescriptor(ComponentList):
     _get_items = 'dimension_items'
+    _sort_key = '_position'
+    
     
 class GroupDimensionDescriptor(ComponentList):
     # Associations to dimension etc. are not distinguished from
@@ -335,10 +357,12 @@ class GroupDimensionDescriptor(ComponentList):
 class PrimaryMeasure(Component): pass
 
 class MeasureDescriptor(ComponentList):
-    _get_items = 'primarymeasure'
+    _get_items = 'measure_items'
     
 
-class AttributeDescriptor(ComponentList): pass
+class AttributeDescriptor(ComponentList): 
+    _get_items = 'attribute_items'
+    
     
 class AttributeRelationship: pass
 class NoSpecifiedRelationship(AttributeRelationship): pass
@@ -362,15 +386,15 @@ class DimensionRelationship(GroupRelationship):
         
         
 class DataAttribute(Component):
-    related_to = Instance(AttributeRelationship)  
-    role = Instance(Concept)
-    usage_status = Enum(('mandatory', 'conditional')) # generalise this through constraint?
+    # related_to = Instance(AttributeRelationship)  
+    # role = Instance(Concept)
     
-    def __init__(self,  role =None, related_to = None, **kwargs):
-        super(DataAttribute, self).__init__( **kwargs)
-        self.related_to = related_to
-        self.role = role
-
+    @property
+    def usage_status(self):
+        return self._reader.assignment_status(self._elem)
+    
+    
+    
 class ReportingYearStartDay(DataAttribute): pass
 
 

@@ -5,6 +5,7 @@
 import pandasdmx
 estat=pandasdmx.Eurostat()
 m=estat.datastructure('apro_mk_cola') 
-dsd=list(m.datastructures.values())[0]
+dsd=m.datastructures.aslist[0]
 dim=dsd.dimensions
-freq=dim.FREQ
+att=dsd.attributes
+meas=dsd.measures

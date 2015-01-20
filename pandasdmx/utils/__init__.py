@@ -4,9 +4,8 @@ module pandasdmx.utils - helper classes and functions
 '''
 
 
-from aadict import aadict 
+from .aadict import aadict 
 from collections import namedtuple
-from operator import attrgetter
 import sys
 
 class DictLike(aadict):

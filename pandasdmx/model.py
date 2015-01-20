@@ -9,11 +9,11 @@ This module is part of the pandaSDMX package
 
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
-import pdb
+
 from pandasdmx.utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
             Any, Enum, Dict)
- 
+from operator import attrgetter 
 
 
 class SDMXObject(object):
@@ -222,7 +222,10 @@ class Scheme(DictLike):
     # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this 
     # to sort by position. 
     _sort_key = 'id'
-    
+    @property
+    def aslist(self):
+        return sorted(self.values(), key = attrgetter(self._sort_key)) 
+        
     
 class ItemScheme(MaintainableArtefact, Scheme):
     
@@ -386,7 +389,12 @@ class DimensionRelationship(GroupRelationship):
         
         
 class DataAttribute(Component):
-    # related_to = Instance(AttributeRelationship)  
+    
+    @property
+    def related_to(self):
+        return self._reader.attr_relation(self._elem)  
+    
+    
     # role = Instance(Concept)
     
     @property

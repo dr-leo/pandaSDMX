@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright SDMX 2009 - http://www.sdmx.org -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_SG(1.0):ObsLevelDim:AllDimensions" xmlns:sdmx="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" xmlns:codes="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).ECB:codes" xmlns:dsd="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" targetNamespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_SG(1.0):ObsLevelDim:AllDimensions" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:import namespace="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" schemaLocation="../../../common/sdmx_common.xsd"/>
+   <xs:import namespace="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).ECB:codes" schemaLocation="../../common/exr_common.xsd"/>
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" schemaLocation="../../../../schemas/SDMXDataStructureSpecific.xsd"/>
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" schemaLocation="../../../../schemas/SDMXCommon.xsd"/>
+   
+	<xs:complexType name="DataSetType">
+		<xs:complexContent>
+			<xs:restriction base="dsd:DataSetType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="DataProvider" type="common:DataProviderReferenceType" form="unqualified" minOccurs="0"/>
+					<xs:element name="Group" type="SiblingGroup" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:choice minOccurs="0">
+						<xs:element name="Obs" type="ObsType" form="unqualified" maxOccurs="unbounded"/>
+					</xs:choice>
+				</xs:sequence>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="SiblingGroup">
+		<xs:complexContent>
+			<xs:restriction base="dsd:GroupType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="CURRENCY" type="codes:ISO.CL_CURRENCY.1.0" use="required"/>
+				<xs:attribute name="CURRENCY_DENOM" type="codes:ISO.CL_CURRENCY.1.0" use="required"/>
+				<xs:attribute name="EXR_TYPE" type="codes:ECB.CL_EXR_TYPE.1.0" use="required"/>
+				<xs:attribute name="EXR_VAR" type="codes:ECB.CL_EXR_VAR.1.0" use="required"/>
+				<xs:attribute name="TITLE" type="xs:string" use="optional"/>
+				<xs:attribute name="type" type="common:IDType" use="optional" fixed="SiblingGroup"/>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ObsType">
+		<xs:complexContent>
+			<xs:restriction base="dsd:ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="FREQ" type="sdmx:SDMX.CL_FREQ.1.0" use="required"/>
+				<xs:attribute name="CURRENCY" type="codes:ISO.CL_CURRENCY.1.0" use="required"/>
+				<xs:attribute name="CURRENCY_DENOM" type="codes:ISO.CL_CURRENCY.1.0" use="required"/>
+				<xs:attribute name="EXR_TYPE" type="codes:ECB.CL_EXR_TYPE.1.0" use="required"/>
+				<xs:attribute name="EXR_VAR" type="codes:ECB.CL_EXR_VAR.1.0" use="required"/>
+				<xs:attribute name="DECIMALS" type="sdmx:SDMX.CL_DECIMALS.1.0" use="optional"/>
+				<xs:attribute name="UNIT_MEASURE" type="codes:ISO.CL_CURRENCY.1.0" use="optional"/>
+				<xs:attribute name="UNIT_MULT" type="sdmx:SDMX.CL_UNIT_MULT.1.0" use="optional"/>
+				<xs:attribute name="COLL_METHOD" type="xs:string" use="optional"/>
+				<xs:attribute name="TIME_PERIOD" type="common:ObservationalTimePeriodType" use="required"/>
+				<xs:attribute name="OBS_VALUE" type="xs:decimal" use="optional"/>
+				<xs:attribute name="CONF_STATUS_OBS" type="sdmx:SDMX.CL_CONF_STATUS.1.0" use="optional"/>
+				<xs:attribute name="OBS_STATUS" type="sdmx:SDMX.CL_OBS_STATUS.1.0" use="optional"/>
+				<xs:attribute name="type" type="common:IDType" use="prohibited"/>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+</xs:schema>

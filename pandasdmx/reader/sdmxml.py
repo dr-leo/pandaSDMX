@@ -177,6 +177,9 @@ class SDMXMLReader(Reader):
     def assignment_status(self, elem):
         return elem.xpath('@assignmentStatus')[0]
         
+    def attr_relation(self, elem):
+        return elem.xpath('str:AttributeRelationship')[0]
+        
         
     def measures(self, elem):
         nodes = elem.xpath('str:DataStructureComponents/str:MeasureList',

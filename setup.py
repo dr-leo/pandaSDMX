@@ -14,14 +14,16 @@ setup(name='pandaSDMX',
     long_description = long_descr,
     author='Dr. Leo',
     author_email='fhaxbox66@gmail.com',
-    packages =['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer'],
+    packages =['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer', 
+'pandas.utils', 'pandasdmx.tests'],
+	package_data = {
+'pandasdmx.tests': ['data/*.xml']}
       url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',
         'lxml',
-        'requests',
-        'aadict'
-      ],
+        'requests'
+       ],
       provides = ['pandasdmx'],
       classifiers = [
         'Intended Audience :: Developers',

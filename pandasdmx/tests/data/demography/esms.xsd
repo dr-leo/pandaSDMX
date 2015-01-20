@@ -1,0 +1,792 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright SDMX 2009 - http://www.sdmx.org -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:sdmx:org.sdmx.infomodel.metadatastructure.MetadataStructure=ESTAT:ESMS(1.0)" xmlns:msd="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/metadata/structurespecific" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" targetNamespace="urn:sdmx:org.sdmx.infomodel.metadatastructure.MetadataStructure=ESTAT:ESMS(1.0)" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/metadata/structurespecific" schemaLocation="../../schemas/SDMXMetadataStructureSpecific.xsd"/>
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" schemaLocation="../../schemas/SDMXCommon.xsd"/>
+   
+	<xs:complexType name="MetadataSetType">
+		<xs:complexContent>
+			<xs:restriction base="msd:MetadataSetType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element ref="common:Name" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="DataProvider" type="common:DataProviderReferenceType" form="unqualified" minOccurs="0"/>
+					<xs:element name="Report" type="ReportType" form="unqualified" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ReportType" abstract="true">
+		<!-- abstract base report for msd (restrict type of targets and ids) -->
+		<xs:complexContent>
+			<xs:restriction base="msd:ReportType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="Target" type="TargetType" form="unqualified"/>
+					<!-- Target reference abstract type which lists possible ids -->
+					<xs:element name="AttributeSet" form="unqualified"/>
+				</xs:sequence>	
+				<xs:attribute name="id" type="Report.ID" use="optional"/>
+				<!-- id enumerates possible values -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="TargetType" abstract="true">
+		<!-- abstract base metadata target for msd (restrict ids) -->
+		<xs:complexContent>
+			<xs:restriction base="msd:TargetType">
+				<xs:sequence>
+					<xs:element name="ReferenceValue" type="msd:ReferenceValueType" form="unqualified" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" type="Target.ID" use="optional"/>
+				<!-- id enumerates possible values -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- MSD Metadata Target Constructs -->
+	<xs:group name="CATEGORY_TARGET">
+		<!-- common content model for metadata target -->
+		<xs:sequence>
+			<xs:element name="ReferenceValue" type="CATEGORY_TARGET.ReferenceValueType" form="unqualified" minOccurs="3" maxOccurs="3"/>
+			<!-- Reference specific type and set min and max to the number of target objects (unique will validate) -->
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="DATAFLOW_TARGET">
+		<!-- common content model for metadata target -->
+		<xs:sequence>
+			<xs:element name="ReferenceValue" type="DATAFLOW_TARGET.ReferenceValueType" form="unqualified" minOccurs="3" maxOccurs="3"/>
+			<!-- Reference specific type and set min and max to the number of target objects (unique will validate) -->
+		</xs:sequence>
+	</xs:group>
+	
+	<xs:complexType name="CATEGORY_TARGET.ReferenceValueType" abstract="true">
+		<!-- NOTE: Could restrict this choice based on possible reference -->
+		<xs:complexContent>
+			<xs:restriction base="msd:ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="common:ReferenceType" form="unqualified"/>
+					<xs:element name="DataKey" type="common:DataKeyType" form="unqualified"/>
+					<xs:element name="DataSetReference" type="common:SetReferenceType" form="unqualified"/>
+					<xs:element name="ReportPeriod" type="common:ObservationalTimePeriodType" form="unqualified"/>
+				</xs:choice>
+				<xs:attribute name="id" type="CATEGORY_TARGET.TargetObject.ID" use="optional"/>
+				<!-- id is enumeratoin of possible target object ids -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DATAFLOW_TARGET.ReferenceValueType" abstract="true">
+		<!-- NOTE: Could restrict this choice based on possible reference -->
+		<xs:complexContent>
+			<xs:restriction base="msd:ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="common:ReferenceType" form="unqualified"/>
+					<xs:element name="DataKey" type="common:DataKeyType" form="unqualified"/>
+					<xs:element name="DataSetReference" type="common:SetReferenceType" form="unqualified"/>
+					<xs:element name="ReportPeriod" type="common:ObservationalTimePeriodType" form="unqualified"/>
+				</xs:choice>
+				<xs:attribute name="id" type="DATAFLOW_TARGET.TargetObject.ID" use="optional"/>
+				<!-- id is enumeratoin of possible target object ids -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- CATEGORY_TARGET Target Objects -->
+	
+	<xs:complexType name="CATEGORY_TARGET.CATEGORY">
+		<xs:complexContent>
+			<xs:restriction base="CATEGORY_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="CATEGORY_TARGET.CATEGORY.Reference" form="unqualified"/>
+					<!-- restrict references based on target object's object class -->
+				</xs:choice>
+				<xs:attribute name="id" type="CATEGORY_TARGET.TargetObject.ID" use="optional" fixed="CATEGORY"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CATEGORY_TARGET.DATA_PROVIDER">
+		<xs:complexContent>
+			<xs:restriction base="CATEGORY_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="common:DataProviderReferenceType" form="unqualified"/>
+					<!-- restrict references based on target object's object class -->
+				</xs:choice>
+				<xs:attribute name="id" type="CATEGORY_TARGET.TargetObject.ID" use="optional" fixed="DATA_PROVIDER"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CATEGORY_TARGET.ReportPeriodTarget">
+		<xs:complexContent>
+			<xs:restriction base="CATEGORY_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ReportPeriod" type="common:ObservationalTimePeriodType" form="unqualified"/>
+					<!-- type could be restricted to something more strict depending on local representation -->
+				</xs:choice>
+				<xs:attribute name="id" type="CATEGORY_TARGET.TargetObject.ID" use="optional" fixed="REPORT_PERIOD_TARGET"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CATEGORY_TARGET.CATEGORY.Reference">
+		<xs:complexContent>
+			<xs:restriction base="common:CategoryReferenceType">
+				<xs:choice>
+					<xs:sequence>
+						<xs:element name="Ref" type="CATEGORY_TARGET.CATEGORY.Ref" form="unqualified"/>
+						<xs:element name="URN" type="ESTAT.DATAFLOWS_SCHEME.1.0.URN" form="unqualified" minOccurs="0"/>
+					</xs:sequence>
+					<xs:element name="URN" type="ESTAT.DATAFLOWS_SCHEME.1.0.URN" form="unqualified"/>
+				</xs:choice>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="CATEGORY_TARGET.CATEGORY.Ref">
+		<xs:complexContent>
+			<xs:restriction base="common:CategoryRefType">
+				<xs:attribute name="agencyID" type="common:NestedNCNameIDType" use="required" fixed="ESTAT"/>
+				<xs:attribute name="maintainableParentID" type="common:IDType" use="required" fixed="DATAFLOWS_SCHEME"/>
+				<xs:attribute name="maintainableParentVersion" type="common:VersionType" use="optional" fixed="1.0"/>
+				<xs:attribute name="id" type="ESTAT.DATAFLOWS_SCHEME.1.0.ID" use="required"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- DATAFLOW_TARGET Target Objects -->
+	
+	<xs:complexType name="DATAFLOW_TARGET.DATA_FLOW">
+		<xs:complexContent>
+			<xs:restriction base="DATAFLOW_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="common:DataflowReferenceType" form="unqualified"/>
+					<!-- restrict references based on target object's object class -->
+				</xs:choice>
+				<xs:attribute name="id" type="DATAFLOW_TARGET.TargetObject.ID" use="optional" fixed="DATAFLOW"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DATAFLOW_TARGET.DATA_PROVIDER">
+		<xs:complexContent>
+			<xs:restriction base="DATAFLOW_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ObjectReference" type="common:DataProviderReferenceType" form="unqualified"/>
+					<!-- restrict references based on target object's object class -->
+				</xs:choice>
+				<xs:attribute name="id" type="DATAFLOW_TARGET.TargetObject.ID" use="optional" fixed="DATA_PROVIDER"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DATAFLOW_TARGET.ReportPeriodTarget">
+		<xs:complexContent>
+			<xs:restriction base="DATAFLOW_TARGET.ReferenceValueType">
+				<xs:choice>
+					<xs:element name="ReportPeriod" type="common:ObservationalTimePeriodType" form="unqualified"/>
+					<!-- type could be restricted to something more strict depending on local representation -->
+				</xs:choice>
+				<xs:attribute name="id" type="DATAFLOW_TARGET.TargetObject.ID" use="optional" fixed="REPORT_PERIOD_TARGET"/>
+				<!-- id must be derived from enumeration and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- ESMS_SIMPLE_REPORT Constructs -->
+	
+	<xs:complexType name="ESMS_SIMPLE_REPORT">
+		<!-- specific report structure type -->
+		<xs:complexContent>
+			<xs:restriction base="ReportType">
+				<!-- restricts abstract report type for MSD -->
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="Target" type="ESMS_SIMPLE_REPORT.TargetType" form="unqualified">
+						<xs:unique name="ESMS_SIMPLE_REPORT.Target.ReferenceValue.Unique">
+							<xs:selector xpath="*"/>
+							<xs:field xpath="@id"/>
+						</xs:unique>
+					</xs:element>
+					<!-- target restricted to abstract target specific to report -->
+					<xs:element name="AttributeSet" type="ESMS_SIMPLE_REPORT.AttributeSet" form="unqualified"/>
+					<!-- attribute set type is set to the report structure specific type -->
+				</xs:sequence>	
+				<xs:attribute name="id" type="Report.ID" use="optional" fixed="ESMS_SIMPLE_REPORT"/>
+				<!-- id is fixed to that of the report -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ESMS_SIMPLE_REPORT.TargetType" abstract="true">
+		<!-- abstract base for each report structure target -->
+		<xs:complexContent>
+			<xs:restriction base="TargetType">
+				<!-- derive from msd abstract target type -->
+				<xs:sequence>
+					<xs:element name="ReferenceValue" type="msd:ReferenceValueType" form="unqualified" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" type="ESMS_SIMPLE_REPORT.Target.ID" use="optional"/>
+				<!-- id enumerates possible targets for report -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ESMS_SIMPLE_REPORT.DATAFLOW_TARGET">
+		<!-- report structure specfic metadata target type -->
+		<xs:complexContent>
+			<xs:restriction base="ESMS_SIMPLE_REPORT.TargetType">
+				<xs:group ref="DATAFLOW_TARGET"/>
+				<!-- reference the global content model for this report -->
+				<xs:attribute name="id" type="ESMS_SIMPLE_REPORT.Target.ID" use="optional" fixed="DATAFLOW_TARGET"/>
+				<!-- id must be based on report structure type and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ESMS_SIMPLE_REPORT.CATEGORY_TARGET">
+		<!-- report structure specfic metadata target type -->
+		<xs:complexContent>
+			<xs:restriction base="ESMS_SIMPLE_REPORT.TargetType">
+				<xs:group ref="CATEGORY_TARGET"/>
+				<!-- reference the global content model for this report -->
+				<xs:attribute name="id" type="ESMS_SIMPLE_REPORT.Target.ID" use="optional" fixed="CATEGORY_TARGET"/>
+				<!-- id must be based on report structure type and fixed -->
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ESMS_SIMPLE_REPORT.AttributeSet">
+		<!-- report structure specific attribute set -->
+		<xs:sequence>
+			<xs:element name="CONTACT" form="unqualified">
+				<!-- metadata attribute element, name from id, type anonymous inner type based on base metadata attribute type -->
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:restriction base="msd:ReportedAttributeType">
+							<xs:sequence>
+								<xs:element ref="common:Annotations" minOccurs="0"/>
+								<xs:element name="AttributeSet" form="unqualified">
+									<!-- required attribute set since this has content, type is anonymous inner, consisting only of reported attributes -->
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="ORGANISATION" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<!-- value is simple, so this is empty -->
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="ORGANISATION"/>
+															<!-- id is fixed to the id of the metadata attribute -->
+															<xs:attribute name="value" type="xs:string" use="required"/>
+															<!-- value attribute is required and type set according to local representation -->
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="ORGANISATION_UNIT" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<!-- value is simple, so this is empty -->
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="ORGANISATION_UNIT"/>
+															<!-- id is fixed to the id of the metadata attribute -->
+															<xs:attribute name="value" type="xs:string" use="required"/>
+															<!-- value attribute is required and type set according to local representation -->
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="NAME" form="unqualified" minOccurs="0">
+												<!-- cardinality set according to metadata attribute definition -->
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<!-- value is simple, so this is empty -->
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="NAME"/>
+															<!-- id is fixed to the id of the metadata attribute -->
+															<xs:attribute name="value" type="xs:string" use="required"/>
+															<!-- value attribute is required and type set according to local representation -->
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="ADDRESS" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element name="AttributeSet" form="unqualified">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="STREET" form="unqualified" maxOccurs="3">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="STREET"/>
+																							<xs:attribute name="value" type="xs:string" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>
+																			<xs:element name="CITY" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="CITY"/>
+																							<xs:attribute name="value" type="xs:string" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>
+																			<xs:element name="POSTAL_CODE" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="POSTAL_CODE"/>
+																							<xs:attribute name="value" type="xs:string" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>
+																			<xs:element name="COUNTRY" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="COUNTRY"/>
+																							<xs:attribute name="value" type="ESTAT.CL_COUNTRY.1.0" use="required"/>
+																							<!-- value type restricted to the codelist defined in the local representation enumeration -->
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="ADDRESS"/>
+															<xs:attribute name="value" use="prohibited"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="PHONE" form="unqualified" minOccurs="0">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="PHONE"/>
+															<xs:attribute name="value" type="xs:string" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="EMAIL" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="EMAIL"/>
+															<xs:attribute name="value" type="xs:string" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:attribute name="id" type="common:IDType" use="optional" fixed="CONTACT"/>
+							<!-- id is fixed to the id of the metadata attribute -->
+							<xs:attribute name="value" use="prohibited"/>
+							<!-- value is prohibited since this attribute is presentational -->
+						</xs:restriction>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="META_UPDATE" form="unqualified">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:restriction base="msd:ReportedAttributeType">
+							<xs:sequence>
+								<xs:element ref="common:Annotations" minOccurs="0"/>
+								<xs:element name="AttributeSet" form="unqualified">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="CERTIFIED" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="CERTIFIED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="POSTED" form="unqualified">
+												<!-- attribute has both value and sub-content -->
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element name="AttributeSet" form="unqualified" minOccurs="0">
+																<!-- minimum occurent of attribute set if 0 if all child attributes are optional -->
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="NEXT" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="NEXT"/>
+																							<xs:attribute name="value" type="xs:date" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>	
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="POSTED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="UPDATED" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element name="AttributeSet" form="unqualified" minOccurs="0">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="NEXT" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="NEXT"/>
+																							<xs:attribute name="value" type="xs:date" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>	
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="UPDATED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:restriction>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="STAT_PRES" form="unqualified">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:restriction base="msd:ReportedAttributeType">
+							<xs:sequence>
+								<xs:element ref="common:Annotations" minOccurs="0"/>
+								<xs:element name="AttributeSet" form="unqualified">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="DATA_DESCR" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element ref="common:StructuredText" maxOccurs="unbounded"/>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="CERTIFIED"/>
+															<xs:attribute name="value" use="prohibited"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:restriction>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- ESMS_UPDATE_REPORT Constructs -->
+
+	<xs:complexType name="ESMS_UPDATE_REPORT">
+		<xs:complexContent>
+			<xs:restriction base="ReportType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="Target" type="ESMS_UPDATE_REPORT.TargetType" form="unqualified"/>
+					<xs:element name="AttributeSet" type="ESMS_UPDATE_REPORT.AttributeSet" form="unqualified"/>
+				</xs:sequence>	
+				<xs:attribute name="id" type="Report.ID" use="optional" fixed="ESMS_UPDATE_REPORT"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ESMS_UPDATE_REPORT.TargetType" abstract="true">
+		<xs:complexContent>
+			<xs:restriction base="TargetType">
+				<xs:sequence>
+					<xs:element name="ReferenceValue" type="msd:ReferenceValueType" form="unqualified" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" type="ESMS_UPDATE_REPORT.Target.ID" use="optional"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ESMS_UPDATE_REPORT.DATAFLOW_TARGET">
+		<xs:complexContent>
+			<xs:restriction base="ESMS_UPDATE_REPORT.TargetType">
+				<xs:group ref="DATAFLOW_TARGET"/>
+				<xs:attribute name="id" type="ESMS_UPDATE_REPORT.Target.ID" use="optional" fixed="DATAFLOW_TARGET"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ESMS_UPDATE_REPORT.AttributeSet">
+		<xs:sequence>
+			<xs:element name="META_UPDATE" form="unqualified">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:restriction base="msd:ReportedAttributeType">
+							<xs:sequence>
+								<xs:element ref="common:Annotations" minOccurs="0"/>
+								<xs:element name="AttributeSet" form="unqualified">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="CERTIFIED" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="CERTIFIED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="POSTED" form="unqualified">
+												<!-- attribute has both value and sub-content -->
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element name="AttributeSet" form="unqualified" minOccurs="0">
+																<!-- minimum occurent of attribute set if 0 if all child attributes are optional -->
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="NEXT" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="NEXT"/>
+																							<xs:attribute name="value" type="xs:date" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>	
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="POSTED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="UPDATED" form="unqualified">
+												<xs:complexType>
+													<xs:complexContent>
+														<xs:restriction base="msd:ReportedAttributeType">
+															<xs:sequence>
+																<xs:element ref="common:Annotations" minOccurs="0"/>
+																<xs:element name="AttributeSet" form="unqualified" minOccurs="0">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="NEXT" form="unqualified">
+																				<xs:complexType>
+																					<xs:complexContent>
+																						<xs:restriction base="msd:ReportedAttributeType">
+																							<xs:sequence>
+																								<xs:element ref="common:Annotations" minOccurs="0"/>
+																							</xs:sequence>
+																							<xs:attribute name="id" type="common:IDType" use="optional" fixed="NEXT"/>
+																							<xs:attribute name="value" type="xs:date" use="required"/>
+																						</xs:restriction>
+																					</xs:complexContent>
+																				</xs:complexType>
+																			</xs:element>	
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="id" type="common:IDType" use="optional" fixed="UPDATED"/>
+															<xs:attribute name="value" type="xs:date" use="required"/>
+														</xs:restriction>
+													</xs:complexContent>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:restriction>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- Enumerations -->
+	
+	<xs:simpleType name="Report.ID">
+		<!-- enumeration of msd report structure ids -->
+		<xs:restriction base="common:IDType">
+			<xs:enumeration value="ESMS_SIMPLE_REPORT"/>
+			<xs:enumeration value="ESMS_UPDATE_REPORT"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="Target.ID">
+		<!-- enumeration of msd report metadata target ids -->
+		<xs:restriction base="common:IDType">
+			<xs:enumeration value="CATEGORY_TARGET"/>
+			<xs:enumeration value="DATAFLOW_TARGET"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="ESMS_SIMPLE_REPORT.Target.ID">
+		<!-- enumeration of report metadata target ids -->
+		<xs:restriction base="Target.ID">
+			<!-- this must restrict the msd list -->
+			<xs:enumeration value="CATEGORY_TARGET"/>
+			<xs:enumeration value="DATAFLOW_TARGET"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="ESMS_UPDATE_REPORT.Target.ID">
+		<!-- enumeration of report metadata target ids -->
+		<xs:restriction base="Target.ID">
+			<!-- this must restrict the msd list -->
+			<xs:enumeration value="CATEGORY_TARGET"/>
+			<xs:enumeration value="DATAFLOW_TARGET"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="CATEGORY_TARGET.TargetObject.ID">
+		<!-- enumeration of metadata target target object ids -->
+		<xs:restriction base="common:IDType">
+			<xs:enumeration value="CATEGORY"/>
+			<xs:enumeration value="DATA_PROVIDER"/>
+			<xs:enumeration value="REPORT_PERIOD_TARGET"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="DATAFLOW_TARGET.TargetObject.ID">
+		<!-- enumeration of metadata target target object ids -->
+		<xs:restriction base="common:IDType">
+			<xs:enumeration value="DATAFLOW"/>
+			<xs:enumeration value="DATA_PROVIDER"/>
+			<xs:enumeration value="REPORT_PERIOD_TARGET"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="ESTAT.CL_COUNTRY.1.0">
+		<xs:restriction base="common:IDType">
+			<xs:enumeration value="BE"/>
+			<xs:enumeration value="LU"/>
+		</xs:restriction>	
+	</xs:simpleType>
+	
+	<xs:simpleType name="ESTAT.DATAFLOWS_SCHEME.1.0.URN">
+		<xs:restriction base="xs:anyURI">
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.TOT"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.POP"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.FET"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.MORT"/>
+			<xs:enumeration value="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.MARR"/>
+		</xs:restriction>		
+	</xs:simpleType>
+	
+	<xs:simpleType name="ESTAT.DATAFLOWS_SCHEME.1.0.ID">
+		<xs:restriction base="common:NestedIDType">
+			<xs:enumeration value="PSC"/>
+			<xs:enumeration value="PSC.DEM"/>
+			<xs:enumeration value="PSC.DEM.TOT"/>
+			<xs:enumeration value="PSC.DEM.POP"/>
+			<xs:enumeration value="PSC.DEM.FET"/>
+			<xs:enumeration value="PSC.DEM.MORT"/>
+			<xs:enumeration value="PSC.DEM.MARR"/>
+		</xs:restriction>		
+	</xs:simpleType>
+	
+</xs:schema>

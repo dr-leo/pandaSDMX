@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright SDMX 2009 - http://www.sdmx.org -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).ECB:codes" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" targetNamespace="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).ECB:codes" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" schemaLocation="../../../schemas/SDMXCommon.xsd"/>
+   
+   <xs:simpleType name="ECB.CL_EXR_TYPE.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="CR00">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Central rate</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="RR00">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Reference rate</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="SP00">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Spot</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="ISO.CL_CURRENCY.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="CHF">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Swiss franc</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="EUR">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Euro</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="GBP">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">UK pound sterling</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="JPY">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Japanese yen</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="USD">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">United states dollar</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:simpleType name="ECB.CL_EXR_VAR.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="E">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">End-of-period</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="P">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Growth rate over previous periods</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+	
+</xs:schema>

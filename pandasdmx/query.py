@@ -13,7 +13,7 @@
 
 from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Instance, Unicode
-from pandasdmx.remote import REST, QueryFactory
+from pandasdmx.remote import REST 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
 
 
@@ -102,5 +102,16 @@ class Eurostat(Agency):
         self.agency_id = 'ESTAT'
         self.client = REST(self.base_url)
         
+class QueryFactory:
+    
+    def url_suffix(self, resource_name, flowref, key = u'', startperiod = None, endperiod = None):
+        parts = [resource_name, flowref]
+        if key: parts.append(key)
+        query_url = '/'.join(parts)
+        if startperiod: 
+            query_url += '?startperiod={0}'.format(startperiod)
+            if endperiod: query_url += '&endperiod={0}'.format(endperiod)
+        elif endperiod: query_url += '?endperiod={0}'.format(endperiod) 
+        return query_url
     
     

@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright SDMX 2009 - http://www.sdmx.org -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ESTAT:DEMOGRAPHY(1.0):ObsLevelDim:DEMO:explicit" xmlns:sdmx="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" xmlns:dsd="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" targetNamespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ESTAT:DEMOGRAPHY(1.0):ObsLevelDim:DEMO:explicit" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:import namespace="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" schemaLocation="../common/sdmx_common.xsd"/>
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" schemaLocation="../../schemas/SDMXDataStructureSpecific.xsd"/>
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" schemaLocation="../../schemas/SDMXCommon.xsd"/>
+   
+	<xs:complexType name="DataSetType">
+		<xs:complexContent>
+			<xs:restriction base="dsd:DataSetType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="DataProvider" type="common:DataProviderReferenceType" form="unqualified" minOccurs="0"/>
+					<xs:choice minOccurs="0">
+						<xs:element name="Series" type="SeriesType" form="unqualified" maxOccurs="unbounded"/>
+					</xs:choice>
+				</xs:sequence>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="SeriesType">
+		<xs:complexContent>
+			<xs:restriction base="dsd:SeriesType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+					<xs:element name="Obs" type="ObsType" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="FREQ" type="sdmx:SDMX.CL_FREQ.1.0" use="required"/>
+				<xs:attribute name="COUNTRY" type="ESTAT.CL_COUNTRY.1.0" use="required"/>
+				<xs:attribute name="SEX" type="ESTAT.CL_SEX.1.0" use="required"/>
+				<xs:attribute name="TIME_PERIOD" type="common:ObservationalTimePeriodType" use="required"/>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ObsType" abstract="true">
+		<xs:complexContent>
+			<xs:restriction base="dsd:ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="OBS_VALUE" type="xs:decimal" use="optional"/>
+				<xs:attribute name="OBS_STATUS" type="sdmx:SDMX.CL_OBS_STATUS.1.0" use="optional"/>
+				<xs:attribute name="UNIT_MEASURE" type="ESTAT.CL_UNIT.1.0" use="optional"/>
+				<xs:attribute name="UNIT_MULT" type="sdmx:SDMX.CL_UNIT_MULT.1.0" use="optional"/>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional"/>
+				<xs:attribute name="REPORTING_YEAR_START_DAY" type="xs:gMonthDay" use="prohibited"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="PJANT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="PJANT"/>
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="LBIRTHST">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="LBIRTHST"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DEATHST">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="DEATHST"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="ADJT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="ADJT"/>			
+				<xs:attribute name="OBS_VALUE" type="xs:integer" use="optional"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="PJAN1T">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="PJAN1T"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>   
+	
+	<xs:complexType name="LBIRTHSOUT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="LBIRTHSOUT"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DEATHUN1">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="DEATHUN1"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="MAR">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="MAR"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="DIV">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="DIV"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="IMMIT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="IMMIT"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="EMIGT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="EMIGT"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="NETMT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="NETMT"/>
+				<xs:attribute name="OBS_VALUE" type="xs:integer" use="optional"/>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="TFRNSI">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="TFRNSI"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:decimal">
+							<xs:fractionDigits value="2"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="LEXPNSIT">
+		<xs:complexContent>
+			<xs:restriction base="ObsType">
+				<xs:sequence>
+					<xs:element ref="common:Annotations" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="type" type="ESTAT.DEMO_MEASURES.1.0" use="optional" fixed="LEXPNSIT"/>			
+				<xs:attribute name="OBS_VALUE" use="optional">
+					<xs:simpleType>
+						<xs:restriction base="xs:decimal">
+							<xs:fractionDigits value="1"/>
+						</xs:restriction>					
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	
+   <xs:simpleType name="ESTAT.DEMO_MEASURES.1.0">
+      <xs:restriction base="common:NCNameIDType">
+         <xs:enumeration value="PJANT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Population on 1 January of Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="LBIRTHST">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Births in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="DEATHST">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Deaths in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="ADJT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Statistical adjustment in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="PJAN1T">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Population on 1 January of Year X+1</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="LBIRTHSOUT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Births outside of marriage in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="DEATHUN1">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Deaths under 1 year in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="MAR">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Marriages in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="DIV">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Divorces in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="IMMIT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Immigrants in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="EMIGT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Emigrants in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="NETMT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Net migration in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="TFRNSI">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Total fertility rate in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="LEXPNSIT">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Life expectancy at birth in Year X</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="ESTAT.CL_SEX.1.0">
+      <xs:restriction base="common:IDType">
+         <xs:enumeration value="F">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Female</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="M">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Male</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="T">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Total</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="ESTAT.CL_UNIT.1.0">
+      <xs:restriction base="common:IDType">
+         <xs:enumeration value="PERS">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Persons</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="CPW">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Children per woman (fertility rate)</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="YRS">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Years</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="ESTAT.CL_COUNTRY.1.0">
+      <xs:restriction base="common:IDType">
+         <xs:enumeration value="BE">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Belgium</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="EL">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Greece</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="LU">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Luxembourt</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="UK">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">United Kingdom</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+</xs:schema>

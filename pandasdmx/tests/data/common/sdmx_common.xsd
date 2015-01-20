@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright SDMX 2009 - http://www.sdmx.org -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" targetNamespace="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX:AGENCIES(1.0).SDMX:codes" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" schemaLocation="../../schemas/SDMXCommon.xsd"/>
+   
+   <xs:simpleType name="SDMX.CL_DECIMALS.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="0">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Zero</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="1">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">One</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="2">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Two</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="3">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Three</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="4">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Four</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="5">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Five</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="6">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Six</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="7">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Seven</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="8">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Eight</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="9">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Nine</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="SDMX.CL_FREQ.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="A">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Annual</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="B">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Business</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="D">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Daily</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="E">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Event (not supported)</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="H">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Half-yearly</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="M">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Monthly</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="Q">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Quarterly</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="W">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Weekly</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="SDMX.CL_CONF_STATUS.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="C">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Confidential statistical information</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="D">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Secondary confidentiality set by the sender, not for publication</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="F">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Free (free for publication)</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="N">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Not for publication, restricted for internal use only</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="s">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Secondary confidentiality set and managed by the receiver, not for publication</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="SDMX.CL_OBS_STATUS.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="A">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Normal value</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="B">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Break</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="E">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Estimated value</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="F">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Forecast value</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="I">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Imputed (CCSA definition)</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="M">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Missing value; data cannot exist</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="P">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Provisional value</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="S">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Strike</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+   
+   <xs:simpleType name="SDMX.CL_UNIT_MULT.1.0">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="0">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Units</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="1">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Tens</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="2">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Hundreds</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="3">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Thousands</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="4">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Tens of thousands</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="6">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Millions</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="9">
+            <xs:annotation>
+               <xs:documentation xml:lang="en">Billions</xs:documentation>
+            </xs:annotation>
+         </xs:enumeration>
+      </xs:restriction>
+   </xs:simpleType>
+ 	
+</xs:schema>

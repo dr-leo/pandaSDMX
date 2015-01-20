@@ -16,6 +16,11 @@ class SDMXMLReader(Reader):
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
     """
     
+    _nsmap = {
+            'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
+            'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
+            'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message'
+    }
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
@@ -32,7 +37,7 @@ class SDMXMLReader(Reader):
         
     def mes_header(self, elem):
         'return a message header. elem must be the document root.'
-        return model.Header(self, elem.xpath('mes:Header', namespaces = elem.nsmap)[0])
+        return model.Header(self, elem.xpath('mes:Header', namespaces = self._nsmap)[0])
     
     def header_id(self, elem):
         return elem.ID[0].text 
@@ -58,9 +63,9 @@ class SDMXMLReader(Reader):
     
     def _international_string(self, elem, tagname):
         languages = elem.xpath('com:{0}/@xml:lang'.format(tagname), 
-                               namespaces = elem.nsmap)
+                               namespaces = self._nsmap)
         strings = elem.xpath('com:{0}/text()'.format(tagname), 
-                             namespaces = elem.nsmap)
+                             namespaces = self._nsmap)
         return DictLike(zip(languages, strings))
 
     def description(self, elem):
@@ -87,7 +92,7 @@ class SDMXMLReader(Reader):
         elem must be an item scheme
         '''    
         return {e.get('id') : model_cls(self, e) for e in elem.xpath(path, 
-                    namespaces = elem.nsmap)} 
+                    namespaces = self._nsmap)} 
                      
     def _structures(self, elem, path, model_cls):
     
@@ -96,7 +101,7 @@ class SDMXMLReader(Reader):
         return DictLike mapping structure IDs to model claas for the structure
         '''
         return DictLike({e.get('id') : model_cls(self, e) for e in  
-                    elem.xpath(path, namespaces = elem.nsmap)})
+                    elem.xpath(path, namespaces = self._nsmap)})
         
     def codelists(self, elem):
         return self._structures(elem, 'mes:Structures/str:Codelists/str:Codelist', 
@@ -114,6 +119,17 @@ class SDMXMLReader(Reader):
     def concepts(self, elem):
         return self._items(elem, 'str:Concept', model.Concept)
 
+    def categoryschemes(self, elem):
+        return self._structures(
+                elem, 'mes:Structures/str:CategorySchemes/str:CategoryScheme', 
+                model.CategoryScheme)
+        
+        
+    def category_items(self, elem):
+        return self._items(elem, 'str:Category', model.Category)
+
+        
+
         
     def isfinal(self, elem):
         return bool(elem.get('isFinal')) 
@@ -127,7 +143,7 @@ class SDMXMLReader(Reader):
         return content of a model.Structure.  
         '''
         return model.Structure(self, elem.xpath('str:Structure', 
-                                                namespaces = elem.nsmap))
+                                                namespaces = self._nsmap))
      
     def datastructures(self, elem):
         return self._structures(elem, 'mes:Structures/str:DataStructures/str:DataStructure', 
@@ -135,7 +151,7 @@ class SDMXMLReader(Reader):
     
     def dimdescriptor(self, elem):
         nodes = elem.xpath('str:DataStructureComponents/str:DimensionList',
-                          namespaces = elem.nsmap) 
+                          namespaces = self._nsmap) 
         return model.DimensionDescriptor(self, nodes[0])
     
     def dimension_items(self, elem):
@@ -147,9 +163,9 @@ class SDMXMLReader(Reader):
     def concept_id(self, elem):
         # called by model.Component.concept
         c_id = elem.xpath('str:ConceptIdentity/Ref/@id', 
-                          namespaces = elem.nsmap)[0]
+                          namespaces = self._nsmap)[0]
         parent_id = elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
-                               namespaces = elem.nsmap)[0]
+                               namespaces = self._nsmap)[0]
         return self.response.conceptschemes[parent_id][c_id]
         
     def position(self, elem):
@@ -158,7 +174,7 @@ class SDMXMLReader(Reader):
     
     def localrepr(self, elem):
         node = elem.xpath('str:LocalRepresentation',
-                          namespaces = elem.nsmap)[0]
+                          namespaces = self._nsmap)[0]
         enum = node.xpath('str:Enumeration/Ref/@id',
                           namespaces = node.nsmap)
         if enum: enum = self.response.codelists[enum[0]]
@@ -168,7 +184,7 @@ class SDMXMLReader(Reader):
         
     def attributes(self, elem):
         nodes = elem.xpath('str:DataStructureComponents/str:AttributeList',
-                          namespaces = elem.nsmap) 
+                          namespaces = self._nsmap) 
         return model.AttributeDescriptor(self, nodes[0])
 
     def attribute_items(self, elem):
@@ -183,7 +199,7 @@ class SDMXMLReader(Reader):
         
     def measures(self, elem):
         nodes = elem.xpath('str:DataStructureComponents/str:MeasureList',
-                          namespaces = elem.nsmap) 
+                          namespaces = self._nsmap) 
         return model.MeasureDescriptor(self, nodes[0])
 
     def measure_items(self, elem):

@@ -10,7 +10,7 @@ This module is part of the pandaSDMX package
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils    import DictLike, str_type
+from .utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
             Any, Enum, Dict)
 from operator import attrgetter 
@@ -26,7 +26,8 @@ class SDMXObject(object):
       
 class Response(SDMXObject):
     
-    _structure_names = ['codelists', 'conceptschemes', 'dataflows', 'datastructures']
+    _structure_names = ['codelists', 'conceptschemes', 'dataflows', 
+                        'datastructures', 'categoryschemes']
     
     def __init__(self, *args, **kwargs):
         super(Response, self).__init__(*args, **kwargs)
@@ -319,14 +320,10 @@ class CategoryScheme(ItemScheme):
 
     
 
-class Categorization(MaintainableArtefact):
+class Categorisation(MaintainableArtefact):
     artefact = Instance(IdentifiableArtefact)
     categorized_by = Instance(Category)
     
-    def __init__(self, id_artefact, category,  **kwargs):
-        super(Categorization, self).__init__( **kwargs)
-        self.artefact = id_artefact
-        self.categorized_by = category
         
 class IdentifiableObjectType: pass
 class ConstraintRoleType: pass    

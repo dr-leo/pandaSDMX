@@ -29,23 +29,60 @@ class SDMXMLReader(Reader):
         return self.response 
     
     _model_map = {
-        'header' : (XPath('mes:Header[1]', namespaces = _nsmap), model.Header)
-    }
+        'header' : (XPath('mes:Header[1]', namespaces = _nsmap), model.Header), 
+        'annotations' : (XPath('com:Annotations/com:Annotation', 
+                             namespaces = _nsmap), model.Annotation),
+        'codelists' : (XPath('mes:Structures/str:Codelists/str:Codelist', 
+                             namespaces = _nsmap), model.Codelist),
+                  'codes': (XPath('str:Code', 
+                             namespaces = _nsmap), model.Code),  
+                  'conceptschemes' : (XPath('mes:Structures/str:Concepts/str:ConceptScheme', 
+                             namespaces = _nsmap), model.ConceptScheme),
+        'concepts' : (XPath('str:Concept', 
+                             namespaces = _nsmap), model.Concept),
+        'categoryschemes' : (XPath('mes:Structures/str:CategorySchemes/str:CategoryScheme', 
+                             namespaces = _nsmap), model.CategoryScheme),
+        'categories': (XPath('str:Category', 
+                             namespaces = _nsmap), model.Category),  
+        'dataflows' : (XPath('mes:Structures/str:Dataflows/str:Dataflow', 
+                             namespaces = _nsmap), model.DataflowDefinition),
+        'datastructures' : (XPath('mes:Structures/str:DataStructures/str:DataStructure', 
+                             namespaces = _nsmap), model.DataStructureDefinition),
+        'dimdescriptor' : (XPath('str:DataStructureComponents/str:DimensionList', 
+                             namespaces = _nsmap), model.DimensionDescriptor),
+        'measures' : (XPath('str:DataStructureComponents/str:MeasureList', 
+                             namespaces = _nsmap), model.MeasureDescriptor),
+        'measure_items' : (XPath('str:PrimaryMeasure', 
+                             namespaces = _nsmap), model.PrimaryMeasure), 
+        'attributes' : (XPath('str:DataStructureComponents/str:AttributeList', 
+                             namespaces = _nsmap), model.AttributeDescriptor),
+    } 
         
         
     def read(self, name, elem):
         path, cls = self._model_map[name]
         return cls(self, path(elem)[0])
      
+     
+    def read_dict(self, name, elem):
+        '''
+        return dict mapping IDs to item instances from model.
+        elem must be DictLike
+        '''
+        try:
+            path, cls = self._model_map[name]
+        except KeyError: # call special method 
+            return getattr(self, name)(elem)
+        # create instance based on _model_map value
+        return DictLike({e.get('id') : cls(self, e) for e in path(elem)})
+        
+
+         
+             
     
     def header_id(self, elem):
         return elem.ID[0].text 
 
-    def annotations(self, elem):
-        return self._structures(elem, 'com:Annotations/com:Annotation', 
-                                model.Annotation)
-                
-                
     def identity(self, elem):
         return elem.get('id')
     
@@ -90,53 +127,14 @@ class SDMXMLReader(Reader):
         return dict mapping IDs to item instances from model.
         elem must be an item scheme
         '''    
-        return {e.get('id') : model_cls(self, e) for e in elem.xpath(path, 
-                    namespaces = self._nsmap)} 
+        return DictLike({e.get('id') : model_cls(self, e) for e in elem.xpath(path, 
+                    namespaces = self._nsmap)}) 
                      
-    def _structures(self, elem, path, model_cls):
-    
-        '''
-        Helper method called by codelists() etc.
-        return DictLike mapping structure IDs to model claas for the structure
-        '''
-        return DictLike({e.get('id') : model_cls(self, e) for e in  
-                    elem.xpath(path, namespaces = self._nsmap)})
         
-    def codelists(self, elem):
-        return self._structures(elem, 'mes:Structures/str:Codelists/str:Codelist', 
-                                model.Codelist)
-    
-    
-    def codes(self, elem):
-        return self._items(elem, 'str:Code', model.Code)
-
-    
-    def conceptschemes(self, elem):
-        return self._structures(elem, 'mes:Structures/str:Concepts/str:ConceptScheme', model.ConceptScheme)
-        
-        
-    def concepts(self, elem):
-        return self._items(elem, 'str:Concept', model.Concept)
-
-    def categoryschemes(self, elem):
-        return self._structures(
-                elem, 'mes:Structures/str:CategorySchemes/str:CategoryScheme', 
-                model.CategoryScheme)
-        
-        
-    def category_items(self, elem):
-        return self._items(elem, 'str:Category', model.Category)
-
-        
-
         
     def isfinal(self, elem):
         return bool(elem.get('isFinal')) 
         
-    def dataflows(self, elem):
-        return self._structures(elem, 'mes:Structures/str:Dataflows/str:Dataflow', 
-                                model.DataflowDefinition)
-    
     def structure(self, elem):
         '''
         return content of a model.Structure.  
@@ -144,19 +142,15 @@ class SDMXMLReader(Reader):
         return model.Structure(self, elem.xpath('str:Structure', 
                                                 namespaces = self._nsmap))
      
-    def datastructures(self, elem):
-        return self._structures(elem, 'mes:Structures/str:DataStructures/str:DataStructure', 
-                                model.DataStructureDefinition)
-    
     def dimdescriptor(self, elem):
         nodes = elem.xpath('str:DataStructureComponents/str:DimensionList',
                           namespaces = self._nsmap) 
         return model.DimensionDescriptor(self, nodes[0])
     
     def dimension_items(self, elem):
-        d = self._structures(elem, 'str:Dimension', model.Dimension)
-        d.update(self._structures(elem, 'str:TimeDimension', model.TimeDimension))
-        d.update(self._structures(elem, 'str:MeasureDimension', model.MeasureDimension))
+        d = self._items(elem, 'str:Dimension', model.Dimension)
+        d.update(self._items(elem, 'str:TimeDimension', model.TimeDimension))
+        d.update(self._items(elem, 'str:MeasureDimension', model.MeasureDimension))
         return d
          
     def concept_id(self, elem):
@@ -179,15 +173,10 @@ class SDMXMLReader(Reader):
         if enum: enum = self.response.codelists[enum[0]]
         else: enum = None
         return model.Representation(self, node, enum = enum)
-         
-        
-    def attributes(self, elem):
-        nodes = elem.xpath('str:DataStructureComponents/str:AttributeList',
-                          namespaces = self._nsmap) 
-        return model.AttributeDescriptor(self, nodes[0])
-
+    
+    
     def attribute_items(self, elem):
-        return self._structures(elem, 'str:Attribute', model.DataAttribute)
+        return self._items(elem, 'str:Attribute', model.DataAttribute)
     
     def assignment_status(self, elem):
         return elem.xpath('@assignmentStatus')[0]
@@ -196,17 +185,7 @@ class SDMXMLReader(Reader):
         return elem.xpath('str:AttributeRelationship')[0]
         
         
-    def measures(self, elem):
-        nodes = elem.xpath('str:DataStructureComponents/str:MeasureList',
-                          namespaces = self._nsmap) 
-        return model.MeasureDescriptor(self, nodes[0])
-
-    def measure_items(self, elem):
-        return self._structures(elem, 'str:PrimaryMeasure', model.PrimaryMeasure)
-    
-
-
- 
+         
     def parse_series(self, source):
         """
         generator to parse data from xml. Iterate over series

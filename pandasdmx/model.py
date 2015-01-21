@@ -39,7 +39,7 @@ class Response(SDMXObject):
         
     def __getattr__(self, name):
         if name in self._structure_names:
-            value = getattr(self._reader, name)(self._elem)
+            value = self._reader.read_dict(name, self._elem)
             if value:
                 setattr(self, name, value) 
                 return value
@@ -110,7 +110,7 @@ class Annotation(SDMXObject):
 class AnnotableArtefact(SDMXObject):
     @property
     def annotations(self):
-        return self._reader.annotations(self._elem)
+        return self._reader.read_dict('annotations', self._elem)
     
         
 class IdentifiableArtefact(AnnotableArtefact):
@@ -200,7 +200,7 @@ class Scheme(DictLike):
     
     def __init__(self, *args, **kwargs):
         super(Scheme, self).__init__(*args, **kwargs)
-        self.update(getattr(self._reader, self._get_items)(self._elem))
+        self.update(self._reader.read_dict(self._get_items, self._elem))
     
     def find(self, search_str, by = 'name', language = 'en'):
         '''
@@ -335,9 +335,9 @@ class DataflowDefinition(StructureUsage): pass
 class DataStructureDefinition(Structure):
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions= self._reader.dimdescriptor(self._elem)
-        self.measures = self._reader.measures(self._elem)
-        self.attributes = self._reader.attributes(self._elem)
+        self.dimensions= self._reader.read('dimdescriptor', self._elem)
+        self.measures = self._reader.read('measures', self._elem)
+        self.attributes = self._reader.read('attributes', self._elem)
 
 
 class DimensionDescriptor(ComponentList):

@@ -54,7 +54,7 @@ class Response(SDMXObject):
             
     @property
     def header(self):
-        return self._reader.mes_header(self._elem)
+        return self._reader.read('header', self._elem)
     
 
 class Header(SDMXObject):

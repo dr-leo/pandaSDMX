@@ -5,6 +5,7 @@ from pandasdmx.utils import DictLike
 from pandasdmx import model
 from .common import Reader
 from lxml import objectify
+from lxml.etree import XPath
 
 
 
@@ -27,17 +28,15 @@ class SDMXMLReader(Reader):
         self.response = model.Response(self, root)
         return self.response 
     
-        
-    def dispatch(self, elem):
-        model_class = self.model_map.get(elem.tag)
-        if model_class: return model_class(self, elem)
-        else: return elem   
-         
+    _model_map = {
+        'header' : (XPath('mes:Header[1]', namespaces = _nsmap), model.Header)
+    }
         
         
-    def mes_header(self, elem):
-        'return a message header. elem must be the document root.'
-        return model.Header(self, elem.xpath('mes:Header', namespaces = self._nsmap)[0])
+    def read(self, name, elem):
+        path, cls = self._model_map[name]
+        return cls(self, path(elem)[0])
+     
     
     def header_id(self, elem):
         return elem.ID[0].text 

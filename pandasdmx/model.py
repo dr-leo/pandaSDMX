@@ -152,6 +152,8 @@ class NameableArtefact(IdentifiableArtefact):
     def __str__(self):
         return ' '.join((self.__class__.__name__, 'ID:', self.id, 'name:', self.name.en))
     
+    # Make dicts and lists of Artefacts more readable. Use pprint or altrepr instead? 
+    __repr__ = __str__
     
 class VersionableArtefact(NameableArtefact):
 
@@ -341,10 +343,16 @@ class DataStructureDefinition(Structure):
 
 
 class DimensionDescriptor(ComponentList):
-    _get_items = 'dimension_items'
+    _get_items = 'dimensions'
     _sort_key = '_position'
     
-    
+    def __init__(self, *args, **kwargs):
+        super(DimensionDescriptor, self).__init__(*args, **kwargs)
+        # add time_dimension and measure_dimension to the scheme
+        self.update(self._reader.read_dict('time_dimension', self._elem))
+        self.update(self._reader.read_dict('measure_dimension', self._elem))
+                    
+        
 class GroupDimensionDescriptor(ComponentList):
     # Associations to dimension etc. are not distinguished from
     # the actual dimensions. This differs technically from the model specification
@@ -371,19 +379,11 @@ class PrimaryMeasureRelationship(AttributeRelationship): pass
 
 class GroupRelationship(AttributeRelationship):
     groupkey = Instance(GroupDimensionDescriptor)
-    
-    def __init__(self, groupkey = None):
-        super().__init__()
-        self.groupkey = groupkey
         
     
 class DimensionRelationship(GroupRelationship):
     dimensions = List # of dimensions
     
-    def __init__(self, dimensions = [], **kwargs):
-        super().__init__(**kwargs)
-        self.dimensions = dimensions
-        
         
 class DataAttribute(Component):
     
@@ -391,8 +391,8 @@ class DataAttribute(Component):
     def related_to(self):
         return self._reader.attr_relation(self._elem)  
     
-    
-    # role = Instance(Concept)
+    # fix this
+    # role = Instance(Concept)  
     
     @property
     def usage_status(self):
@@ -418,7 +418,7 @@ class MeasureDimension(Dimension): pass
     # inheritance from concept
     
     
-class DataSet(HasTraits):
+class DataSet(SDMXObject):
     reporting_begin = Any 
     reporting_end = Any
     valid_from = Any
@@ -432,34 +432,6 @@ class DataSet(HasTraits):
     structured_by = Instance(DataStructureDefinition)
     published_by = Any
     attached_attribute = Any
-    
-    def __init__(self, reporting_begin = None, 
-                 reporting_end = None,
-                 valid_from = None,
-                 valid_to = None,
-                 data_extraction_date = None,
-                 publication_year = None,
-                 publication_period = None,
-                 set_id = u'',
-                 action = None,
-                 described_by = None,
-                 structured_by = None,
-                 published_by = None,
-                 attached_attribute = None):
-        super(DataSet, self).__init__()
-        self.reporting_begin = reporting_begin  
-        self.reporting_end = reporting_end 
-        self.valid_from = valid_from 
-        self.valid_to = valid_to 
-        self.data_extraction_date = data_extraction_date 
-        self.publication_year = publication_year 
-        self.publication_period = publication_period 
-        self.set_id = set_id 
-        self.action = action
-        self.described_by = described_by 
-        self.structured_by = structured_by 
-        self.published_by = published_by 
-        self.attached_attribute = attached_attribute 
     
 
     

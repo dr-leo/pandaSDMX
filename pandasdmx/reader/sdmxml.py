@@ -25,8 +25,8 @@ class SDMXMLReader(Reader):
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
-        self.response = model.Response(self, root)
-        return self.response 
+        self.message = model.Message(self, root)
+        return self.message 
     
     _model_map = {
         'header' : (XPath('mes:Header[1]', namespaces = _nsmap), model.Header), 
@@ -139,20 +139,13 @@ class SDMXMLReader(Reader):
     def isfinal(self, elem):
         return bool(elem.get('isFinal')) 
         
-    def structure(self, elem):
-        '''
-        return content of a model.Structure.  
-        '''
-        return model.Structure(self, elem.xpath('str:Structure', 
-                                                namespaces = self._nsmap))
-    
     def concept_id(self, elem):
         # called by model.Component.concept
         c_id = elem.xpath('str:ConceptIdentity/Ref/@id', 
                           namespaces = self._nsmap)[0]
         parent_id = elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
                                namespaces = self._nsmap)[0]
-        return self.response.conceptschemes[parent_id][c_id]
+        return self.message.conceptschemes[parent_id][c_id]
         
     def position(self, elem):
         # called by model.Dimension
@@ -162,8 +155,8 @@ class SDMXMLReader(Reader):
         node = elem.xpath('str:LocalRepresentation',
                           namespaces = self._nsmap)[0]
         enum = node.xpath('str:Enumeration/Ref/@id',
-                          namespaces = node.nsmap)
-        if enum: enum = self.response.codelists[enum[0]]
+                          namespaces = self._nsmap)
+        if enum: enum = self.message.codelists[enum[0]]
         else: enum = None
         return model.Representation(self, node, enum = enum)
     
@@ -220,5 +213,4 @@ class SDMXMLReader(Reader):
             codes = CodeTuple._make(code_values)
             series.clear()
             yield codes, raw_dates, raw_values, raw_status 
-    
     

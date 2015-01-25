@@ -24,13 +24,13 @@ class SDMXObject(object):
         super(SDMXObject, self).__init__(**kwargs)
         
       
-class Response(SDMXObject):
+class Message(SDMXObject):
     
     _structure_names = ['codelists', 'conceptschemes', 'dataflows', 
                         'datastructures', 'categoryschemes']
     
     def __init__(self, *args, **kwargs):
-        super(Response, self).__init__(*args, **kwargs)
+        super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
         for name in self._structure_names:
             try:
@@ -389,7 +389,7 @@ class DataAttribute(Component):
     
     @property
     def related_to(self):
-        return self._reader.attr_relation(self._elem)  
+        return self._reader.attr_relationship(self._elem)  
     
     # fix this
     # role = Instance(Concept)  
@@ -446,11 +446,6 @@ class StructureSpecificTimeSeriesDataSet(DataSet): pass
 class Key:
     key_values = List
     attached_attribute = Any
-    
-    def __init__(self, key_balues = [], 
-            attached_attribute = None):
-        self.key_values = key_values
-        self.attached_attribute = attached_attribute
 
 class KeyValue: pass
 

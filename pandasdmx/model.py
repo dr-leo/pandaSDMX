@@ -202,7 +202,7 @@ class Scheme(DictLike):
     
     def __init__(self, *args, **kwargs):
         super(Scheme, self).__init__(*args, **kwargs)
-        self.update(self._reader.read_dict(self._get_items, self))
+        self._reader.read_dict(self._get_items, self)
     
     def find(self, search_str, by = 'name', language = 'en'):
         '''
@@ -349,8 +349,8 @@ class DimensionDescriptor(ComponentList):
     def __init__(self, *args, **kwargs):
         super(DimensionDescriptor, self).__init__(*args, **kwargs)
         # add time_dimension and measure_dimension to the scheme
-        self.update(self._reader.read_dict('time_dimension', self))
-        self.update(self._reader.read_dict('measure_dimension', self))
+        self._reader.read_dict('time_dimension', self)
+        self._reader.read_dict('measure_dimension', self)
                     
         
 class GroupDimensionDescriptor(ComponentList):

@@ -74,11 +74,15 @@ class SDMXMLReader(Reader):
      
     def read_dict(self, name, sdmxobj):
         '''
-        return dict mapping IDs to item instances from model.
-        sdmxobj must be DictLike
+        If sdmxobj inherits from dict: update it  with modelized elements. 
+        These must be instances of model.IdentifiableArtefact,
+        i.e. have an 'id' attribute. This will be used as dict keys.
+        If sdmxobj does not inherit from dict: return a new DictLike. 
         '''
         path, cls = self._model_map[name]
-        return DictLike({e.get('id') : cls(self, e) for e in path(sdmxobj._elem)})
+        result = {e.get('id') : cls(self, e) for e in path(sdmxobj._elem)}
+        if isinstance(sdmxobj, dict): sdmxobj.update(result)
+        else: return DictLike(result)
         
 
     def header_id(self, sdmxobj):

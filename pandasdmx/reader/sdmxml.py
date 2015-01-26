@@ -67,92 +67,80 @@ class SDMXMLReader(Reader):
     } 
         
         
-    def read(self, name, elem):
+    def read(self, name, sdmxobj):
         path, cls = self._model_map[name]
-        return cls(self, path(elem)[0])
+        return cls(self, path(sdmxobj._elem)[0])
      
      
-    def read_dict(self, name, elem):
+    def read_dict(self, name, sdmxobj):
         '''
         return dict mapping IDs to item instances from model.
-        elem must be DictLike
+        sdmxobj must be DictLike
         '''
         path, cls = self._model_map[name]
-        return DictLike({e.get('id') : cls(self, e) for e in path(elem)})
+        return DictLike({e.get('id') : cls(self, e) for e in path(sdmxobj._elem)})
         
 
-         
-             
-    
-    def header_id(self, elem):
-        return elem.ID[0].text 
+    def header_id(self, sdmxobj):
+        return sdmxobj._elem.ID[0].text 
 
-    def identity(self, elem):
-        return elem.get('id')
+    def identity(self, sdmxobj):
+        return sdmxobj._elem.get('id')
     
-    def urn(self, elem):
-        return elem.get('urn')
+    def urn(self, sdmxobj):
+        return sdmxobj._elem.get('urn')
 
-    def uri(self, elem):
-        return elem.get('uri')
+    def uri(self, sdmxobj):
+        return sdmxobj._elem.get('uri')
         
         
-    def agencyID(self, elem):
-        return elem.get('agencyID')
+    def agencyID(self, sdmxobj):
+        return sdmxobj._elem.get('agencyID')
     
     
-    def _international_string(self, elem, tagname):
-        languages = elem.xpath('com:{0}/@xml:lang'.format(tagname), 
+    def _international_string(self, sdmxobj, tagname):
+        languages = sdmxobj._elem.xpath('com:{0}/@xml:lang'.format(tagname), 
                                namespaces = self._nsmap)
-        strings = elem.xpath('com:{0}/text()'.format(tagname), 
+        strings = sdmxobj._elem.xpath('com:{0}/text()'.format(tagname), 
                              namespaces = self._nsmap)
         return DictLike(zip(languages, strings))
 
-    def description(self, elem):
-        return self._international_string(elem, 'Description') 
+    def description(self, sdmxobj):
+        return self._international_string(sdmxobj, 'Description') 
         
-    def name(self, elem):
-        return self._international_string(elem, 'Name') 
+    def name(self, sdmxobj):
+        return self._international_string(sdmxobj, 'Name') 
         
 
-    def header_prepared(self, elem):
-        return elem.Prepared[0].text # convert this to datetime obj?
+    def header_prepared(self, sdmxobj):
+        return sdmxobj._elem.Prepared[0].text # convert this to datetime obj?
         
-    def header_sender(self, elem):
-        return DictLike(elem.Sender.attrib)
+    def header_sender(self, sdmxobj):
+        return DictLike(sdmxobj._elem.Sender.attrib)
 
-    def header_error(self, elem):
+    def header_error(self, sdmxobj):
         try:
-            return DictLike(elem.Error.attrib)
+            return DictLike(sdmxobj._elem.Error.attrib)
         except AttributeError: return None
                      
-    def _items(self, elem, path, model_cls):
-        '''
-        return dict mapping IDs to item instances from model.
-        elem must be an item scheme
-        '''    
-        return DictLike({e.get('id') : model_cls(self, e) for e in elem.xpath(path, 
-                    namespaces = self._nsmap)}) 
-                     
         
+    def isfinal(self, sdmxobj):
+        return bool(sdmxobj._elem.get('isFinal')) 
         
-    def isfinal(self, elem):
-        return bool(elem.get('isFinal')) 
-        
-    def concept_id(self, elem):
+    def concept_id(self, sdmxobj):
         # called by model.Component.concept
-        c_id = elem.xpath('str:ConceptIdentity/Ref/@id', 
+        c_id = sdmxobj._elem.xpath('str:ConceptIdentity/Ref/@id', 
                           namespaces = self._nsmap)[0]
-        parent_id = elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
+        parent_id = sdmxobj._elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
                                namespaces = self._nsmap)[0]
         return self.message.conceptschemes[parent_id][c_id]
         
-    def position(self, elem):
+    def position(self, sdmxobj):
         # called by model.Dimension
-        return int(elem.get('position')) 
+        return int(sdmxobj._elem.get('position')) 
     
-    def localrepr(self, elem):
-        node = elem.xpath('str:LocalRepresentation',
+    def localrepr(self, sdmxobj):
+        node = sdmxobj._elem.xpath('str:LocalRepresentation',
                           namespaces = self._nsmap)[0]
         enum = node.xpath('str:Enumeration/Ref/@id',
                           namespaces = self._nsmap)
@@ -160,11 +148,11 @@ class SDMXMLReader(Reader):
         else: enum = None
         return model.Representation(self, node, enum = enum)
     
-    def assignment_status(self, elem):
-        return elem.get('assignmentStatus')
+    def assignment_status(self, sdmxobj):
+        return sdmxobj._elem.get('assignmentStatus')
         
-    def attr_relationship(self, elem):
-        return elem.xpath('*/Ref/@id')
+    def attr_relationship(self, sdmxobj):
+        return sdmxobj._elem.xpath('*/Ref/@id')
          
          
     def parse_series(self, source):
@@ -186,13 +174,13 @@ class SDMXMLReader(Reader):
             raw_dates, raw_values, raw_status = [], [], []
             
             for elem in series.iterchildren():
-                if elem.tag == serieskey_tag:
+                if sdmxobj._elem.tag == serieskey_tag:
                     code_keys, code_values = [], []
-                    for value in elem.iter(value_tag):
+                    for value in sdmxobj._elem.iter(value_tag):
                         if not CodeTuple: code_keys.append(value.get('id')) 
                         code_values.append(value.get('value'))
-                elif elem.tag == obs_tag:
-                    for elem1 in elem.iterchildren():
+                elif sdmxobj._elem.tag == obs_tag:
+                    for elem1 in sdmxobj._elem.iterchildren():
                         observation_status = 'A'
                         if elem1.tag == obsdim_tag:
                             dimension = elem1.get('value')

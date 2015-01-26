@@ -39,7 +39,7 @@ class Message(SDMXObject):
         
     def __getattr__(self, name):
         if name in self._structure_names:
-            value = self._reader.read_dict(name, self._elem)
+            value = self._reader.read_dict(name, self)
             if value:
                 setattr(self, name, value) 
                 return value
@@ -54,25 +54,25 @@ class Message(SDMXObject):
             
     @property
     def header(self):
-        return self._reader.read('header', self._elem)
+        return self._reader.read('header', self)
     
 
 class Header(SDMXObject):
     @property
     def id(self):
-        return self._reader.header_id(self._elem)
+        return self._reader.header_id(self)
     
     @property
     def prepared(self):
-        return self._reader.header_prepared(self._elem) 
+        return self._reader.header_prepared(self) 
 
     @property
     def sender(self):
-        return self._reader.header_sender(self._elem) 
+        return self._reader.header_sender(self) 
 
     @property
     def error(self):
-        return self._reader.header_error(self._elem) 
+        return self._reader.header_error(self) 
 
 
 
@@ -89,19 +89,19 @@ class InternationalString(DictLike):
 class Annotation(SDMXObject):
     @property
     def id(self): 
-        return self._reader.id(self._elem)
+        return self._reader.id(self)
     @property
     def title(self):
-        return self._reader.title(self._elem)
+        return self._reader.title(self)
     @property
     def annotype(self):
-        return self._reader.annotationtype(self._elem)
+        return self._reader.annotationtype(self)
     @property
     def url(self):
-        return self._reader.url(self._elem)
+        return self._reader.url(self)
     @property
     def text(self):
-        return self._reader.text(self._elem)
+        return self._reader.text(self)
         
     def __str__(self):
         return 'Annotation: title=%s' , self.title  
@@ -110,13 +110,13 @@ class Annotation(SDMXObject):
 class AnnotableArtefact(SDMXObject):
     @property
     def annotations(self):
-        return self._reader.read_dict('annotations', self._elem)
+        return self._reader.read_dict('annotations', self)
     
         
 class IdentifiableArtefact(AnnotableArtefact):
     @property
     def id(self):
-        return self._reader.identity(self._elem)
+        return self._reader.identity(self)
 
     def __eq__(self, value):
         if isinstance(value, str_type):
@@ -133,21 +133,21 @@ class IdentifiableArtefact(AnnotableArtefact):
     
     @property
     def urn(self):
-        return self._reader.urn(self._elem)
+        return self._reader.urn(self)
     
     @property
     def uri(self):
-        return self._reader.uri(self._elem)
+        return self._reader.uri(self)
     
     
 class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
-        return self._reader.name(self._elem)
+        return self._reader.name(self)
     
     @property
     def description(self):
-        return self._reader.description(self._elem)    
+        return self._reader.description(self)    
     
     def __str__(self):
         return ' '.join((self.__class__.__name__, 'ID:', self.id, 'name:', self.name.en))
@@ -159,38 +159,38 @@ class VersionableArtefact(NameableArtefact):
 
     @property
     def version(self):
-        return self._reader.version(self._elem)
+        return self._reader.version(self)
     
     @property
     def valid_from(self):
-        return self._reader.valid_from(self._elem)
+        return self._reader.valid_from(self)
     
     @property
     def valid_to(self):
-        return self._reader.valid_to(self._elem)
+        return self._reader.valid_to(self)
     
 
 class MaintainableArtefact(VersionableArtefact):
     
     @property
     def is_final(self):
-        return self._reader.is_final(self._elem)
+        return self._reader.is_final(self)
     
     @property
     def is_external_ref(self):
-        return self._reader.is_external_ref(self._elem)
+        return self._reader.is_external_ref(self)
     
     @property
     def structure_url(self):
-        return self._reader.structure_url(self._elem)
+        return self._reader.structure_url(self)
     
     @property
     def service_url(self):
-        return self._reader.service_url(self._elem)
+        return self._reader.service_url(self)
     
     @property
     def maintainer(self):
-        return self._reader.maintainer(self._elem)
+        return self._reader.maintainer(self)
     
 # Helper class for ItemScheme and ComponentList. 
 # This is not specifically mentioned in the SDMX info-model. 
@@ -202,7 +202,7 @@ class Scheme(DictLike):
     
     def __init__(self, *args, **kwargs):
         super(Scheme, self).__init__(*args, **kwargs)
-        self.update(self._reader.read_dict(self._get_items, self._elem))
+        self.update(self._reader.read_dict(self._get_items, self))
     
     def find(self, search_str, by = 'name', language = 'en'):
         '''
@@ -234,18 +234,18 @@ class ItemScheme(MaintainableArtefact, Scheme):
     
     @property
     def is_partial(self):
-        return self._reader.is_partial(self._elem)
+        return self._reader.is_partial(self)
     
          
 class Item(NameableArtefact):
     
     @property       
     def parent(self):
-        return self._reader._item_parent(self._elem)
+        return self._reader._item_parent(self)
     
     @property
     def children(self):
-        return self._reader._iterm_children(self._elem) 
+        return self._reader._iterm_children(self) 
     
 
 class Structure(MaintainableArtefact):
@@ -257,7 +257,7 @@ class StructureUsage(MaintainableArtefact):
     
     @property
     def structure(self):
-        return self._reader.structure(self._elem) 
+        return self._reader.structure(self) 
     
     
 class ComponentList(IdentifiableArtefact, Scheme): pass
@@ -298,11 +298,11 @@ class Component(IdentifiableArtefact):
     
     @property
     def concept(self):
-        return self._reader.concept_id(self._elem)
+        return self._reader.concept_id(self)
     
     @property
     def local_repr(self):
-        return self._reader.localrepr(self._elem)
+        return self._reader.localrepr(self)
 
 class Code(Item): pass
 
@@ -337,9 +337,9 @@ class DataflowDefinition(StructureUsage): pass
 class DataStructureDefinition(Structure):
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions= self._reader.read('dimdescriptor', self._elem)
-        self.measures = self._reader.read('measures', self._elem)
-        self.attributes = self._reader.read('attributes', self._elem)
+        self.dimensions= self._reader.read('dimdescriptor', self)
+        self.measures = self._reader.read('measures', self)
+        self.attributes = self._reader.read('attributes', self)
 
 
 class DimensionDescriptor(ComponentList):
@@ -349,8 +349,8 @@ class DimensionDescriptor(ComponentList):
     def __init__(self, *args, **kwargs):
         super(DimensionDescriptor, self).__init__(*args, **kwargs)
         # add time_dimension and measure_dimension to the scheme
-        self.update(self._reader.read_dict('time_dimension', self._elem))
-        self.update(self._reader.read_dict('measure_dimension', self._elem))
+        self.update(self._reader.read_dict('time_dimension', self))
+        self.update(self._reader.read_dict('measure_dimension', self))
                     
         
 class GroupDimensionDescriptor(ComponentList):
@@ -389,14 +389,14 @@ class DataAttribute(Component):
     
     @property
     def related_to(self):
-        return self._reader.attr_relationship(self._elem)  
+        return self._reader.attr_relationship(self)  
     
     # fix this
     # role = Instance(Concept)  
     
     @property
     def usage_status(self):
-        return self._reader.assignment_status(self._elem)
+        return self._reader.assignment_status(self)
     
     
     
@@ -408,7 +408,7 @@ class Dimension(Component):
     
     @property
     def _position(self):
-        return self._reader.position(self._elem)
+        return self._reader.position(self)
 
 class TimeDimension(Dimension): pass 
     # role must be None. Enforce this in future versions.

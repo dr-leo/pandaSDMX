@@ -11,10 +11,9 @@ from IPython.config.configurable import LoggingConfigurable
 
 class Reader(LoggingConfigurable):
     
-    def __init__(self, agency_id, client, **kwargs):
+    def __init__(self, request, **kwargs):
         super(Reader, self).__init__(**kwargs)
-        self.client = client
-        self.agency_id = agency_id
+        self.request = request
         
     
     def initialize(self, source): raise NotImplemented

@@ -25,11 +25,26 @@ class SDMXMLReader(Reader):
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
-        self.message = model.Message(self, root)
+        if root.tag.endswith('Structure'):
+            cls = model.StructureMessage
+        elif root.tag.endswith('GenericData'):
+            cls = model.DataMessage
+        self.message = cls(self, root)  
         return self.message 
     
+    
+    @staticmethod     
+    def get_dataset(reader, elem):
+        if elem.tag.endswith('GenericData'):
+            cls = model.GenericDataSet
+        elif elem.tag.endswith('StructureSpecificData'):
+            cls = model.StructureSpecificDataSet
+        return cls(reader, elem.DataSet)  
+            
+
     _model_map = {
-        'header' : (XPath('mes:Header[1]', namespaces = _nsmap), model.Header), 
+        'header' : (XPath('mes:Header', namespaces = _nsmap), model.Header),
+        'footer' : (XPath('mes:Footer', namespaces = _nsmap), model.Footer), 
         'annotations' : (XPath('com:Annotations/com:Annotation', 
                              namespaces = _nsmap), model.Annotation),
         'codelists' : (XPath('mes:Structures/str:Codelists/str:Codelist', 
@@ -64,12 +79,17 @@ class SDMXMLReader(Reader):
                              namespaces = _nsmap), model.AttributeDescriptor),
                   'attribute_items' : (XPath('str:Attribute', 
                              namespaces = _nsmap), model.DataAttribute),
+                  'data' : (XPath('mes:DataSet', 
+                             namespaces = _nsmap), get_dataset),
     } 
         
         
     def read(self, name, sdmxobj):
         path, cls = self._model_map[name]
-        return cls(self, path(sdmxobj._elem)[0])
+        try:
+            return cls(self, path(sdmxobj._elem)[0])
+        except IndexError:
+            return None
      
      
     def read_dict(self, name, sdmxobj):
@@ -102,19 +122,12 @@ class SDMXMLReader(Reader):
         return sdmxobj._elem.get('agencyID')
     
     
-    def _international_string(self, sdmxobj, tagname):
-        languages = sdmxobj._elem.xpath('com:{0}/@xml:lang'.format(tagname), 
+    def attributes_to_dict(self, name, sdmxobj):
+        elem_attrib = sdmxobj._elem.xpath('com:{0}/@xml:lang'.format(name), 
                                namespaces = self._nsmap)
-        strings = sdmxobj._elem.xpath('com:{0}/text()'.format(tagname), 
+        values = sdmxobj._elem.xpath('com:{0}/text()'.format(name), 
                              namespaces = self._nsmap)
-        return DictLike(zip(languages, strings))
-
-    def description(self, sdmxobj):
-        return self._international_string(sdmxobj, 'Description') 
-        
-    def name(self, sdmxobj):
-        return self._international_string(sdmxobj, 'Name') 
-        
+        return DictLike(zip(elem_attrib, values))
 
     def header_prepared(self, sdmxobj):
         return sdmxobj._elem.Prepared[0].text # convert this to datetime obj?
@@ -157,8 +170,9 @@ class SDMXMLReader(Reader):
         
     def attr_relationship(self, sdmxobj):
         return sdmxobj._elem.xpath('*/Ref/@id')
-         
-         
+    
+            
+                 
     def parse_series(self, source):
         """
         generator to parse data from xml. Iterate over series

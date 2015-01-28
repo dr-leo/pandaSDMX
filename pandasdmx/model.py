@@ -25,37 +25,54 @@ class SDMXObject(object):
         
       
 class Message(SDMXObject):
-    
-    _structure_names = ['codelists', 'conceptschemes', 'dataflows', 
-                        'datastructures', 'categoryschemes']
+    _payload_names = ['footer']
     
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
-        for name in self._structure_names:
+        for name in self._payload_names:
             try:
                 getattr(self, name)
             except ValueError: pass 
         
     def __getattr__(self, name):
-        if name in self._structure_names:
+        if name in self._payload_names:
             value = self._reader.read_dict(name, self)
             if value:
                 setattr(self, name, value) 
                 return value
             else:
                 raise ValueError(
-                    'SDMX response does not containe any payload of type %s.' 
-                    % name)
+                                    'SDMX response does not containe any payload of type %s.' 
+                                    % name)
         else:
-            raise AttributeError('{0} not found.'.format(name)) 
+            raise KeyError('{0} is not a valid payload or other attribute name.'.format(name)) 
             
             
             
     @property
     def header(self):
         return self._reader.read('header', self)
+
+    @property
+    def footer(self):
+        return self._reader.read('footer', self)
     
+
+class StructureMessage(Message):
+    
+    def __init__(self, *args, **kwargs):
+        super(StructureMessage, self).__init__(*args, **kwargs) 
+        self._payload_names.extend(['codelists', 'conceptschemes', 'dataflows', 
+                        'datastructures', 'categoryschemes'])
+
+
+class DataMessage(Message):
+    
+    def __init__(self, *args, **kwargs):
+        super(DataMessage, self).__init__(*args, **kwargs) 
+        self._payload_names.extend(['data'])    
+
 
 class Header(SDMXObject):
     @property
@@ -73,6 +90,19 @@ class Header(SDMXObject):
     @property
     def error(self):
         return self._reader.header_error(self) 
+
+class Footer(SDMXObject):
+    @property
+    def id(self):
+        return self._reader.header_id(self)
+    
+    @property
+    def prepared(self):
+        return self._reader.header_prepared(self) 
+
+    @property
+    def sender(self):
+        return self._reader.header_sender(self) 
 
 
 
@@ -143,14 +173,14 @@ class IdentifiableArtefact(AnnotableArtefact):
 class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
-        return self._reader.name(self)
+        return self._reader.attributes_to_dict('Name', self)
     
     @property
     def description(self):
-        return self._reader.description(self)    
+        return self._reader.attributes_to_dict('Description', self)    
     
     def __str__(self):
-        return ' '.join((self.__class__.__name__, 'ID:', self.id, 'name:', self.name.en))
+        return ' '.join((self.__class__.__name__, ':', self.id, ' :', self.name.en))
     
     # Make dicts and lists of Artefacts more readable. Use pprint or altrepr instead? 
     __repr__ = __str__

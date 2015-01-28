@@ -12,27 +12,40 @@
 
 
 from IPython.config.configurable import LoggingConfigurable
-from IPython.utils.traitlets import Instance, Unicode
+from IPython.utils.traitlets import Instance, Unicode, Dict
 from pandasdmx.remote import REST 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
 
 
-__all__ = ['ECB', 'Eurostat']
+__all__ = ['Client']
 
 
-class Agency(LoggingConfigurable):
+class Request(LoggingConfigurable):
     """
-    Base class for agencies. Contains data on the web service.
+    Request SDMX data and metadata from remote or local sources.
     """
    
 
     client = Instance(REST, config = True, help = """
     REST or similar client to communicate with the web service""")
     base_url = Unicode
-
+    
+    agencies = {
+        'ESTAT' : {
+            'name' : 'Eurostat',
+            'url' : 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
+        'ECB' : {
+            'name' : 'European Central Bank',
+            'url' : 'http://sdw-wsrest.ecb.int/service'}
+            }
+                    
+    def __init__(self, agency_id):
+        self.agency_id = agency_id
+        self.client = REST(self.agencies[agency_id]['url'])
+        
 
     def get_reader(self):
-        return SDMXMLReader(self.agency_id, self.client)
+        return SDMXMLReader(self)
     
     
     def get(self, url_suffix = u'', from_file = None, to_file = None, **kwargs):
@@ -60,7 +73,8 @@ class Agency(LoggingConfigurable):
         try:
             flowref = flowref.id
         except AttributeError: pass
-        url_suffix = '/'.join(['datastructure', self.agency_id, 'DSD_' + flowref])
+        url_suffix = '/'.join(['datastructure', self.agency_id, flowref])
+        url_suffix += '?references=all'
         return self.get(url_suffix = url_suffix, **kwargs)
     
     def data(self, flowref, key = '', startperiod = None, endperiod = None, **kwargs):
@@ -77,30 +91,6 @@ class Agency(LoggingConfigurable):
         return self.get(url_suffix = 'category', **kwargs)
             
 
-class ECB(Agency):
-    """
-    European Central Bank
-    """
-    
-
-    def __init__(self):
-        super(ECB, self).__init__()
-        self.base_url = 'http://sdw-wsrest.ecb.int/service'
-        self.agency_id = 'ECB'
-        self.client = REST(self.base_url)
-         
-                    
-        
-class Eurostat(Agency):
-    """
-    Statistical office of the European Union
-    """
-
-    def __init__(self):
-        super(Eurostat, self).__init__()
-        self.base_url = 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'
-        self.agency_id = 'ESTAT'
-        self.client = REST(self.base_url)
         
 class QueryFactory:
     

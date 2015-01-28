@@ -11,7 +11,7 @@
   
 
 from pandasdmx.application import app
-from pandasdmx.query import *
+from pandasdmx.request import Request
 
-__all__ = ['ECB', 'Eurostat']
+__all__ = ['Request']
 

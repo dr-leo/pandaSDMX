@@ -7,20 +7,25 @@
 '''
 import unittest, imp
 import pandasdmx
-pandasdmx = imp.reload(pandasdmx)
 
 
-class Test(unittest.TestCase):
+
+class Test_DSD(unittest.TestCase):
 
 
     def setUp(self):
-        self.ecb = pandasdmx.ECB()
+        self.estat = pandasdmx.request.Request('ESTAT')
+        self.mess = self.estat.datastructure('dsd_apro_mk_cola')
+        
+    def test_codelists_keys(self):
+        self.assertEqual(len(self.mess.codelists), 6)
+        
+    def test_codelist_name(self):
+        self.assertEqual(self.mess.codelists.CL_GEO.UK.name.en, 'United Kingdom')
         
 
 
-    def tearDown(self):
-        del self.estat
-        del self.ecb
+    def tearDown(self): pass
         
 
 
@@ -28,12 +33,6 @@ class Test(unittest.TestCase):
         db = self.estat.get_dataflows()
         cur = db.execute('SELECT * FROM SQLITE_MASTER')
         print([str(i) for i in cur.fetchall()])
-
-    def testECBFlows(self):
-        db = self.ecb.get_dataflows()
-        cur = db.execute('SELECT * FROM SQLITE_MASTER')
-        l=cur.fetchall()
-        print([i.keys() for i in l])
 
 
 

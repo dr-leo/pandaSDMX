@@ -73,8 +73,7 @@ class Request(LoggingConfigurable):
         try:
             flowref = flowref.id
         except AttributeError: pass
-        url_suffix = '/'.join(['datastructure', self.agency_id, flowref])
-        url_suffix += '?references=all'
+        url_suffix = '/'.join(['datastructure', self.agency_id, 'DSD_' + flowref])
         return self.get(url_suffix = url_suffix, **kwargs)
     
     def data(self, flowref, key = '', startperiod = None, endperiod = None, **kwargs):

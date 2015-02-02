@@ -37,7 +37,7 @@ class Message(SDMXObject):
         
     def __getattr__(self, name):
         if name in self._payload_names:
-            value = self._reader.read_dict(name, self)
+            value = self._reader.read_identifiables(name, self)
             if value:
                 setattr(self, name, value) 
                 return value
@@ -52,11 +52,11 @@ class Message(SDMXObject):
             
     @property
     def header(self):
-        return self._reader.read('header', self)
+        return self._reader.read_one('header', self)
 
     @property
     def footer(self):
-        return self._reader.read('footer', self)
+        return self._reader.read_one('footer', self)
     
 
 class StructureMessage(Message):
@@ -104,34 +104,27 @@ class Footer(SDMXObject):
     def sender(self):
         return self._reader.header_sender(self) 
 
-
-
-class InternationalString(DictLike):
-    
-    def __init__(self,  **kwargs):
-        super(InternationalString, self).__init__( **kwargs)
-    
-    def get_locales(self): return self.keys()
-    
-    def get_labels(self): return self.values()
-    
         
 class Annotation(SDMXObject):
+    
     @property
     def id(self): 
         return self._reader.id(self)
+    
     @property
     def title(self):
         return self._reader.title(self)
+    
     @property
-    def annotype(self):
-        return self._reader.annotationtype(self)
+    def annotationtype(self):
+        return self._reader.read_one('annotationtype', self)
+    
     @property
     def url(self):
         return self._reader.url(self)
     @property
     def text(self):
-        return self._reader.text(self)
+        return self._reader.international_str('AnnotationText', self)
         
     def __str__(self):
         return 'Annotation: title=%s' , self.title  
@@ -140,7 +133,7 @@ class Annotation(SDMXObject):
 class AnnotableArtefact(SDMXObject):
     @property
     def annotations(self):
-        return self._reader.read_dict('annotations', self)
+        return self._reader.read_iter('annotations', self)
     
         
 class IdentifiableArtefact(AnnotableArtefact):
@@ -173,11 +166,11 @@ class IdentifiableArtefact(AnnotableArtefact):
 class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
-        return self._reader.attributes_to_dict('Name', self)
+        return self._reader.international_str('Name', self)
     
     @property
     def description(self):
-        return self._reader.attributes_to_dict('Description', self)    
+        return self._reader.international_str('Description', self)    
     
     def __str__(self):
         return ' '.join((self.__class__.__name__, ':', self.id, ' :', self.name.en))
@@ -232,7 +225,7 @@ class Scheme(DictLike):
     
     def __init__(self, *args, **kwargs):
         super(Scheme, self).__init__(*args, **kwargs)
-        self._reader.read_dict(self._get_items, self)
+        self._reader.read_identifiables(self._get_items, self)
     
     def find(self, search_str, by = 'name', language = 'en'):
         '''
@@ -367,9 +360,9 @@ class DataflowDefinition(StructureUsage): pass
 class DataStructureDefinition(Structure):
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions= self._reader.read('dimdescriptor', self)
-        self.measures = self._reader.read('measures', self)
-        self.attributes = self._reader.read('attributes', self)
+        self.dimensions= self._reader.read_one('dimdescriptor', self)
+        self.measures = self._reader.read_one('measures', self)
+        self.attributes = self._reader.read_one('attributes', self)
 
 
 class DimensionDescriptor(ComponentList):
@@ -379,8 +372,8 @@ class DimensionDescriptor(ComponentList):
     def __init__(self, *args, **kwargs):
         super(DimensionDescriptor, self).__init__(*args, **kwargs)
         # add time_dimension and measure_dimension to the scheme
-        self._reader.read_dict('time_dimension', self)
-        self._reader.read_dict('measure_dimension', self)
+        self._reader.read_identifiables('time_dimension', self)
+        self._reader.read_identifiables('measure_dimension', self)
                     
         
 class GroupDimensionDescriptor(ComponentList):

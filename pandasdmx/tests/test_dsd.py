@@ -1,41 +1,69 @@
 # encoding: utf-8
 
 '''
-    Created on 04.09.2014
+    
 
 @author: Dr. Leo
 '''
-import unittest, imp
+import unittest
 import pandasdmx
+from pandasdmx import model, Request
+from pandasdmx.utils import str_type
+import os.path
+
+test_path = pandasdmx.tests.__path__[0]
 
 
-
-class Test_DSD(unittest.TestCase):
+class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
 
 
     def setUp(self):
-        self.estat = pandasdmx.request.Request('ESTAT')
-        self.mess = self.estat.datastructure('dsd_apro_mk_cola')
+        self.estat = Request('ESTAT')
+        filepath = os.path.join(test_path, 'data/estat/apro_dsd.xml')
+        self.mess = self.estat.datastructure('something', from_file = filepath)
         
     def test_codelists_keys(self):
         self.assertEqual(len(self.mess.codelists), 6)
-        
+        self.assertIsInstance(self.mess.codelists.CL_GEO, model.Codelist)
+                
     def test_codelist_name(self):
         self.assertEqual(self.mess.codelists.CL_GEO.UK.name.en, 'United Kingdom')
         
-
+        def test_code_cls(self):
+            self.assertIsInstance(self.mess.codelists.CL_FREQ.D, model.Code)
 
     def tearDown(self): pass
         
+class test_dsd_common(unittest.TestCase):
+    def setUp(self):
+        self.estat = Request('ESTAT')
+        filepath = os.path.join(test_path, 'data/common/common.xml')
+        self.mess = self.estat.datastructure('something', from_file = filepath)
+        
+    def test_codelists_keys(self):
+        self.assertEqual(len(self.mess.codelists), 5)
+        self.assertIsInstance(self.mess.codelists.CL_FREQ, model.Codelist)
+                
+    def test_codelist_name(self):
+        self.assertEqual(self.mess.codelists.CL_FREQ.D.name.en, 'Daily')
+        
+    def test_code_cls(self):
+        self.assertIsInstance(self.mess.codelists.CL_FREQ.D, model.Code)
 
-
-    def testEurostatFlows(self):
-        db = self.estat.get_dataflows()
-        cur = db.execute('SELECT * FROM SQLITE_MASTER')
-        print([str(i) for i in cur.fetchall()])
-
-
+    def test_annotations(self):
+        code = self.mess.codelists.CL_FREQ.A
+        anno_list = list(code.annotations)
+        self.assertEqual(len(anno_list), 1)
+        a = anno_list[0]
+        self.assertIsInstance(a, model.Annotation)
+        self.assertIsInstance(a.text.en, str_type)
+        self.assertTrue(a.text.en.startswith('It is'))
+        self.assertEqual(a.annotationtype, 'NOTE')
+        
+        
+        
+        
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()
+    import nose
+    nose.main()

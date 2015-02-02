@@ -6,7 +6,7 @@ from pandasdmx import model
 from .common import Reader
 from lxml import objectify
 from lxml.etree import XPath
-
+from itertools import repeat
 
 
  
@@ -41,12 +41,19 @@ class SDMXMLReader(Reader):
             cls = model.StructureSpecificDataSet
         return cls(reader, elem.DataSet)  
             
-
+    # Map names to pairs of compiled xpath expressions and callables
+    # to be called by read methods. Callable must accept the same args as
+    # model.SDMXObject. In most cases it will be a model class so that 
+    # read methods return a model class instance. But it may also be a staticmethod if the
+    # class selection is more involved (see the method get_dataset above). If 
+    # callable is None, the result of the xpath expressions is returned
+    # unchanged. This is useful for strings as attribute values. 
     _model_map = {
         'header' : (XPath('mes:Header', namespaces = _nsmap), model.Header),
         'footer' : (XPath('mes:Footer', namespaces = _nsmap), model.Footer), 
         'annotations' : (XPath('com:Annotations/com:Annotation', 
                              namespaces = _nsmap), model.Annotation),
+        'annotationtype' : (XPath('com:AnnotationType/text()', namespaces = _nsmap), None),
         'codelists' : (XPath('mes:Structures/str:Codelists/str:Codelist', 
                              namespaces = _nsmap), model.Codelist),
                   'codes': (XPath('str:Code', 
@@ -84,15 +91,31 @@ class SDMXMLReader(Reader):
     } 
         
         
-    def read(self, name, sdmxobj):
+    def read_one(self, name, sdmxobj):
+        '''
+        return model class instance of the first element in the
+        result set of the xpath expression as defined in _model_map. If no elements are found,
+        return None. If no model class is given in _model_map, 
+        return result unchanged.
+        '''
         path, cls = self._model_map[name]
         try:
-            return cls(self, path(sdmxobj._elem)[0])
+            result = path(sdmxobj._elem)[0]
+            if cls: return cls(self, result)
+            else: return result 
         except IndexError:
             return None
      
+    def read_iter(self, name, sdmxobj):
+        '''
+        return iterator of model class instances of elements in the
+        result set of the xpath expression as defined in _model_map. 
+        '''
+        path, cls = self._model_map[name]
+        return map(cls, repeat(self), path(sdmxobj._elem))
      
-    def read_dict(self, name, sdmxobj):
+
+    def read_identifiables(self, name, sdmxobj):
         '''
         If sdmxobj inherits from dict: update it  with modelized elements. 
         These must be instances of model.IdentifiableArtefact,
@@ -122,11 +145,20 @@ class SDMXMLReader(Reader):
         return sdmxobj._elem.get('agencyID')
     
     
-    def attributes_to_dict(self, name, sdmxobj):
+    def international_str(self, name, sdmxobj):
+        '''
+        return DictLike of xml:lang attributes. If node has no attributes,
+        assume that language is 'en'.
+        '''
+        # Get language tokens like 'en', 'fr'...
+        # Can we simplify the xpath expressions by not using .format?
         elem_attrib = sdmxobj._elem.xpath('com:{0}/@xml:lang'.format(name), 
                                namespaces = self._nsmap)
         values = sdmxobj._elem.xpath('com:{0}/text()'.format(name), 
                              namespaces = self._nsmap)
+        # Unilingual strings have no attributes. Assume 'en' instead.
+        if not elem_attrib:
+            elem_attrib = ['en']
         return DictLike(zip(elem_attrib, values))
 
     def header_prepared(self, sdmxobj):

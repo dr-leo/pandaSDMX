@@ -49,16 +49,11 @@ class Message(SDMXObject):
             raise KeyError('{0} is not a valid payload or other attribute name.'.format(name)) 
             
             
-            
     @property
     def header(self):
         return self._reader.read_one('header', self)
-
-    @property
-    def footer(self):
-        return self._reader.read_one('footer', self)
     
-
+    
 class StructureMessage(Message):
     
     def __init__(self, *args, **kwargs):
@@ -70,11 +65,27 @@ class StructureMessage(Message):
 class DataMessage(Message):
     
     def __init__(self, *args, **kwargs):
-        super(DataMessage, self).__init__(*args, **kwargs) 
-        self._payload_names.extend(['data'])    
+        super(DataMessage, self).__init__(*args, **kwargs)
+        # Set data attribute assuming the 
+        # message contains at most one dataset.
+        data = self._reader.read_one('data', self)
+        if data: self.data = data  
+            
+
+
+class GenericDataMessage(DataMessage): pass
+class StructureSpecificDataMessage(DataMessage): pass
 
 
 class Header(SDMXObject):
+    def __init__(self, *args, **kwargs):
+        super(Header, self).__init__(*args, **kwargs)
+        # Set additional attributes present in DataSet messages
+        for name in ['structured_by', 'dim_at_obs']: 
+            value = self._reader.read_one(name, self)
+            if value: setattr(self, name, value)
+        
+    
     @property
     def id(self):
         return self._reader.header_id(self)
@@ -90,6 +101,13 @@ class Header(SDMXObject):
     @property
     def error(self):
         return self._reader.header_error(self) 
+
+    @property
+    def structure(self):
+        return self._reader.read_one(self._elem)
+
+
+
 
 class Footer(SDMXObject):
     @property
@@ -439,9 +457,32 @@ class TimeDimension(Dimension): pass
 class MeasureDimension(Dimension): pass 
     # representation: must be concept scheme and local, i.e. no
     # inheritance from concept
+
+
+class HasObservations:
+    '''
+    Base class for DataSets and series. Both may have observations.
+    '''    
+    def obs(self, with_values = True, with_attributes = False):
+        '''
+        return an iterator over observations in a flat dataset or series.
+        An observation is represented as a triple if         with_values and with_attributes are both set to True.
+        In this case obs[0] is a namedtuple of dimensions, obs[1] is a string value and
+        obs[2] is a namedtuple of attributes. If with_values or with_attributes
+        is False, the respective value is None. Use these flags to
+        increase performance. 
+        '''
+        # distinguish between generic and structure-specific observations
+        # only generic ones are currently implemented.
+        if isinstance(self, GenericDataSet):
+            return self._reader.iter_generic_obs(self, with_values, with_attributes)
+        else: raise NotImplemented('StructureSpecificDataSets are not supported.')
+            
     
     
-class DataSet(SDMXObject):
+class DataSet(SDMXObject, HasObservations):
+    
+    
     reporting_begin = Any 
     reporting_end = Any
     valid_from = Any
@@ -455,16 +496,15 @@ class DataSet(SDMXObject):
     structured_by = Instance(DataStructureDefinition)
     published_by = Any
     attached_attribute = Any
+        
+        
     
-
     
 class StructureSpecificDataSet(DataSet): pass
  
 class GenericDataSet(DataSet): pass
 
-class GenericTimeSeriesDataSet(DataSet): pass 
  
-class StructureSpecificTimeSeriesDataSet(DataSet): pass
 
 class Key:
     key_values = List

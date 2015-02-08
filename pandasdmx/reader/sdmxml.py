@@ -18,28 +18,46 @@ class SDMXMLReader(Reader):
     """
     
     _nsmap = {
-            'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
-            'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-            'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message'
+            'com' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
+            'str' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
+            'mes' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
+    'gen' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic'
     }
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
+        self.root = root
         if root.tag.endswith('Structure'):
             cls = model.StructureMessage
-        elif root.tag.endswith('GenericData'):
-            cls = model.DataMessage
+        elif (root.tag.endswith('GenericData') 
+              or root.tag.endswith('GenericTimeSeriesData')):
+            cls = model.GenericDataMessage
+        elif (root.tag.endswith('StructureSpecificData') 
+              or root.tag.endswith('StructureSpecificTimeSeriesData')):
+            cls = model.StructureSpecificDataMessage
+        else: raise ValueError('Unsupported root tag: %s' % root.tag)
         self.message = cls(self, root)  
         return self.message 
     
     
-    @staticmethod     
-    def get_dataset(reader, elem):
-        if elem.tag.endswith('GenericData'):
+    def get_dataset(self, elem):
+        if (self.root.tag.endswith('GenericData') 
+            or self.root.tag.endswith('GenericTimeSeriesData')):
             cls = model.GenericDataSet
-        elif elem.tag.endswith('StructureSpecificData'):
+        elif (self.root.tag.endswith('StructureSpecificData') 
+            or self.root.tag.endswith('StructureSpecificTimeSeriesData')):
             cls = model.StructureSpecificDataSet
-        return cls(reader, elem.DataSet)  
+        return cls(self, elem)  
+    
+      
+    def make_generic_obs(self, elem, with_values, with_attributes):
+        # We make tuples for dimensions and attributes if needed, Then,
+        # we fetch the value. Finally, we assemble the triple.
+        dimensions = 
+        
+        
+        
+      
             
     # Map names to pairs of compiled xpath expressions and callables
     # to be called by read methods. Callable must accept the same args as
@@ -88,6 +106,12 @@ class SDMXMLReader(Reader):
                              namespaces = _nsmap), model.DataAttribute),
                   'data' : (XPath('mes:DataSet', 
                              namespaces = _nsmap), get_dataset),
+            'structured_by'
+             : (XPath('mes:Structure/@structureID', 
+                                            namespaces = _nsmap), None),
+            'dim_at_obs' : (XPath('mes:Structure/@dimensionAtObservation', 
+                                            namespaces = _nsmap), None),
+            'generic_obs' : (XPath('gen:Obs', namespaces = _nsmap), make_generic_obs),
     } 
         
         
@@ -203,6 +227,10 @@ class SDMXMLReader(Reader):
     def attr_relationship(self, sdmxobj):
         return sdmxobj._elem.xpath('*/Ref/@id')
     
+    def iter_generic_obs(self, with_values, with_attributes):
+        path, factory = self._model_map['generic_obs']
+        for obs in path(self._elem):
+            yield factory(obs, with_values, with_attributes)
             
                  
     def parse_series(self, source):

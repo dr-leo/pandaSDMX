@@ -12,12 +12,12 @@
 
 
 from IPython.config.configurable import LoggingConfigurable
-from IPython.utils.traitlets import Instance, Unicode, Dict
+from IPython.utils.traitlets import Instance
 from pandasdmx.remote import REST 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
 
 
-__all__ = ['Client']
+__all__ = ['Request']
 
 
 class Request(LoggingConfigurable):
@@ -28,7 +28,6 @@ class Request(LoggingConfigurable):
 
     client = Instance(REST, config = True, help = """
     REST or similar client to communicate with the web service""")
-    base_url = Unicode
     
     agencies = {
         'ESTAT' : {
@@ -39,9 +38,12 @@ class Request(LoggingConfigurable):
             'url' : 'http://sdw-wsrest.ecb.int/service'}
             }
                     
-    def __init__(self, agency_id):
-        self.agency_id = agency_id
-        self.client = REST(self.agencies[agency_id]['url'])
+    def __init__(self, agency):
+        # Validate args
+        if agency not in self.agencies:
+            raise ValueError('agency must be one of {0}'.format(list(self.agencies)))
+        self.agency_id = agency
+        self.client = REST(self.agencies[agency]['url'])
         
 
     def get_reader(self):

@@ -457,30 +457,9 @@ class TimeDimension(Dimension): pass
 class MeasureDimension(Dimension): pass 
     # representation: must be concept scheme and local, i.e. no
     # inheritance from concept
-
-
-class HasObservations:
-    '''
-    Base class for DataSets and series. Both may have observations.
-    '''    
-    def obs(self, with_values = True, with_attributes = False):
-        '''
-        return an iterator over observations in a flat dataset or series.
-        An observation is represented as a triple if         with_values and with_attributes are both set to True.
-        In this case obs[0] is a namedtuple of dimensions, obs[1] is a string value and
-        obs[2] is a namedtuple of attributes. If with_values or with_attributes
-        is False, the respective value is None. Use these flags to
-        increase performance. 
-        '''
-        # distinguish between generic and structure-specific observations
-        # only generic ones are currently implemented.
-        if isinstance(self, GenericDataSet):
-            return self._reader.iter_generic_obs(self, with_values, with_attributes)
-        else: raise NotImplemented('StructureSpecificDataSets are not supported.')
-            
     
     
-class DataSet(SDMXObject, HasObservations):
+class DataSet(SDMXObject):
     
     
     reporting_begin = Any 
@@ -496,15 +475,57 @@ class DataSet(SDMXObject, HasObservations):
     structured_by = Instance(DataStructureDefinition)
     published_by = Any
     attached_attribute = Any
+
+    def obs(self, with_values = True, with_attributes = True):
+        '''
+        return an iterator over observations in a flat dataset or series.
+        An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
+        obs.key is a namedtuple of dimensions, obs.value is a string value and
+        obs.attrib is a namedtuple of attributes. If with_values or with_attributes
+        is False, the respective value is None. Use these flags to
+        increase performance. The flags default to True. 
+        '''
+        # distinguish between generic and structure-specific observations
+        # only generic ones are currently implemented.
+        if isinstance(self, GenericDataSet):
+            return self._reader.iter_generic_obs(self, with_values, with_attributes)
+        else: raise NotImplemented('StructureSpecificDataSets are not yet supported.')
+            
+    
         
-        
+    @property
+    def series(self):
+        '''
+        return an iterator over Series instances in this DataSet.
+        Note that DataSets in flat format, i.e. 
+        header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs() instead.
+        '''
+        # Check if StructureSpecific DataSets need special treatment
+        return self._reader.generic_series(self)     
     
     
 class StructureSpecificDataSet(DataSet): pass
  
 class GenericDataSet(DataSet): pass
 
- 
+class Series(SDMXObject):
+    
+    def __init__(self, *args, **kwargs):
+        super(Series, self).__init__(*args, **kwargs)
+        self.key = self._reader.series_key(self)
+        self.attrib = self._reader.series_attrib(self) 
+
+    def obs(self, with_values = True, with_attributes = True):
+        '''
+        return an iterator over observations in a flat dataset or series.
+        An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
+        obs.key is a namedtuple of dimensions, obs.value is a string value and
+        obs.attrib is a namedtuple of attributes. If with_values or with_attributes
+        is False, the respective value is None. Use these flags to
+        increase performance. The flags default to True. 
+        '''
+        return self._reader.iter_generic_series_obs(self, with_values, with_attributes)
+            
 
 class Key:
     key_values = List

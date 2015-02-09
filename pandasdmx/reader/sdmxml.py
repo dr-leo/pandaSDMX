@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 
-from pandasdmx.utils import DictLike
+from pandasdmx.utils import DictLike, namedtuple_factory
 from pandasdmx import model
 from .common import Reader
 from lxml import objectify
@@ -41,24 +41,14 @@ class SDMXMLReader(Reader):
     
     
     def get_dataset(self, elem):
-        if (self.root.tag.endswith('GenericData') 
-            or self.root.tag.endswith('GenericTimeSeriesData')):
+        if 'Generic' in self.root.tag: 
             cls = model.GenericDataSet
-        elif (self.root.tag.endswith('StructureSpecificData') 
-            or self.root.tag.endswith('StructureSpecificTimeSeriesData')):
+        elif 'StructureSpecific' in self.root.tag: 
             cls = model.StructureSpecificDataSet
+        else: raise ValueError('Message for datasets has tag %s' % elem.tag)
         return cls(self, elem)  
-    
-      
-    def make_generic_obs(self, elem, with_values, with_attributes):
-        # We make tuples for dimensions and attributes if needed, Then,
-        # we fetch the value. Finally, we assemble the triple.
-        dimensions = 
-        
-        
         
       
-            
     # Map names to pairs of compiled xpath expressions and callables
     # to be called by read methods. Callable must accept the same args as
     # model.SDMXObject. In most cases it will be a model class so that 
@@ -111,7 +101,8 @@ class SDMXMLReader(Reader):
                                             namespaces = _nsmap), None),
             'dim_at_obs' : (XPath('mes:Structure/@dimensionAtObservation', 
                                             namespaces = _nsmap), None),
-            'generic_obs' : (XPath('gen:Obs', namespaces = _nsmap), make_generic_obs),
+            'generic_series' : (XPath('gen:Series', 
+                             namespaces = _nsmap), model.Series),
     } 
         
         
@@ -227,56 +218,76 @@ class SDMXMLReader(Reader):
     def attr_relationship(self, sdmxobj):
         return sdmxobj._elem.xpath('*/Ref/@id')
     
-    def iter_generic_obs(self, with_values, with_attributes):
-        path, factory = self._model_map['generic_obs']
-        for obs in path(self._elem):
-            yield factory(obs, with_values, with_attributes)
-            
-                 
-    def parse_series(self, source):
-        """
-        generator to parse data from xml. Iterate over series
-        """
-        CodeTuple = None
-        generic_ns = '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}'
-        series_tag = generic_ns + 'Series'
-        serieskey_tag = series_tag + 'Key'
-        value_tag = generic_ns + 'Value'
-        obs_tag = generic_ns + 'Obs'
-        obsdim_tag = generic_ns + 'ObsDimension'
-        obsvalue_tag = generic_ns + 'ObsValue'
-        attributes_tag = generic_ns + 'Attributes' 
-        context = lxml.etree.iterparse(source, tag = series_tag)
-        
-        for _, series in context: 
-            raw_dates, raw_values, raw_status = [], [], []
-            
-            for elem in series.iterchildren():
-                if sdmxobj._elem.tag == serieskey_tag:
-                    code_keys, code_values = [], []
-                    for value in sdmxobj._elem.iter(value_tag):
-                        if not CodeTuple: code_keys.append(value.get('id')) 
-                        code_values.append(value.get('value'))
-                elif sdmxobj._elem.tag == obs_tag:
-                    for elem1 in sdmxobj._elem.iterchildren():
-                        observation_status = 'A'
-                        if elem1.tag == obsdim_tag:
-                            dimension = elem1.get('value')
-                            # Prepare time spans such as Q1 or S2 to make it parsable
-                            suffix = dimension[-2:]
-                            if suffix in time_spans:
-                                dimension = dimension[:-2] + time_spans[suffix]
-                            raw_dates.append(dimension) 
-                        elif elem1.tag == obsvalue_tag:
-                            value = elem1.get('value')
-                            raw_values.append(value)
-                        elif elem1.tag == attributes_tag:
-                            for elem2 in elem1.iter(".//"+generic_ns+"Value[@id='OBS_STATUS']"):
-                                observation_status = elem2.get('value')
-                            raw_status.append(observation_status)
-            if not CodeTuple:
-                CodeTuple = make_namedtuple(code_keys) 
-            codes = CodeTuple._make(code_values)
-            series.clear()
-            yield codes, raw_dates, raw_values, raw_status 
+    # Types and xpath expressions for generic observations
+    _ObsTuple = namedtuple_factory('GenericObservation', ('key', 'value', 'attrib'))
+    _SeriesObsTuple = namedtuple_factory('SeriesObservation', ('dim', 'value', 'attrib'))
+    _generic_obs_path = XPath('gen:Obs', namespaces = _nsmap)
+    _obs_key_id_path = XPath('gen:ObsKey/gen:Value/@id', namespaces = _nsmap)
+    _obs_key_values_path = XPath('gen:ObsKey/gen:Value/@value', namespaces = _nsmap)
+    _series_key_values_path = XPath('gen:SeriesKey/gen:Value/@value', namespaces = _nsmap)
+    _series_key_id_path = XPath('gen:SeriesKey/gen:Value/@id', namespaces = _nsmap)
+    _generic_series_dim_path = XPath('gen:ObsDimension/@value', namespaces = _nsmap)
+    _obs_value_path = XPath('gen:ObsValue/@value', namespaces = _nsmap)
+    _attr_id_path = XPath('gen:Attributes/gen:Value/@id', namespaces = _nsmap)
+    _attr_values_path = XPath('gen:Attributes/gen:Value/@value', namespaces = _nsmap)
+    
+    def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
+        for obs in self._generic_obs_path(sdmxobj._elem):
+            # Construct the namedtuple for the ObsKey. 
+            # The namedtuple class is created on first iteration.
+            obs_key_values = self._obs_key_values_path(obs)
+            try:
+                obs_key = ObsKeyTuple._make(obs_key_values)
+            except NameError:
+                obs_key_id = self._obs_key_id_path(obs)
+                ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
+                obs_key = ObsKeyTuple._make(obs_key_values)
+            if with_value:
+                obs_value = self._obs_value_path(obs)[0]
+            else: obs_value = None
+            if with_attributes:
+                obs_attr_values = self._attr_values_path(obs)
+                try:
+                    obs_attr = ObsAttrTuple._make(obs_attr_values)
+                except NameError:
+                    obs_attr_id = self._attr_id_path(obs)
+                    ObsAttrTuple = namedtuple_factory('ObsAttr', obs_attr_id)
+                    obs_attr = ObsAttrTuple._make(obs_attr_values)
+            else: obs_attr = None
+            yield self._ObsTuple(obs_key, obs_value, obs_attr)  
+    
+                
+    def generic_series(self, sdmxobj):
+        path, cls = self._model_map['generic_series']
+        for series in path(sdmxobj._elem):
+            yield cls(self, series)
+                        
+    def series_key(self, sdmxobj):
+        series_key_id = self._series_key_id_path(sdmxobj._elem)
+        series_key_values = self._series_key_values_path(sdmxobj._elem)
+        SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
+        return SeriesKeyTuple._make(series_key_values)
+
+    def series_attrib(self, sdmxobj):
+        series_attr_id = self._attr_id_path(sdmxobj._elem)
+        series_attr_values = self._attr_values_path(sdmxobj._elem)
+        SeriesAttrTuple = namedtuple_factory('Attributes', series_attr_id)
+        return SeriesAttrTuple._make(series_attr_values)
+
+    def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes):
+        for obs in self._generic_obs_path(sdmxobj._elem):
+            obs_dim = self._generic_series_dim_path(obs)[0]
+            if with_value:
+                obs_value = self._obs_value_path(obs)[0]
+            else: obs_value = None
+            if with_attributes:
+                obs_attr_values = self._attr_values_path(obs)
+                try:
+                    obs_attr = ObsAttrTuple._make(obs_attr_values)
+                except NameError:
+                    obs_attr_id = self._attr_id_path(obs)
+                    ObsAttrTuple = namedtuple_factory('ObsAttr', obs_attr_id)
+                    obs_attr = ObsAttrTuple._make(obs_attr_values)
+            else: obs_attr = None
+            yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)  
     

@@ -27,7 +27,7 @@ has already been created.
     
     cache = {}
         
-    def get(self, fields):
+    def __call__(self, name, fields):
         """
         return a subclass of tuple instance as does namedtuple
         """
@@ -35,9 +35,11 @@ has already been created.
         fields = tuple(fields)
         if not fields in self.cache: 
             self.cache[fields] = namedtuple(
-                'SDMXMetadata', fields)
+                name, fields)
         return self.cache[fields]
     
+namedtuple_factory = NamedTupleFactory()    
+        
         
 # 2to3 compatibility
 if sys.version[0] == '3': str_type = str

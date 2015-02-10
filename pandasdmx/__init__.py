@@ -15,3 +15,14 @@ from pandasdmx.request import Request
 
 __all__ = ['Request']
 
+
+
+def get(agency, resource, flow = None, key = None, params = {}):
+    '''
+    Convenience wrapper function initializing a pandasdmx.request.Request
+    client and get an SDMX resource.
+    '''
+    r = Request(agency) 
+    return r.get(resource, flow, key, params)
+
+        

@@ -527,13 +527,7 @@ class Series(SDMXObject):
         return self._reader.iter_generic_series_obs(self, with_values, with_attributes)
             
 
-class Key:
-    key_values = List
-    attached_attribute = Any
-
-class KeyValue: pass
 
 
-class SeriesKey(Key): pass
-class GroupKey(Key): pass
+
 

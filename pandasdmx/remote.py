@@ -18,14 +18,13 @@ class REST(LoggingConfigurable):
     max_size = Int(2**24, config=True, 
                    help='max size of in-memory file before spooling to disk')
             
-    def __init__(self, base_url):
+    def __init__(self):
         super(REST, self).__init__()
         self.name = 'pandasdmx.client.REST'
-        self.base_url = base_url
         
         
                              
-    def get(self, url_suffix = None, from_file = None):
+    def get(self, url, from_file = None, params = {}):
         '''
         Read file from URL or local file.
         
@@ -37,14 +36,12 @@ class REST(LoggingConfigurable):
             source = open(from_file, 'rb')
                 
         else:
-            final_url = '/'.join([self.base_url, url_suffix])
-            self.log.debug('Requesting %s', final_url)
-            source = self.request(final_url) 
-            
+            self.log.debug('Requesting %s', url)
+            source = self.request(url, params = params) 
         return source
          
     
-    def request(self, url):
+    def request(self, url, params = {}):
         """
         Retrieve SDMX messages.
         If needed, override in subclasses to support other data providers.
@@ -54,7 +51,7 @@ class REST(LoggingConfigurable):
         :return: the xml data as file-like object 
         """
         
-        response = requests.get(url, stream = True, timeout= 30.1)
+        response = requests.get(url, params = params, stream = True, timeout= 30.1)
         
         if response.status_code == requests.codes.ok:
             source  = STF(max_size = self.max_size)

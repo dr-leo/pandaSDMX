@@ -13,7 +13,8 @@
 
 from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Instance
-from pandasdmx.remote import REST 
+from pandasdmx.remote import REST
+from pandasdmx.utils import str_type 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
 
 
@@ -29,7 +30,7 @@ class Request(LoggingConfigurable):
     client = Instance(REST, config = True, help = """
     REST or similar client to communicate with the web service""")
     
-    agencies = {
+    _agencies = {
         'ESTAT' : {
             'name' : 'Eurostat',
             'url' : 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
@@ -37,72 +38,60 @@ class Request(LoggingConfigurable):
             'name' : 'European Central Bank',
             'url' : 'http://sdw-wsrest.ecb.int/service'}
             }
+    _resources = ['dataflow', 'datastructure', 'data', 'category', 'constraint']
                     
-    def __init__(self, agency):
-        # Validate args
-        if agency not in self.agencies:
-            raise ValueError('agency must be one of {0}'.format(list(self.agencies)))
-        self.agency_id = agency
-        self.client = REST(self.agencies[agency]['url'])
+    def __init__(self, agency = ''):
+        super(Request, self).__init__()
+        self.client = REST()
+        if not agency or agency in self._agencies:
+            self.agency = agency
+        else:
+            raise ValueError('If given, agency must be one of {0}'.format(
+                            list(self._agencies)))
         
 
     def get_reader(self):
         return SDMXMLReader(self)
     
     
-    def get(self, url_suffix = u'', from_file = None, to_file = None, **kwargs):
+    def get(self, agency = '', resource = '', flow = '', key = '', params = {},
+                 from_file = None, to_file = None):
         '''
         Load a source file identified by the URL suffix or filename given as from_file kwarg.
         If to_file is not None, save the file under that name.
         return a reader for the file as stored by self.client (mostly in a Spooled TempFile, or, if
         the downloaded file has been saved to a permanent local file, for that file.
         '''
-         
-        source = self.client.get(url_suffix = url_suffix, from_file = from_file)
+        # Validate args
+        if ((agency and agency not in self._agencies)
+        or (not agency and not self.agency)):
+            raise ValueError('agency must be one of {0}'.format(
+                            list(self._agencies)))
+        self.agency = agency
+        if not agency and not from_file:
+            raise ValueError('Either agency or from_file must be set.')    
+        # 'Validate resource
+        if resource and resource not in self._resources:
+            raise ValueError('resource must be one of {0}'.format(self._resources))
+        # flow: if it is not a str or unicode type, 
+        # but, e.g., a model.DataflowDefinition, 
+        # extract its ID
+        if not isinstance(flow, (str_type, str)):
+            flow = flow.id
+            
+        # Construct URL from the given non-empty substrings.
+        # Remove None's and '' first. Then join them to form the base URL.
+        # Any parameters are appended by remote module.
+        if agency: 
+            parts = filter(None, [self._agencies[agency]['url'], 
+                              agency, resource, flow, key])
+            base_url = '/'.join(parts)
+        else: base_url = '' # in which case from_file must be True
+        
+        # Now get the SDMX message either via http or as local file 
+        source = self.client.get(base_url, params = params, from_file = from_file)
         if to_file:
             with open(to_file, 'wb') as dest:
                 dest.write(source.read())
                 source.seek(0)
-        return self.get_reader().initialize(source)  
-         
-    def dataflows(self, **kwargs):
-        url_suffix = '/'.join(['dataflow', self.agency_id, 'all', 'latest'])
-        return self.get(url_suffix = url_suffix, **kwargs)
-    
-    def datastructure(self, flowref, **kwargs):
-        # First, we handle the case that flowref is an
-        # IdentifiableArtefact. If so, we take the id string as dataflow id.
-        try:
-            flowref = flowref.id
-        except AttributeError: pass
-        url_suffix = '/'.join(['datastructure', self.agency_id, 'DSD_' + flowref])
-        return self.get(url_suffix = url_suffix, **kwargs)
-    
-    def data(self, flowref, key = '', startperiod = None, endperiod = None, **kwargs):
-        parts = [self.resource_name, flowref]
-        if key: parts.append(key)
-        url_suffix = '/'.join(parts)
-        if startperiod: 
-            url_suffix += '?startperiod={0}'.format(startperiod)
-            if endperiod: url_suffix += '&endperiod={0}'.format(endperiod)
-        elif endperiod: url_suffix += '?endperiod={0}'.format(endperiod) 
-        return self.get(url_suffix = url_suffix, **kwargs)
-
-    def categories(self, **kwargs):
-        return self.get(url_suffix = 'category', **kwargs)
-            
-
-        
-class QueryFactory:
-    
-    def url_suffix(self, resource_name, flowref, key = u'', startperiod = None, endperiod = None):
-        parts = [resource_name, flowref]
-        if key: parts.append(key)
-        query_url = '/'.join(parts)
-        if startperiod: 
-            query_url += '?startperiod={0}'.format(startperiod)
-            if endperiod: query_url += '&endperiod={0}'.format(endperiod)
-        elif endperiod: query_url += '?endperiod={0}'.format(endperiod) 
-        return query_url
-    
-    
+        return self.get_reader().initialize(source)           

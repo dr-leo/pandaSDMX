@@ -18,20 +18,20 @@ class TestGenericFlatDataSet(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_flat.xml')
-        self.mess = self.estat.datastructure('something', from_file = filepath)
+        self.msg = self.estat.get(from_file = filepath)
         
     def test_msg_type(self):
-        self.assertIsInstance(self.mess, model.GenericDataMessage)
+        self.assertIsInstance(self.msg, model.GenericDataMessage)
         
     def test_header_attributes(self):
-        self.assertEqual(self.mess.header.structured_by, 'STR1')
-        self.assertEqual(self.mess.header.dim_at_obs, 'AllDimensions')
+        self.assertEqual(self.msg.header.structured_by, 'STR1')
+        self.assertEqual(self.msg.header.dim_at_obs, 'AllDimensions')
         
     def test_dataset_cls(self):
-        self.assertIsInstance(self.mess.data, model.GenericDataSet)
+        self.assertIsInstance(self.msg.data, model.GenericDataSet)
         
     def test_generic_obs(self):
-        data = self.mess.data
+        data = self.msg.data
         obs_list = list(data.obs())
         self.assertEqual(len(obs_list), 12)
         o0 = obs_list[0]
@@ -50,18 +50,18 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts_gf.xml')
-        self.mess = self.estat.datastructure('something', from_file = filepath)
+        self.msg = self.estat.get(from_file = filepath)
         
     def test_header_attributes(self):
-        self.assertEqual(self.mess.header.structured_by, 'STR1')
-        self.assertEqual(self.mess.header.dim_at_obs, 'TIME_PERIOD')
+        self.assertEqual(self.msg.header.structured_by, 'STR1')
+        self.assertEqual(self.msg.header.dim_at_obs, 'TIME_PERIOD')
         
         
     def test_dataset_cls(self):
-        self.assertIsInstance(self.mess.data, model.GenericDataSet)
+        self.assertIsInstance(self.msg.data, model.GenericDataSet)
         
     def test_generic_obs(self):
-        data = self.mess.data
+        data = self.msg.data
         series_list = list(data.series)
         self.assertEqual(len(series_list), 4)
         s3 = series_list[3]

@@ -11,7 +11,7 @@
   
 
 from pandasdmx.application import app
-from pandasdmx.request import Request
+from pandasdmx.api import Request
 
 __all__ = ['Request']
 

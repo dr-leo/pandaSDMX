@@ -87,9 +87,9 @@ class Request(LoggingConfigurable):
         # Remove None's and '' first. Then join them to form the base URL.
         # Any parameters are appended by remote module.
         if self.agency: 
-            parts = filter(None, [self._agencies[self.agency]['url'], 
-                              agency, resource, flow, key])
-            base_url = '/'.join(parts)
+            parts = [self._agencies[self.agency]['url'], 
+                              agency, resource, flow, key]
+            base_url = '/'.join(filter(None, parts))
         elif from_file: 
             base_url = ''
         else:
@@ -101,4 +101,14 @@ class Request(LoggingConfigurable):
             with open(to_file, 'wb') as dest:
                 dest.write(source.read())
                 source.seek(0)
-        return self.get_reader().initialize(source)           
+        msg = self.get_reader().initialize(source)
+        return Response(msg)
+    
+    
+class Response:
+    def __init__(self, msg, writer = None):
+        self.msg = msg
+        # Initialize the writer if given
+        if writer: pass
+            
+                       

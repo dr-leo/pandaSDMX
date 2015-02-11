@@ -461,7 +461,6 @@ class MeasureDimension(Dimension): pass
     
 class DataSet(SDMXObject):
     
-    
     reporting_begin = Any 
     reporting_end = Any
     valid_from = Any
@@ -478,11 +477,18 @@ class DataSet(SDMXObject):
 
     def obs(self, with_values = True, with_attributes = True):
         '''
-        return an iterator over observations in a flat dataset or series.
+        return an iterator over observations in a flat dataset.
         An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
-        obs.key is a namedtuple of dimensions, obs.value is a string value and
-        obs.attrib is a namedtuple of attributes. If with_values or with_attributes
-        is False, the respective value is None. Use these flags to
+        
+        obs.key is a namedtuple of dimensions. Its field names represent dimension names,
+        its values the dimension values.
+         
+        obs.value is a string that can in in most cases be interpreted as float.
+        64 
+        obs.attrib is a namedtuple of attribute names and values. 
+        
+        with_values and with_attributes: If one or both of these flags 
+        is False, the respective value will be None. Use these flags to
         increase performance. The flags default to True. 
         '''
         # distinguish between generic and structure-specific observations
@@ -500,7 +506,6 @@ class DataSet(SDMXObject):
         Note that DataSets in flat format, i.e. 
         header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs() instead.
         '''
-        # Check if StructureSpecific DataSets need special treatment
         return self._reader.generic_series(self)     
     
     

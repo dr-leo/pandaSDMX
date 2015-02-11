@@ -31,6 +31,7 @@ class Request(LoggingConfigurable):
     REST or similar client to communicate with the web service""")
     
     _agencies = {
+        '' : None, # empty agency for convenience when from_file is given.
         'ESTAT' : {
             'name' : 'Eurostat',
             'url' : 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
@@ -43,16 +44,24 @@ class Request(LoggingConfigurable):
     def __init__(self, agency = ''):
         super(Request, self).__init__()
         self.client = REST()
-        if (not agency) or agency in self._agencies:
-            self.agency = agency
-        else:
-            raise ValueError('If given, agency must be one of {0}'.format(
-                            list(self._agencies)))
+        self.agency = agency
         
 
     def get_reader(self):
         return SDMXMLReader(self)
     
+    
+    @property
+    def agency(self):
+        return self._agency
+    @agency.setter
+    def agency(self, value):
+        if value in self._agencies:
+            self._agency = value
+        else:
+            raise ValueError('If given, agency must be one of {0}'.format(
+                            list(self._agencies)))
+            
     
     def get(self, agency = '', resource = '', flow = '', key = '', params = {},
                  from_file = None, to_file = None):
@@ -63,13 +72,8 @@ class Request(LoggingConfigurable):
         the downloaded file has been saved to a permanent local file, for that file.
         '''
         # Validate args
-        if ((agency and agency not in self._agencies)
-        or (not (agency or self.agency))):
-            raise ValueError('agency must be one of {0}'.format(
-                            list(self._agencies)))
+        # Overide self.agency if new agency id is gifen.
         if agency: self.agency = agency
-        if not (self.agency or from_file):
-            raise ValueError('Either agency or from_file must be set.')    
         # 'Validate resource
         if resource and resource not in self._resources:
             raise ValueError('resource must be one of {0}'.format(self._resources))
@@ -86,7 +90,10 @@ class Request(LoggingConfigurable):
             parts = filter(None, [self._agencies[self.agency]['url'], 
                               agency, resource, flow, key])
             base_url = '/'.join(parts)
-        else: base_url = '' # in which case from_file must be True
+        elif from_file: 
+            base_url = ''
+        else:
+            raise ValueError('Either agency or from_file must be given.') 
         
         # Now get the SDMX message either via http or as local file 
         source = self.client.get(base_url, params = params, from_file = from_file)

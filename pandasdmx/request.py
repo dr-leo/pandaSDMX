@@ -43,7 +43,7 @@ class Request(LoggingConfigurable):
     def __init__(self, agency = ''):
         super(Request, self).__init__()
         self.client = REST()
-        if not agency or agency in self._agencies:
+        if (not agency) or agency in self._agencies:
             self.agency = agency
         else:
             raise ValueError('If given, agency must be one of {0}'.format(
@@ -64,11 +64,11 @@ class Request(LoggingConfigurable):
         '''
         # Validate args
         if ((agency and agency not in self._agencies)
-        or (not agency and not self.agency)):
+        or (not (agency or self.agency))):
             raise ValueError('agency must be one of {0}'.format(
                             list(self._agencies)))
-        self.agency = agency
-        if not agency and not from_file:
+        if agency: self.agency = agency
+        if not (self.agency or from_file):
             raise ValueError('Either agency or from_file must be set.')    
         # 'Validate resource
         if resource and resource not in self._resources:
@@ -82,8 +82,8 @@ class Request(LoggingConfigurable):
         # Construct URL from the given non-empty substrings.
         # Remove None's and '' first. Then join them to form the base URL.
         # Any parameters are appended by remote module.
-        if agency: 
-            parts = filter(None, [self._agencies[agency]['url'], 
+        if self.agency: 
+            parts = filter(None, [self._agencies[self.agency]['url'], 
                               agency, resource, flow, key])
             base_url = '/'.join(parts)
         else: base_url = '' # in which case from_file must be True

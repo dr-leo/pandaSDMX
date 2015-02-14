@@ -228,6 +228,8 @@ class SDMXMLReader(Reader):
     _series_key_values_path = XPath('gen:SeriesKey/gen:Value/@value', namespaces = _nsmap)
     _series_key_id_path = XPath('gen:SeriesKey/gen:Value/@id', namespaces = _nsmap)
     _generic_series_dim_path = XPath('gen:ObsDimension/@value', namespaces = _nsmap)
+    _group_key_values_path = XPath('gen:GroupKey/gen:Value/@value', namespaces = _nsmap)
+    _group_key_id_path = XPath('gen:GroupKey/gen:Value/@id', namespaces = _nsmap)
     _obs_value_path = XPath('gen:ObsValue/@value', namespaces = _nsmap)
     _attr_id_path = XPath('gen:Attributes/gen:Value/@id', namespaces = _nsmap)
     _attr_values_path = XPath('gen:Attributes/gen:Value/@value', namespaces = _nsmap)
@@ -274,6 +276,13 @@ class SDMXMLReader(Reader):
         series_key_values = self._series_key_values_path(sdmxobj._elem)
         SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
         return SeriesKeyTuple._make(series_key_values)
+
+    def group_key(self, sdmxobj):
+        group_key_id = self._group_key_id_path(sdmxobj._elem)
+        group_key_values = self._group_key_values_path(sdmxobj._elem)
+        GroupKeyTuple = namedtuple_factory('GroupKey', group_key_id)
+        return GroupKeyTuple._make(group_key_values)
+
 
     def series_attrib(self, sdmxobj):
         series_attr_id = self._attr_id_path(sdmxobj._elem)

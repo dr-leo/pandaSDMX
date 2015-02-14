@@ -30,6 +30,7 @@ class TestGenericFlatDataSet(unittest.TestCase):
         
     def test_dataset_cls(self):
         self.assertIsInstance(self.resp.msg.data, model.GenericDataSet)
+        self.assertEqual(self.resp.msg.data.dim_at_obs, 'AllDimensions')
         
     def test_generic_obs(self):
         data = self.resp.msg.data
@@ -138,8 +139,59 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
                 
+class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
+    
+    def setUp(self):
+        self.estat = Request()
+        filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_sg/generic/ecb_exr_sg_ts.xml')
+        self.resp = self.estat.get(from_file = filepath)
+        
+    def test_groups(self):
+        data = self.resp.msg.data
+        self.assertEqual(len(list(data.groups)), 4)
+        self.assertEqual(len(list(data.series)), 4)
+        g2 = list(data.groups)[2]
+        self.assertEqual(g2.key.CURRENCY, 'JPY')
+        self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, Japanese yen/Euro')
+        # Check group attributes of a series
+        s = list(data.series)[0]
+        g_attrib = s.group_attrib
+        self.assertEqual(len(g_attrib), 1)
+        self.assertIsInstance(g_attrib[0], tuple)
+        self.assertEqual(len(g_attrib[0]), 1)
         
         
+class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
+    
+    def setUp(self):
+        self.estat = Request()
+        filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_rg/generic/ecb_exr_rg_ts.xml')
+        self.resp = self.estat.get(from_file = filepath)
+        
+    def test_groups(self):
+        data = self.resp.msg.data
+        self.assertEqual(len(list(data.groups)), 5)
+        self.assertEqual(len(list(data.series)), 4)
+        g2 = list(data.groups)[2]
+        self.assertEqual(g2.key.CURRENCY, 'GBP')
+        self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, U.K. Pound sterling /Euro')
+        # Check group attributes of a series
+        s = list(data.series)[0]
+        g_attrib = s.group_attrib
+        self.assertEqual(len(g_attrib), 2)
+        self.assertIsInstance(g_attrib[1], tuple)
+        self.assertEqual(len(g_attrib[1]), 4)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+         
 if __name__ == "__main__":
     import nose
     nose.main()

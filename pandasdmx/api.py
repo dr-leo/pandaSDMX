@@ -117,8 +117,8 @@ class Response:
         # Initialize the writer if given
         if writer:
             writer_module = import_module(writer['name'])
-            writer_cls = getattr(writer_module, 'Writer')
-            self._writer = writer_cls()
+            writer_cls = writer_module.Writer
+            self._writer = writer_cls(self.msg)
             self.write = self._writer.write
             
         

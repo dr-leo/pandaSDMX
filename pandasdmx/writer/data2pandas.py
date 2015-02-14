@@ -24,14 +24,15 @@ time_spans = {
     
 class Writer(BaseWriter):
 
-    def write(self, series, dim_at_obs, to_dataframe = False, dtype = NP.float64):
+    def write(self, data, to_dataframe = False, dtype = NP.float64):
         '''
         Generate pandas.Series from model.Series
         series: an iterator of model.Series instances
         to_dataframe: if True, merge the series into a multi-indexed 
         pandas.DataFrame, otherwise return an iterator of pandas.Series.
         '''
-        for s in series:
+        dim_at_obs = self.msg.header.dim_at_obs
+        for s in data:
         # Generate the 3 columns (dimension, value, attrib) 
             obs_dim, obs_value, obs_attr = zip(*s.obs()) # add support for the args of Series.obs
             # Prepare dimensions and values for the series

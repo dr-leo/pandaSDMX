@@ -461,19 +461,23 @@ class MeasureDimension(Dimension): pass
     
 class DataSet(SDMXObject):
     
-    reporting_begin = Any 
-    reporting_end = Any
-    valid_from = Any
-    valid_to = Any
-    data_extraction_date = Any
-    publication_year = Any
-    publication_period = Any
-    set_id = Unicode
-    action = Enum(('update', 'append', 'delete'))
-    described_by = Instance(DataflowDefinition)
-    structured_by = Instance(DataStructureDefinition)
-    published_by = Any
-    attached_attribute = Any
+#     reporting_begin = Any 
+#     reporting_end = Any
+#     valid_from = Any
+#     valid_to = Any
+#     data_extraction_date = Any
+#     publication_year = Any
+#     publication_period = Any
+#     set_id = Unicode
+#     action = Enum(('update', 'append', 'delete'))
+#     described_by = Instance(DataflowDefinition)
+#     structured_by = Instance(DataStructureDefinition)
+#     published_by = Any
+#     attached_attribute = Any
+
+    @property
+    def dim_at_obs(self):
+        return self._reader.read_one('dim_at_obs', self)
 
     def obs(self, with_values = True, with_attributes = True):
         '''
@@ -483,8 +487,7 @@ class DataSet(SDMXObject):
         obs.key is a namedtuple of dimensions. Its field names represent dimension names,
         its values the dimension values.
          
-        obs.value is a string that can in in most cases be interpreted as float.
-        64 
+        obs.value is a string that can in in most cases be interpreted as float64 
         obs.attrib is a namedtuple of attribute names and values. 
         
         with_values and with_attributes: If one or both of these flags 
@@ -526,7 +529,17 @@ class Series(SDMXObject):
         if not isinstance(dataset, DataSet):
             raise TypeError("'dataset' must be a DataSet instance, got %s" 
                             % dataset.__class__.__name__)
-        self.dataset = dataset 
+        self.dataset = dataset
+        
+        
+    @property
+    def group_attrib(self):
+        '''
+        return a list of GroupKey namedtuples 
+        for each group of which the series is a member
+        ''' 
+        return [g.attrib for g in self.dataset.groups if self in g]
+          
 
     def obs(self, with_values = True, with_attributes = True):
         '''
@@ -544,7 +557,7 @@ class Group(SDMXObject):
     
     def __init__(self, *args, **kwargs):
         super(Group, self).__init__(*args, **kwargs)
-        self.key = self._reader.series_key(self)
+        self.key = self._reader.group_key(self)
         self.attrib = self._reader.series_attrib(self) 
 
     def __contains__(self, series):

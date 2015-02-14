@@ -9,12 +9,11 @@
 from IPython.config.configurable import LoggingConfigurable
 
 
-class Writer(LoggingConfigurable):
+class BaseWriter(LoggingConfigurable):
     _input_types = []
     
-    def __init__(self, request, **kwargs):
-        super(Writer, self).__init__(**kwargs)
-        self.request = request
+    def __init__(self, **kwargs):
+        super(BaseWriter, self).__init__(**kwargs)
         
     
     def initialize(self, source): raise NotImplemented

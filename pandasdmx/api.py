@@ -16,7 +16,7 @@ from IPython.utils.traitlets import Instance
 from pandasdmx.remote import REST
 from pandasdmx.utils import str_type 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
-
+from importlib import import_module
 
 __all__ = ['Request']
 
@@ -39,12 +39,14 @@ class Request(LoggingConfigurable):
             'name' : 'European Central Bank',
             'url' : 'http://sdw-wsrest.ecb.int/service'}
             }
-    _resources = ['dataflow', 'datastructure', 'data', 'category', 'constraint']
+    _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme']
                     
-    def __init__(self, agency = ''):
+    def __init__(self, agency = '',
+                 writer = {'name': 'pandasdmx.writer.data2pandas'}):
         super(Request, self).__init__()
         self.client = REST()
         self.agency = agency
+        self.writer = writer
         
 
     def get_reader(self):
@@ -80,7 +82,7 @@ class Request(LoggingConfigurable):
         # flow: if it is not a str or unicode type, 
         # but, e.g., a model.DataflowDefinition, 
         # extract its ID
-        if not isinstance(flow, (str_type, str)):
+        if flow and not isinstance(flow, (str_type, str)):
             flow = flow.id
             
         # Construct URL from the given non-empty substrings.
@@ -90,6 +92,10 @@ class Request(LoggingConfigurable):
             parts = [self._agencies[self.agency]['url'], 
                               agency, resource, flow, key]
             base_url = '/'.join(filter(None, parts))
+            # Download DSD and constraints together with a specified dataflow
+            # We set appropriate default for the references parameter
+            if resource == 'dataflow' and flow and 'references' not in params:
+                params['references'] = 'all'
         elif from_file: 
             base_url = ''
         else:
@@ -102,13 +108,19 @@ class Request(LoggingConfigurable):
                 dest.write(source.read())
                 source.seek(0)
         msg = self.get_reader().initialize(source)
-        return Response(msg)
+        return Response(msg, writer = self.writer)
     
     
 class Response:
     def __init__(self, msg, writer = None):
-        self.msg = msg
+        self.msg =msg
         # Initialize the writer if given
-        if writer: pass
+        if writer:
+            writer_module = import_module(writer['name'])
+            writer_cls = getattr(writer_module, 'Writer')
+            self._writer = writer_cls()
+            self.write = self._writer.write
             
-                       
+        
+        
+        

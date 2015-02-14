@@ -508,6 +508,10 @@ class DataSet(SDMXObject):
         '''
         return self._reader.generic_series(self)     
     
+    @property
+    def groups(self):
+        return self._reader.generic_groups(self)
+    
     
 class StructureSpecificDataSet(DataSet): pass
  
@@ -515,10 +519,14 @@ class GenericDataSet(DataSet): pass
 
 class Series(SDMXObject):
     
-    def __init__(self, *args, **kwargs):
-        super(Series, self).__init__(*args, **kwargs)
+    def __init__(self, *args, dataset = None):
+        super(Series, self).__init__(*args)
         self.key = self._reader.series_key(self)
-        self.attrib = self._reader.series_attrib(self) 
+        self.attrib = self._reader.series_attrib(self)
+        if not isinstance(dataset, DataSet):
+            raise TypeError("'dataset' must be a DataSet instance, got %s" 
+                            % dataset.__class__.__name__)
+        self.dataset = dataset 
 
     def obs(self, with_values = True, with_attributes = True):
         '''
@@ -532,7 +540,16 @@ class Series(SDMXObject):
         return self._reader.iter_generic_series_obs(self, with_values, with_attributes)
             
 
+class Group(SDMXObject):
+    
+    def __init__(self, *args, **kwargs):
+        super(Group, self).__init__(*args, **kwargs)
+        self.key = self._reader.series_key(self)
+        self.attrib = self._reader.series_attrib(self) 
 
-
-
-
+    def __contains__(self, series):
+        group_key, series_key = self.key, series.key
+        for f in group_key._fields:
+            if getattr(group_key, f) != getattr(series_key, f): return False
+        return True
+        

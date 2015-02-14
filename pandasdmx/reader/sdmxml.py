@@ -26,7 +26,6 @@ class SDMXMLReader(Reader):
 
     def initialize(self, source):
         root = objectify.parse(source).getroot()
-        self.root = root
         if root.tag.endswith('Structure'):
             cls = model.StructureMessage
         elif (root.tag.endswith('GenericData') 
@@ -39,11 +38,11 @@ class SDMXMLReader(Reader):
         self.message = cls(self, root)  
         return self.message 
     
-    
+    _root_tag = XPath('name(//*[1])')
     def get_dataset(self, elem):
-        if 'Generic' in self.root.tag: 
+        if 'Generic' in self._root_tag(elem): 
             cls = model.GenericDataSet
-        elif 'StructureSpecific' in self.root.tag: 
+        elif 'StructureSpecific' in self._root_tag(elem): 
             cls = model.StructureSpecificDataSet
         else: raise ValueError('Message for datasets has tag %s' % elem.tag)
         return cls(self, elem)  
@@ -99,11 +98,13 @@ class SDMXMLReader(Reader):
             'structured_by'
              : (XPath('mes:Structure/@structureID', 
                                             namespaces = _nsmap), None),
-            'dim_at_obs' : (XPath('mes:Structure/@dimensionAtObservation', 
+            'dim_at_obs' : (XPath('//mes:Header/mes:Structure/@dimensionAtObservation', 
                                             namespaces = _nsmap), None),
             'generic_series' : (XPath('gen:Series', 
                              namespaces = _nsmap), model.Series),
-    } 
+            'generic_groups' : (XPath('gen:Group', 
+                             namespaces = _nsmap), model.Group),
+    }
         
         
     def read_one(self, name, sdmxobj):
@@ -260,7 +261,13 @@ class SDMXMLReader(Reader):
     def generic_series(self, sdmxobj):
         path, cls = self._model_map['generic_series']
         for series in path(sdmxobj._elem):
+            yield cls(self, series, dataset = sdmxobj)
+
+    def generic_groups(self, sdmxobj):
+        path, cls = self._model_map['generic_groups']
+        for series in path(sdmxobj._elem):
             yield cls(self, series)
+                        
                         
     def series_key(self, sdmxobj):
         series_key_id = self._series_key_id_path(sdmxobj._elem)

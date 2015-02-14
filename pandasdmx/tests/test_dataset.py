@@ -9,6 +9,7 @@ import unittest
 import pandasdmx
 from pandasdmx import model, Request
 from pandasdmx.utils import str_type
+import pandas
 import os.path
 
 pkg_path = pandasdmx.tests.__path__[0]
@@ -80,11 +81,24 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(o0), 3)
         self.assertIsInstance(o0.dim, str_type) # obs_key
         self.assertEqual(o0.dim, '2010-08')
-        self.assertIsInstance(o0.value, str_type) # obs_value
+        self.assertIsInstance(o0.value, str_type) 
         self.assertEqual(o0.value, '1.2894')
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
         
+        
+    def test_pandas(self):
+        resp = self.resp
+        data = resp.msg.data
+        iter_series = data.series
+        pd_series = [s for s in resp.write(iter_series, resp.msg.header.dim_at_obs)]
+        self.assertEqual(len(pd_series), 4)
+        s3 = pd_series[3]
+        self.assertIsInstance(s3, pandas.core.series.Series)
+        self.assertEqual(s3[0], 1.2894)
+        
+        
+                
 class TestGenericSeriesDataSet2(unittest.TestCase):
     
     def setUp(self):

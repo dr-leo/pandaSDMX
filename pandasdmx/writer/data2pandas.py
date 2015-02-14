@@ -4,8 +4,11 @@ pandasdmx.writer.pandas - a pandas writer for PandaSDMX
 
 @author: Dr. Leo
 '''
+
 import pandas as PD
 import numpy as NP
+from pandasdmx.writer.common import BaseWriter
+
 
 # Time span conversions not recognised by pandas:
 
@@ -19,26 +22,29 @@ time_spans = {
 }
 
     
-class PandasWriter:
-    
-    def transform(self, *args, **kwargs):
-        """
-        Transform the 5-tuple returned by self.parse into PD.Series
-        """ 
-        codes, raw_dates, raw_values, raw_status = args 
-        if 'FREQ' in codes._fields:
-            if codes.FREQ == 'A':
-                freq_str = 'Y'
-            else: 
-                freq_str = codes.FREQ
-            dates = PD.PeriodIndex(raw_dates, freq = freq_str)
-        else:
-            dates = PD.to_datetime(raw_dates)
-        value_series = PD.TimeSeries(raw_values, index = dates, 
-                    dtype = self.datatype, name = codes)
-        return value_series
+class Writer(BaseWriter):
 
-    
+    def write(self, series, dim_at_obs, to_dataframe = False, dtype = NP.float64):
+        '''
+        Generate pandas.Series from model.Series
+        series: an iterator of model.Series instances
+        to_dataframe: if True, merge the series into a multi-indexed 
+        pandas.DataFrame, otherwise return an iterator of pandas.Series.
+        '''
+        for s in series:
+        # Generate the 3 columns (dimension, value, attrib) 
+            obs_dim, obs_value, obs_attr = zip(*s.obs()) # add support for the args of Series.obs
+            # Prepare dimensions and values for the series
+            # if dim_at_obs in ['TIME_PERIOD', 'TIME']:
+            idx = NP.array(obs_dim)
+            obs_value_arr = NP.array(obs_value, dtype = dtype)
+            pd_series = PD.Series(obs_value_arr, name = s.key, index = idx)
+            yield pd_series
+            
+             
+            
+            
+                
     def combine(self, series_list, **args):
         # Generate DataFrame    
             

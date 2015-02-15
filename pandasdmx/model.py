@@ -145,7 +145,7 @@ class Annotation(SDMXObject):
         return self._reader.international_str('AnnotationText', self)
         
     def __str__(self):
-        return 'Annotation: title=%s' , self.title  
+        return 'Annotation: title=%s' % self.title  
 
 
 class AnnotableArtefact(SDMXObject):
@@ -305,9 +305,9 @@ class ComponentList(IdentifiableArtefact, Scheme): pass
         
 
 class Representation(SDMXObject):
-    def __init__(self, *args, enum = None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(Representation, self).__init__(*args)
-        self.enum = enum
+        self.enum = kwargs.get('enum')
     
     # not_enumerated = List # of facets
         
@@ -522,10 +522,11 @@ class GenericDataSet(DataSet): pass
 
 class Series(SDMXObject):
     
-    def __init__(self, *args, dataset = None):
+    def __init__(self, *args, **kwargs):
         super(Series, self).__init__(*args)
         self.key = self._reader.series_key(self)
         self.attrib = self._reader.series_attrib(self)
+        dataset = kwargs.get('dataset')
         if not isinstance(dataset, DataSet):
             raise TypeError("'dataset' must be a DataSet instance, got %s" 
                             % dataset.__class__.__name__)
@@ -535,10 +536,10 @@ class Series(SDMXObject):
     @property
     def group_attrib(self):
         '''
-        return a list of GroupKey namedtuples 
+        return an iterator of GroupKey namedtuples 
         for each group of which the series is a member
         ''' 
-        return [g.attrib for g in self.dataset.groups if self in g]
+        return (g.attrib for g in self.dataset.groups if self in g)
           
 
     def obs(self, with_values = True, with_attributes = True):

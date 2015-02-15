@@ -6,7 +6,6 @@ from pandasdmx import model
 from .common import Reader
 from lxml import objectify
 from lxml.etree import XPath
-from itertools import repeat
 
 
  
@@ -128,7 +127,7 @@ class SDMXMLReader(Reader):
         result set of the xpath expression as defined in _model_map. 
         '''
         path, cls = self._model_map[name]
-        return map(cls, repeat(self), path(sdmxobj._elem))
+        return (cls(self, e) for e in path(sdmxobj._elem))
      
 
     def read_identifiables(self, name, sdmxobj):

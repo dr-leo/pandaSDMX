@@ -155,7 +155,7 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, Japanese yen/Euro')
         # Check group attributes of a series
         s = list(data.series)[0]
-        g_attrib = s.group_attrib
+        g_attrib = list(s.group_attrib)
         self.assertEqual(len(g_attrib), 1)
         self.assertIsInstance(g_attrib[0], tuple)
         self.assertEqual(len(g_attrib[0]), 1)
@@ -177,21 +177,14 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, U.K. Pound sterling /Euro')
         # Check group attributes of a series
         s = list(data.series)[0]
-        g_attrib = s.group_attrib
+        g_attrib = list(s.group_attrib)
         self.assertEqual(len(g_attrib), 2)
         self.assertIsInstance(g_attrib[1], tuple)
         self.assertEqual(len(g_attrib[1]), 4)
         
         
         
-        
-        
-        
-        
-        
-        
-        
-         
 if __name__ == "__main__":
     import nose
     nose.main()
+    

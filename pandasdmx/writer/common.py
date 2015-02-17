@@ -16,5 +16,4 @@ class BaseWriter(LoggingConfigurable):
         self.msg = msg
         
     
-    def initialize(self, source): raise NotImplemented
     

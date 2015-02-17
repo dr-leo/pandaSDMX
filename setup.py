@@ -17,7 +17,8 @@ setup(name='pandaSDMX',
     packages =['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer', 
 'pandasdmx.utils', 'pandasdmx.tests'],
 	package_data = {
-'pandasdmx.tests': ['data/*/*.xml']},
+'pandasdmx.tests': ['data/*/*.xml',
+				'data/EXR/*/*/*.xml', 'data/query/*.xml']},
       url = 'https://github.com/dr-leo/pandasdmx',
     install_requires=[
         'pandas',

@@ -91,12 +91,28 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_pandas(self):
         resp = self.resp
         data = resp.msg.data
-        iter_series = data.series
-        pd_series = [s for s in resp.write(iter_series, resp.msg.header.dim_at_obs)]
+        pd_series = [(s, a) for s, a in resp.write(data, with_attrib = False)]
         self.assertEqual(len(pd_series), 4)
-        s3 = pd_series[3]
+        s3 = pd_series[3][0]
         self.assertIsInstance(s3, pandas.core.series.Series)
         self.assertEqual(s3[0], 1.2894)
+        self.assertIsInstance(s3.name, tuple)
+        self.assertEqual(len(s3.name), 5)
+        # now with attributes
+        pd_series = [s for s in resp.write(data)]
+        self.assertEqual(len(pd_series), 4)
+        self.assertIsInstance(pd_series[0], tuple)
+        self.assertEqual(len(pd_series[0]), 2)
+        s3, a3 = pd_series[3]
+        self.assertIsInstance(s3, pandas.core.series.Series)
+        self.assertIsInstance(a3, pandas.core.frame.DataFrame)
+        self.assertEqual(s3[0], 1.2894)
+        self.assertIsInstance(s3.name, tuple)
+        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(a3), 3) 
+        self.assertEqual(a3.columns[0], 'OBS_STATUS')
+        self.assertEqual(a3.iloc[0,0], 'A')
+        
         
         
                 
@@ -138,7 +154,14 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(o0.value, '1.2894')
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
-                
+    
+    def test_dataframe(self):
+        data = self.resp.msg.data
+        df, a = self.resp.write(data, with_attrib = False, to_dataframe = True)
+        self.assertIsInstance(df, pandas.core.frame.DataFrame)
+        self.assertEqual(df.shape, (4,4))
+                    
+                    
 class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
     
     def setUp(self):

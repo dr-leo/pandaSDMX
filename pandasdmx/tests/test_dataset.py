@@ -158,8 +158,10 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     def test_dataframe(self):
         data = self.resp.msg.data
         df, a = self.resp.write(data, with_attrib = False, asframe = True)
+        self.assertIsNone(a)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
-        self.assertEqual(df.shape, (4,4))
+        self.assertEqual(df.shape, (3,4))
+        
                     
                     
 class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):

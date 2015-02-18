@@ -9,7 +9,8 @@ import pdb
 import pandas as PD
 import numpy as NP
 from pandasdmx.writer.common import BaseWriter
-
+from itertools import chain, repeat
+from operator import add
 
 # Time span conversions not recognised by pandas:
 
@@ -64,17 +65,36 @@ class Writer(BaseWriter):
         if asframe:
             pd_series, attrib_frames = zip(*((s, a) for s, a in self.iter_pd_series(
                 iter_series, dim_at_obs, dtype, with_values, with_attrib)))
-        
+
+            # Extract metadata
+            index_tuples = list(s.name for s in pd_series)
+            level_names = list(pd_series[0].name._fields)
+            for s in pd_series: s.name = None
+                     
             if with_values:
                 # Merge series into multi-indexed DataFrame and return it.
-                index_tuples = list(zip(*(tuple(s.name) for s in pd_series)))
-                level_names = list(pd_series[0].name._fields)
-                for s in pd_series: s.name = None
-                df = PD.concat(list(pd_series), axis = 1, keys = index_tuples, 
-                               names = level_names)
-            if with_attrib: pass
-            if with_values and not with_attrib: return df, None
-            else: raise ValueError('combination not supported')
+                d_frame = PD.concat(list(pd_series), axis = 1)
+                d_frame.columns = PD.MultiIndex.from_tuples(index_tuples, 
+                                                       names = level_names)
+            else: d_frame = None
+            
+            if with_attrib:
+                a_frame = PD.concat(attrib_frames, axis = 1)
+                # Construct the column index
+                attrib_names = list(attrib_frames[0].columns.get_level_values(0))
+                times = len(attrib_names) 
+                upper_keys = list(chain(*(tuple(repeat(i, times)) 
+                                        for i in index_tuples)))
+                attrib_tuples = list(map(add, upper_keys, 
+                                         ((i,) for i in 
+                                          attrib_names * len(index_tuples))))
+                level_names.append('ATTRIB')
+                a_frame.columns = PD.MultiIndex.from_tuples(attrib_tuples, 
+                                                            names = level_names)
+            else: a_frame = None
+            return d_frame, a_frame
+        
+        # return an iterator
         else:
             return self.iter_pd_series(iter_series, dim_at_obs, dtype, 
                                        with_values, with_attrib)
@@ -83,7 +103,7 @@ class Writer(BaseWriter):
     def iter_pd_series(self, iter_series, dim_at_obs, dtype, with_values, with_attrib):
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_dim, obs_values, obs_attrib = zip(*series.obs(with_values, with_attrib))#
+            obs_dim, obs_values, obs_attrib = zip(*series.obs(with_values, with_attrib))
             
             # Generate the index 
             # convert time periods to start-of-period dates (this is second-best, 
@@ -94,7 +114,7 @@ class Writer(BaseWriter):
                         obs_dim[i][-2:] = time_spans[obs_dim[i][-2:]]
                     except KeyError: pass
             if dim_at_obs.startswith('TIME'):
-                series_index = PD.to_datetime(obs_dim)
+                series_index = PD.to_datetime(obs_dim, unit = 'D')
             else: series_index = PD.Index(obs_dim)
             
             if with_values:

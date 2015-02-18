@@ -157,7 +157,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     
     def test_dataframe(self):
         data = self.resp.msg.data
-        df, a = self.resp.write(data, with_attrib = False, to_dataframe = True)
+        df, a = self.resp.write(data, with_attrib = False, asframe = True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (4,4))
                     

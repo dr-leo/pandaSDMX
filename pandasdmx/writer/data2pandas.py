@@ -5,7 +5,7 @@ pandasdmx.writer.data2pandas - a pandas writer for PandaSDMX
 
 @author: Dr. Leo
 '''
-
+import pdb
 import pandas as PD
 import numpy as NP
 from pandasdmx.writer.common import BaseWriter
@@ -25,14 +25,14 @@ time_spans = {
     
 class Writer(BaseWriter):
 
-    def write(self, data, to_dataframe = False, dtype = NP.float64, 
+    def write(self, data, asframe = False, dtype = NP.float64, 
               with_values = True, with_attrib = True):
         '''
         Generate pandas.Series from model.Series
         
         data: a model.DataSet or iterator of model.Series
          
-        to_dataframe: if True, merge the series into a multi-indexed 
+        asframe: if True, merge the series into a multi-indexed 
         pandas.DataFrame, otherwise return an iterator of pandas.Series.
         (default: False)
         
@@ -45,12 +45,12 @@ class Writer(BaseWriter):
         index is identical to the series containing the
         values.
         
-        to_dataframe: determines whether the series will be merged into a single
+        asframe: determines whether the series will be merged into a single
         DataFrame (defaults to False). If False, and both with_values
         and with_attrib are set to True, the iterator yields pairs of the form
         (series of values, DataFrame of attributes). Otherwise,
         either Series or DataFrames are returned.
-        If to_dataframe is set to True, the resulting DataFrame
+        If asframe is set to True, the resulting DataFrame
         of values will have a MultiIndex consisting of the series' keys.   
         '''
         
@@ -61,15 +61,17 @@ class Writer(BaseWriter):
         if hasattr(data, '__iter__'): iter_series = data
         else: iter_series = data.series
         
-        if to_dataframe:
+        if asframe:
             pd_series, attrib_frames = zip(*((s, a) for s, a in self.iter_pd_series(
                 iter_series, dim_at_obs, dtype, with_values, with_attrib)))
         
             if with_values:
                 # Merge series into multi-indexed DataFrame and return it.
-                index_tuples = list(s.name for s in pd_series)        
-                column_index = PD.MultiIndex.from_tuples(index_tuples, names = index_tuples[0]._fields)
-                df = PD.DataFrame(list(pd_series), columns = column_index)
+                index_tuples = list(zip(*(tuple(s.name) for s in pd_series)))
+                level_names = list(pd_series[0].name._fields)
+                for s in pd_series: s.name = None
+                df = PD.concat(list(pd_series), axis = 1, keys = index_tuples, 
+                               names = level_names)
             if with_attrib: pass
             if with_values and not with_attrib: return df, None
             else: raise ValueError('combination not supported')

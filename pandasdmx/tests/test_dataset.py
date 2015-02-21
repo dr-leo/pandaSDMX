@@ -91,9 +91,9 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_pandas(self):
         resp = self.resp
         data = resp.msg.data
-        pd_series = [(s, a) for s, a in resp.write(data, with_attrib = False)]
+        pd_series = [s for s in resp.write(data, attributes = False)]
         self.assertEqual(len(pd_series), 4)
-        s3 = pd_series[3][0]
+        s3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
         self.assertEqual(s3[0], 1.2894)
         self.assertIsInstance(s3.name, tuple)
@@ -105,15 +105,13 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(pd_series[0]), 2)
         s3, a3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertIsInstance(a3, pandas.core.frame.DataFrame)
+        self.assertIsInstance(a3, pandas.core.series.Series)
         self.assertEqual(s3[0], 1.2894)
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         self.assertEqual(len(a3), 3) 
-        self.assertEqual(a3.columns[0], 'OBS_STATUS')
+        self.assertEqual(a3.columns[0], 'OBS_STATUS') # fix this. Access a row of Series
         self.assertEqual(a3.iloc[0,0], 'A')
-        
-        
         
                 
 class TestGenericSeriesDataSet2(unittest.TestCase):
@@ -157,8 +155,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     
     def test_dataframe(self):
         data = self.resp.msg.data
-        df, a = self.resp.write(data, with_attrib = False, asframe = True)
-        self.assertIsNone(a)
+        df = self.resp.write(data, attributes = False, asframe = True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (3,4))
         

@@ -296,13 +296,14 @@ class SDMXMLReader(Reader):
                 obs_value = self._obs_value_path(obs)[0]
             else: obs_value = None
             if with_attributes:
-                obs_attr_values = self._attr_values_path(obs)
-                try:
-                    obs_attr = ObsAttrTuple._make(obs_attr_values)
-                except NameError:
-                    obs_attr_id = self._attr_id_path(obs)
+                obs_attr_id = self._attr_id_path(obs)
+                # Make attrib tuple only if obs actually has attributes
+                # Otherwise, set to empty tuple.
+                if obs_attr_id:  
+                    obs_attr_values = self._attr_values_path(obs)
                     ObsAttrTuple = namedtuple_factory('ObsAttr', obs_attr_id)
                     obs_attr = ObsAttrTuple._make(obs_attr_values)
+                else: obs_attr = ()  
             else: obs_attr = None
             yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)  
-    
+                    

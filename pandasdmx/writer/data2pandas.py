@@ -27,7 +27,7 @@ time_spans = {
 class Writer(BaseWriter):
 
     def write(self, data, asframe = False, dtype = NP.float64, 
-              with_values = True, with_attrib = True):
+              attributes = 'osg'):
         '''
         Generate pandas.Series from model.Series
         
@@ -39,16 +39,16 @@ class Writer(BaseWriter):
         
         dtype: datatype for values. Defaults to 'float64'
         
-        with_values and with_attrib: flags controlling the scope of data to be returned.
-        Defaults  are True. If with_attrib is True, obs_attributes are
+        dtype and attributes: flags controlling the scope of data to be returned.
+        Defaults  are True. If attributes is True, obs_attributes are
         returned as a pandas.DataFrame whose column index
         consists of the attribute names. The
         index is identical to the series containing the
         values.
         
         asframe: determines whether the series will be merged into a single
-        DataFrame (defaults to False). If False, and both with_values
-        and with_attrib are set to True, the iterator yields pairs of the form
+        DataFrame (defaults to False). If False, and both dtype
+        and attributes are set to True, the iterator yields pairs of the form
         (series of values, DataFrame of attributes). Otherwise,
         either Series or DataFrames are returned.
         If asframe is set to True, the resulting DataFrame
@@ -63,47 +63,48 @@ class Writer(BaseWriter):
         else: iter_series = data.series
         
         if asframe:
-            pd_series, attrib_frames = zip(*((s, a) for s, a in self.iter_pd_series(
-                iter_series, dim_at_obs, dtype, with_values, with_attrib)))
+            series_list = list(s for s in self.iter_pd_series(
+                iter_series, dim_at_obs, dtype, attributes))
+            if dtype and attributes:
+                pd_series, pd_attributes = zip(*series_list)
+                index_source = pd_series
+            elif dtype: 
+                pd_series = index_source = series_list
+            elif attributes: 
+                pd_attributes = index_source = series_list   
 
-            # Extract metadata
-            index_tuples = list(s.name for s in pd_series)
-            level_names = list(pd_series[0].name._fields)
-            for s in pd_series: s.name = None
+            # Extract dimensions
+            index_tuples = list(s.name for s in index_source)
+            level_names = list(index_source[0].name._fields)
+            col_index = PD.MultiIndex.from_tuples(index_tuples, 
+                                                       names = level_names)
+            
                      
-            if with_values:
+            if dtype:
+                for s in pd_series: s.name = None
                 # Merge series into multi-indexed DataFrame and return it.
                 d_frame = PD.concat(list(pd_series), axis = 1)
-                d_frame.columns = PD.MultiIndex.from_tuples(index_tuples, 
-                                                       names = level_names)
-            else: d_frame = None
+                d_frame.columns = col_index 
             
-            if with_attrib:
-                a_frame = PD.concat(attrib_frames, axis = 1)
-                # Construct the column index
-                attrib_names = list(attrib_frames[0].columns.get_level_values(0))
-                times = len(attrib_names) 
-                upper_keys = list(chain(*(tuple(repeat(i, times)) 
-                                        for i in index_tuples)))
-                attrib_tuples = list(map(add, upper_keys, 
-                                         ((i,) for i in 
-                                          attrib_names * len(index_tuples))))
-                level_names.append('ATTRIB')
-                a_frame.columns = PD.MultiIndex.from_tuples(attrib_tuples, 
-                                                            names = level_names)
-            else: a_frame = None
-            return d_frame, a_frame
+            if attributes:
+                for s in pd_attributes: s.name = None
+                a_frame = PD.concat(pd_attributes, axis = 1)
+                a_frame.columns = col_index
+            if dtype and attributes: return d_frame, a_frame
+            elif dtype: return d_frame
+            else: return a_frame 
         
         # return an iterator
         else:
             return self.iter_pd_series(iter_series, dim_at_obs, dtype, 
-                                       with_values, with_attrib)
+                                       attributes)
             
         
-    def iter_pd_series(self, iter_series, dim_at_obs, dtype, with_values, with_attrib):
+    def iter_pd_series(self, iter_series, dim_at_obs, dtype, attributes):
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_dim, obs_values, obs_attrib = zip(*series.obs(with_values, with_attrib))
+            obs_list = list(series.obs(dtype, attributes))
+            obs_dim, obs_values, obs_attrib = zip(*obs_list)
             
             # Generate the index 
             # convert time periods to start-of-period dates (this is second-best, 
@@ -117,17 +118,18 @@ class Writer(BaseWriter):
                 series_index = PD.to_datetime(obs_dim, unit = 'D')
             else: series_index = PD.Index(obs_dim)
             
-            if with_values:
+            if dtype:
                 value_series = PD.Series(obs_values, index = series_index, name = series.key, dtype = dtype)
                 
-            if with_attrib:
-                attrib_frame = PD.DataFrame(list(obs_attrib), columns = obs_attrib[0]._fields, index = series_index)
+            if attributes:
+                attrib_series = PD.Series(list(obs_attrib), 
+                                          index = series_index, dtype = 'object')
                 
             # decide what to yield    
-            if with_values and with_attrib: 
-                yield value_series, attrib_frame
-            elif with_values: yield value_series, None
-            elif with_attrib: yield None, attrib_frame
+            if dtype and attributes: 
+                yield value_series, attrib_series
+            elif dtype: yield value_series
+            elif attributes: yield attrib_series
             else: raise ValueError(
-                "At least one of 'with_values' or 'with_attrib' args must be True.")
+                "At least one of 'dtype' or 'attributes' args must be True.")
                 

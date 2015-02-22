@@ -8,7 +8,6 @@
 import unittest
 import pandasdmx
 from pandasdmx import model, Request
-from pandasdmx.utils import str_type
 import os.path
 
 test_path = pandasdmx.tests.__path__[0]
@@ -56,7 +55,6 @@ class test_dsd_common(unittest.TestCase):
         self.assertEqual(len(anno_list), 1)
         a = anno_list[0]
         self.assertIsInstance(a, model.Annotation)
-        self.assertIsInstance(a.text.en, str_type)
         self.assertTrue(a.text.en.startswith('It is'))
         self.assertEqual(a.annotationtype, 'NOTE')
         

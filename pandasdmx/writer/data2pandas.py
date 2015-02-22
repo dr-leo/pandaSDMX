@@ -5,12 +5,13 @@ pandasdmx.writer.data2pandas - a pandas writer for PandaSDMX
 
 @author: Dr. Leo
 '''
-import pdb
+
+
 import pandas as PD
 import numpy as NP
 from pandasdmx.writer.common import BaseWriter
-from itertools import chain, repeat
-from operator import add
+from pandasdmx.utils import chain_namedtuples
+
 
 # Time span conversions not recognised by pandas:
 
@@ -33,30 +34,35 @@ class Writer(BaseWriter):
         
         data: a model.DataSet or iterator of model.Series
          
-        asframe: if True, merge the series into a multi-indexed 
-        pandas.DataFrame, otherwise return an iterator of pandas.Series.
+        asframe: if True, merge the series of values and/or attributes 
+        into one or two multi-indexed 
+        pandas.DataFrame(s), otherwise return an iterator of pandas.Series.
         (default: False)
         
         dtype: datatype for values. Defaults to 'float64'
+        if None, do not return the values of a series. In this case, 
+        'attributes' must not be an empty string.
         
-        dtype and attributes: flags controlling the scope of data to be returned.
-        Defaults  are True. If attributes is True, obs_attributes are
-        returned as a pandas.DataFrame whose column index
-        consists of the attribute names. The
-        index is identical to the series containing the
-        values.
+        attributes: string determining which attributes, if any,
+        should be returned in separate series or a separate DataFrame.
+        'attributes' may have one of the following values: '', 'o', 's', 'g'
+        or any combination thereof such as 'os', 'go'. Defaults to 'osg'. 
+        Where 'o', 's', and 'g' mean that attributes at observation,
+        series, and group level will be returned as members of 
+        per-observation namedtuples. 
         
-        asframe: determines whether the series will be merged into a single
-        DataFrame (defaults to False). If False, and both dtype
-        and attributes are set to True, the iterator yields pairs of the form
-        (series of values, DataFrame of attributes). Otherwise,
-        either Series or DataFrames are returned.
-        If asframe is set to True, the resulting DataFrame
-        of values will have a MultiIndex consisting of the series' keys.   
         '''
         
         # Preparations        
         dim_at_obs = self.msg.header.dim_at_obs
+        
+        # validate 'attributes'
+        try:
+            attributes = attributes.lower()
+        except AttributeError:
+            raise TypeError("'attributes' argument must be of type str.")
+        if set(attributes) - {'o','s','g'}: 
+            raise ValueError("'attributes' must only contain 'o', 's' or 'g'.")
         
         # Allow data to be either an iterator or a model.DataSet instance
         if hasattr(data, '__iter__'): iter_series = data
@@ -122,7 +128,30 @@ class Writer(BaseWriter):
                 value_series = PD.Series(obs_values, index = series_index, name = series.key, dtype = dtype)
                 
             if attributes:
-                attrib_series = PD.Series(list(obs_attrib), 
+                # Construct the namedtuples containing the attributes
+                attrib_tuples = None
+                l = len(series_index) # to loop over the attribute list  
+                if 'o' in attributes: attrib_tuples = list(obs_attrib)
+                if 's' in attributes:
+                    suffix = series.attrib
+                    if suffix:
+                        if attrib_tuples is None:
+                            attrib_tuples = list(suffix for i in range(len(series_index)))
+                        else:
+                            for i in range(l):
+                                attrib_tuples[i] = chain_namedtuples(
+                                                                     attrib_tuples[i], suffix)
+                if 'g' in attributes:
+                    suffix = series.group_attrib
+                    if suffix:
+                        if attrib_tuples is None:
+                            attrib_tuples = list(suffix for i in range(len(series_index)))
+                        else:
+                            for i in range(l):
+                                attrib_tuples[i] = chain_namedtuples(
+                                                                     attrib_tuples[i], suffix) 
+                        
+                attrib_series = PD.Series(attrib_tuples, 
                                           index = series_index, dtype = 'object')
                 
             # decide what to yield    

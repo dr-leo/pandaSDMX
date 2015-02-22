@@ -8,7 +8,6 @@
 import unittest
 import pandasdmx
 from pandasdmx import model, Request
-from pandasdmx.utils import str_type
 import pandas
 import os.path
 
@@ -43,7 +42,6 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertIsInstance(o0.key, tuple) # obs_key
         self.assertEqual(o0.key.FREQ, 'M')
         self.assertEqual(o0.key.CURRENCY, 'CHF')
-        self.assertIsInstance(o0.value, str_type) # obs_value
         self.assertEqual(o0.value, '1.3413')
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
@@ -80,9 +78,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(obs_list), 3)
         o0 = obs_list[0]
         self.assertEqual(len(o0), 3)
-        self.assertIsInstance(o0.dim, str_type) # obs_key
         self.assertEqual(o0.dim, '2010-08')
-        self.assertIsInstance(o0.value, str_type) 
         self.assertEqual(o0.value, '1.2894')
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
@@ -91,7 +87,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_pandas(self):
         resp = self.resp
         data = resp.msg.data
-        pd_series = [s for s in resp.write(data, attributes = False)]
+        pd_series = [s for s in resp.write(data, attributes = '')]
         self.assertEqual(len(pd_series), 4)
         s3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
@@ -101,7 +97,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         # now with attributes
         pd_series = [s for s in resp.write(data)]
         self.assertEqual(len(pd_series), 4)
-        self.assertIsInstance(pd_series[0], tuple)
+        self.assertIsInstance(pd_series[0], tuple) # contains 2 series 
         self.assertEqual(len(pd_series[0]), 2)
         s3, a3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
@@ -109,9 +105,10 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(s3[0], 1.2894)
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
-        self.assertEqual(len(a3), 3) 
-        self.assertEqual(a3.columns[0], 'OBS_STATUS') # fix this. Access a row of Series
-        self.assertEqual(a3.iloc[0,0], 'A')
+        self.assertEqual(len(a3), 3)
+        # access an attribute of the first value 
+        self.assertEqual(a3[0].OBS_STATUS, 'A')  
+
         
                 
 class TestGenericSeriesDataSet2(unittest.TestCase):
@@ -146,16 +143,14 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(len(obs_list), 3)
         o0 = obs_list[0]
         self.assertEqual(len(o0), 3)
-        self.assertIsInstance(o0.dim, str_type) # obs_key
         self.assertEqual(o0.dim, '2010-08')
-        self.assertIsInstance(o0.value, str_type) # obs_value
         self.assertEqual(o0.value, '1.2894')
         self.assertIsInstance(o0.attrib, tuple)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
     
     def test_dataframe(self):
         data = self.resp.msg.data
-        df = self.resp.write(data, attributes = False, asframe = True)
+        df = self.resp.write(data, attributes = '', asframe = True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (3,4))
         
@@ -177,10 +172,10 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, Japanese yen/Euro')
         # Check group attributes of a series
         s = list(data.series)[0]
-        g_attrib = list(s.group_attrib)
+        g_attrib = s.group_attrib
         self.assertEqual(len(g_attrib), 1)
-        self.assertIsInstance(g_attrib[0], tuple)
-        self.assertEqual(len(g_attrib[0]), 1)
+        self.assertIsInstance(g_attrib, tuple)
+        self.assertEqual(len(g_attrib), 1)
         
         
 class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
@@ -199,10 +194,10 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         self.assertEqual(g2.attrib.TITLE, 'ECB reference exchange rate, U.K. Pound sterling /Euro')
         # Check group attributes of a series
         s = list(data.series)[0]
-        g_attrib = list(s.group_attrib)
-        self.assertEqual(len(g_attrib), 2)
-        self.assertIsInstance(g_attrib[1], tuple)
-        self.assertEqual(len(g_attrib[1]), 4)
+        g_attrib = s.group_attrib
+        self.assertEqual(len(g_attrib), 5)
+        self.assertIsInstance(g_attrib, tuple)
+        self.assertEqual(len(g_attrib), 5)
         
         
         

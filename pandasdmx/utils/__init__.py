@@ -6,6 +6,7 @@ module pandasdmx.utils - helper classes and functions
 
 from .aadict import aadict 
 from collections import namedtuple
+from itertools import chain
 import sys
 
 class DictLike(aadict):
@@ -40,7 +41,16 @@ has already been created.
     
 namedtuple_factory = NamedTupleFactory()    
         
-        
+def chain_namedtuples(*nt):
+    if len(nt) == 0:
+        raise TypeError('Expected at least 1 argument, 0 given.')
+    if len(nt) == 1: return nt
+    fields = tuple(chain(*(i._fields for i in nt)))
+    new_type = namedtuple_factory('Chained', fields)
+    values = chain(*nt)
+    return new_type._make(values)
+       
+            
 # 2to3 compatibility
 if sys.version[0] == '3': str_type = str
 else: str_type = unicode 

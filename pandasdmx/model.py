@@ -12,8 +12,9 @@ This module is part of the pandaSDMX package
 
 from .utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
-            Any, Enum, Dict)
-from operator import attrgetter 
+            Enum, Dict)
+from operator import attrgetter
+from pandasdmx.utils import chain_namedtuples 
 
 
 class SDMXObject(object):
@@ -536,10 +537,14 @@ class Series(SDMXObject):
     @property
     def group_attrib(self):
         '''
-        return an iterator of GroupKey namedtuples 
+        return a namedtuple containing all attributes attached
+        to groups of which the given series is a member 
         for each group of which the series is a member
-        ''' 
-        return (g.attrib for g in self.dataset.groups if self in g)
+        '''
+        g_attrib = list((g.attrib for g in self.dataset.groups 
+                                   if self in g))
+        if g_attrib: return chain_namedtuples(*g_attrib)
+        else: return ()
           
 
     def obs(self, with_values = True, with_attributes = True):

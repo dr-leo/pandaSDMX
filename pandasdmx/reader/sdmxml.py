@@ -4,7 +4,7 @@
 from pandasdmx.utils import DictLike, namedtuple_factory
 from pandasdmx import model
 from .common import Reader
-from lxml import objectify
+from lxml import etree
 from lxml.etree import XPath
 
 
@@ -24,7 +24,9 @@ class SDMXMLReader(Reader):
     }
 
     def initialize(self, source):
-        root = objectify.parse(source).getroot()
+        tree = etree.parse(source)
+        root = tree.getroot()
+        xpath_eval = etree.XPathEvaluator(root)
         if root.tag.endswith('Structure'):
             cls = model.StructureMessage
         elif (root.tag.endswith('GenericData') 

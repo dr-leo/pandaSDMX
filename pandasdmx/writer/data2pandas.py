@@ -113,15 +113,19 @@ class Writer(BaseWriter):
             obs_dim, obs_values, obs_attrib = zip(*obs_list)
             
             # Generate the index 
-            # convert time periods to start-of-period dates (this is second-best, 
-            # but there is no obvious way to convert to periods.
+            l = len(obs_dim) # to loop over the attribute list
             if dim_at_obs == 'TIME_PERIOD':
-                for i in range(len(obs_dim)):
-                    try:
-                        obs_dim[i][-2:] = time_spans[obs_dim[i][-2:]]
-                    except KeyError: pass
-            if dim_at_obs.startswith('TIME'):
-                series_index = PD.to_datetime(obs_dim, unit = 'D')
+                try:
+                    f = series.key.FREQ
+                    series_index = PD.period_range(start = obs_dim[0], periods = l, freq = f)
+                except KeyError:
+                    series_index = PD.PeriodIndex(obs_dim)
+            if dim_at_obs == 'TIME':
+                try:
+                    f = series.key.FREQ
+                    series_index = PD.date_range(start = obs_dim[0], periods = l, freq = f)
+                except KeyError:
+                    series_index = PD.DatetimeIndex(obs_dim)
             else: series_index = PD.Index(obs_dim)
             
             if dtype:
@@ -130,7 +134,7 @@ class Writer(BaseWriter):
             if attributes:
                 # Construct the namedtuples containing the attributes
                 attrib_tuples = None
-                l = len(series_index) # to loop over the attribute list  
+                  
                 if 'o' in attributes: attrib_tuples = list(obs_attrib)
                 if 's' in attributes:
                     suffix = series.attrib

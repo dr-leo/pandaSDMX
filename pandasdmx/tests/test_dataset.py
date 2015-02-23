@@ -91,7 +91,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(pd_series), 4)
         s3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertEqual(s3[0], 1.2894)
+        self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         # now with attributes
@@ -102,7 +102,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         s3, a3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
         self.assertIsInstance(a3, pandas.core.series.Series)
-        self.assertEqual(s3[0], 1.2894)
+        self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         self.assertEqual(len(a3), 3)

@@ -109,18 +109,23 @@ class Writer(BaseWriter):
     def iter_pd_series(self, iter_series, dim_at_obs, dtype, attributes):
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
+            # In case of timeseries, Reverse the order 
+            # to make the index chronological
             obs_list = list(series.obs(dtype, attributes))
+            if series.dataset.dim_at_obs.startswith('TIME'):
+                obs_list = reversed(obs_list)
             obs_dim, obs_values, obs_attrib = zip(*obs_list)
             
             # Generate the index 
             l = len(obs_dim) # to loop over the attribute list
             if dim_at_obs == 'TIME_PERIOD':
+                # Check if we can build the index based on start and freq
                 try:
                     f = series.key.FREQ
                     series_index = PD.period_range(start = obs_dim[0], periods = l, freq = f)
                 except KeyError:
                     series_index = PD.PeriodIndex(obs_dim)
-            if dim_at_obs == 'TIME':
+            elif dim_at_obs == 'TIME':
                 try:
                     f = series.key.FREQ
                     series_index = PD.date_range(start = obs_dim[0], periods = l, freq = f)

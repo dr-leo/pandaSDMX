@@ -76,7 +76,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs())
         self.assertEqual(len(obs_list), 3)
-        o0 = obs_list[0]
+        o0 = obs_list[2]
         self.assertEqual(len(o0), 3)
         self.assertEqual(o0.dim, '2010-08')
         self.assertEqual(o0.value, '1.2894')
@@ -141,7 +141,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs())
         self.assertEqual(len(obs_list), 3)
-        o0 = obs_list[0]
+        o0 = obs_list[2]
         self.assertEqual(len(o0), 3)
         self.assertEqual(o0.dim, '2010-08')
         self.assertEqual(o0.value, '1.2894')

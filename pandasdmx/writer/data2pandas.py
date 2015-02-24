@@ -112,8 +112,6 @@ class Writer(BaseWriter):
             # In case of timeseries, Reverse the order 
             # to make the index chronological
             obs_list = list(series.obs(dtype, attributes))
-            if series.dataset.dim_at_obs.startswith('TIME'):
-                obs_list = reversed(obs_list)
             obs_dim, obs_values, obs_attrib = zip(*obs_list)
             
             # Generate the index 

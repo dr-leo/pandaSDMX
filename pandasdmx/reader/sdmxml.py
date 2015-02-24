@@ -292,7 +292,7 @@ class SDMXMLReader(Reader):
         return SeriesAttrTuple._make(series_attr_values)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes):
-        for obs in self._generic_obs_path(sdmxobj._elem):
+        for obs in sdmxobj._elem.iterchildren('{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs', reversed = True):
             obs_dim = self._generic_series_dim_path(obs)[0]
             if with_value:
                 obs_value = self._obs_value_path(obs)[0]

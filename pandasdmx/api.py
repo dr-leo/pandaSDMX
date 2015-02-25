@@ -74,7 +74,7 @@ class Request(LoggingConfigurable):
         the downloaded file has been saved to a permanent local file, for that file.
         '''
         # Validate args
-        # Overide self.agency if new agency id is gifen.
+        # Overide self.agency if new agency id is given.
         if agency: self.agency = agency
         # 'Validate resource
         if resource and resource not in self._resources:
@@ -90,12 +90,16 @@ class Request(LoggingConfigurable):
         # Any parameters are appended by remote module.
         if self.agency: 
             parts = [self._agencies[self.agency]['url'], 
-                              agency, resource, flow, key]
+                               resource, agency, flow, key]
             base_url = '/'.join(filter(None, parts))
-            # Download DSD and constraints together with a specified dataflow
-            # We set appropriate default for the references parameter
-            if resource == 'dataflow' and flow and 'references' not in params:
-                params['references'] = 'all'
+            
+            # Set references to sensible defaults  
+            if flow and 'references' not in params:
+                if resource == 'dataflow': 
+                    params['references'] = '"all"'
+                elif resource == 'categoryscheme': pass
+                    # params['references'] = '"parentandsiblings"'
+                    
         elif from_file: 
             base_url = ''
         else:

@@ -58,9 +58,9 @@ class Message(SDMXObject):
 class StructureMessage(Message):
     
     def __init__(self, *args, **kwargs):
-        super(StructureMessage, self).__init__(*args, **kwargs) 
         self._payload_names.extend(['codelists', 'conceptschemes', 'dataflows', 
                         'datastructures', 'categoryschemes'])
+        super(StructureMessage, self).__init__(*args, **kwargs) 
 
 
 class DataMessage(Message):
@@ -240,7 +240,7 @@ class MaintainableArtefact(VersionableArtefact):
 # ComponentList is only identifiable. Therefore, ComponentList cannot
 # inherit from ItemScheme.     
 class Scheme(DictLike):
-    _get_items = None # subclasses must set this to the name of the reader method 
+    _get_items = None # will be passed to _reader.read_identifiables. overwrite in subclasses 
     
     def __init__(self, *args, **kwargs):
         super(Scheme, self).__init__(*args, **kwargs)

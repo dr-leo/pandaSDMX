@@ -246,22 +246,6 @@ class Scheme(DictLike):
         super(Scheme, self).__init__(*args, **kwargs)
         self._reader.read_identifiables(self._get_items, self)
     
-    def find(self, search_str, by = 'name', language = 'en'):
-        '''
-        return new DictLike of items where value.<by> contains the search_str. 'by' defaults to 'name'. 
-        If the <by> attribute is an international string,
-        'language' (defaults to 'en') is used to select the desired language. self.values() should therefore contain model.NameableArtefact subclass instances.
-        Any capitalization is disregarded. Hence 'a' == 'A'.
-        '''
-        s = search_str.lower()
-        # We distinguish between international strings stored as dict such as 
-        # name.en, name.fr, and normal strings.
-        if by in ['name', 'description']:
-            get_field = lambda obj: getattr(obj, by)[language]
-        else: # normal string
-            get_field = lambda obj: getattr(obj, by)
-        return DictLike(result for result in self.items() 
-                        if s in get_field(result[1]).lower())
     
     # DictLike.aslist returns a list sorted by _sort_key. 
     # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this 

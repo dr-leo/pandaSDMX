@@ -65,7 +65,7 @@ class Request(LoggingConfigurable):
                             list(self._agencies)))
             
     
-    def get(self, agency = '', resource = '', flow = '', key = '', params = {},
+    def get(self, resource_type = '', resource_id = '', agency = '', key = '', params = {},
                  from_file = None, to_file = None):
         '''
         Load a source file identified by the URL suffix or filename given as from_file kwarg.
@@ -74,30 +74,29 @@ class Request(LoggingConfigurable):
         the downloaded file has been saved to a permanent local file, for that file.
         '''
         # Validate args
-        # Overide self.agency if new agency id is given.
-        if agency: self.agency = agency
+        if not agency: agency = self.agency 
         # 'Validate resource
-        if resource and resource not in self._resources:
+        if resource_type and resource_type not in self._resources:
             raise ValueError('resource must be one of {0}'.format(self._resources))
-        # flow: if it is not a str or unicode type, 
+        # resource_id: if it is not a str or unicode type, 
         # but, e.g., a model.DataflowDefinition, 
         # extract its ID
-        if flow and not isinstance(flow, (str_type, str)):
-            flow = flow.id
+        if resource_id and not isinstance(resource_id, (str_type, str)):
+            resource_id = resource_id.id
             
         # Construct URL from the given non-empty substrings.
         # Remove None's and '' first. Then join them to form the base URL.
         # Any parameters are appended by remote module.
         if self.agency: 
             parts = [self._agencies[self.agency]['url'], 
-                               resource, agency, flow, key]
+                            resource_type, agency, resource_id, key]
             base_url = '/'.join(filter(None, parts))
             
             # Set references to sensible defaults  
-            if flow and 'references' not in params:
-                if resource == 'dataflow': 
-                    params['references'] = '"all"'
-                elif resource == 'categoryscheme': pass
+            if resource_id and 'references' not in params:
+                if resource_type == 'dataflow': 
+                    params['references'] = 'all'
+                elif resource_type == 'categoryscheme': pass
                     # params['references'] = '"parentandsiblings"'
                     
         elif from_file: 
@@ -106,18 +105,19 @@ class Request(LoggingConfigurable):
             raise ValueError('Either agency or from_file must be given.') 
         
         # Now get the SDMX message either via http or as local file 
-        source = self.client.get(base_url, params = params, from_file = from_file)
+        source, url = self.client.get(base_url, params = params, from_file = from_file)
         if to_file:
             with open(to_file, 'wb') as dest:
                 dest.write(source.read())
                 source.seek(0)
         msg = self.get_reader().initialize(source)
-        return Response(msg, writer = self.writer)
+        return Response(msg, url, writer = self.writer)
     
     
 class Response:
-    def __init__(self, msg, writer = None):
+    def __init__(self, msg, url, writer = None):
         self.msg =msg
+        self.url = url
         # Initialize the writer if given
         if writer:
             writer_module = import_module(writer['name'])

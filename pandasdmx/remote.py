@@ -34,11 +34,11 @@ class REST(LoggingConfigurable):
         if from_file:
             # Load data from local file 
             source = open(from_file, 'rb')
-                
+            final_url = None    
         else:
             self.log.debug('Requesting %s', url)
-            source = self.request(url, params = params) 
-        return source
+            source, final_url = self.request(url, params = params) 
+        return source, final_url
          
     
     def request(self, url, params = {}):
@@ -53,7 +53,7 @@ class REST(LoggingConfigurable):
         
         response = requests.get(url, params = params, stream = True, timeout= 30.1)
         
-        if response.status_code == requests.codes.ok:
+        if response.status_code == requests.codes.OK:
             source  = STF(max_size = self.max_size)
             for c in response.iter_content(chunk_size = 1000000):
                 source.write(c)
@@ -92,4 +92,4 @@ class REST(LoggingConfigurable):
         else:
             raise requests.exceptions.HTTPError("SDMX server returned an error message. Code: {0}"
                     .format(response.status_code))      
-        return source
+        return source, response.url

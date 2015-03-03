@@ -73,7 +73,9 @@ class SDMXMLReader(Reader):
         'categoryschemes' : (XPath('mes:Structures/str:CategorySchemes/str:CategoryScheme', 
                              namespaces = _nsmap), model.CategoryScheme),
         'categories': (XPath('str:Category', 
-                             namespaces = _nsmap), model.Category),  
+                             namespaces = _nsmap), model.Category),
+            'categorisations': (XPath('mes:Structures/str:Categorisations/str:Categorisation', 
+                             namespaces = _nsmap), model.Categorisation),  
         'dataflows' : (XPath('mes:Structures/str:Dataflows/str:Dataflow', 
                              namespaces = _nsmap), model.DataflowDefinition),
         'datastructures' : (XPath('mes:Structures/str:DataStructures/str:DataStructure', 
@@ -105,6 +107,10 @@ class SDMXMLReader(Reader):
                              namespaces = _nsmap), model.Series),
             'generic_groups' : (XPath('gen:Group', 
                              namespaces = _nsmap), model.Group),
+            'ref_source' : (XPath('str:Source/Ref', 
+                             namespaces = _nsmap), model.Ref),
+                        'ref_target' : (XPath('str:Target/Ref', 
+                             namespaces = _nsmap), model.Ref), 
     }
         
         
@@ -307,5 +313,19 @@ class SDMXMLReader(Reader):
                     obs_attr = ObsAttrTuple._make(obs_attr_values)
                 else: obs_attr = ()  
             else: obs_attr = None
-            yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)  
+            yield self._SeriesObsTuple (obs_dim, obs_value, obs_attr)  
                     
+
+    # Methods for References
+    def ref_class(self, sdmxobj):
+        return sdmxobj._elem.get('class')
+    
+    def ref_package(self, sdmxobj):
+        return sdmxobj._elem.get('package')
+    
+    def ref_version(self, sdmxobj):
+        return sdmxobj._elem.get('version')
+    
+    def agency_id(self, sdmxobj):
+        return sdmxobj._elem.get('agencyID')
+    

@@ -93,11 +93,11 @@ class Request(LoggingConfigurable):
             base_url = '/'.join(filter(None, parts))
             
             # Set references to sensible defaults  
-            if resource_id and 'references' not in params:
-                if resource_type == 'dataflow': 
+            if 'references' not in params:
+                if resource_type == 'dataflow' and resource_id: 
                     params['references'] = 'all'
-                elif resource_type == 'categoryscheme': pass
-                    # params['references'] = '"parentandsiblings"'
+                elif resource_type == 'categoryscheme':
+                    params['references'] = 'parentsandsiblings'
                     
         elif from_file: 
             base_url = ''

@@ -59,7 +59,7 @@ class StructureMessage(Message):
     
     def __init__(self, *args, **kwargs):
         self._payload_names.extend(['codelists', 'conceptschemes', 'dataflows', 
-                        'datastructures', 'categoryschemes'])
+                        'datastructures', 'categoryschemes', 'categorisations'])
         super(StructureMessage, self).__init__(*args, **kwargs) 
 
 
@@ -346,15 +346,44 @@ class Category(Item): pass
 class CategoryScheme(ItemScheme):
     _get_items = 'categories'
 
+class Ref(SDMXObject):
     
+    @property
+    def package(self):
+        return self._reader.ref_package(self)    
 
+    @property
+    def id(self):
+        return self._reader.identity(self)    
+
+    @property
+    def ref_class(self):
+        return self._reader.ref_class(self)    
+
+    @property
+    def version(self):
+        return self._reader.ref_version(self)    
+
+    @property
+    def agency_id(self):
+        return self._reader.agency_id(self)
+        
+    def resolve(self):
+        pkg = getattr(self._reader.msg, self.package)
+        return pkg[self.id]
+        
+        
 class Categorisation(MaintainableArtefact):
-    artefact = Instance(IdentifiableArtefact)
-    categorized_by = Instance(Category)
+    @property
+    def artefact(self):
+        return self._reader.read_one('ref_source', self)
+    
+    @property
+    def categorised_by(self):
+        return self._reader.read_one('ref_target', self)
+    
     
         
-class IdentifiableObjectType: pass
-class ConstraintRoleType: pass    
 
 
 class DataflowDefinition(StructureUsage): pass 

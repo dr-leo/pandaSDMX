@@ -10,25 +10,12 @@ pandasdmx.writer.data2pandas - a pandas writer for PandaSDMX
 import pandas as PD
 import numpy as NP
 from pandasdmx.writer.common import BaseWriter
-from pandasdmx.utils import chain_namedtuples
-
-
-# Time span conversions not recognised by pandas:
-
-time_spans = {
-    'Q1' : '01-01',
-    'Q2' : '04-01',
-    'Q3' : '07-01',
-    'Q4' : '10-01',
-    'S1' : '01-01',
-    'S2' : '07-01'
-}
 
     
 class Writer(BaseWriter):
 
     def write(self, data, asframe = False, dtype = NP.float64, 
-              attributes = 'osg'):
+              attributes = 'osgd'):
         '''
         Generate pandas.Series from model.Series
         
@@ -45,10 +32,10 @@ class Writer(BaseWriter):
         
         attributes: string determining which attributes, if any,
         should be returned in separate series or a separate DataFrame.
-        'attributes' may have one of the following values: '', 'o', 's', 'g'
-        or any combination thereof such as 'os', 'go'. Defaults to 'osg'. 
+        'attributes' may have one of the following values: '', 'o', 's', 'g', 'd'
+        or any combination thereof such as 'os', 'go'. Defaults to 'osgd'. 
         Where 'o', 's', and 'g' mean that attributes at observation,
-        series, and group level will be returned as members of 
+        series, group and dataset level will be returned as members of 
         per-observation namedtuples. 
         
         '''
@@ -61,7 +48,7 @@ class Writer(BaseWriter):
             attributes = attributes.lower()
         except AttributeError:
             raise TypeError("'attributes' argument must be of type str.")
-        if set(attributes) - {'o','s','g'}: 
+        if set(attributes) - {'o','s','g', 'd'}: 
             raise ValueError("'attributes' must only contain 'o', 's' or 'g'.")
         
         # Allow data to be either an iterator or a model.DataSet instance
@@ -107,15 +94,22 @@ class Writer(BaseWriter):
             
         
     def iter_pd_series(self, iter_series, dim_at_obs, dtype, attributes):
+        # Pre-compute some values before looping over the series
+        o_in_attrib = 'o' in attributes
+        s_in_attrib = 's' in attributes
+        g_in_attrib = 'g' in attributes
+        d_in_attrib = 'd' in attributes
+        
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            # In case of timeseries, Reverse the order 
-            # to make the index chronological
-            obs_list = list(series.obs(dtype, attributes))
-            obs_dim, obs_values, obs_attrib = zip(*obs_list)
+            obs_zip = zip(*series.obs(dtype, attributes))
+            obs_dim = next(obs_zip)
+            l = len(obs_dim)
+            obs_values = NP.array(next(obs_zip), dtype = dtype)
+            if attributes:
+                obs_attrib = NP.array(tuple(next(obs_zip)), dtype = 'O') 
             
             # Generate the index 
-            l = len(obs_dim) # to loop over the attribute list
             if dim_at_obs == 'TIME_PERIOD':
                 # Check if we can build the index based on start and freq
                 try:
@@ -132,33 +126,15 @@ class Writer(BaseWriter):
             else: series_index = PD.Index(obs_dim)
             
             if dtype:
-                value_series = PD.Series(obs_values, index = series_index, name = series.key, dtype = dtype)
+                value_series = PD.Series(obs_values, index = series_index, name = series.key)
                 
             if attributes:
-                # Construct the namedtuples containing the attributes
-                attrib_tuples = None
-                  
-                if 'o' in attributes: attrib_tuples = list(obs_attrib)
-                if 's' in attributes:
-                    suffix = series.attrib
-                    if suffix:
-                        if attrib_tuples is None:
-                            attrib_tuples = list(suffix for i in range(len(series_index)))
-                        else:
-                            for i in range(l):
-                                attrib_tuples[i] = chain_namedtuples(
-                                                                     attrib_tuples[i], suffix)
-                if 'g' in attributes:
-                    suffix = series.group_attrib
-                    if suffix:
-                        if attrib_tuples is None:
-                            attrib_tuples = list(suffix for i in range(len(series_index)))
-                        else:
-                            for i in range(l):
-                                attrib_tuples[i] = chain_namedtuples(
-                                                                     attrib_tuples[i], suffix) 
-                        
-                attrib_series = PD.Series(attrib_tuples, 
+                for d in obs_attrib: 
+                    if not o_in_attrib: d.clear()  
+                    if s_in_attrib: d.update(series.attrib) 
+                    if g_in_attrib: d.update(series.group_attrib) 
+                    if d_in_attrib: d.update(series.dataset.attrib) 
+                attrib_series = PD.Series(obs_attrib, 
                                           index = series_index, dtype = 'object')
                 
             # decide what to yield    

@@ -39,7 +39,8 @@ class Request(LoggingConfigurable):
             'name' : 'European Central Bank',
             'url' : 'http://sdw-wsrest.ecb.int/service'}
             }
-    _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme']
+    _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme', 
+                  'categorisation', 'codelist', 'conceptscheme']
                     
     def __init__(self, agency = '',
                  writer = {'name': 'pandasdmx.writer.data2pandas'}):
@@ -75,8 +76,8 @@ class Request(LoggingConfigurable):
         '''
         # Validate args
         if not agency: agency = self.agency 
-        # 'Validate resource
-        if resource_type and resource_type not in self._resources:
+        # Validate resource if no filename is specified
+        if not from_file and resource_type not in self._resources:
             raise ValueError('resource must be one of {0}'.format(self._resources))
         # resource_id: if it is not a str or unicode type, 
         # but, e.g., a model.DataflowDefinition, 
@@ -85,6 +86,9 @@ class Request(LoggingConfigurable):
             resource_id = resource_id.id
             
         # Construct URL from the given non-empty substrings.
+        # if data is requested, omit the agency part. See the query examples
+        # from Eurostat. Hopefully ECB excepts this.
+        if resource_type in ['data', 'categoryscheme']: agency = ''
         # Remove None's and '' first. Then join them to form the base URL.
         # Any parameters are appended by remote module.
         if self.agency: 
@@ -123,7 +127,9 @@ class Response:
             writer_module = import_module(writer['name'])
             writer_cls = writer_module.Writer
             self._writer = writer_cls(self.msg)
-            self.write = self._writer.write
+            
+    def write(self, *args, **kwargs): 
+        return self._writer.write(*args, **kwargs)
             
         
         

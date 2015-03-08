@@ -257,12 +257,8 @@ class SDMXMLReader(Reader):
             else: obs_value = None
             if with_attributes:
                 obs_attr_values = self._attr_values_path(obs)
-                try:
-                    obs_attr = ObsAttrTuple._make(obs_attr_values)
-                except NameError:
-                    obs_attr_id = self._attr_id_path(obs)
-                    ObsAttrTuple = namedtuple_factory('ObsAttr', obs_attr_id)
-                    obs_attr = ObsAttrTuple._make(obs_attr_values)
+                obs_attr_id = self._attr_id_path(obs)
+                obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
             else: obs_attr = None
             yield self._ObsTuple(obs_key, obs_value, obs_attr)  
     
@@ -292,10 +288,10 @@ class SDMXMLReader(Reader):
 
 
     def series_attrib(self, sdmxobj):
-        series_attr_id = self._attr_id_path(sdmxobj._elem)
-        series_attr_values = self._attr_values_path(sdmxobj._elem)
-        SeriesAttrTuple = namedtuple_factory('Attributes', series_attr_id)
-        return SeriesAttrTuple._make(series_attr_values)
+        attr_id = self._attr_id_path(sdmxobj._elem)
+        attr_values = self._attr_values_path(sdmxobj._elem)
+        return DictLike(zip(attr_id, attr_values)) 
+
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes):
         for obs in sdmxobj._elem.iterchildren('{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs', reversed = True):
@@ -304,14 +300,9 @@ class SDMXMLReader(Reader):
                 obs_value = self._obs_value_path(obs)[0]
             else: obs_value = None
             if with_attributes:
+                obs_attr_values = self._attr_values_path(obs)
                 obs_attr_id = self._attr_id_path(obs)
-                # Make attrib tuple only if obs actually has attributes
-                # Otherwise, set to empty tuple.
-                if obs_attr_id:  
-                    obs_attr_values = self._attr_values_path(obs)
-                    ObsAttrTuple = namedtuple_factory('ObsAttr', obs_attr_id)
-                    obs_attr = ObsAttrTuple._make(obs_attr_values)
-                else: obs_attr = ()  
+                obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
             else: obs_attr = None
             yield self._SeriesObsTuple (obs_dim, obs_value, obs_attr)  
                     

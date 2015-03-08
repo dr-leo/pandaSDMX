@@ -43,7 +43,7 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.key.FREQ, 'M')
         self.assertEqual(o0.key.CURRENCY, 'CHF')
         self.assertEqual(o0.value, '1.3413')
-        self.assertIsInstance(o0.attrib, tuple)
+        self.assertIsInstance(o0.attrib, dict)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
         self.assertEqual(o0.attrib.DECIMALS, '4')
         
@@ -80,7 +80,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(o0), 3)
         self.assertEqual(o0.dim, '2010-08')
         self.assertEqual(o0.value, '1.2894')
-        self.assertIsInstance(o0.attrib, tuple)
+        self.assertIsInstance(o0.attrib, dict)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
         
         
@@ -145,7 +145,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(len(o0), 3)
         self.assertEqual(o0.dim, '2010-08')
         self.assertEqual(o0.value, '1.2894')
-        self.assertIsInstance(o0.attrib, tuple)
+        self.assertIsInstance(o0.attrib, dict)
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
     
     def test_dataframe(self):
@@ -174,7 +174,7 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         s = list(data.series)[0]
         g_attrib = s.group_attrib
         self.assertEqual(len(g_attrib), 1)
-        self.assertIsInstance(g_attrib, tuple)
+        self.assertIsInstance(g_attrib, dict)
         self.assertEqual(len(g_attrib), 1)
         
         
@@ -196,7 +196,7 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         s = list(data.series)[0]
         g_attrib = s.group_attrib
         self.assertEqual(len(g_attrib), 5)
-        self.assertIsInstance(g_attrib, tuple)
+        self.assertIsInstance(g_attrib, dict)
         self.assertEqual(len(g_attrib), 5)
         
         

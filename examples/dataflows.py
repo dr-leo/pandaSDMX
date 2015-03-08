@@ -1,6 +1,6 @@
 from pandasdmx import Request
-r = Request('ECB')
-resp = r.get(resource_type = 'dataflow' , resource_id = 'EXR', agency='ECB', to_file='ecb_dataflows.xml') 
+r = Request('ESTAT')
+resp = r.get(resource_type = 'dataflow' , agency='ESTAT', to_file='estat_dataflows.xml') 
 
         
         

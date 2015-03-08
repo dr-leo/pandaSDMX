@@ -56,10 +56,10 @@ class Message(SDMXObject):
     
     
 class StructureMessage(Message):
+    _payload_names = ['footer', 'codelists', 'conceptschemes', 'dataflows', 
+                        'datastructures', 'categoryschemes', 'categorisations']
     
     def __init__(self, *args, **kwargs):
-        self._payload_names.extend(['codelists', 'conceptschemes', 'dataflows', 
-                        'datastructures', 'categoryschemes', 'categorisations'])
         super(StructureMessage, self).__init__(*args, **kwargs) 
 
 
@@ -428,7 +428,6 @@ class AttributeDescriptor(ComponentList):
     
     
 class AttributeRelationship: pass
-class NoSpecifiedRelationship(AttributeRelationship): pass
 class PrimaryMeasureRelationship(AttributeRelationship): pass
 
 
@@ -488,7 +487,11 @@ class DataSet(SDMXObject):
 #     structured_by = Instance(DataStructureDefinition)
 #     published_by = Any
 #     attached_attribute = Any
-
+    def __init__(self, *args, **kwargs):
+        super(DataSet, self).__init__(*args, **kwargs)
+        self.attrib = self._reader.series_attrib(self)
+        self.groups = tuple(self.iter_groups)
+    
     @property
     def dim_at_obs(self):
         return self._reader.read_one('dim_at_obs', self)
@@ -526,7 +529,7 @@ class DataSet(SDMXObject):
         return self._reader.generic_series(self)     
     
     @property
-    def groups(self):
+    def iter_groups(self):
         return self._reader.generic_groups(self)
     
     
@@ -554,10 +557,10 @@ class Series(SDMXObject):
         to groups of which the given series is a member 
         for each group of which the series is a member
         '''
-        g_attrib = list((g.attrib for g in self.dataset.groups 
-                                   if self in g))
-        if g_attrib: return chain_namedtuples(*g_attrib)
-        else: return ()
+        g_attrib = DictLike()
+        for g in self.dataset.groups:
+            if self in g: g_attrib.update(g.attrib)
+        return g_attrib
           
 
     def obs(self, with_values = True, with_attributes = True):

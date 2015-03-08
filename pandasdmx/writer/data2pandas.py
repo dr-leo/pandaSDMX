@@ -102,7 +102,7 @@ class Writer(BaseWriter):
         
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_zip = zip(*series.obs(dtype, attributes))
+            obs_zip = iter(zip(*series.obs(dtype, attributes)))
             obs_dim = next(obs_zip)
             l = len(obs_dim)
             obs_values = NP.array(next(obs_zip), dtype = dtype)

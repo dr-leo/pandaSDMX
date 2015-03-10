@@ -74,8 +74,10 @@ class SDMXMLReader(Reader):
                              namespaces = _nsmap), model.CategoryScheme),
         'categories': (XPath('str:Category', 
                              namespaces = _nsmap), model.Category),
-            'categorisations': (XPath('mes:Structures/str:Categorisations/str:Categorisation', 
-                             namespaces = _nsmap), model.Categorisation),  
+            'categorisations': (XPath('mes:Structures/str:Categorisations', 
+                             namespaces = _nsmap), model.Categorisations),
+            'categorisation_items': (XPath('str:Categorisation', 
+                                           namespaces = _nsmap), model.Categorisation),   
         'dataflows' : (XPath('mes:Structures/str:Dataflows/str:Dataflow', 
                              namespaces = _nsmap), model.DataflowDefinition),
         'datastructures' : (XPath('mes:Structures/str:DataStructures/str:DataStructure', 
@@ -320,3 +322,7 @@ class SDMXMLReader(Reader):
     def agency_id(self, sdmxobj):
         return sdmxobj._elem.get('agencyID')
     
+    def categorisation_items(self, sdmxobj):
+        path, cls = self._model_map['categorisation_items']
+        for c in path(sdmxobj._elem):
+            yield cls(self, c)

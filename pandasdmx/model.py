@@ -14,7 +14,8 @@ from .utils    import DictLike, str_type
 from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
             Enum, Dict)
 from operator import attrgetter
-from pandasdmx.utils import chain_namedtuples 
+from collections import OrderedDict 
+from itertools import groupby
 
 
 class SDMXObject(object):
@@ -26,28 +27,16 @@ class SDMXObject(object):
         
       
 class Message(SDMXObject):
-    _payload_names = ['footer']
+    _payload_names = OrderedDict(
+                                 footer = 'read_identifiables')
     
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
         for name in self._payload_names:
-            try:
-                getattr(self, name)
-            except ValueError: pass 
-        
-    def __getattr__(self, name):
-        if name in self._payload_names:
-            value = self._reader.read_identifiables(name, self)
+            value = getattr(self._reader, self._payload_names[name])(name, self)
             if value:
-                setattr(self, name, value) 
-                return value
-            else:
-                raise ValueError(
-                                    'SDMX response does not containe any payload of type %s.' 
-                                    % name)
-        else:
-            raise KeyError('{0} is not a valid payload or other attribute name.'.format(name)) 
+                setattr(self, name, value)
             
             
     @property
@@ -56,8 +45,14 @@ class Message(SDMXObject):
     
     
 class StructureMessage(Message):
-    _payload_names = ['footer', 'codelists', 'conceptschemes', 'dataflows', 
-                        'datastructures', 'categoryschemes', 'categorisations']
+    _payload_names = OrderedDict(
+                                 footer = 'read_identifiables', # fix this 
+                                 codelists = 'read_identifiables',  
+                                 conceptschemes = 'read_identifiables', 
+                                 dataflows = 'read_identifiables', 
+                                 datastructures = 'read_identifiables', 
+                                 categoryschemes = 'read_identifiables', 
+                                 categorisations = 'read_one')
     
     def __init__(self, *args, **kwargs):
         super(StructureMessage, self).__init__(*args, **kwargs) 
@@ -333,7 +328,6 @@ class Component(IdentifiableArtefact):
 class Code(Item): pass
 
 class Codelist(ItemScheme):
-    
     _get_items = 'codes'
     
 
@@ -345,7 +339,18 @@ class Category(Item): pass
 
 class CategoryScheme(ItemScheme):
     _get_items = 'categories'
-
+    
+    
+class Categorisations(SDMXObject, DictLike):
+    def __init__(self, *args, **kwargs):
+        super(Categorisations, self).__init__(*args, **kwargs)
+        raw = list(self._reader.categorisation_items(self))
+        key_func = attrgetter('categorised_by.id')
+        sorted_l = sorted(raw, key = key_func)
+        result = {k : list(g) for k, g in groupby(sorted_l, key_func)}
+        self.update(result)
+        
+        
 class Ref(SDMXObject):
     
     @property
@@ -374,13 +379,12 @@ class Ref(SDMXObject):
         
         
 class Categorisation(MaintainableArtefact):
-    @property
-    def artefact(self):
-        return self._reader.read_one('ref_source', self)
+    def __init__(self, *args, **kwargs):
+        super(Categorisation, self).__init__(*args, **kwargs)
+        self.categorised_by = self._reader.read_one('ref_target', self)
+        self.artefact = self._reader.read_one('ref_source', self)
     
-    @property
-    def categorised_by(self):
-        return self._reader.read_one('ref_target', self)
+        
     
     
         

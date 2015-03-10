@@ -37,7 +37,10 @@ class Request(LoggingConfigurable):
             'url' : 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
         'ECB' : {
             'name' : 'European Central Bank',
-            'url' : 'http://sdw-wsrest.ecb.int/service'}
+            'url' : 'http://sdw-wsrest.ecb.int/service'},
+        'ILO' : {
+            'name' : 'International Labor Organisation',
+            'url' : 'http://www.ilo.org/ilostat/sdmx/ws/rest'}
             }
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme', 
                   'categorisation', 'codelist', 'conceptscheme']
@@ -98,8 +101,8 @@ class Request(LoggingConfigurable):
             
             # Set references to sensible defaults  
             if 'references' not in params:
-                if resource_type == 'dataflow' and resource_id: 
-                    params['references'] = 'all'
+                if resource_type == 'dataflow' and resource_id: pass 
+                # params['references'] = 'all'
                 elif resource_type == 'categoryscheme':
                     params['references'] = 'parentsandsiblings'
                     

@@ -47,6 +47,11 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
         self.assertEqual(o0.attrib.DECIMALS, '4')
         
+    def test_write2pandas(self):
+        pd_series, a = self.resp.write()
+        self.assertIsInstance(pd_series, pandas.Series)
+        
+        
 class TestGenericSeriesDataSet(unittest.TestCase):
     
     def setUp(self):

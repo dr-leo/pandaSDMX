@@ -131,7 +131,8 @@ class Response:
             writer_cls = writer_module.Writer
             self._writer = writer_cls(self.msg)
             
-    def write(self, *args, **kwargs): 
+    def write(self, *args, **kwargs):
+        if not args: args = (self.msg.data,) 
         return self._writer.write(*args, **kwargs)
             
         

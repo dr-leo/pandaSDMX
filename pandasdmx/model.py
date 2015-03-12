@@ -569,7 +569,7 @@ class Series(SDMXObject):
 
     def obs(self, with_values = True, with_attributes = True):
         '''
-        return an iterator over observations in a flat dataset or series.
+        return an iterator over observations in a series.
         An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
         obs.key is a namedtuple of dimensions, obs.value is a string value and
         obs.attrib is a namedtuple of attributes. If with_values or with_attributes

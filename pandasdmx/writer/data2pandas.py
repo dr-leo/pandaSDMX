@@ -28,7 +28,7 @@ class Writer(BaseWriter):
         
         dtype: datatype for values. Defaults to 'float64'
         if None, do not return the values of a series. In this case, 
-        'attributes' must not be an empty string.
+        'attributes' must not be an empty string so that some attribute is returned.
         
         attributes: string determining which attributes, if any,
         should be returned in separate series or a separate DataFrame.
@@ -55,42 +55,60 @@ class Writer(BaseWriter):
         if hasattr(data, '__iter__'): iter_series = data
         else: iter_series = data.series
         
-        if asframe:
-            series_list = list(s for s in self.iter_pd_series(
-                iter_series, dim_at_obs, dtype, attributes))
-            if dtype and attributes:
-                pd_series, pd_attributes = zip(*series_list)
-                index_source = pd_series
-            elif dtype: 
-                pd_series = index_source = series_list
-            elif attributes: 
-                pd_attributes = index_source = series_list   
-
-            # Extract dimensions
-            index_tuples = list(s.name for s in index_source)
-            level_names = list(index_source[0].name._fields)
-            col_index = PD.MultiIndex.from_tuples(index_tuples, 
-                                                       names = level_names)
-            
-                     
+        # Is 'data' a flat dataset with just a list of obs?
+        if dim_at_obs == 'AllDimensions':
+            obs_zip = zip(*data.obs())
+            dimensions = next(obs_zip)
+            idx = PD.MultiIndex.from_tuples(dimensions, names = dimensions[0]._fields)
             if dtype:
-                for s in pd_series: s.name = None
-                # Merge series into multi-indexed DataFrame and return it.
-                d_frame = PD.concat(list(pd_series), axis = 1)
-                d_frame.columns = col_index 
+                    values_series = PD.Series(next(obs_zip), dtype = dtype, index = idx)
+            else: 
+                values_series = None
+            if  attributes:
+                obs_attrib = NP.asarray(next(obs_zip), dtype = 'object')
+                attrib_series = PD.Series(obs_attrib, dtype = 'object', index = idx)
+            else: 
+                attrib_series = None
+            return values_series, attrib_series
             
-            if attributes:
-                for s in pd_attributes: s.name = None
-                a_frame = PD.concat(pd_attributes, axis = 1)
-                a_frame.columns = col_index
-            if dtype and attributes: return d_frame, a_frame
-            elif dtype: return d_frame
-            else: return a_frame 
-        
-        # return an iterator
-        else:
-            return self.iter_pd_series(iter_series, dim_at_obs, dtype, 
-                                       attributes)
+            
+        else:    
+            if asframe:
+                series_list = list(s for s in self.iter_pd_series(
+                    iter_series, dim_at_obs, dtype, attributes))
+                if dtype and attributes:
+                    pd_series, pd_attributes = zip(*series_list)
+                    index_source = pd_series
+                elif dtype: 
+                    pd_series = index_source = series_list
+                elif attributes: 
+                    pd_attributes = index_source = series_list   
+    
+                # Extract dimensions
+                index_tuples = list(s.name for s in index_source)
+                level_names = list(index_source[0].name._fields)
+                col_index = PD.MultiIndex.from_tuples(index_tuples, 
+                                                           names = level_names)
+                
+                         
+                if dtype:
+                    for s in pd_series: s.name = None
+                    # Merge series into multi-indexed DataFrame and return it.
+                    d_frame = PD.concat(list(pd_series), axis = 1)
+                    d_frame.columns = col_index 
+                
+                if attributes:
+                    for s in pd_attributes: s.name = None
+                    a_frame = PD.concat(pd_attributes, axis = 1)
+                    a_frame.columns = col_index
+                if dtype and attributes: return d_frame, a_frame
+                elif dtype: return d_frame
+                else: return a_frame 
+            
+            # return an iterator
+            else:
+                return self.iter_pd_series(iter_series, dim_at_obs, dtype, 
+                                           attributes)
             
         
     def iter_pd_series(self, iter_series, dim_at_obs, dtype, attributes):

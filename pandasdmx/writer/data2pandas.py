@@ -57,7 +57,7 @@ class Writer(BaseWriter):
         
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = zip(*data.obs())
+            obs_zip = iter(zip(*data.obs()))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(dimensions, names = dimensions[0]._fields)
             if dtype:

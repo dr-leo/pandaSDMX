@@ -28,7 +28,7 @@ class SDMXObject(object):
       
 class Message(SDMXObject):
     _payload_names = OrderedDict(
-                                 footer = 'read_identifiables')
+                                 footer = 'read_one')
     
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
@@ -46,7 +46,7 @@ class Message(SDMXObject):
     
 class StructureMessage(Message):
     _payload_names = OrderedDict(
-                                 footer = 'read_identifiables', # fix this 
+                                 footer = 'read_one',
                                  codelists = 'read_identifiables',  
                                  conceptschemes = 'read_identifiables', 
                                  dataflows = 'read_identifiables', 
@@ -106,19 +106,20 @@ class Header(SDMXObject):
 
 
 class Footer(SDMXObject):
-    @property
-    def id(self):
-        return self._reader.header_id(self)
     
     @property
-    def prepared(self):
-        return self._reader.header_prepared(self) 
+    def text(self): 
+        return self._reader.footer_text(self)
 
     @property
-    def sender(self):
-        return self._reader.header_sender(self) 
+    def severity(self): 
+        return self._reader.footer_severity(self)
 
-        
+    @property
+    def code(self): 
+        return self._reader.footer_code(self)
+
+
 class Annotation(SDMXObject):
     
     @property
@@ -151,9 +152,9 @@ class AnnotableArtefact(SDMXObject):
     
         
 class IdentifiableArtefact(AnnotableArtefact):
-    @property
-    def id(self):
-        return self._reader.identity(self)
+    def __init__(self, *args, **kwargs):
+        super(IdentifiableArtefact, self).__init__(*args, **kwargs)
+        self.id = self._reader.identity(self)
 
     def __eq__(self, value):
         if isinstance(value, str_type):
@@ -180,11 +181,20 @@ class IdentifiableArtefact(AnnotableArtefact):
 class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
-        return self._reader.international_str('Name', self)
+        try:
+            return self._name
+        except AttributeError:
+            self._name = self._reader.international_str('Name', self)
+            return self._name
     
     @property
     def description(self):
-        return self._reader.international_str('Description', self)    
+        try:
+            return self._description
+        except AttributeError:
+            self._description = self._reader.international_str('description', self)
+            return self._description
+    
     
     def __str__(self):
         return ' '.join((self.__class__.__name__, ':', self.id, ' :', self.name.en))

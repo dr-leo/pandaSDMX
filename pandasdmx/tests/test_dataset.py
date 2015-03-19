@@ -18,7 +18,7 @@ class TestGenericFlatDataSet(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_flat.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_msg_type(self):
         self.assertIsInstance(self.resp.msg, model.GenericDataMessage)
@@ -57,7 +57,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts_gf.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_header_attributes(self):
         self.assertEqual(self.resp.msg.header.structured_by, 'STR1')
@@ -100,7 +100,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         # now with attributes
-        pd_series = [s for s in resp.write(data)]
+        pd_series = [s for s in resp.write(data, attributes = 'osgd')]
         self.assertEqual(len(pd_series), 4)
         self.assertIsInstance(pd_series[0], tuple) # contains 2 series 
         self.assertEqual(len(pd_series[0]), 2)
@@ -121,7 +121,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
         
     def test_header_attributes(self):
@@ -166,7 +166,7 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
     def setUp(self):
         self.estat = Request()
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_sg/generic/ecb_exr_sg_ts.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_groups(self):
         data = self.resp.msg.data
@@ -188,7 +188,7 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
     def setUp(self):
         self.estat = Request()
         filepath = os.path.join(pkg_path, 'data/exr/ecb_exr_rg/generic/ecb_exr_rg_ts.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_groups(self):
         data = self.resp.msg.data

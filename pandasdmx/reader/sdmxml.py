@@ -20,13 +20,13 @@ class SDMXMLReader(Reader):
             'com' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
             'str' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
             'mes' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-    'gen' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic'
+    'gen' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
+    'footer' : 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer'
     }
 
     def initialize(self, source):
         tree = etree.parse(source)
         root = tree.getroot()
-        xpath_eval = etree.XPathEvaluator(root)
         if root.tag.endswith('Structure'):
             cls = model.StructureMessage
         elif (root.tag.endswith('GenericData') 
@@ -58,7 +58,7 @@ class SDMXMLReader(Reader):
     # unchanged. This is useful for strings as attribute values. 
     _model_map = {
         'header' : (XPath('mes:Header', namespaces = _nsmap), model.Header),
-        'footer' : (XPath('mes:Footer', namespaces = _nsmap), model.Footer), 
+        'footer' : (XPath('footer:Footer/footer:Message', namespaces = _nsmap), model.Footer), 
         'annotations' : (XPath('com:Annotations/com:Annotation', 
                              namespaces = _nsmap), model.Annotation),
         'annotationtype' : (XPath('com:AnnotationType/text()', namespaces = _nsmap), None),
@@ -185,6 +185,22 @@ class SDMXMLReader(Reader):
         if not elem_attrib:
             elem_attrib = ['en']
         return DictLike(zip(elem_attrib, values))
+
+    def footer_text(self, sdmxobj):
+        '''
+        return list of xml:lang attributes. If node has no attributes,
+        assume that language is 'en'.
+        '''
+        values = sdmxobj._elem.xpath('com:Text/text()', 
+                             namespaces = self._nsmap)
+        return values
+
+    def footer_code(self, sdmxobj):
+        return int(sdmxobj._elem.get('code'))
+    
+    def footer_severity(self, sdmxobj):
+        return sdmxobj._elem.get('severity')
+    
 
     def header_prepared(self, sdmxobj):
         return sdmxobj._elem.Prepared[0].text # convert this to datetime obj?

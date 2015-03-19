@@ -4,9 +4,7 @@ from IPython.config.configurable import LoggingConfigurable
 from IPython.utils.traitlets import Int 
 import requests
 from tempfile import SpooledTemporaryFile as STF
-from io import BytesIO
-import re, zipfile, time
-
+from contextlib import closing
 
     
 
@@ -24,21 +22,21 @@ class REST(LoggingConfigurable):
         
         
                              
-    def get(self, url, from_file = None, params = {}):
+    def get(self, url, fromfile = None, params = {}):
         '''
         Read file from URL or local file.
         
         Return file-like for parsing
         Raise error if file could not be obtained.
  '''
-        if from_file:
+        if fromfile:
             # Load data from local file 
-            source = open(from_file, 'rb')
-            final_url = None    
+            source = open(fromfile, 'rb')
+            final_url = status_code = None    
         else:
             self.log.debug('Requesting %s', url)
-            source, final_url = self.request(url, params = params) 
-        return source, final_url
+            source, final_url, status_code = self.request(url, params = params) 
+        return source, final_url, status_code
          
     
     def request(self, url, params = {}):
@@ -51,45 +49,13 @@ class REST(LoggingConfigurable):
         :return: the xml data as file-like object 
         """
         
-        response = requests.get(url, params = params, stream = True, timeout= 30.1)
-        
-        if response.status_code == requests.codes.OK:
-            source  = STF(max_size = self.max_size)
-            for c in response.iter_content(chunk_size = 1000000):
-                source.write(c)
-            source.seek(0)
-        elif response.status_code == 430:
-            #Sometimes, eurostat creates a zipfile when the query is too large. We have to wait for the file to be generated.
-            parser = lxml.etree.XMLParser(
-                                          ns_clean=True, recover=True)
-            tree = lxml.etree.fromstring(source, parser = parser)
-            messages = tree.xpath('.//footer:Message/common:Text',
-                                      namespaces = tree.nsmap)
-            regex_ = re.compile("Due to the large query the response will be written "
-                                "to a file which will be located under URL: (.*)")
-            matches = [regex_.match(element.text) for element in messages]
-            if matches:
-                source = None
-                i = 30
-                while i < 51:
-                    time.sleep(i)
-                    i = i+10
-                    url = matches[0].groups()[0]
-                    response = requests.get(url)
-                    if response.headers['content-type'] == "application/octet-stream":
-                        buffer = BytesIO(response.content)
-                        file = zipfile.ZipFile(buffer)
-                        filename = file.namelist()[0]
-                        source = file.read(filename)
-                        break
-                if source is None:
-                    raise requests.exceptions.HTTPError("The SDMX server didn't provide the requested file. Error code: {0}" 
-                                                            .format(response.status_code))
+        with closing(requests.get(url, params = params, 
+                                  stream = True, timeout= 30.1)) as response:
+            if response.status_code == requests.codes.OK:
+                source = STF(max_size = self.max_size)
+                for c in response.iter_content(chunk_size = 1000000):
+                    source.write(c)
+                source.seek(0)
             else:
-                raise requests.exceptions.HTTPError(
-                        "SDMX server returned an error message. Code: {0}"
-                        .format(response.status_code))      
-        else:
-            raise requests.exceptions.HTTPError("SDMX server returned an error message. Code: {0}"
-                    .format(response.status_code))      
-        return source, response.url
+                source = None
+            return source, response.url, int(response.status_code)

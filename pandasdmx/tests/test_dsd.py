@@ -19,7 +19,7 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(test_path, 'data/estat/apro_dsd.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_codelists_keys(self):
         self.assertEqual(len(self.resp.msg.codelists), 6)
@@ -37,7 +37,7 @@ class test_dsd_common(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(test_path, 'data/common/common.xml')
-        self.resp = self.estat.get(from_file = filepath)
+        self.resp = self.estat.get(fromfile = filepath)
         
     def test_codelists_keys(self):
         self.assertEqual(len(self.resp.msg.codelists), 5)

@@ -31,7 +31,7 @@ class Request(LoggingConfigurable):
     REST or similar client to communicate with the web service""")
     
     _agencies = {
-        '' : None, # empty agency for convenience when from_file is given.
+        '' : None, # empty agency for convenience when fromfile is given.
         'ESTAT' : {
             'name' : 'Eurostat',
             'url' : 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
@@ -70,17 +70,17 @@ class Request(LoggingConfigurable):
             
     
     def get(self, resource_type = '', resource_id = '', agency = '', key = '', params = {},
-                 from_file = None, to_file = None):
+                 fromfile = None, tofile = None):
         '''
-        Load a source file identified by the URL suffix or filename given as from_file kwarg.
-        If to_file is not None, save the file under that name.
+        Load a source file identified by the URL suffix or filename given as fromfile kwarg.
+        If tofile is not None, save the file under that name.
         return a reader for the file as stored by self.client (mostly in a Spooled TempFile, or, if
         the downloaded file has been saved to a permanent local file, for that file.
         '''
         # Validate args
         if not agency: agency = self.agency 
         # Validate resource if no filename is specified
-        if not from_file and resource_type not in self._resources:
+        if not fromfile and resource_type not in self._resources:
             raise ValueError('resource must be one of {0}'.format(self._resources))
         # resource_id: if it is not a str or unicode type, 
         # but, e.g., a model.DataflowDefinition, 
@@ -106,34 +106,35 @@ class Request(LoggingConfigurable):
                 elif resource_type == 'categoryscheme':
                     params['references'] = 'parentsandsiblings'
                     
-        elif from_file: 
+        elif fromfile: 
             base_url = ''
         else:
-            raise ValueError('Either agency or from_file must be given.') 
+            raise ValueError('Either agency or fromfile must be given.') 
         
         # Now get the SDMX message either via http or as local file 
-        source, url = self.client.get(base_url, params = params, from_file = from_file)
-        if to_file:
-            with open(to_file, 'wb') as dest:
+        source, url, status_code = self.client.get(base_url, params = params, fromfile = fromfile)
+        if tofile:
+            with open(tofile, 'wb') as dest:
                 dest.write(source.read())
                 source.seek(0)
         msg = self.get_reader().initialize(source)
-        return Response(msg, url, writer = self.writer)
+        return Response(msg, url, status_code, writer = self.writer)
     
     
 class Response:
-    def __init__(self, msg, url, writer = None):
+    def __init__(self, msg, url, status_code, writer = None):
         self.msg =msg
         self.url = url
+        self.status_code = status_code
         # Initialize the writer if given
         if writer:
             writer_module = import_module(writer['name'])
             writer_cls = writer_module.Writer
             self._writer = writer_cls(self.msg)
             
-    def write(self, *args, **kwargs):
-        if not args: args = (self.msg.data,) 
-        return self._writer.write(*args, **kwargs)
+    def write(self, input = None, **kwargs):
+        if not input: input = self.msg
+        return self._writer.write(input = input, **kwargs)
             
         
         

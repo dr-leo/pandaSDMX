@@ -14,12 +14,12 @@ from pandasdmx.writer.common import BaseWriter
     
 class Writer(BaseWriter):
 
-    def write(self, data, asframe = False, dtype = NP.float64, 
-              attributes = 'osgd'):
+    def write(self, input = None, asframe = False, dtype = NP.float64, 
+              attributes = ''):
         '''
         Generate pandas.Series from model.Series
         
-        data: a model.DataSet or iterator of model.Series
+        input: a model.DataSet or iterator of model.Series
          
         asframe: if True, merge the series of values and/or attributes 
         into one or two multi-indexed 
@@ -34,9 +34,9 @@ class Writer(BaseWriter):
         should be returned in separate series or a separate DataFrame.
         'attributes' may have one of the following values: '', 'o', 's', 'g', 'd'
         or any combination thereof such as 'os', 'go'. Defaults to 'osgd'. 
-        Where 'o', 's', and 'g' mean that attributes at observation,
+        Where 'o', 's', 'g', and 'd' mean that attributes at observation,
         series, group and dataset level will be returned as members of 
-        per-observation namedtuples. 
+        per-observation dict-likes with attribute-like access. 
         
         '''
         
@@ -51,13 +51,14 @@ class Writer(BaseWriter):
         if set(attributes) - {'o','s','g', 'd'}: 
             raise ValueError("'attributes' must only contain 'o', 's' or 'g'.")
         
-        # Allow data to be either an iterator or a model.DataSet instance
-        if hasattr(data, '__iter__'): iter_series = data
-        else: iter_series = data.series
+        # Allow input to be either an iterator or a model.DataSet instance
+        if hasattr(input, '__iter__'): iter_series = input
+        elif hasattr(input, 'series'): iter_series = input.series
+        elif hasattr(input, 'data') and dim_at_obs != 'AllDimensions': iter_series = input.data.series
         
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = iter(zip(*data.obs()))
+            obs_zip = iter(zip(*input.data.obs()))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(dimensions, names = dimensions[0]._fields)
             if dtype:
@@ -71,7 +72,7 @@ class Writer(BaseWriter):
                 attrib_series = None
             return values_series, attrib_series
             
-            
+        # So dataset has series:
         else:    
             if asframe:
                 series_list = list(s for s in self.iter_pd_series(
@@ -94,12 +95,12 @@ class Writer(BaseWriter):
                 if dtype:
                     for s in pd_series: s.name = None
                     # Merge series into multi-indexed DataFrame and return it.
-                    d_frame = PD.concat(list(pd_series), axis = 1)
+                    d_frame = PD.concat(list(pd_series), axis = 1, copy = False)
                     d_frame.columns = col_index 
                 
                 if attributes:
                     for s in pd_attributes: s.name = None
-                    a_frame = PD.concat(pd_attributes, axis = 1)
+                    a_frame = PD.concat(pd_attributes, axis = 1, copy = False)
                     a_frame.columns = col_index
                 if dtype and attributes: return d_frame, a_frame
                 elif dtype: return d_frame

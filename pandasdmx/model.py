@@ -577,7 +577,7 @@ class Series(SDMXObject):
         return g_attrib
           
 
-    def obs(self, with_values = True, with_attributes = True):
+    def obs(self, with_values = True, with_attributes = True, reverse_obs = False):
         '''
         return an iterator over observations in a series.
         An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
@@ -586,7 +586,8 @@ class Series(SDMXObject):
         is False, the respective value is None. Use these flags to
         increase performance. The flags default to True. 
         '''
-        return self._reader.iter_generic_series_obs(self, with_values, with_attributes)
+        return self._reader.iter_generic_series_obs(self, 
+                                with_values, with_attributes, reverse_obs)
             
 
 class Group(SDMXObject):

@@ -1,7 +1,8 @@
 from pandasdmx import Request
-r = Request('ECB')
-milk_flows = [flow
-for flow in r.get(resource_type='dataflow').msg.dataflows.find('EXR')]
+r = Request('ESTAT')
+resp = r.get(resource_type='dataflow') 
+milk_flows = [flow for flow in resp.msg.dataflows.find(
+            'milk', language = 'en', field = 'name')]
 c = 0
 for flow in milk_flows:
     msg = r.get(resource_type = 'data', resource_id = flow, tofile = str(c) + '_EXRdata.xml')

@@ -14,8 +14,8 @@ from pandasdmx.writer.common import BaseWriter
     
 class Writer(BaseWriter):
 
-    def write(self, input = None, asframe = False, dtype = NP.float64, 
-              attributes = ''):
+    def write(self, input = None, asframe = True, dtype = NP.float64, 
+              attributes = '', reverse_obs = False, fromfreq = True):
         '''
         Generate pandas.Series from model.Series
         
@@ -44,13 +44,15 @@ class Writer(BaseWriter):
         dim_at_obs = self.msg.header.dim_at_obs
         
         # validate 'attributes'
-        try:
-            attributes = attributes.lower()
-        except AttributeError:
-            raise TypeError("'attributes' argument must be of type str.")
-        if set(attributes) - {'o','s','g', 'd'}: 
-            raise ValueError("'attributes' must only contain 'o', 's' or 'g'.")
-        
+        if attributes is None or attributes == False: attributes = ''
+        else:
+            try:
+                attributes = attributes.lower()
+            except AttributeError:
+                raise TypeError("'attributes' argument must be of type str.")
+            if set(attributes) - {'o','s','g', 'd'}: 
+                raise ValueError("'attributes' must only contain 'o', 's', 'd' or 'g'.")
+            
         # Allow input to be either an iterator or a model.DataSet instance
         if hasattr(input, '__iter__'): iter_series = input
         elif hasattr(input, 'series'): iter_series = input.series
@@ -63,20 +65,21 @@ class Writer(BaseWriter):
             idx = PD.MultiIndex.from_tuples(dimensions, names = dimensions[0]._fields)
             if dtype:
                     values_series = PD.Series(next(obs_zip), dtype = dtype, index = idx)
-            else: 
-                values_series = None
             if  attributes:
                 obs_attrib = NP.asarray(next(obs_zip), dtype = 'object')
                 attrib_series = PD.Series(obs_attrib, dtype = 'object', index = idx)
-            else: 
-                attrib_series = None
-            return values_series, attrib_series
+            # Decide what to return
+            if dtype and attributes:
+                return values_series, attrib_series
+            elif dtype: return values_series
+            elif attributes: return attrib_series
             
         # So dataset has series:
         else:    
             if asframe:
                 series_list = list(s for s in self.iter_pd_series(
-                    iter_series, dim_at_obs, dtype, attributes))
+                    iter_series, dim_at_obs, dtype, attributes, 
+                    reverse_obs, fromfreq))
                 if dtype and attributes:
                     pd_series, pd_attributes = zip(*series_list)
                     index_source = pd_series
@@ -102,6 +105,7 @@ class Writer(BaseWriter):
                     for s in pd_attributes: s.name = None
                     a_frame = PD.concat(pd_attributes, axis = 1, copy = False)
                     a_frame.columns = col_index
+                # decide what to return
                 if dtype and attributes: return d_frame, a_frame
                 elif dtype: return d_frame
                 else: return a_frame 
@@ -109,10 +113,11 @@ class Writer(BaseWriter):
             # return an iterator
             else:
                 return self.iter_pd_series(iter_series, dim_at_obs, dtype, 
-                                           attributes)
+                                           attributes, reverse_obs, fromfreq)
             
         
-    def iter_pd_series(self, iter_series, dim_at_obs, dtype, attributes):
+    def iter_pd_series(self, iter_series, dim_at_obs, dtype, 
+                       attributes, reverse_obs, fromfreq):
         # Pre-compute some values before looping over the series
         o_in_attrib = 'o' in attributes
         s_in_attrib = 's' in attributes
@@ -121,7 +126,7 @@ class Writer(BaseWriter):
         
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_zip = iter(zip(*series.obs(dtype, attributes)))
+            obs_zip = iter(zip(*series.obs(dtype, attributes, reverse_obs)))
             obs_dim = next(obs_zip)
             l = len(obs_dim)
             obs_values = NP.array(next(obs_zip), dtype = dtype)
@@ -131,17 +136,34 @@ class Writer(BaseWriter):
             # Generate the index 
             if dim_at_obs == 'TIME_PERIOD':
                 # Check if we can build the index based on start and freq
-                try:
+                # Constructing the index from the first value and FREQ should only
+                # occur if 'fromfreq' is True 
+                # and there is a FREQ dimension at all.
+                if fromfreq and 'FREQ' in series.key._fields:  
                     f = series.key.FREQ
+                    # Remove '-' from strings like '2014-Q1' to make pandas digest them.
+                    # Use a regex instead to cover other cases such as '2014-H1' or '2014-W20'?
+                    if '-Q' in obs_dim[0]:
+                        obs_dim = list(obs_dim)
+                        obs_dim[0] = obs_dim[0].replace('-Q', 'Q')
                     series_index = PD.period_range(start = obs_dim[0], periods = l, freq = f)
-                except KeyError:
-                    series_index = PD.PeriodIndex(obs_dim)
+                elif 'FREQ' in series.key._fields:
+                    f = series.key.FREQ
+                    # build the index from all observations.
+                    # Remove the '-' in all dimension strings such as '2012-Q1'
+                    if '-Q' in obs_dim[0]:
+                        obs_dim = list(obs_dim)
+                        for i in range(l):
+                            obs_dim[i] = obs_dim[i].replace('-Q', 'Q') 
+                    series_index = PD.PeriodIndex(obs_dim, 
+                                                  freq = f)
             elif dim_at_obs == 'TIME':
-                try:
+                if fromfreq and 'FREQ' in series.key._fields:
                     f = series.key.FREQ
                     series_index = PD.date_range(start = obs_dim[0], periods = l, freq = f)
-                except KeyError:
+                else:
                     series_index = PD.DatetimeIndex(obs_dim)
+            # Not a datetime or period index
             else: series_index = PD.Index(obs_dim)
             
             if dtype:
@@ -163,4 +185,4 @@ class Writer(BaseWriter):
             elif attributes: yield attrib_series
             else: raise ValueError(
                 "At least one of 'dtype' or 'attributes' args must be True.")
-                
+                        

@@ -48,7 +48,8 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.attrib.DECIMALS, '4')
         
     def test_write2pandas(self):
-        pd_series, a = self.resp.write()
+        pd_series = self.resp.write(attributes = '', 
+                                    asframe = False, reverse_obs = False)
         self.assertIsInstance(pd_series, pandas.Series)
         
         
@@ -79,7 +80,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(s3.key), 5)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
-        obs_list = list(s3.obs())
+        obs_list = list(s3.obs(reverse_obs = True))
         self.assertEqual(len(obs_list), 3)
         o0 = obs_list[2]
         self.assertEqual(len(o0), 3)
@@ -92,7 +93,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_pandas(self):
         resp = self.resp
         data = resp.msg.data
-        pd_series = [s for s in resp.write(data, attributes = '')]
+        pd_series = [s for s in resp.write(data, attributes = '', reverse_obs = True, asframe=False)]
         self.assertEqual(len(pd_series), 4)
         s3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
@@ -100,7 +101,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         # now with attributes
-        pd_series = [s for s in resp.write(data, attributes = 'osgd')]
+        pd_series = [s for s in resp.write(data, attributes = 'osgd', reverse_obs = True, asframe=False)]
         self.assertEqual(len(pd_series), 4)
         self.assertIsInstance(pd_series[0], tuple) # contains 2 series 
         self.assertEqual(len(pd_series[0]), 2)
@@ -144,7 +145,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(len(s3.key), 5)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
-        obs_list = list(s3.obs())
+        obs_list = list(s3.obs(reverse_obs = True))
         self.assertEqual(len(obs_list), 3)
         o0 = obs_list[2]
         self.assertEqual(len(o0), 3)
@@ -155,7 +156,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     
     def test_dataframe(self):
         data = self.resp.msg.data
-        df = self.resp.write(data, attributes = '', asframe = True)
+        df = self.resp.write(data, attributes = '', asframe = True, reverse_obs = True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (3,4))
         

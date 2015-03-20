@@ -15,3 +15,5 @@ pyzmq==14.3.1
 requests>=2.3
 Sphinx==1.2.3
 Sphinx-PyPI-upload==0.2.1
+mistune>=0.5
+jsonschema>=2.4.0

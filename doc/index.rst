@@ -9,9 +9,10 @@ Welcome to pandaSDMX's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-
+    intro
+    api/modules
 
 Indices and tables
 ==================

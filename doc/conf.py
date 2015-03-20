@@ -31,6 +31,10 @@ import os
 # ones.
 extensions = [
     'sphinx.ext.viewcode',
+    'sphinx.ext.autodoc',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'IPython.sphinxext.ipython_directive',
+    'sphinx.ext.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

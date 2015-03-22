@@ -1,6 +1,6 @@
     
     
-3. Quick start
+Basic usage
 ===============
 
 
@@ -8,35 +8,18 @@ Suppose we wanted to conduct some research on the European dairy industry.
 We look for relevant data from Eurostat, 
 the European statistics office. It provides about 5700 dataflows on 28 EU countries and more. 
 
-Step 1: Instantiate a 'Client' for Eurostat
---------------------------------------------
+We import pandasdmx as follows: 
 
 .. ipython:: python
 
+    from pandasdmx import Request # we could have imported '*' as well
+    estat = Request('ESTAT')
+    # 'ESTAT' is called an atency ID. Each SDMX data provider has one.
+    # The supported agencies are hard-coded in a dict containing
+    # enough information to emit requests to each agency.
+    # The following agencies are supported:
+    estat._agencies.keys() 
 
-    In [1]: from pandasdmx import Request
-    In [2]: req = Request('ESTAT')
-    In [3]: req
-
- 
->>> estat = client('Eurostat', 'milk.db')
-
- 
-Step 2: Get the available dataflows and identify interesting datasets
------------------------------------------------------------------------
-
-Now that we have an SDMX client for Eurostat, we call its 'get_dataflows' method
-to download the complete list of dataflows. A dataflow is essentially a tuple describing
-a dataset. Its main fields are a flow reference ('flowref')and a human-readable description ('title'). 
-Eurostat offers about 4500 datasets. Downloading the complete
-list of dataflows may take a while.   
-
->>> db = estat.get_dataflows()
->>> str(estat)
-"<class 'pandasdmx.Client'>('http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest', 'ESTAT', db_filename = 'milk.db') Database: <sqlite3.Connection object at 0x0501A130> ['table: ESTAT_dataflows SQL: CREATE TABLE ESTAT_dataflows \\n            (id INTEGER PRIMARY KEY, agencyID text, flowref text, version text, title text); ']"
-
-The string representation of 'Client' shows the attached SQLite database and the tables. Note
-that the get_dataflows() method has just created the 'ESTAT_dataflows' table.
 
 Next, we select dataflows whose title (description) contains the word 'milk'.
 

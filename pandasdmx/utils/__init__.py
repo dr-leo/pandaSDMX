@@ -6,23 +6,38 @@ module pandasdmx.utils - helper classes and functions
 
 from .aadict import aadict 
 from collections import namedtuple
-from itertools import chain
 import sys
 
 class DictLike(aadict):
+    '''Thin wrapper around dict type
+    
+    It allows attribute-like item access, has a :meth:`find` method and inherits other
+    useful features from aadict.
+    '''
     
      
     @property
     def aslist(self):
+        '''property returning values() as unordered list'''
         return list(self.values()) 
         
 
     def find(self, search_str, by = 'name', language = 'en'):
-        '''
-        return new DictLike of items where value.<by> contains the search_str. 'by' defaults to 'name'. 
-        If the <by> attribute is an international string,
-        'language' (defaults to 'en') is used to select the desired language. self.values() should therefore contain model.NameableArtefact subclass instances.
-        Any capitalization is disregarded. Hence 'a' == 'A'.
+        '''Select values by attribute
+        
+        Args:
+            searchstr(str): the string to search for
+            by(str): the name of the attribute to search by, defaults to 'name'
+                The specified attribute must be either a string
+                or a dict mapping language codes to strings. 
+                Such attributes occur, e.g. in :class:`pandasdmx.model.NameableArtefact` which is
+                a base class for :class:`pandasdmx.model.DataFlowDefinition` and many others.
+            language(str): language code specifying the language of the text to be searched, defaults to 'en'
+            
+        Returns: 
+            new DictLike of items where value.<by> contains the search_str. International strings
+            stored as dict with language codes as keys are
+            searched. Capitalization is ignored.  
         '''
         s = search_str.lower()
         # We distinguish between international strings stored as dict such as 
@@ -58,15 +73,6 @@ has already been created.
     
 namedtuple_factory = NamedTupleFactory()    
         
-def chain_namedtuples(*nt):
-    if len(nt) == 0:
-        raise TypeError('Expected at least 1 argument, 0 given.')
-    if len(nt) == 1: return nt
-    fields = tuple(chain(*(i._fields for i in nt)))
-    new_type = namedtuple_factory('Chained', fields)
-    values = chain(*nt)
-    return new_type._make(values)
-       
             
 # 2to3 compatibility
 if sys.version[0] == '3': str_type = str

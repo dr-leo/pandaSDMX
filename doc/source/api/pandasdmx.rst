@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     pandasdmx.reader
-    pandasdmx.tests
     pandasdmx.utils
     pandasdmx.writer
 

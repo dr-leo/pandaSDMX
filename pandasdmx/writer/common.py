@@ -1,6 +1,6 @@
 
 '''
-Thie module contains the base class for writers. 
+This module contains the base class for writers. 
 '''
 
 

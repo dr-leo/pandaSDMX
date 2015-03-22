@@ -8,7 +8,7 @@ Contents:
     :maxdepth: 2
 
     intro
-    tutorial
+    usage
     api/modules
 
 Indices and tables

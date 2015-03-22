@@ -12,22 +12,22 @@ from pandasdmx.writer.common import BaseWriter
     
 class Writer(BaseWriter):
 
-    def write(self, input = None, asframe = True, dtype = NP.float64, 
+    def write(self, source = None, asframe = True, dtype = NP.float64, 
               attributes = '', reverse_obs = False, fromfreq = True):
         '''Transfform a :class:`pandasdmx.model.DataMessage` instance to a pandas DataFrame
         or iterator over pandas Series.
         
         Args:         
-            input(pandasdmx.model.DataMessage): a model.DataSet or iterator of model.Series
+            source(pandasdmx.model.DataMessage): a model.DataSet or iterator of model.Series
          
             asframe(bool): if True, merge the series of values and/or attributes 
                 into one or two multi-indexed 
                 pandas.DataFrame(s), otherwise return an iterator of pandas.Series.
                 (default: False)
         
-            dtype(str, NP.dtype, None): datatype for values. Defaults to 'float64'
+            dtype(str, NP.dtype, None): datatype for values. Defaults to NP.float64
                 if None, do not return the values of a series. In this case,
-            `attributes` must not be an empty string so that some attribute is returned.
+                attributes must not be an empty string so that some attribute is returned.
         
             attributes(str, None): string determining which attributes, if any,
                 should be returned in separate series or a separate DataFrame.
@@ -52,14 +52,14 @@ class Writer(BaseWriter):
             if set(attributes) - {'o','s','g', 'd'}: 
                 raise ValueError("'attributes' must only contain 'o', 's', 'd' or 'g'.")
             
-        # Allow input to be either an iterator or a model.DataSet instance
-        if hasattr(input, '__iter__'): iter_series = input
-        elif hasattr(input, 'series'): iter_series = input.series
-        elif hasattr(input, 'data') and dim_at_obs != 'AllDimensions': iter_series = input.data.series
+        # Allow source to be either an iterator or a model.DataSet instance
+        if hasattr(source, '__iter__'): iter_series = source
+        elif hasattr(source, 'series'): iter_series = source.series
+        elif hasattr(source, 'data') and dim_at_obs != 'AllDimensions': iter_series = source.data.series
         
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = iter(zip(*input.data.obs()))
+            obs_zip = iter(zip(*source.data.obs()))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(dimensions, names = dimensions[0]._fields)
             if dtype:

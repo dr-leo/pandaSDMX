@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 '''
-This module defines two classes: :class:`Request` and :class:`Response`.
+This module defines two classes: :class:`pandasdmx.api.Request` and :class:`pandasdmx.api.Response`.
 Together, these form the high-level API of :mod:`pandasdmx`. Requesting data and metadata from
 an SDMX server requires a good understanding of this API and a basic understanding of the SDMX web service guidelines 
 only the chapters on REST services are relevant as pandasdmx does not support the 
@@ -45,6 +45,7 @@ class Request(object):
         '''Set the data provider and writer for an instance.
         
         Args:
+        
             agency(str): identifier of a data provider.
                 Must be one of the dict keys in Request._agencies such as 
                 'ESTAT', 'ECB', 'ILO', ''. 
@@ -78,54 +79,46 @@ class Request(object):
     
     def get(self, resource_type = '', resource_id = '', agency = '', key = '', params = {},
                  fromfile = None, tofile = None):
-        '''get SDMX data or metadata and return it as a :class:`Response` instance.
+        '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
         
-            While 'get' can load any SDMX file specified by 'fromfile',
-            it can only contact the SDMX service set for this instance. Hence, you
-            have to instantiate a :class:`Request` instance for each data provider you want to access.
-        
+        While 'get' can load any SDMX file specified by 'fromfile',
+        it can only contact the SDMX service set for this instance. Hence, you
+        have to instantiate a :class:`pandasdmx.api.Request` instance for each data provider you want to access.
+    
         Args:
-            
             resource_type(str): the type of resource to be requested. Values must be
                 one of the items in Request._resources such as 'data', 'dataflow', 'categoryscheme' etc.
                 It is used for URL construction, not to read the received SDMX file.
                 Hence, if `fromfile` is given, `resource_type` may be ''.
                 Defaults to ''.
-                
             resource_id(str): the id of the resource to be requested.
                 It is used for URL construction. Defaults to ''.
-                  
-agency(str): ID of the agency providing the data or metadata. 
-Used for URL construction only. It tells the SDMX web service
-which agency the requested information originates from. Note that
-an SDMX service may provide information from multiple data providers.
-may be '' if `fromfile` is given. Not to be confused
-with the agency ID passed to :meth:`__init__` which specifies
-the SDMX web service to be accessed.
-   
-params(dict): defines the query part of the URL. 
-    The SDMX web service guidelines (www.sdmx.org) explain the meaning of
-    permissible parameters. It can be used to restrict the
-    time range of the data to be delivered (startperiod, endperiod), whether parents, siblings or descendants of the specified
-    resource should be returned as well (e.g. references='parentsandsiblings'). Sensible defaults
-    are set automatically 
-    depending on the values of other args such as `resource_type`.
-    Defaults to {}.
+            agency(str): ID of the agency providing the data or metadata. 
+                Used for URL construction only. It tells the SDMX web service
+                which agency the requested information originates from. Note that
+                an SDMX service may provide information from multiple data providers.
+                may be '' if `fromfile` is given. Not to be confused
+                with the agency ID passed to :meth:`__init__` which specifies
+                the SDMX web service to be accessed.
+            params(dict): defines the query part of the URL. 
+                The SDMX web service guidelines (www.sdmx.org) explain the meaning of
+                permissible parameters. It can be used to restrict the
+                time range of the data to be delivered (startperiod, endperiod), whether parents, siblings or descendants of the specified
+                resource should be returned as well (e.g. references='parentsandsiblings'). Sensible defaults
+                are set automatically 
+                depending on the values of other args such as `resource_type`.
+                Defaults to {}.
+            fromfile(str): path to the file to be loaded instead of
+                accessing an SDMX web service. Defaults to None. If `fromfile` is
+                given, args relating to URL construction will be ignored.
+            tofile(str): file path to write the received SDMX file on the fly. This
+                is useful if you want to load data offline using
+                `fromfile` or if you want to open an SDMX file in
+                an XML editor.
     
-fromfile(str): path to the file to be loaded instead of
-    accessing an SDMX web service. Defaults to None. If `fromfile` is
-    given, args relating to URL construction will be ignored.
-    
-tofile(str): file path to write the received SDMX file on the fly. This
-    is useful if you want to load data offline using
-    `fromfile` or if you want to open an SDMX file in
-    an XML editor.
-    
-        
-        return: 
-        
-            :class:`Response` instance containing the requested
-            SDMX Message.
+        Returns: 
+            pandasdmx.api.Response: instance containing the requested
+                SDMX Message.
               
         '''
         # Validate args
@@ -172,25 +165,61 @@ tofile(str): file path to write the received SDMX file on the fly. This
         return Response(msg, url, status_code, writer = self.writer)
     
     
-class Response:
+class Response(object):
     '''Container class for SDMX messages. 
     
-        It is instantiated by :meth:`Request.get`. 
+    It is instantiated by :meth:`pandasdmx.api.Request.get` .
+        
+    Attributes:
+        msg(pandasdmx.model.Message): a pythonic representation
+            of the SDMX message
+        status_code(int): the status code from the http response, if any
+        url(str): the URL, if any, that was sent to the SDMX server
+        
+    Methods:
+        write: wrapper around the writer's write method.
+            Arguments are propagated to the writer. 
     '''
+    
     def __init__(self, msg, url, status_code, writer = None):
+        '''Set the main attributes and instantiate the writer if given.
+        
+        Args:
+            msg(pandasdmx.model.Message): the SDMX message
+            url(str): the URL, if any, that had been sent to the SDMX server
+            status_code(int): the status code returned by the server
+            writer(str): the module path for the writer class
+        
+        '''
         self.msg =msg
         self.url = url
         self.status_code = status_code
+        self.init_writer(writer)
+        
+    def init_writer(self, writer):
         # Initialize the writer if given
         if writer:
             writer_module = import_module(writer)
             writer_cls = writer_module.Writer
             self._writer = writer_cls(self.msg)
+        else: self._writer = None
             
-    def write(self, input = None, **kwargs):
-        if not input: input = self.msg
-        return self._writer.write(input = input, **kwargs)
-            
+    def write(self, source = None, **kwargs):
+        '''Wrapper to call the writer's write method if present.
         
+        Args:
+            source(pandasdmx.model.Message, iterable): stuff to be written.
+                If a :class:`pandasdmx.model.Message` is given, the writer
+                itself must determine what to write unless specified in the
+                keyword arguments. If an iterable is given,
+                the writer should write each item. Keyword arguments may
+                specify what to do with the output depending on the writer's API. Defaults to self.msg.
+                
+        Returns:
+            type: anything the writer returns.
+        '''
+        
+        if not source: source = self.msg
+        return self._writer.write(source = source, **kwargs)
         
         

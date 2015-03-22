@@ -1,18 +1,14 @@
 
 '''
-
-
-@author: Dr. Leo
+Thie module contains the base class for writers. 
 '''
 
 
-from IPython.config.configurable import LoggingConfigurable
 
 
-class BaseWriter(LoggingConfigurable):
+class BaseWriter:
     
     def __init__(self, msg, **kwargs):
-        super(BaseWriter, self).__init__(**kwargs)
         self.msg = msg
         
     

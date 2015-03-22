@@ -1,18 +1,15 @@
 
 '''
+    This module contains the base class for readers.
 
-
-@author: Dr. Leo
 '''
 
 
-from IPython.config.configurable import LoggingConfigurable
 
 
-class Reader(LoggingConfigurable):
+class Reader:
     
     def __init__(self, request, **kwargs):
-        super(Reader, self).__init__(**kwargs)
         self.request = request
         
     

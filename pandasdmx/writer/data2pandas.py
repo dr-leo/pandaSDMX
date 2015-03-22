@@ -1,9 +1,7 @@
 
 '''
-
-pandasdmx.writer.data2pandas - a pandas writer for PandaSDMX
-
-@author: Dr. Leo
+This module contains a writer class that writes a generic data message to
+pandas dataframes or series.
 '''
 
 
@@ -16,27 +14,28 @@ class Writer(BaseWriter):
 
     def write(self, input = None, asframe = True, dtype = NP.float64, 
               attributes = '', reverse_obs = False, fromfreq = True):
-        '''
-        Generate pandas.Series from model.Series
+        '''Transfform a :class:`pandasdmx.model.DataMessage` instance to a pandas DataFrame
+        or iterator over pandas Series.
         
-        input: a model.DataSet or iterator of model.Series
+        Args:         
+            input(pandasdmx.model.DataMessage): a model.DataSet or iterator of model.Series
          
-        asframe: if True, merge the series of values and/or attributes 
-        into one or two multi-indexed 
-        pandas.DataFrame(s), otherwise return an iterator of pandas.Series.
-        (default: False)
+            asframe(bool): if True, merge the series of values and/or attributes 
+                into one or two multi-indexed 
+                pandas.DataFrame(s), otherwise return an iterator of pandas.Series.
+                (default: False)
         
-        dtype: datatype for values. Defaults to 'float64'
-        if None, do not return the values of a series. In this case, 
-        'attributes' must not be an empty string so that some attribute is returned.
+            dtype(str, NP.dtype, None): datatype for values. Defaults to 'float64'
+                if None, do not return the values of a series. In this case,
+            `attributes` must not be an empty string so that some attribute is returned.
         
-        attributes: string determining which attributes, if any,
-        should be returned in separate series or a separate DataFrame.
-        'attributes' may have one of the following values: '', 'o', 's', 'g', 'd'
-        or any combination thereof such as 'os', 'go'. Defaults to 'osgd'. 
-        Where 'o', 's', 'g', and 'd' mean that attributes at observation,
-        series, group and dataset level will be returned as members of 
-        per-observation dict-likes with attribute-like access. 
+            attributes(str, None): string determining which attributes, if any,
+                should be returned in separate series or a separate DataFrame.
+                Allowed values: '', 'o', 's', 'g', 'd'
+                or any combination thereof such as 'os', 'go'. Defaults to 'osgd'. 
+                Where 'o', 's', 'g', and 'd' mean that attributes at observation,
+                series, group and dataset level will be returned as members of 
+                per-observation dict-likes with attribute-like access. 
         
         '''
         

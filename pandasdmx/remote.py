@@ -1,23 +1,19 @@
 # encoding: utf-8
 
-from IPython.config.configurable import LoggingConfigurable
-from IPython.utils.traitlets import Int 
 import requests
 from tempfile import SpooledTemporaryFile as STF
 from contextlib import closing
 
     
 
-class REST(LoggingConfigurable):
+class REST:
     """
     Query resources via REST
     """
 
-    max_size = Int(2**24, config=True, 
-                   help='max size of in-memory file before spooling to disk')
+    max_size = 2**24
             
     def __init__(self):
-        super(REST, self).__init__()
         self.name = 'pandasdmx.client.REST'
         
         
@@ -34,7 +30,6 @@ class REST(LoggingConfigurable):
             source = open(fromfile, 'rb')
             final_url = status_code = None    
         else:
-            self.log.debug('Requesting %s', url)
             source, final_url, status_code = self.request(url, params = params) 
         return source, final_url, status_code
          

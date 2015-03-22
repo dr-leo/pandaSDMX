@@ -1,5 +1,9 @@
 # encoding: utf-8
 
+'''
+This module contains a reader for SDMXML v2.1.
+
+'''
 
 from pandasdmx.utils import DictLike, namedtuple_factory
 from pandasdmx import model

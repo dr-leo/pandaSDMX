@@ -11,8 +11,6 @@ This module is part of the pandaSDMX package
 '''
 
 from .utils    import DictLike, str_type
-from IPython.utils.traitlets import (HasTraits, Unicode, Instance, List, 
-            Enum, Dict)
 from operator import attrgetter
 from collections import OrderedDict 
 from itertools import groupby
@@ -302,23 +300,20 @@ class Representation(SDMXObject):
     # not_enumerated = List # of facets
         
         
-class Facet(HasTraits):
-    facet_type = Dict # for attributes such as isSequence, interval 
-    facet_value_type = Enum(('String', 'Big Integer', 'Integer', 'Long',
+class Facet:
+    facet_type = {} # for attributes such as isSequence, interval 
+    facet_value_type = ('String', 'Big Integer', 'Integer', 'Long',
                             'Short', 'Double', 'Boolean', 'URI', 'DateTime', 
                 'Time', 'GregorianYear', 'GregorianMonth', 'GregorianDate', 
-                'Day', 'MonthDay', 'Duration'))
-    itemscheme_facet = Unicode # to be completed
+                'Day', 'MonthDay', 'Duration')
+    itemscheme_facet = u'' # to be completed
     
     def __init__(self, facet_type = None, facet_value_type = u'', 
                  itemscheme_facet = u'', *args, **kwargs):
-        super(Facet, self).__init__(*args, **kwargs)
         self.facet_type = facet_type
         self.facet_value_type = facet_value_type
-        self.itemscheme_facet = itemschemefacet
-               
+        self.itemscheme_facet = itemscheme_facet 
         
-class IsoConceptReference: pass # to be completed
 
 class Concept(Item): pass
     # core_repr = Instance(Representation)
@@ -422,15 +417,6 @@ class DimensionDescriptor(ComponentList):
         self._reader.read_identifiables('measure_dimension', self)
                     
         
-class GroupDimensionDescriptor(ComponentList):
-    # Associations to dimension etc. are not distinguished from
-    # the actual dimensions. This differs technically from the model specification
-    dimension = Instance(Component)
-    measure_dimension = Instance(Component)
-    time_dimension = Instance(Component)
-    # constraint to be added
-    
-        
 class PrimaryMeasure(Component): pass
 
 class MeasureDescriptor(ComponentList):
@@ -441,18 +427,6 @@ class AttributeDescriptor(ComponentList):
     _get_items = 'attribute_items'
     
     
-class AttributeRelationship: pass
-class PrimaryMeasureRelationship(AttributeRelationship): pass
-
-
-class GroupRelationship(AttributeRelationship):
-    groupkey = Instance(GroupDimensionDescriptor)
-        
-    
-class DimensionRelationship(GroupRelationship):
-    dimensions = List # of dimensions
-    
-        
 class DataAttribute(Component):
     
     @property

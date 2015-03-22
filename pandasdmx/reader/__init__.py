@@ -1,11 +1,9 @@
 # encoding: utf-8
 
 '''
-.. module:: pandasdmx.reader subpackage
-    
-    :synopsis: A Python- and pandas-powered client for statistical data and metadata exchange 
-    For more details on SDMX see www.sdmx.org
-
-.. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
+ 
+Subpackage containing reader classes for
+SDMX messages, e.g., in XML format. Currently, the only reader is 
+:mod:`pandasdmx.reader.sdmxml`.
 '''
   

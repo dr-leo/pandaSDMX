@@ -1,18 +1,16 @@
 # encoding: utf-8
 
 '''
-.. module:: pandasdmx.agency
-    
-     
-    For more details on SDMX see www.sdmx.org
+This module defines two classes: :class:`Request` and :class:`Response`.
+Together, these form the high-level API of :mod:`pandasdmx`. Requesting data and metadata from
+an SDMX server requires a good understanding of this API and a basic understanding of the SDMX web service guidelines 
+only the chapters on REST services are relevant as pandasdmx does not support the 
+SOAP interface. 
 
-.. :moduleauthor :: Dr. Leo fhaxbox66@gmail.com; forked from http://github.com/widukind/pysdmx
 '''
 
 
 
-from IPython.config.configurable import LoggingConfigurable
-from IPython.utils.traitlets import Instance
 from pandasdmx.remote import REST
 from pandasdmx.utils import str_type 
 from pandasdmx.reader.sdmxml import SDMXMLReader 
@@ -21,15 +19,11 @@ from importlib import import_module
 __all__ = ['Request']
 
 
-class Request(LoggingConfigurable):
-    """
-    Request SDMX data and metadata from remote or local sources.
+class Request(object):
+    """Get SDMX data and metadata from remote servers or local files.
     """
    
 
-    client = Instance(REST, config = True, help = """
-    REST or similar client to communicate with the web service""")
-    
     _agencies = {
         '' : None, # empty agency for convenience when fromfile is given.
         'ESTAT' : {
@@ -42,18 +36,31 @@ class Request(LoggingConfigurable):
             'name' : 'International Labor Organisation',
             'url' : 'http://www.ilo.org/ilostat/sdmx/ws/rest'}
             }
+    
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme', 
                   'categorisation', 'codelist', 'conceptscheme']
                     
     def __init__(self, agency = '',
-                 writer = {'name': 'pandasdmx.writer.data2pandas'}):
-        super(Request, self).__init__()
+                 writer = 'pandasdmx.writer.data2pandas'):
+        '''Set the data provider and writer for an instance.
+        
+        Args:
+            agency(str): identifier of a data provider.
+                Must be one of the dict keys in Request._agencies such as 
+                'ESTAT', 'ECB', 'ILO', ''. 
+                An empty string has the effect that the instance can only
+                load data or metadata from files, not remotely. .
+                defaults to '', i.e. no agency. 
+                
+            writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas' 
+        '''
         self.client = REST()
         self.agency = agency
         self.writer = writer
         
 
     def get_reader(self):
+        '''get a Reader instance. Called by :meth:`get`.'''
         return SDMXMLReader(self)
     
     
@@ -71,11 +78,55 @@ class Request(LoggingConfigurable):
     
     def get(self, resource_type = '', resource_id = '', agency = '', key = '', params = {},
                  fromfile = None, tofile = None):
-        '''
-        Load a source file identified by the URL suffix or filename given as fromfile kwarg.
-        If tofile is not None, save the file under that name.
-        return a reader for the file as stored by self.client (mostly in a Spooled TempFile, or, if
-        the downloaded file has been saved to a permanent local file, for that file.
+        '''get SDMX data or metadata and return it as a :class:`Response` instance.
+        
+            While 'get' can load any SDMX file specified by 'fromfile',
+            it can only contact the SDMX service set for this instance. Hence, you
+            have to instantiate a :class:`Request` instance for each data provider you want to access.
+        
+        Args:
+            
+            resource_type(str): the type of resource to be requested. Values must be
+                one of the items in Request._resources such as 'data', 'dataflow', 'categoryscheme' etc.
+                It is used for URL construction, not to read the received SDMX file.
+                Hence, if `fromfile` is given, `resource_type` may be ''.
+                Defaults to ''.
+                
+            resource_id(str): the id of the resource to be requested.
+                It is used for URL construction. Defaults to ''.
+                  
+agency(str): ID of the agency providing the data or metadata. 
+Used for URL construction only. It tells the SDMX web service
+which agency the requested information originates from. Note that
+an SDMX service may provide information from multiple data providers.
+may be '' if `fromfile` is given. Not to be confused
+with the agency ID passed to :meth:`__init__` which specifies
+the SDMX web service to be accessed.
+   
+params(dict): defines the query part of the URL. 
+    The SDMX web service guidelines (www.sdmx.org) explain the meaning of
+    permissible parameters. It can be used to restrict the
+    time range of the data to be delivered (startperiod, endperiod), whether parents, siblings or descendants of the specified
+    resource should be returned as well (e.g. references='parentsandsiblings'). Sensible defaults
+    are set automatically 
+    depending on the values of other args such as `resource_type`.
+    Defaults to {}.
+    
+fromfile(str): path to the file to be loaded instead of
+    accessing an SDMX web service. Defaults to None. If `fromfile` is
+    given, args relating to URL construction will be ignored.
+    
+tofile(str): file path to write the received SDMX file on the fly. This
+    is useful if you want to load data offline using
+    `fromfile` or if you want to open an SDMX file in
+    an XML editor.
+    
+        
+        return: 
+        
+            :class:`Response` instance containing the requested
+            SDMX Message.
+              
         '''
         # Validate args
         if not agency: agency = self.agency 
@@ -122,13 +173,17 @@ class Request(LoggingConfigurable):
     
     
 class Response:
+    '''Container class for SDMX messages. 
+    
+        It is instantiated by :meth:`Request.get`. 
+    '''
     def __init__(self, msg, url, status_code, writer = None):
         self.msg =msg
         self.url = url
         self.status_code = status_code
         # Initialize the writer if given
         if writer:
-            writer_module = import_module(writer['name'])
+            writer_module = import_module(writer)
             writer_cls = writer_module.Writer
             self._writer = writer_cls(self.msg)
             

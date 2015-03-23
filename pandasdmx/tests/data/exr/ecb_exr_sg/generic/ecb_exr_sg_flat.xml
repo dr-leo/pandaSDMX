@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message:GenericData xmlns:generic="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic" xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../../../schemas/SDMXMessage.xsd">
+	<message:Header>
+		<message:ID>Generic</message:ID>
+		<message:Test>false</message:Test>
+		<message:Prepared>2010-01-04T16:21:49+01:00</message:Prepared>
+		<message:Sender id="ECB"/>
+		<message:Structure structureID="STR1" dimensionAtObservation="AllDimensions">
+			<common:Structure>
+				<Ref agencyID="ECB" id="ECB_EXR_SG" version="1.0"/>
+			</common:Structure>
+		</message:Structure>
+	</message:Header>
+	<message:DataSet structureRef="STR1">
+		<generic:Group type="SiblingGroup">
+			<generic:GroupKey>
+				<generic:Value value="CHF" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+			</generic:GroupKey>
+			<generic:Attributes>
+				<generic:Value value="ECB reference exchange rate, Swiss franc/Euro" id="TITLE"/>
+			</generic:Attributes>
+		</generic:Group>
+		<generic:Group type="SiblingGroup">
+			<generic:GroupKey>
+				<generic:Value value="GBP" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+			</generic:GroupKey>
+			<generic:Attributes>
+				<generic:Value value="ECB reference exchange rate, U.K. Pound sterling /Euro" id="TITLE"/>
+			</generic:Attributes>
+		</generic:Group>
+		<generic:Group type="SiblingGroup">
+			<generic:GroupKey>
+				<generic:Value value="JPY" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+			</generic:GroupKey>
+			<generic:Attributes>
+				<generic:Value value="ECB reference exchange rate, Japanese yen/Euro" id="TITLE"/>
+			</generic:Attributes>
+		</generic:Group>
+		<generic:Group type="SiblingGroup">
+			<generic:GroupKey>
+				<generic:Value value="USD" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+			</generic:GroupKey>
+			<generic:Attributes>
+				<generic:Value value="ECB reference exchange rate, U.S. dollar/Euro" id="TITLE"/>
+			</generic:Attributes>
+		</generic:Group>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="CHF" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-08" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.3413"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="CHF" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="CHF" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-09" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.3089"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="CHF" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="CHF" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-10" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.3452"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="CHF" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="GBP" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-08" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="0.82363"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="5" id="DECIMALS"/>
+				<generic:Value value="GBP" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="GBP" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-09" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="0.83987"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="5" id="DECIMALS"/>
+				<generic:Value value="GBP" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="GBP" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-10" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="0.87637"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="5" id="DECIMALS"/>
+				<generic:Value value="GBP" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="JPY" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-08" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="110.04"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="2" id="DECIMALS"/>
+				<generic:Value value="JPY" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="JPY" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-09" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="110.26"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="2" id="DECIMALS"/>
+				<generic:Value value="JPY" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="JPY" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-10" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="113.67"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="2" id="DECIMALS"/>
+				<generic:Value value="JPY" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="USD" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-08" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.2894"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="USD" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="USD" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-09" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.3067"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="USD" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+		<generic:Obs>
+			<generic:ObsKey>
+				<generic:Value value="M" id="FREQ"/>
+				<generic:Value value="USD" id="CURRENCY"/>
+				<generic:Value value="EUR" id="CURRENCY_DENOM"/>
+				<generic:Value value="SP00" id="EXR_TYPE"/>
+				<generic:Value value="E" id="EXR_VAR"/>
+				<generic:Value value="2010-10" id="TIME_PERIOD"/>
+			</generic:ObsKey>
+			<generic:ObsValue value="1.3898"/>
+			<generic:Attributes>
+				<generic:Value value="A" id="OBS_STATUS"/>
+				<generic:Value value="F" id="CONF_STATUS_OBS"/>
+				<generic:Value value="4" id="DECIMALS"/>
+				<generic:Value value="USD" id="UNIT_MEASURE"/>
+				<generic:Value value="0" id="UNIT_MULT"/>
+				<generic:Value value="Average of observations through period" id="COLL_METHOD"/>
+			</generic:Attributes>
+		</generic:Obs>
+	</message:DataSet>
+</message:GenericData>

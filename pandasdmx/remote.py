@@ -19,7 +19,8 @@ class REST:
         '''Get SDMX message from REST service or local file
         
         Args:
-            url(str): URL of the REST service without the query part.
+        
+            url(str): URL of the REST service without the query part
                 If None, fromfile must be set. Default is None
             params(dict): will be appended as query part to the URL after a '?'  
             fromfile(str): path to SDMX file containing an SDMX message. 

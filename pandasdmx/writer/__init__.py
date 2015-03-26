@@ -1,9 +1,15 @@
 # encoding: utf-8
-
 '''
-This package contains the base class for writers and a writer for generic
-data. 
+This module contains the base class for writers. 
+'''
+
+
+
+
+class BaseWriter:
     
-
-'''
-  
+    def __init__(self, msg, **kwargs):
+        self.msg = msg
+        
+    
+    

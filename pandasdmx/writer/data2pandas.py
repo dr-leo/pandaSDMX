@@ -7,13 +7,13 @@ pandas dataframes or series.
 
 import pandas as PD
 import numpy as NP
-from pandasdmx.writer.common import BaseWriter
+from pandasdmx.writer import BaseWriter
 
     
 class Writer(BaseWriter):
 
     def write(self, source = None, asframe = True, dtype = NP.float64, 
-              attributes = '', reverse_obs = False, fromfreq = True):
+              attributes = '', reverse_obs = False, fromfreq = False):
         '''Transfform a :class:`pandasdmx.model.DataMessage` instance to a pandas DataFrame
         or iterator over pandas Series.
         

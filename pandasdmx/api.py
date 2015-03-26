@@ -168,7 +168,7 @@ class Request(object):
 class Response(object):
     '''Container class for SDMX messages. 
     
-    It is instantiated by :meth:`pandasdmx.api.Request.get` .
+    It is instantiated by  .
         
     Attributes:
         msg(pandasdmx.model.Message): a pythonic representation

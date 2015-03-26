@@ -7,13 +7,13 @@ This module contains a reader for SDMXML v2.1.
 
 from pandasdmx.utils import DictLike, namedtuple_factory
 from pandasdmx import model
-from .common import Reader
+from pandasdmx.reader import BaseReader
 from lxml import etree
 from lxml.etree import XPath
 
 
  
-class SDMXMLReader(Reader):
+class SDMXMLReader(BaseReader):
 
     
     """

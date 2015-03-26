@@ -1,9 +1,17 @@
 # encoding: utf-8
+'''
+    This module contains the base class for readers.
 
 '''
- 
-Subpackage containing reader classes for
-SDMX messages, e.g., in XML format. Currently, the only reader is 
-:mod:`pandasdmx.reader.sdmxml`.
-'''
-  
+
+
+
+
+class BaseReader:
+    
+    def __init__(self, request, **kwargs):
+        self.request = request
+        
+    
+    def initialize(self, source): raise NotImplemented
+    

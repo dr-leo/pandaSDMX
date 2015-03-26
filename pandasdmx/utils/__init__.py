@@ -26,6 +26,7 @@ class DictLike(aadict):
         '''Select values by attribute
         
         Args:
+        
             searchstr(str): the string to search for
             by(str): the name of the attribute to search by, defaults to 'name'
                 The specified attribute must be either a string
@@ -35,10 +36,12 @@ class DictLike(aadict):
             language(str): language code specifying the language of the text to be searched, defaults to 'en'
             
         Returns: 
-            new DictLike of items where value.<by> contains the search_str. International strings
-            stored as dict with language codes as keys are
-            searched. Capitalization is ignored.  
+            DictLike: items where value.<by> contains the search_str. International strings
+                stored as dict with language codes as keys are
+                searched. Capitalization is ignored.
+                  
         '''
+        
         s = search_str.lower()
         # We distinguish between international strings stored as dict such as 
         # name.en, name.fr, and normal strings.

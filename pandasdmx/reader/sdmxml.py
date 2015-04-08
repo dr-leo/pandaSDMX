@@ -116,6 +116,8 @@ class SDMXMLReader(BaseReader):
             'ref_source' : (XPath('str:Source/Ref', 
                              namespaces = _nsmap), model.Ref),
                         'ref_target' : (XPath('str:Target/Ref', 
+                             namespaces = _nsmap), model.Ref),
+            'ref_structure' : (XPath('str:Structure/Ref', 
                              namespaces = _nsmap), model.Ref), 
     }
         
@@ -349,3 +351,5 @@ class SDMXMLReader(BaseReader):
         path, cls = self._model_map['categorisation_items']
         for c in path(sdmxobj._elem):
             yield cls(self, c)
+            
+

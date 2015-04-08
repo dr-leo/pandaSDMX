@@ -28,15 +28,13 @@ class aadict(dict):
   :meth:`pick` and :meth:`omit`.
   '''
   def __getattr__(self, key):
-    if key.startswith('__') and key.endswith('__'):
-      # note: allows an aadict to be pickled with protocols 0, 1, and 2
-      #       which treat the following specially:
-      #         __getstate__, __setstate__, __slots__, __getnewargs__
-      return dict.__getattr__(self, key)
-    return self.__getitem__(key)
-  def __setattr__(self, key, value):
-    self[key] = value
-    return self
+      try:
+        return self.__getitem__(key)
+      except KeyError:
+        return object.__getattribute__(self, key)
+  #def __setattr__(self, key, value):
+  #  self[key] = value
+  #  return self
   def __delattr__(self, key):
     if key in self:
       del self[key]

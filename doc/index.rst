@@ -1,4 +1,3 @@
-
 Home
 ==========================================
 
@@ -14,9 +13,10 @@ disseminated in `SDMX <http://www.sdmx.org>`_ format.
 It works well with the SDMX services of the European statistics office (Eurostat)
 and the European Central Bank (ECB). While pandaSDMX is extensible to 
 cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
-for data analysis in Python. But from pandas you can export your data to Excel and friends. 
+of data analysis in Python. But from pandas you can export your data to Excel and friends. 
 
-.. rubric:: Main features:
+Main features
+---------------------
 
 * simple, intuitive API
 * supports a growing set of SDMX features including
@@ -32,28 +32,29 @@ for data analysis in Python. But from pandas you can export your data to Excel a
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
 
-.. rubric:: Example:
-
+Example
+---------
 
 The shortest code example to download a dataset from Eurostat might look like this:
 
 .. ipython:: python
 
     from pandasdmx import Request
-    df = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a').write()
+    unemp = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a').write()
    
 The resulting pandas DataFrame contains unemployment rates for the past 32 years by EU-country, age, and sex.   
 The rest is poor man's pandas magic:
   
 .. ipython:: python
 
-    df.shape
-    df.columns.names # dimension names
-    df.columns.levels[0] # dimension values of the 'AGE' dimension
-    df.xs(('TOTAL', 'T' ,'HR'), level=('AGE','SEX', 'GEO'), axis=1).head()
+    unemp.shape
+    unemp.columns.names # dimension names
+    unemp.columns.levels[0] # dimension values of the 'AGE' dimension
+    unemp.xs(('TOTAL', 'T' ,'HR'), level=('AGE','SEX', 'GEO'), axis=1).head()
 
 
-.. rubric:: pandaSDMX Links:
+pandaSDMX Links
+-------------------------------
 
 * `Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
 * `Documentation <http://pandasdmx.readthedocs.org>`_
@@ -69,6 +70,7 @@ Table of contents
     :maxdepth: 2
 
     intro
+    sdmx_tour
     usage
     api/modules
 

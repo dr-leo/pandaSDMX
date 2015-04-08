@@ -180,9 +180,9 @@ class NameableArtefact(IdentifiableArtefact):
     @property
     def name(self):
         try:
-            return self._name
+            return object.__getattribute__(self, '_name')
         except AttributeError:
-            self._name = self._reader.international_str('Name', self)
+            object.__setattr__(self, '_name', self._reader.international_str('Name', self))
             return self._name
     
     @property
@@ -254,7 +254,7 @@ class Scheme(DictLike):
     # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this 
     # to sort by position. 
     _sort_key = 'id'
-    @property
+    
     def aslist(self):
         return sorted(self.values(), key = attrgetter(self._sort_key)) 
         
@@ -286,7 +286,7 @@ class StructureUsage(MaintainableArtefact):
     
     @property
     def structure(self):
-        return self._reader.structure(self) 
+        return self._reader.read_one('ref_structure', self) 
     
     
 class ComponentList(IdentifiableArtefact, Scheme): pass

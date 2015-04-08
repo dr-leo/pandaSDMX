@@ -16,7 +16,6 @@ class DictLike(aadict):
     '''
     
      
-    @property
     def aslist(self):
         '''property returning values() as unordered list'''
         return list(self.values()) 

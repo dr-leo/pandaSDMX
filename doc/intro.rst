@@ -33,9 +33,9 @@ for scientific data analysis such as
 * `Anaconda <https://store.continuum.io/cshop/anaconda/>`_, or
 * `Canopy <https://www.enthought.com/products/canopy/>`_. 
 
-Along with a current Python interpreter these Python distributions include, 
+Along with a current Python interpreter these Python distributions include 
 the dependencies as well as lots of
-other useful packages.   
+other useful packages for data analysis.   
 For other Python distributions (not only scientific) see
 `here <https://wiki.python.org/moin/PythonDistributions>`_.  
 
@@ -51,9 +51,9 @@ You can download and install pandaSDMX like any other Python package, e.g.
 Running the test suite
 ---------------------------------------------------------
  
- From the package directory, issue the folloing command::
+From the package directory, issue the folloing command::
  
-    nosetests pandasdmx
+    >>> nosetests pandasdmx
 
     
 Package overview

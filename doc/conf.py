@@ -61,7 +61,7 @@ copyright = '2015, Dr. Leo'
 # built documents.
 #
 # The short X.Y version.
-version = '0.2dev'
+version = '0.2'
 # The full version, including alpha/beta/rc tags.
 release = '0.2dev'
 

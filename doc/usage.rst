@@ -3,7 +3,7 @@
 Basic usage
 ===============
 
-Overview, general principles
+Introductory remarks
 ----------------------------------
 
 This chapter illustrates the main steps of a typical workflow, namely:
@@ -11,19 +11,21 @@ This chapter illustrates the main steps of a typical workflow, namely:
 1. retrieving relevant
    dataflows by category or from a complete list of dataflows,  
 #. exploring the data structure definition of the selected dataflow
-#. obtaining a dataset
+#. obtaining a dataset and exploring it through the information model
 #. writing a dataset to a pandas DataFrame or Series 
-#. Exploring a dataset through the information model
+#. Reading and writing SDMX files
 #. Handling errors
 
-All these steps share some principles which flow from the architecture of pandaSDMX:
+These steps share common tasks which flow from the architecture of pandaSDMX:
 
 1. Call :meth:`get` on a new or existing :class:`pandasdmx.api.Request` instance
    to obtain an SDMX message from a web service or a file and load it into memory
 #. Explore the :class:`pandasdmx.api.Response`instance returned by :meth:`pandasdmx.Request.get`
 
+   * check for errors 
    * Access the SDMX message's content through its ``msg``  attribute.
-   * Call :meth:`pandasdmx.api.Response.write` to execute the writer. This
+   * write data to a pandas DataFrame or Series by Calling 
+     :meth:`pandasdmx.api.Response.write`. This
      works only for generic data messages.       
      
      
@@ -42,26 +44,34 @@ Selecting an SDMX web service
 
 Next, we instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
 agency ID as string. The list of supported agencies
-is shown isplayed in the error message if an invalid agency ID is passed:
+is shown in the error message if an invalid agency ID is passed:
             
 .. ipython:: python
 
-    Request('foo')
     ecb = Request('ECB')
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to
 send requests to other agencies, simply instantiate dedicated ``Request`` objects. Note that any ``Request`` instance
-can load SDMX messages from local files. Issuing ``r = Request()`` without passing any agency ID will
+can load SDMX messages from local files. 
+Issuing ``r = Request()`` without passing any agency ID will
 instantiate a ``Request`` object not tied to any agency. It may only be used to
-load SDMX messages from files.
+load SDMX messages from files, unless a pre-fabricated URL is passed to :meth:`pandasdmx.api.Request.get`.
 
 Finding dataflows
 -------------------
 
+..note::
+    Unlike the ECB, Eurostat, and probably other data providers
+    do not support categories to
+    facilitate data retrieval. Yet, it is recommended
+    to read the following section as it explains 
+    some key concepts of the information model.
+    
+      
 Getting the categorisation scheme
 :::::::::::::::::::::::::::::::::::::::
 
-We can search the list of dataflows offered by a given SDMX web service by
+We can search the list of dataflows by
 category:. To do this, we request the category scheme from the 
 ECB's SDMX service and explore the response like so:
 
@@ -95,9 +105,9 @@ subclasses of ``dict``.
     categorisations.__class__.__mro__
     
 If dict keys are valid attribute names, you can use attribute syntax. This is thanks to
-:class:`pandasdmx.utils.DictLike`, a thin wrapper around ``dict`` that internally uses a slightly patched third party tool.
+:class:`pandasdmx.utils.DictLike`, a thin wrapper around ``dict`` that internally uses a patched third-party tool.
 
-In the same vein, ``categoryschemes`` is an instance of ``DictLike``. This is
+Likewise, ``cat_msg.categoryschemes`` is an instance of ``DictLike``. This is
 because by calling `` ecb.get``  without specifying a resource_id,
 we instructed the SCMX service to return all available categorisation schemes. The ``DictLike`` 
 container for the received category schemes uses the ``ID`` attribute of :class:`pandasdmx.model.CategoryScheme` as keys.
@@ -129,7 +139,7 @@ category scheme like so:
     len(cs0)
     # Print ID's of categories 
     list(cs0.keys())
-    # English name of this category 
+    # English name of category '07' 
     cs0['07'].name.en 
     
 Extracting the dataflows in a particular category
@@ -143,7 +153,7 @@ links its category to a :class:`pandasdmx.model.DataFlowDefinition` instance. Te
 are represented by :class:`pandasdmx.model.Reference` instances whose `` id`` attribute enables us to access the
 dataflow definitions in the selected category '07'. We can print the 
 string representations of the
-dataflows in this categories:
+dataflows in this category:
 
  
 .. ipython:: python
@@ -153,8 +163,8 @@ dataflows in this categories:
      
 These are all dataflows offered by the ECB in the category on exchange rates. 
 
-Search for items by attribute
-:::::::::::::::::::::::::::::::::::::
+Finding dataflows without using categories
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 In the previous section we have used categories to find relevant dataflows. However,
 in many situations there are no categories to narrow down the result set. 
@@ -221,8 +231,9 @@ A DSD essentially defines two things:
   - at group level (i.e. a subset of series defind by dimension values)
   - at dataset level.   
 
-Let's look at the dimensions and for one at the allowed values
-as enumerated in the referenced codelist:
+Let's look at the dimensions and for the 'CURRENCY' dimension 
+also at the allowed values
+as enumerated in the referenced code list:
 
  
 .. ipython:: python
@@ -246,7 +257,7 @@ in a similar fashion.
 
 .. note::
 
-    Groups are not yet implemented in the DSD. But this is not a big problem    
+    Groups are not yet implemented in the DSD. But this is not a major problem    
     as they are implemented for generic datasets. Thus, datasets should be rendered properly including all attributes and their 
     attachment levels.
 
@@ -325,22 +336,24 @@ groups
     len(series_l)
     series_l[5].key
     set(s.key.FREQ for s in data.series)
-    daily = (s for s in data.series if s.key.FREQ == 'D')
+    
 
-We see that this dataset comprises 16 time series of four different period lengths: annual, semestrial, quarterly, and daily.
-As we want to write some data to a pandas DataFrame, we must not mix up the time spans. We decided to 
-single out daily data.  
-
+We see that this dataset comprises 16 time series of several different period lengths.
 
 Writing to pandas
 ::::::::::::::::::::::
 
+As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, 
+we must not mix up the time spans. 
+Therefore, we
+single out the daily data first.  
 The :meth:`pandasdmx.api.Response.write` accepts an optional iterable to select a subset
 of the series contained in the dataset. Thus we can now
-generate our pandas DataFrame:
+generate our pandas DataFrame from daily exchange rate data only:
 
 .. ipython:: python
 
+    daily = (s for s in data.series if s.key.FREQ == 'D')
     cur_df = data_resp.write(daily)
     cur_df.shape
     cur_df.tail()

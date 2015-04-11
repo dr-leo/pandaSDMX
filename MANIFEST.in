@@ -1,4 +1,4 @@
-include *.rst pandasdmx/*.py LICENSE.txt
+include *.rst pandasdmx/*.py LICENSE.txt requirements.txt
 include examples/*.py 
 include doc/README.txt
 

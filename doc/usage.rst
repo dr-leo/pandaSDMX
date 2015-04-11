@@ -60,7 +60,7 @@ load SDMX messages from files, unless a pre-fabricated URL is passed to :meth:`p
 Finding dataflows
 -------------------
 
-..note::
+.. note::
     Unlike the ECB, Eurostat, and probably other data providers
     do not support categories to
     facilitate data retrieval. Yet, it is recommended
@@ -109,7 +109,7 @@ If dict keys are valid attribute names, you can use attribute syntax. This is th
 
 Likewise, ``cat_msg.categoryschemes`` is an instance of ``DictLike``. This is
 because by calling `` ecb.get``  without specifying a resource_id,
-we instructed the SCMX service to return all available categorisation schemes. The ``DictLike`` 
+we instructed the SDMX service to return all available categorisation schemes. The ``DictLike`` 
 container for the received category schemes uses the ``ID`` attribute of :class:`pandasdmx.model.CategoryScheme` as keys.
 This level of generality is required to cater for situations in which more than one category scheme is 
 returned. In our example, however, there is but one:
@@ -265,8 +265,8 @@ in a similar fashion.
 Working with datasets
 ------------------------------
 
-Narrowing down the result
-::::::::::::::::::::::::::::::::::::::::::
+Limiting the scope of the dataset to be requested
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 Requesting a dataset is as easy as requesting a dataflow definition or any other
 SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id.  
@@ -279,16 +279,19 @@ The REST API of SDMX offers to ways to narrow down a data request:
 * specifying dimension values which the series to be returned must match ("horizontal filter") or
 * limiting the time range or number of observations per series ("vertical filter") 
   
-Here we will specify the CURRENCY dimension to be either 'USD' or 'JPY'.
+First, we will specify the CURRENCY dimension to be either 'USD' or 'JPY'.
 This can be done by passing a ``key``  keyword argument to the ``get``  method. It consists of
 '.'-separated slots representing the dimensions. Values are optional. As we saw
 in the previous section, the ECB's dataflow for exchange rates has five dimensions, the
 'CURRENCY' dimension being at position two. This yields the key '.USD+JPY...'. The '+' can be
 read as an 'OR' operator. 
 
+Second, we will set the start period for the time series to 2014 to
+exclude any prior data from the request.
+
 .. ipython:: python
 
-    data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key = '.USD+JPY...')
+    data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key = '.USD+JPY...', params = dict(startPeriod = '2014'))
     type(data_resp.msg)
     data = data_resp.msg.data
     type(data)
@@ -381,7 +384,7 @@ if the SDMX server has encountered an error,
 it may return a message which
 includes a footer containing explanatory notes. For instance, if Eurostat cannot 
 return a large dataset immediately, it may make it available after some time under a link
-contained in the footer. This link should then passed to the `` get`` method using the `` url``  keyword parameter.
+contained in the footer. This link should then be passed to the `` get`` method using the `` url``  keyword parameter.
 
 
     

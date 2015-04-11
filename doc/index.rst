@@ -44,7 +44,7 @@ Example
     # Explore the DataFrame
     une_df.columns.names
     une_df.columns.levels[0:2]
-    une_df.loc[:, ('TOTAL', 'T')].head()
+    une_df.loc[:'2006', ('TOTAL', 'T')]
 
 
 pandaSDMX Links

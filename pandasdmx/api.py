@@ -78,12 +78,13 @@ class Request(object):
             
     
     def get(self, resource_type = '', resource_id = '', agency = '', key = '', params = {},
-                 fromfile = None, tofile = None):
+                 fromfile = None, tofile = None, url = None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
         
         While 'get' can load any SDMX file specified by 'fromfile',
-        it can only contact the SDMX service set for this instance. Hence, you
-        have to instantiate a :class:`pandasdmx.api.Request` instance for each data provider you want to access.
+        it can only construct URLs for the SDMX service set for this instance. 
+        Hence, you have to instantiate a :class:`pandasdmx.api.Request` instance for each data provider you want to access, or 
+        pass a pre-fabricated URL through the ``url`` parameter.
     
         Args:
             resource_type(str): the type of resource to be requested. Values must be
@@ -115,46 +116,52 @@ class Request(object):
                 is useful if you want to load data offline using
                 `fromfile` or if you want to open an SDMX file in
                 an XML editor.
+            url(str): URL of the resource to download.
+                If given, any other arguments such as
+                ``resource_type`` or ``resource_id`` are ignored. Default is None.  
     
         Returns: 
             pandasdmx.api.Response: instance containing the requested
                 SDMX Message.
               
         '''
-        # Validate args
-        if not agency: agency = self.agency 
-        # Validate resource if no filename is specified
-        if not fromfile and resource_type not in self._resources:
-            raise ValueError('resource must be one of {0}'.format(self._resources))
-        # resource_id: if it is not a str or unicode type, 
-        # but, e.g., a model.DataflowDefinition, 
-        # extract its ID
-        if resource_id and not isinstance(resource_id, (str_type, str)):
-            resource_id = resource_id.id
-            
-        # Construct URL from the given non-empty substrings.
-        # if data is requested, omit the agency part. See the query examples
-        # from Eurostat. Hopefully ECB excepts this.
-        if resource_type in ['data', 'categoryscheme']: agency = ''
-        # Remove None's and '' first. Then join them to form the base URL.
-        # Any parameters are appended by remote module.
-        if self.agency: 
-            parts = [self._agencies[self.agency]['url'], 
-                            resource_type, agency, resource_id, key]
-            base_url = '/'.join(filter(None, parts))
-            
-            # Set references to sensible defaults  
-            if 'references' not in params:
-                if resource_type == 'dataflow' and resource_id: pass 
-                # params['references'] = 'all'
-                elif resource_type == 'categoryscheme':
-                    params['references'] = 'parentsandsiblings'
-                    
-        elif fromfile: 
-            base_url = ''
+        if url: base_url = url
         else:
-            raise ValueError('Either agency or fromfile must be given.') 
-        
+            # Construct URL from args unless ``tofile`` is given 
+            # Validate args
+            if not agency: agency = self.agency 
+            # Validate resource if no filename is specified
+            if not fromfile and resource_type not in self._resources:
+                raise ValueError('resource must be one of {0}'.format(self._resources))
+            # resource_id: if it is not a str or unicode type, 
+            # but, e.g., a model.DataflowDefinition, 
+            # extract its ID
+            if resource_id and not isinstance(resource_id, (str_type, str)):
+                resource_id = resource_id.id
+                
+            # Construct URL from the given non-empty substrings.
+            # if data is requested, omit the agency part. See the query examples
+            # from Eurostat. Hopefully ECB excepts this.
+            if resource_type in ['data', 'categoryscheme']: agency = ''
+            # Remove None's and '' first. Then join them to form the base URL.
+            # Any parameters are appended by remote module.
+            if self.agency: 
+                parts = [self._agencies[self.agency]['url'], 
+                                resource_type, agency, resource_id, key]
+                base_url = '/'.join(filter(None, parts))
+                
+                # Set references to sensible defaults  
+                if 'references' not in params:
+                    if resource_type in ['dataflow', 'datastructure'] and resource_id: 
+                        params['references'] = 'all'
+                    elif resource_type == 'categoryscheme':
+                        params['references'] = 'parentsandsiblings'
+                        
+            elif fromfile: 
+                base_url = ''
+            else:
+                raise ValueError('If `` url`` is not specified, either agency or fromfile must be given.') 
+            
         # Now get the SDMX message either via http or as local file 
         source, url, status_code = self.client.get(base_url, params = params, fromfile = fromfile)
         if tofile:

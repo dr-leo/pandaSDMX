@@ -241,11 +241,12 @@ as enumerated in the referenced code list:
     list(d.id for d in dsd.dimensions.aslist())
     currency_codelist = dsd.dimensions.CURRENCY.local_repr.enum
     len(currency_codelist)
-    'USD' in currency_codelist
+    currency_codelist.USD, currency_codelist.JPY
     
 
 So there are five dimensions. The 'CURRENCY' dimension stands at position 2.
-We want to find out what dimension values are allowed as we need this information to construct a filter
+Moreover, we are now sure that 'USD' and 'JPY' are valid dimension values. 
+We need this information to construct a filter
 for our dataset query which should be limited to
 the currencies we are interested in.
 
@@ -273,7 +274,7 @@ SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass i
 
 However, we only want to download those parts of the data we are 
 interested in. Not only does this increase
-efficiency. Rather, some dataflows are really huge, and would exceed the server limits.
+performance. Rather, some dataflows are really huge, and would exceed the server limits.
 The REST API of SDMX offers to ways to narrow down a data request:
  
 * specifying dimension values which the series to be returned must match ("horizontal filter") or

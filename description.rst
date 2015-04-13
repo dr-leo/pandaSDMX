@@ -2,16 +2,17 @@
 pandaSDMX
 =============
 
-.. contents::
 
 
 
-pandaSDMX is a BSD-licensed `Python <http://www.python.org>`_ 
+pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
 package aimed at becoming the 
 most intuitive and versatile tool to retrieve and acquire statistical data and metadata
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It works well with the SDMX services of the European statistics office (Eurostat)
-and the European Central Bank (ECB). While pandaSDMX is extensible to 
+It should work with all+
+SDMX data providers supporting SDMX 2.1. Currently
+the only known SDMX 2.1-compliant agencies are the European statistics office (Eurostat, more than 5700 dataflows)
+and the European Central Bank (ECB, more than 70 dataflows). While pandaSDMX is extensible to 
 cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
 of data analysis in Python. But from pandas you can export your data to Excel and friends. 
 
@@ -37,21 +38,21 @@ Example
 
 
 
-    from pandasdmx import Request
-    # Get annual unemployment data from Eurostat
-    une_resp = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a')
-    # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
-    une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
-    # Explore the DataFrame
-    une_df.columns.names
-    une_df.columns.levels[0:2]
-    une_df.loc[:'2006', ('TOTAL', 'T')]
+    >>> from pandasdmx import Request
+    >>> # Get annual unemployment data from Eurostat
+    >>> une_resp = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a')
+    >>> # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
+    >>> une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
+    >>> # Explore the DataFrame
+    >>> une_df.columns.names
+    >>> une_df.columns.levels[0:2]
+    >>> une_df.loc[:'2006', ('TOTAL', 'T')]
 
 
 pandaSDMX Links
 -------------------------------
 
-* `Download the latest version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
+* `Download the latest stable version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
 * `Documentation <http://pandasdmx.readthedocs.org>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
@@ -61,7 +62,23 @@ pandaSDMX Links
 Recent changes 
 ========================
 
-Version 0.2
 
+Version 0.2.0 (2015-04)
+---------------------------
+
+
+This version is a quantum leap. The whole project has been redesigned and rewritten from
+scratch to provide robust support for many SDMX features. The new architecture is centered around
+a pythonic representation of the SDMX information model. It is extensible through readers and writers
+for alternative input and output formats. 
+Export to pandas has been dramatically improved. Sphinx documentation
+has been added.
+
+v0.1 (2014-09)
+----------------
+
+Initial release
+
+ 
 
 

@@ -1,10 +1,8 @@
 Home
 ==========================================
 
-.. caution::
-    This is development documentation. v0.2 has not been released yet.
 
-pandaSDMX is a BSD-licensed `Python <http://www.python.org>`_ 
+pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
 package aimed at becoming the 
 most intuitive and versatile tool to retrieve and acquire statistical data and metadata
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
@@ -50,7 +48,7 @@ Example
 pandaSDMX Links
 -------------------------------
 
-* `Download the latest version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
+* `Download the latest stable version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
 * `Documentation <http://pandasdmx.readthedocs.org>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
@@ -70,6 +68,7 @@ Table of contents
     usage
     advanced
     API documentation <api/modules>
+    license
 
 Indices and tables
 ==================

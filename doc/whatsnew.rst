@@ -3,6 +3,12 @@
 What's new?
 ==============
 
+v0.2.1
+--------------
+
+* Request.get: allow `fromfile` to be a file-like object
+* extract SDMX messages from zip file if given. Important for large datasets from Eurostat
+ 
 
 v0.2 (2015-04-13)
 -----------------------

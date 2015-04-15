@@ -365,7 +365,16 @@ generate our pandas DataFrame from daily exchange rate data only:
 The docstring of :meth:`pandasdmx.writer.data2pandas.Writer.write` explains
 a number of optional arguments to control whether or not another dataframe should be generated for the
 attributes, which attributes it should contain, and, most importantly, if the resulting
-pandas Series should be concatenated to a single DataFrame at all.
+pandas Series should be concatenated to a single DataFrame at all (``asframe = True`` is the default).
+Also, the ``write``  method provides the following parameters to increase performance for
+large datasets with regular indexes (e.g. monthly data):
+
+* ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency.
+  Thks only if the dataset is uniform, e.g. has no gaps like for daily trading data.
+* ``reverse_obs``:: if True, return observations in a series in reverse document order. This may be
+  useful to establish chronological order, in particular incombination with ``fromfreq``. Default is False.  
+
+
 
 Working with files
 ---------------------
@@ -373,7 +382,18 @@ Working with files
 The :class:`pandasdmx.api.Request.get` method accepts two optional keyword
 arguments ``tofile``  and ``fromfile``. If specified,
 any SDMX message received from the server will be written to a file, or a file will be read
-instead of making a request to a remote server.
+instead of making a request to a remote server. 
+
+The file to be read may be a zip file (new in version 0.2.1). In this case, the SDMX message
+must be the first file in the archive. The same works for
+zip files returned from an SDMX server. This happens, e.g., when
+Eurostat finds that the requested dataset has been too
+large. In this case the first request will yield
+a message with a footer containing a link to a zip file to be made
+available after a few minutes. The link may be extracted by issuing something like 
+``resp.msg.footer.text[1]``  and passed as ``url`` argument when calling ``get`` a second time to
+get the zipped data message.  
+
 
 Handling errors
 ----------------

@@ -155,10 +155,8 @@ Further reading
   SDMX. Start with the User Guide and the Information Model (Part 2 of the standard).
   The Web Services Guidelines contain instructive examples for typical queries.
 * `Eurostat SDMX page <http://ec.europa.eu/eurostat/data/sdmx-data-metadata-exchange>`_
-* `European Central Bank SDMX page <https://www.ecb.europa.eu/stats/services/sdmx/html/index.en.html>`_
+* `European Central Bank SDMX page <https://sdw-wsrest.ecb.europa.eu/>`_
   It links to a range of study guides and helpful video tutorials.
-* `International Labour Organisation (ILO) SDMX resources <http://www.ilo.org/ilostat/faces/oracle/webcenter/portalapp/pagehierarchy/Page108.jspx;jsessionid=mNBQVjpGqZdT1N1m3TgJ1pkJvLM2W75vGhDhTyvxgTy0cCV2SQWw!-1022906248?_adf.ctrl-state=7cuk6lwzd_1018&addToRoster=y&_afrLoop=717701442594618#%40%3F_afrLoop%3D717701442594618%26addToRoster%3Dy%26_adf.ctrl-state%3Dwebc310ne_4>`_:
-  query builder, user guide and other useful material to access ILO data
 * `SDMXSource <http://www.sdmxsource.org/>`_:
   - Java, .NET and ActionScript implementations of SDMX software, in part open source
     

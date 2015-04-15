@@ -4,7 +4,7 @@
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 '''
 This module is part of pandaSDMX. It contains
@@ -52,8 +52,12 @@ class REST:
                 is returned
  '''
         if fromfile:
-            # Load data from local file
-            source = open(fromfile, 'rb')
+            try:
+                # Load data from local file
+                source = open(fromfile, 'rb')
+            except TypeError:
+                # so fromfile must be file-like
+                source = fromfile
             final_url = status_code = None
         else:
             source, final_url, status_code = self.request(url, params=params)
@@ -75,7 +79,7 @@ class REST:
                 source = STF(max_size=self.max_size)
                 for c in response.iter_content(chunk_size=1000000):
                     source.write(c)
-                source.seek(0)
+
             else:
                 source = None
             code = int(response.status_code)

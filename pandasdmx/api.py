@@ -4,7 +4,7 @@
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
 '''
@@ -21,6 +21,8 @@ from pandasdmx.remote import REST
 from pandasdmx.utils import str_type
 from pandasdmx.reader.sdmxml import SDMXMLReader
 from importlib import import_module
+from zipfile import ZipFile, is_zipfile
+
 
 __all__ = ['Request']
 
@@ -51,9 +53,9 @@ class Request(object):
 
             agency(str): identifier of a data provider.
                 Must be one of the dict keys in Request._agencies such as
-                'ESTAT', 'ECB', 'ILO', ''.
+                'ESTAT', 'ECB' or ''.
                 An empty string has the effect that the instance can only
-                load data or metadata from files, not remotely. .
+                load data or metadata from files or a pre-fabricated URL. .
                 defaults to '', i.e. no agency.
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
@@ -82,7 +84,7 @@ class Request(object):
             fromfile=None, tofile=None, url=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
-        While 'get' can load any SDMX file specified by 'fromfile',
+        While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
         it can only construct URLs for the SDMX service set for this instance.
         Hence, you have to instantiate a :class:`pandasdmx.api.Request` instance for each data provider you want to access, or
         pass a pre-fabricated URL through the ``url`` parameter.
@@ -177,6 +179,16 @@ class Request(object):
                 with open(tofile, 'wb') as dest:
                     dest.write(source.read())
                     source.seek(0)
+                    # handle zip files
+            if is_zipfile(source):
+                temp = source
+                zf = ZipFile(temp, mode='r')
+                info = zf.infolist()[0]
+                source = zf.open(info)
+            else:
+                # undo side effect of is_zipfile
+                source.seek(0)
+
             msg = self.get_reader().initialize(source)
         else:
             msg = None

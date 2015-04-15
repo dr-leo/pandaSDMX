@@ -11,4 +11,4 @@ pandaSDMX is licensed under the
 source distribution.
 
 
-Copyright 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+Copyright 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, All Rights Reserved.

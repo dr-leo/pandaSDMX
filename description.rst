@@ -9,10 +9,13 @@ pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_
 package aimed at becoming the 
 most intuitive and versatile tool to retrieve and acquire statistical data and metadata
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It should work with all+
-SDMX data providers supporting SDMX 2.1. Currently
-the only known SDMX 2.1-compliant agencies are the European statistics office (Eurostat, more than 5700 dataflows)
-and the European Central Bank (ECB, more than 70 dataflows). While pandaSDMX is extensible to 
+It should work with all
+SDMX data providers supporting SDMX 2.1. Currently,
+this is tested for the European statistics office (Eurostat),
+and the European Central Bank (ECB) each providing hundreds of
+thousands of indicators. 
+
+While pandaSDMX is extensible to 
 cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
 of data analysis in Python. But from pandas you can export your data to Excel and friends. 
 

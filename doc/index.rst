@@ -63,6 +63,7 @@ Table of contents
     :numbered:
 
     whatsnew
+    faq
     intro
     sdmx_tour
     usage

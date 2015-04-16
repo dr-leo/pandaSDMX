@@ -4,21 +4,25 @@
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
 # this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
-
-
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
 from setuptools import setup
 from codecs import open
+import re
+
+
+# Get version
+s = open('pandasdmx/__init__.py', 'rt').read()
+m = re.search(r"version = '([a-z0-9.]+)'", s)
+ver = m.groups(0)[0]
 
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r').read()
 
 setup(name='pandaSDMX',
-      version='0.2.1',
+      version=ver,
       description='A Python- and pandas-powered client for Statistical Data and Metadata eXchange',
       long_description=long_descr,
       author='Dr. Leo',

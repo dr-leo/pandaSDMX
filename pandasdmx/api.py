@@ -175,21 +175,22 @@ class Request(object):
         source, url, status_code = self.client.get(
             base_url, params=params, fromfile=fromfile)
         if source:
-            if tofile:
-                with open(tofile, 'wb') as dest:
-                    dest.write(source.read())
+            with source:
+                if tofile:
+                    with open(tofile, 'wb') as dest:
+                        dest.write(source.read())
+                        source.seek(0)
+                # handle zip files
+                if is_zipfile(source):
+                    temp = source
+                    with ZipFile(temp, mode='r') as zf:
+                        info = zf.infolist()[0]
+                        source = zf.open(info)
+                else:
+                    # undo side effect of is_zipfile
                     source.seek(0)
-                    # handle zip files
-            if is_zipfile(source):
-                temp = source
-                zf = ZipFile(temp, mode='r')
-                info = zf.infolist()[0]
-                source = zf.open(info)
-            else:
-                # undo side effect of is_zipfile
-                source.seek(0)
 
-            msg = self.get_reader().initialize(source)
+                msg = self.get_reader().initialize(source)
         else:
             msg = None
         return Response(msg, url, status_code, writer=self.writer)

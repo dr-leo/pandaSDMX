@@ -17,12 +17,12 @@ SOAP interface.
 '''
 
 
-from pandasdmx.remote import REST
+from pandasdmx import remote
 from pandasdmx.utils import str_type
 from pandasdmx.reader.sdmxml import SDMXMLReader
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
-
+from time import sleep
 
 __all__ = ['Request']
 
@@ -60,7 +60,7 @@ class Request(object):
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
         '''
-        self.client = REST()
+        self.client = remote.REST()
         self.agency = agency
         self.writer = writer
 
@@ -81,7 +81,7 @@ class Request(object):
                 list(self._agencies)))
 
     def get(self, resource_type='', resource_id='', agency='', key='', params={},
-            fromfile=None, tofile=None, url=None):
+            fromfile=None, tofile=None, url=None, get_footer_url=(30, 3)):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -122,6 +122,16 @@ class Request(object):
             url(str): URL of the resource to download.
                 If given, any other arguments such as
                 ``resource_type`` or ``resource_id`` are ignored. Default is None.
+            get_footer_url((int, int)): 
+                tuple of the form (seconds, number_of_attempts). Determines the
+                behavior in case the received SDMX message has a footer where
+                one of its lines is a valid URL. ``get_footer_url`` defines how many attempts should be made to
+                request the resource at that URL after waiting so many seconds before each attempt.
+                This behavior is useful when requesting large datasets from Eurostat. Other agencies do not seem to
+                send such footers. Once an attempt to get the resource has been 
+                successful, the original message containing the footer is dismissed and the dataset
+                is returned. The ``tofile`` argument is propagated. Note that the written file may be
+                a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3). 
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -174,25 +184,37 @@ class Request(object):
         # Now get the SDMX message either via http or as local file
         source, url, status_code = self.client.get(
             base_url, params=params, fromfile=fromfile)
-        if source:
-            with source:
-                if tofile:
-                    with open(tofile, 'wb') as dest:
-                        dest.write(source.read())
-                        source.seek(0)
-                # handle zip files
-                if is_zipfile(source):
-                    temp = source
-                    with ZipFile(temp, mode='r') as zf:
-                        info = zf.infolist()[0]
-                        source = zf.open(info)
-                else:
-                    # undo side effect of is_zipfile
+        # write msg to file and unzip it as required, then parse it
+        with source:
+            if tofile:
+                with open(tofile, 'wb') as dest:
+                    dest.write(source.read())
                     source.seek(0)
-
-                msg = self.get_reader().initialize(source)
-        else:
-            msg = None
+            # handle zip files
+            if is_zipfile(source):
+                temp = source
+                with ZipFile(temp, mode='r') as zf:
+                    info = zf.infolist()[0]
+                    source = zf.open(info)
+            else:
+                # undo side effect of is_zipfile
+                source.seek(0)
+            msg = self.get_reader().initialize(source)
+        # Check for URL in a footer and get the real data if so configured
+        if get_footer_url and hasattr(msg, 'footer'):
+            # Retrieve the first URL in the footer, if any
+            url_l = [
+                i for i in msg.footer.text if remote.requests.utils.urlparse(i).scheme]
+            if url_l:
+                # found an URL. Wait and try to request it
+                footer_url = url_l[0]
+                seconds, attempts = get_footer_url
+                for a in range(attempts):
+                    sleep(seconds)
+                    try:
+                        return self.get(tofile=tofile, url=footer_url)
+                    except Exception:
+                        pass
         return Response(msg, url, status_code, writer=self.writer)
 
 

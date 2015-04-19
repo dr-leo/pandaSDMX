@@ -32,7 +32,7 @@ Main features
 
 * pythonic representation of the SDMX information model  
 * find dataflows by name or description in multiple languages if available
-* read and write local files for offline use 
+* read and write files including zip archives for offline use
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
 
@@ -65,9 +65,18 @@ pandaSDMX Links
 Recent changes 
 ========================
 
+Version 0.2.1 (2015-04-22)
+----------------------------------
 
-Version 0.2.0 (2015-04)
----------------------------
+* add support for zip archives received from an SDMX server. 
+  This is common for large datasets from Eurostat
+* incidentally get a remote resource if the footer of a received message
+  specifies an URL. This pattern is common for large datasets from Eurostat.
+* allow passing a file-like object to api.Request.get() 
+* enhance documentation
+  
+Version 0.2.0 (2015-04-13)
+------------------------------------
 
 
 This version is a quantum leap. The whole project has been redesigned and rewritten from

@@ -390,9 +390,16 @@ zip files returned from an SDMX server. This happens, e.g., when
 Eurostat finds that the requested dataset has been too
 large. In this case the first request will yield
 a message with a footer containing a link to a zip file to be made
-available after a few minutes. The link may be extracted by issuing something like 
-``resp.msg.footer.text[1]``  and passed as ``url`` argument when calling ``get`` a second time to
-get the zipped data message.  
+available after some time. The link may be extracted by issuing something like:
+ 
+    >>> resp.msg.footer.text[1]  
+    
+and passed as ``url`` argument when calling ``get`` a second time to
+get the zipped data message. 
+
+Since version 0.2.1, this second request can be performed automatically through the
+``get_footer_url`` parameter. It defaults to ``(30, 3)`` which means that three attempts will be made in 30 seconds intervals. 
+This behavior is useful when requesting large datasets from Eurostat. Deactivate it by setting ``get_footer_url`` to None.   
 
 
 Handling errors
@@ -403,9 +410,11 @@ been received has a ``status_code``  attribute. The SDMX web services guidelines
 of these codes. In addition,
 if the SDMX server has encountered an error, 
 it may return a message which
-includes a footer containing explanatory notes. For instance, if Eurostat cannot 
-return a large dataset immediately, it may make it available after some time under a link
-contained in the footer. This link should then be passed to the `` get`` method using the `` url``  keyword parameter.
+includes a footer containing explanatory notes. pandaSDMX exposes the content of
+a footer via a ``text`` attribute which is a list of strings.
 
-
-    
+.. note::
+    pandaSDMX raises only http errors with status code between 400 and 499.
+    Codes >= 500 do not raise an error as the SDMX web services guidelines
+    define special meanings to those codes. The caller must therefore raise an error if needed. 
+       

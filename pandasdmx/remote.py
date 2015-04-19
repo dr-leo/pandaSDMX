@@ -84,5 +84,5 @@ class REST:
                 source = None
             code = int(response.status_code)
             if 400 <= code <= 499:
-                raise requests.HTTPError(code)
+                raise response.raise_for_status()
             return source, response.url, code

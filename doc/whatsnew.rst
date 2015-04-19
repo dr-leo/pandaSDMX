@@ -7,7 +7,7 @@ v0.2.1
 --------------
 
 * Request.get: allow `fromfile` to be a file-like object
-* extract SDMX messages from zip file if given. Important for large datasets from Eurostat
+* extract SDMX messages from zip archives if given. Important for large datasets from Eurostat
 * automatically get a resource at an URL given in
   the footer of the received message. This allows to automatically get large datasets from Eurostat that have been
   made available at the given URL. The number of attempts and the time to wait before each

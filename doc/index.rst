@@ -1,5 +1,5 @@
-Home
-==========================================
+pandaSDMX: Statistical Data and Metadata eXchange in Python
+=============================================================
 
 
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
@@ -36,7 +36,7 @@ Example
 
     from pandasdmx import Request
     # Get annual unemployment data from Eurostat
-    une_resp = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a')
+    une_resp = Request('ESTAT').get('data', 'une_rt_a')
     # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
     une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
     # Explore the DataFrame
@@ -52,7 +52,7 @@ pandaSDMX Links
 * `Documentation <http://pandasdmx.readthedocs.org>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
- 
+* `Official SDMX website <http://www.sdmx.org>`_ 
  
 Table of contents
 ---------------------

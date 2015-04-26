@@ -165,24 +165,36 @@ class Writer(BaseWriter):
                 # and there is a FREQ dimension at all.
                 if fromfreq and 'FREQ' in series.key._fields:
                     f = series.key.FREQ
-                    # Remove '-' from strings like '2014-Q1' to make pandas digest them.
-                    # Use a regex instead to cover other cases such as
-                    # '2014-H1' or '2014-W20'?
-                    if '-Q' in obs_dim[0]:
-                        obs_dim = list(obs_dim)
-                        obs_dim[0] = obs_dim[0].replace('-Q', 'Q')
-                    series_index = PD.period_range(
-                        start=obs_dim[0], periods=l, freq=f)
+                    od0 = obs_dim[0]
+                    year, subdiv = map(int, (od0[:4], od0[-1]))
+                    if f == 'Q':
+                        start_date = PD.datetime(year, (subdiv - 1) * 3 + 1, 1)
+                        series_index = PD.period_range(
+                            start=start_date, periods=l, freq='Q')
+                    elif 'S' in od0:
+                        # pandas cannot represent semesters as periods. So we
+                        # use date_range.
+                        start_date = PD.datetime(year, (subdiv - 1) * 6 + 1, 1)
+                        series_index = PD.date_range(
+                            start=start_date, periods=l, freq='6M')
+                    else:
+                        series_index = PD.period_range(start=od0, periods=l,
+                                                       freq=f)
                 elif 'FREQ' in series.key._fields:
+                    # fromfreq is False. So generate the index from all the
+                    # strings
                     f = series.key.FREQ
-                    # build the index from all observations.
-                    # Remove the '-' in all dimension strings such as '2012-Q1'
-                    if '-Q' in obs_dim[0]:
-                        obs_dim = list(obs_dim)
-                        for i in range(l):
-                            obs_dim[i] = obs_dim[i].replace('-Q', 'Q')
-                    series_index = PD.PeriodIndex(obs_dim,
-                                                  freq=f)
+                    # Generate arrays for years and subdivisions (quarters or
+                    # semesters
+                    if f == 'Q':
+                        series_index = PD.Index(PD.Period(year=int(d[:4]), quarter=int(d[-1]), freq='Q')
+                                                for d in obs_dim)
+                    elif f == 'H':
+                        series_index = PD.Index(
+                            PD.datetime(int(d[:4]), (int(d[-1]) - 1) * 6 + 1, 1) for d in obs_dim)
+                    else:  # other freq such as 'A' or 'M'
+                        series_index = PD.PeriodIndex(obs_dim,
+                                                      freq=f)
             elif dim_at_obs == 'TIME':
                 if fromfreq and 'FREQ' in series.key._fields:
                     f = series.key.FREQ

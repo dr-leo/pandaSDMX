@@ -68,12 +68,13 @@ Recent changes
 Version 0.2.1 (2015-04-22)
 ----------------------------------
 
-* add support for zip archives received from an SDMX server. 
+* API: add support for zip archives received from an SDMX server. 
   This is common for large datasets from Eurostat
 * incidentally get a remote resource if the footer of a received message
   specifies an URL. This pattern is common for large datasets from Eurostat.
 * allow passing a file-like object to api.Request.get() 
 * enhance documentation
+* make pandas writer parse more time period formats and increase its performance  
   
 Version 0.2.0 (2015-04-13)
 ------------------------------------

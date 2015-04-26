@@ -40,6 +40,9 @@ class Request(object):
         'ECB': {
             'name': 'European Central Bank',
             'url': 'http://sdw-wsrest.ecb.int/service'},
+        'SGR': {
+            'name': 'SDMX Global Registry',
+            'url': 'https://registry.sdmx.org/ws/rest'},
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',

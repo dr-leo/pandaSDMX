@@ -68,7 +68,8 @@ api
 model 
     implements the SDMX information model. 
 remote 
-    contains a wrapper class around `requests.Request`. Called by :meth:`pandasdmx.api.Request.get` to make
+    contains a wrapper class around ``requests`` for http. 
+    Called by :meth:`pandasdmx.api.Request.get` to make
     http requests to SDMX services. Also reads sdmxml files instead of querying them over the web.
 
 .. rubric:: Subpackages

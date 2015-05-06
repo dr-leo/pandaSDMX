@@ -49,7 +49,6 @@ pandaSDMX Links
 -------------------------------
 
 * `Download the latest stable version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
-* `Documentation <http://pandasdmx.readthedocs.org>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
 * `Official SDMX website <http://www.sdmx.org>`_ 
@@ -69,6 +68,7 @@ Table of contents
     usage
     advanced
     API documentation <api/modules>
+    contributing
     license
 
 Indices and tables

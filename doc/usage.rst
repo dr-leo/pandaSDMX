@@ -18,9 +18,9 @@ This chapter illustrates the main steps of a typical workflow, namely:
 
 These steps share common tasks which flow from the architecture of pandaSDMX:
 
-1. Call :meth:`get` on a new or existing :class:`pandasdmx.api.Request` instance
+1. Call :meth:`pandasdmx.api.Request.get` on a new or existing :class:`pandasdmx.api.Request` instance
    to obtain an SDMX message from a web service or a file and load it into memory
-#. Explore the :class:`pandasdmx.api.Response`instance returned by :meth:`pandasdmx.Request.get`
+#. Explore the :class:`pandasdmx.api.Response`instance returned by :meth:`pandasdmx.api.Request.get`
 
    * check for errors 
    * Access the SDMX message's content through its ``msg``  attribute.
@@ -369,18 +369,20 @@ pandas Series should be concatenated to a single DataFrame at all (``asframe = T
 Also, the ``write``  method provides the following parameters to increase performance for
 large datasets with regular indexes (e.g. monthly data):
 
-* ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency.
-  Thks only if the dataset is uniform, e.g. has no gaps like for daily trading data.
-* ``reverse_obs``:: if True, return observations in a series in reverse document order. This may be
-  useful to establish chronological order, in particular incombination with ``fromfreq``. Default is False.  
-
+* ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency. 
+  This is only robust if the dataset has a uniform index, 
+  e.g. has no gaps like for daily trading data.
+* ``reverse_obs``:: if True, return observations in a series in reverse 
+  document order. This may be useful to establish chronological order, 
+  in particular incombination with ``fromfreq``. Default is False.  
 
 
 Working with files
 ---------------------
 
 The :class:`pandasdmx.api.Request.get` method accepts two optional keyword
-arguments ``tofile``  and ``fromfile``. If specified,
+arguments ``tofile``  and ``fromfile``. If a file path or, in case of ``fromfile``, 
+a  file-like object is given,
 any SDMX message received from the server will be written to a file, or a file will be read
 instead of making a request to a remote server. 
 

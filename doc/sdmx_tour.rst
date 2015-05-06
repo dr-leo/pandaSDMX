@@ -40,7 +40,7 @@ must explicitly specify the :index:`dimension at observation` such as 'time', 't
 If a dataset consists of series whose
 dimension at observation is neither time nor time period, the dataset is called :index:`cross-sectional`. 
 A dataset that is not grouped into series, i.e.
-where all dimension values including time, if available, are stated for each observation, are called :index:`flat datasets`. Thes are not 
+where all dimension values including time, if available, are stated for each observation, are called :index:`flat datasets`. These are not 
 memory-efficient, but benefit from a very simple representation.  
 
 An attribute may be attached to a series to express
@@ -94,16 +94,16 @@ Multiple categories may belong to a container called :index:`CategorySchemes`.
 A :index:`Categorisation` links the thing to be
 categorised, e.g., a DataFlowDefinition, to a :index:`Category`. 
 
-Abstract base classes
-:::::::::::::::::::::::::::::::::::::::::::::::::::::
+Class hierarchy
+:::::::::::::::::
 
-    The SDMX information model defines a number of base classes from which concrete classes
-    such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` inherit.
-    E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining
-    agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from
-    :index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth. Hence, DataStructureDefinition may have a unique
-    ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes advantage from
-    this class hierarchy.
+The SDMX information model defines a number of base classes from which concrete classes
+such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` inherit.
+E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining
+agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from
+:index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth. Hence, DataStructureDefinition may have a unique
+ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes advantage from
+this class hierarchy.
     
 XML-implementation of the information model
 ---------------------------------------------------------------      
@@ -126,7 +126,7 @@ that have occurred on the server side, e.g., if the requested dataset exceeds th
 sime time to make it available under a given link. 
 
 The test suite comes with a number of small SDMXML demo files. View them in your favorite 
-        XML editor to get a deeper understanding of the structure and content of various message types. 
+XML editor to get a deeper understanding of the structure and content of various message types. 
 
 SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX v0.2 does not 
 support validation.
@@ -142,7 +142,7 @@ The query part of the URL (after the '?') may be used to give optional query par
 requesting data, the scope of the dataset may be narrowed down by specifying a startperiod and endperiod for the time series. Moreover,
 the query part may set a :index:`references` parameter to instruct the
 SDMX server to return a number of other artefacts along with the resource actually requested.
-Elgl, a DataStructureDefinition contains references to codelists and conceptschemes (see above). If the
+For example, a DataStructureDefinition contains references to codelists and conceptschemes (see above). If the
 'references' parameter is set to 'all', these will be returned in the same StructureMessage.
 The next chapter contains some examples to demonstrate this mechanism. Further details can be found in the
 SDMX User Guide, and the Web Service Guidelines.

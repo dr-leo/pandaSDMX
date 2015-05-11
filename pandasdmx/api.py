@@ -46,7 +46,7 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas'):
+                 writer='pandasdmx.writer.data2pandas', proxies={}):
         '''Set the data provider and writer for an instance.
 
         Args:
@@ -63,6 +63,7 @@ class Request(object):
         self.client = REST()
         self.agency = agency
         self.writer = writer
+        self.proxies = proxies
 
     def get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
@@ -173,7 +174,7 @@ class Request(object):
 
         # Now get the SDMX message either via http or as local file
         source, url, status_code = self.client.get(
-            base_url, params=params, fromfile=fromfile)
+            base_url, params=params, proxies=self.proxies, fromfile=fromfile)
         if source:
             if tofile:
                 with open(tofile, 'wb') as dest:

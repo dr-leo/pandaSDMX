@@ -60,10 +60,9 @@ class Request(object):
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
         '''
-        self.client = REST()
+        self.client = REST(proxies)
         self.agency = agency
         self.writer = writer
-        self.proxies = proxies
 
     def get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
@@ -174,7 +173,7 @@ class Request(object):
 
         # Now get the SDMX message either via http or as local file
         source, url, status_code = self.client.get(
-            base_url, params=params, proxies=self.proxies, fromfile=fromfile)
+            base_url, params=params, fromfile=fromfile)
         if source:
             if tofile:
                 with open(tofile, 'wb') as dest:

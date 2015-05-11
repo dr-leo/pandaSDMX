@@ -25,6 +25,15 @@ class REST:
 
     max_size = 2 ** 24
     '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
+    def __init__(self, proxies={}):
+        '''Initiate REST service
+
+        Args (optional) :
+
+            proxies(dict): Dictionary mapping protocol to the URL of the proxy
+                (e.g. {‘http’: ‘foo.bar:3128’})
+        '''
+        self.proxies = proxies
 
     def get(self, url, fromfile=None, params={}):
         '''Get SDMX message from REST service or local file
@@ -73,7 +82,7 @@ class REST:
         :return: the xml data as file-like object
         """
 
-        with closing(requests.get(url, params=params,
+        with closing(requests.get(url, params=params, proxies=self.proxies,
                                   stream=True, timeout=30.1)) as response:
             if response.status_code == requests.codes.OK:
                 source = STF(max_size=self.max_size)

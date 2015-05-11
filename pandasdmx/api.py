@@ -46,7 +46,7 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas'):
+                 writer='pandasdmx.writer.data2pandas', proxies={}):
         '''Set the data provider and writer for an instance.
 
         Args:
@@ -60,7 +60,7 @@ class Request(object):
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
         '''
-        self.client = REST()
+        self.client = REST(proxies)
         self.agency = agency
         self.writer = writer
 

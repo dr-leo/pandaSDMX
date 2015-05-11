@@ -26,6 +26,13 @@ class REST:
     max_size = 2 ** 24
     '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
     def __init__(self, proxies={}):
+        '''Initiate REST service
+
+        Args (optional) :
+
+            proxies(dict): Dictionary mapping protocol to the URL of the proxy
+                (e.g. {‘http’: ‘foo.bar:3128’})
+        '''
         self.proxies = proxies
 
     def get(self, url, fromfile=None, params={}):
@@ -39,8 +46,6 @@ class REST:
             fromfile(str): path to SDMX file containing an SDMX message.
                 It will be passed on to the
                 reader for parsing.
-            proxies(dict): Dictionary mapping protocol to the URL of the proxy
-                (e.g. {‘http’: ‘foo.bar:3128’})
 
         Returns:
             tuple: three objects:

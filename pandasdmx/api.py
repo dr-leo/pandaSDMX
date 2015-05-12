@@ -49,7 +49,7 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas', **request_cfg):
+                 writer='pandasdmx.writer.data2pandas', **http_cfg):
         '''Set the SDMX agency, writer, and configure http requests.
 
         Args:
@@ -63,12 +63,12 @@ class Request(object):
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
 
-            **request_cfg: used to configure http requests. E.g., you can 
-            specify proxies, authentification information and more.
+            **http_cfg: used to configure http requests. E.g., you can 
+            specify proxies, authentication information and more.
             See also the docs of the ``requests`` package at 
             http://www.python-requests.org/en/latest/.   
         '''
-        self.client = remote.REST(**request_cfg)
+        self.client = remote.REST(http_cfg)
         self.agency = agency
         self.writer = writer
 
@@ -190,7 +190,7 @@ class Request(object):
                     'If `` url`` is not specified, either agency or fromfile must be given.')
 
         # Now get the SDMX message either via http or as local file
-        source, url, status_code = self.client.get(
+        source, url, headers, status_code = self.client.get(
             base_url, params=params, fromfile=fromfile)
         # write msg to file and unzip it as required, then parse it
         with source:
@@ -223,7 +223,7 @@ class Request(object):
                         return self.get(tofile=tofile, url=footer_url)
                     except Exception:
                         pass
-        return Response(msg, url, status_code, writer=self.writer)
+        return Response(msg, url, headers, status_code, writer=self.writer)
 
 
 class Response(object):
@@ -237,26 +237,30 @@ class Response(object):
             of the SDMX message
         status_code(int): the status code from the http response, if any
         url(str): the URL, if any, that was sent to the SDMX server
+        headers(dict): http response headers returned by ''requests''
 
     Methods:
         write: wrapper around the writer's write method.
             Arguments are propagated to the writer.
     '''
 
-    def __init__(self, msg, url, status_code, writer=None):
+    def __init__(self, msg, url, headers, status_code, writer=None):
         '''Set the main attributes and instantiate the writer if given.
 
         Args:
             msg(pandasdmx.model.Message): the SDMX message
             url(str): the URL, if any, that had been sent to the SDMX server
+            headers(dict): http headers 
             status_code(int): the status code returned by the server
             writer(str): the module path for the writer class
 
         '''
         self.msg = msg
         self.url = url
+        self.http_headers = headers
         self.status_code = status_code
-        self.init_writer(writer)
+        if hasattr(self.msg, 'data'):
+            self.init_writer(writer)
 
     def init_writer(self, writer):
         # Initialize the writer if given

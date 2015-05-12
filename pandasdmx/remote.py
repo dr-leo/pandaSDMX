@@ -26,6 +26,9 @@ class REST:
     max_size = 2 ** 24
     '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
 
+    def __init__(self, **request_cfg):
+        self.request_cfg = request_cfg
+
     def get(self, url, fromfile=None, params={}):
         '''Get SDMX message from REST service or local file
 
@@ -74,7 +77,8 @@ class REST:
         """
 
         with closing(requests.get(url, params=params,
-                                  stream=True, timeout=30.1)) as response:
+                                  stream=True, timeout=30.1,
+                                  **self.request_cfg)) as response:
             if response.status_code == requests.codes.OK:
                 source = STF(max_size=self.max_size)
                 for c in response.iter_content(chunk_size=1000000):

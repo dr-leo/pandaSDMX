@@ -49,8 +49,8 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas'):
-        '''Set the data provider and writer for an instance.
+                 writer='pandasdmx.writer.data2pandas', **request_cfg):
+        '''Set the SDMX agency, writer, and configure http requests.
 
         Args:
 
@@ -62,8 +62,13 @@ class Request(object):
                 defaults to '', i.e. no agency.
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
+
+            **request_cfg: used to configure http requests. E.g., you can 
+            specify proxies, authentification information and more.
+            See also the docs of the ``requests`` package at 
+            http://www.python-requests.org/en/latest/.   
         '''
-        self.client = remote.REST()
+        self.client = remote.REST(**request_cfg)
         self.agency = agency
         self.writer = writer
 

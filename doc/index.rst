@@ -36,13 +36,13 @@ Example
 
     from pandasdmx import Request
     # Get annual unemployment data from Eurostat
-    une_resp = Request('ESTAT').get('data', 'une_rt_a')
+    une_resp = Request('ESTAT').get('data', 'une_rt_a', params={'startPeriod': '2006'})
     # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
     une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
     # Explore the DataFrame
     une_df.columns.names
     une_df.columns.levels[0:2]
-    une_df.loc[:'2006', ('TOTAL', 'T')]
+    une_df.loc[:, ('TOTAL', 'T')]
 
 
 pandaSDMX Links

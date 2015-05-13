@@ -3,6 +3,17 @@
 What's new?
 ==============
 
+
+v0.2.2
+--------------
+
+* Make HTTP connections configurable by exposing the 
+  `requests.get API <http://www.python-requests.org/en/latest/>`_ 
+  through the :class:`pandasdmx.api.Request` constructor.
+  Hence, proxy servers, authentication information and other HTTP-related parameters consumed by ``requests.get`` can be
+  specified for each ``Request`` instance and used in subsequent requests.
+* Responses have a new ``http_headers`` attribute containing the HTTP headers returned by the SDMX server
+
 v0.2.1
 --------------
 

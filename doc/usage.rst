@@ -51,7 +51,19 @@ is shown in the error message if an invalid agency ID is passed:
     ecb = Request('ECB')
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to
-send requests to other agencies, simply instantiate dedicated ``Request`` objects. Note that any ``Request`` instance
+send requests to other agencies, simply instantiate dedicated ``Request`` objects. 
+
+To pre-configure the HTTP connections to be established by a ``Request`` instance, 
+you can pass almost all keyword arguments consumed by the underlying HTTP library 
+`requests <http://www.python-requests.org/>`_ (new in version 0.2.2). 
+For a complete description of the options see the ``requests``  documentation.
+For example, a proxy server can be specified for subsequent requests like so:
+   
+.. ipython:: python
+
+    ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
+    
+Note that any ``Request`` instance
 can load SDMX messages from local files. 
 Issuing ``r = Request()`` without passing any agency ID will
 instantiate a ``Request`` object not tied to any agency. It may only be used to
@@ -95,6 +107,12 @@ to the appropriate default value. We can see this from the URL:
 .. ipython:: python
 
     cat_resp.url
+
+The HTTP headers returned by the SDMX server are availble as well (new in version 0.2.2):
+
+.. ipython:: python
+
+    cat_resp.http_headers
     
 Note that categorisations, categoryschemes, and many other 
 artefacts from the SDMX information model are represented by

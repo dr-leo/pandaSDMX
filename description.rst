@@ -55,7 +55,6 @@ Example
 pandaSDMX Links
 -------------------------------
 
-* `Download the latest stable version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
 * `Documentation <http://pandasdmx.readthedocs.org>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
@@ -64,6 +63,17 @@ pandaSDMX Links
   
 Recent changes 
 ========================
+
+Version 0.2.2
+--------------
+
+* Make HTTP connections configurable by exposing the 
+  `requests.get API <http://www.python-requests.org/en/latest/>`_ 
+  through the ``pandasdmx.api.Request`` constructor.
+  Hence, proxy servers, authentication information and other HTTP-related parameters consumed by ``requests.get`` can be
+  set for an ``Request`` instance and used in subsequent requests.
+* Responses now have an ``http_headers`` attribute containing the headers returned by the SDMX server
+
 
 Version 0.2.1 (2015-04-22)
 ----------------------------------

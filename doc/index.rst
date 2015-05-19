@@ -24,7 +24,8 @@ Main features
 
 * pythonic representation of the SDMX information model  
 * find dataflows by name or description in multiple languages if available
-* read and write local files for offline use 
+* read and write local files for offline use
+* configurable HTTP connections 
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
 

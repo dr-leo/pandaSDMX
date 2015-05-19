@@ -20,14 +20,23 @@ from contextlib import closing
 class REST:
 
     """
-    Query resources via REST
+    Query SDMX resources via REST or from a file
+
+    The constructor accepts arbitrary keyword arguments that will be passed
+    to the requests.get function on each call. This makes the REST class somewhat similar to a requests.Session. E.g., proxies or
+    authorisation data needs only be provided once. The keyword arguments are
+    stored in self.config. Modify this dict to issue the next 'get' request with
+    changed arguments.
     """
 
     max_size = 2 ** 24
     '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
 
     def __init__(self, http_cfg):
-        self.http_cfg = http_cfg
+        default_cfg = dict(stream=True, timeout=30.1)
+        for k, v in default_cfg.items():
+            http_cfg.setdefault(k, v)
+        self.config = http_cfg
 
     def get(self, url, fromfile=None, params={}):
         '''Get SDMX message from REST service or local file
@@ -77,9 +86,7 @@ class REST:
         :return: the xml data as file-like object
         """
 
-        with closing(requests.get(url, params=params,
-                                  stream=True, timeout=30.1,
-                                  **self.http_cfg)) as response:
+        with closing(requests.get(url, params=params, **self.config)) as response:
             if response.status_code == requests.codes.OK:
                 source = STF(max_size=self.max_size)
                 for c in response.iter_content(chunk_size=1000000):

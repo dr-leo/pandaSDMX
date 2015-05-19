@@ -71,7 +71,8 @@ Version 0.2.2
   `requests.get API <http://www.python-requests.org/en/latest/>`_ 
   through the ``pandasdmx.api.Request`` constructor.
   Hence, proxy servers, authentication information and other HTTP-related parameters consumed by ``requests.get`` can be
-  set for an ``Request`` instance and used in subsequent requests.
+  set for an ``Request`` instance and used in subsequent requests. The configuration is
+  exposed as a dict through the ``Request.client.config`` attribute.
 * Responses now have an ``http_headers`` attribute containing the headers returned by the SDMX server
 
 

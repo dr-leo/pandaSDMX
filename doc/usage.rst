@@ -39,10 +39,10 @@ Importing pandaSDMX
         
     from pandasdmx import Request
             
-Selecting an SDMX web service
+Connecting to an SDMX web service
 --------------------------------------
 
-Next, we instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
+We instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
 agency ID as string. The list of supported agencies
 is shown in the error message if an invalid agency ID is passed:
             
@@ -54,7 +54,7 @@ is shown in the error message if an invalid agency ID is passed:
 send requests to other agencies, simply instantiate dedicated ``Request`` objects. 
 
 To pre-configure the HTTP connections to be established by a ``Request`` instance, 
-you can pass almost all keyword arguments consumed by the underlying HTTP library 
+you can pass all keyword arguments consumed by the underlying HTTP library 
 `requests <http://www.python-requests.org/>`_ (new in version 0.2.2). 
 For a complete description of the options see the ``requests``  documentation.
 For example, a proxy server can be specified for subsequent requests like so:
@@ -62,11 +62,21 @@ For example, a proxy server can be specified for subsequent requests like so:
 .. ipython:: python
 
     ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
-    
-Note that any ``Request`` instance
+
+HTTP request parameters are exposed through a dict. It may be
+modified between requests.
+
+.. ipython:: python
+
+    ecb_via_proxy.client.config
+
+The ``Request.client`` attribute acts a bit like a ``requests.Session`` in that it
+conveniently stores the configuration for subsequent HTTP requests. 
+
+Any ``Request`` instance
 can load SDMX messages from local files. 
-Issuing ``r = Request()`` without passing any agency ID will
-instantiate a ``Request`` object not tied to any agency. It may only be used to
+Issuing ``r = Request()`` without passing any agency ID
+instantiates a ``Request`` object not tied to any agency. It may only be used to
 load SDMX messages from files, unless a pre-fabricated URL is passed to :meth:`pandasdmx.api.Request.get`.
 
 Finding dataflows

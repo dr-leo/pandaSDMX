@@ -9,14 +9,15 @@
 
 from setuptools import setup
 from codecs import open
-import re
+# uncomment this once readthedocs swallows it
+# import re
 
 
 # Get version
-s = open('pandasdmx/__init__.py', 'rt').read()
-m = re.search(r"version = '([a-z0-9.]+)'", s)
-ver = m.groups(0)[0]
-
+# s = open('pandasdmx/__init__.py', 'rt').read()
+# m = re.search(r"version = '([a-z0-9.]+)'", s)
+# ver = m.groups(0)[0]
+ver = '0.2.2'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r').read()

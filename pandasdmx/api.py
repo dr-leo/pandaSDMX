@@ -43,6 +43,9 @@ class Request(object):
         'SGR': {
             'name': 'SDMX Global Registry',
             'url': 'https://registry.sdmx.org/ws/rest'},
+        'ISTAT': {
+            'name': 'Bank of Italy',
+            'url': 'http://sdmx.istat.it/SDMXWS/rest'},
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',

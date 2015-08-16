@@ -21,7 +21,7 @@ from pandasdmx.writer import BaseWriter
 class Writer(BaseWriter):
 
     def write(self, source=None, asframe=True, dtype=NP.float64,
-              attributes='', reverse_obs=False, fromfreq=False):
+              attributes='', reverse_obs=False, fromfreq=False, parse_datetime=True):
         '''Transfform a :class:`pandasdmx.model.DataMessage` instance to a pandas DataFrame
         or iterator over pandas Series.
 
@@ -49,6 +49,11 @@ class Writer(BaseWriter):
                 reverse order. Default: False
             fromfreq(bool): if True, extrapolate time periods 
                 from the first item and FREQ dimension. Default: False
+            parse_datetime(bool): if True (default), try to generate datetime index, provided that
+                dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_datetime`` is ignored. If False,
+                always generate index of strings. 
+                Set it to False to increase performance and avoid 
+                parsing errors for exotic date-time formats unsupported by pandas.
         '''
 
         # Preparations
@@ -100,7 +105,7 @@ class Writer(BaseWriter):
             if asframe:
                 series_list = list(s for s in self.iter_pd_series(
                     iter_series, dim_at_obs, dtype, attributes,
-                    reverse_obs, fromfreq))
+                    reverse_obs, fromfreq, parse_datetime))
                 if dtype and attributes:
                     pd_series, pd_attributes = zip(*series_list)
                     index_source = pd_series
@@ -138,10 +143,10 @@ class Writer(BaseWriter):
             # return an iterator
             else:
                 return self.iter_pd_series(iter_series, dim_at_obs, dtype,
-                                           attributes, reverse_obs, fromfreq)
+                                           attributes, reverse_obs, fromfreq, parse_datetime)
 
     def iter_pd_series(self, iter_series, dim_at_obs, dtype,
-                       attributes, reverse_obs, fromfreq):
+                       attributes, reverse_obs, fromfreq, parse_datetime):
         # Pre-compute some values before looping over the series
         o_in_attrib = 'o' in attributes
         s_in_attrib = 's' in attributes
@@ -158,7 +163,7 @@ class Writer(BaseWriter):
                 obs_attrib = NP.array(tuple(next(obs_zip)), dtype='O')
 
             # Generate the index
-            if dim_at_obs == 'TIME_PERIOD':
+            if parse_datetime and dim_at_obs == 'TIME_PERIOD':
                 # Check if we can build the index based on start and freq
                 # Constructing the index from the first value and FREQ should only
                 # occur if 'fromfreq' is True
@@ -195,14 +200,14 @@ class Writer(BaseWriter):
                     else:  # other freq such as 'A' or 'M'
                         series_index = PD.PeriodIndex(obs_dim,
                                                       freq=f)
-            elif dim_at_obs == 'TIME':
+            elif parse_datetime and dim_at_obs == 'TIME':
                 if fromfreq and 'FREQ' in series.key._fields:
                     f = series.key.FREQ
                     series_index = PD.date_range(
                         start=obs_dim[0], periods=l, freq=f)
                 else:
                     series_index = PD.DatetimeIndex(obs_dim)
-            # Not a datetime or period index
+            # Not a datetime or period index or don't parse it
             else:
                 series_index = PD.Index(obs_dim)
 

@@ -303,7 +303,7 @@ SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass i
 However, we only want to download those parts of the data we are 
 interested in. Not only does this increase
 performance. Rather, some dataflows are really huge, and would exceed the server limits.
-The REST API of SDMX offers to ways to narrow down a data request:
+The REST API of SDMX offers two ways to narrow down a data request:
  
 * specifying dimension values which the series to be returned must match ("horizontal filter") or
 * limiting the time range or number of observations per series ("vertical filter") 

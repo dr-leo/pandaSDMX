@@ -272,7 +272,9 @@ as enumerated in the referenced code list:
     currency_codelist.USD, currency_codelist.JPY
     
 
-So there are five dimensions. The 'CURRENCY' dimension stands at position 2.
+So there are six dimensions. Because we can only filter out sets of columns, 
+we disregard 'TIME_PERIOD' as this is the dimension at observation.
+The 'CURRENCY' dimension stands at position 2.
 Moreover, we are now sure that 'USD' and 'JPY' are valid dimension values. 
 We need this information to construct a filter
 for our dataset query which should be limited to
@@ -395,7 +397,7 @@ a number of optional arguments to control whether or not another dataframe shoul
 attributes, which attributes it should contain, and, most importantly, if the resulting
 pandas Series should be concatenated to a single DataFrame at all (``asframe = True`` is the default).
 Also, the ``write``  method provides the following parameters to increase performance for
-large datasets with regular indexes (e.g. monthly data):
+large datasets with regular indexes (e.g. monthly data:
 
 * ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency. 
   This is only robust if the dataset has a uniform index, 
@@ -404,6 +406,9 @@ large datasets with regular indexes (e.g. monthly data):
   document order. This may be useful to establish chronological order, 
   in particular incombination with ``fromfreq``. Default is False.  
 
+If pandas raises parsing errors due to exotic date-time formats, 
+set ``parse_datetime`` to False to obtain a string index 
+rather than datetime index. Default is True. 
 
 Working with files
 ---------------------

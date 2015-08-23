@@ -36,7 +36,7 @@ class Request(object):
         '': None,  # empty agency for convenience when fromfile is given.
         'ESTAT': {
             'name': 'Eurostat',
-            'url': 'http://www.ec.europa.eu/eurostat/SDMX/diss-web/rest'},
+            'url': 'http://ec.europa.eu/eurostat/SDMX/diss-web/rest'},
         'ECB': {
             'name': 'European Central Bank',
             'url': 'http://sdw-wsrest.ecb.int/service'},
@@ -87,9 +87,14 @@ class Request(object):
         else:
             raise ValueError('If given, agency must be one of {0}'.format(
                 list(self._agencies)))
+        self.cache = {}  # for SDMX messages
+
+    def clear_cache(self):
+        self.cache.clear()
 
     def get(self, resource_type='', resource_id='', agency='', key='', params={},
-            fromfile=None, tofile=None, url=None, get_footer_url=(30, 3)):
+            fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
+            memcache=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -112,6 +117,11 @@ class Request(object):
                 may be '' if `fromfile` is given. Not to be confused
                 with the agency ID passed to :meth:`__init__` which specifies
                 the SDMX web service to be accessed.
+            key(str, dict): select columns from a dataset by specifying dimension values.
+                If type is str, it must conform to the SDMX REST API, i.e. dot-separated dimension values.
+                If 'key' is of type 'dict', it must map dimension names to allowed dimension values. Two or more
+                values can be separated by '+' as in the str form. The DSD will be downloaded 
+                and the items are validated against it before downloading the dataset.  
             params(dict): defines the query part of the URL.
                 The SDMX web service guidelines (www.sdmx.org) explain the meaning of
                 permissible parameters. It can be used to restrict the
@@ -139,13 +149,19 @@ class Request(object):
                 send such footers. Once an attempt to get the resource has been 
                 successful, the original message containing the footer is dismissed and the dataset
                 is returned. The ``tofile`` argument is propagated. Note that the written file may be
-                a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3). 
+                a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3).
+            memcache(str): If given, return Response instance if already in self.cache(dict), 
+            otherwise download resource and cache Response instance. 
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
                 SDMX Message.
 
         '''
+        # Try to get resource from memory cache if specified
+        if memcache and memcache in self.cache:
+            return self.cache[memcache]
+
         if url:
             base_url = url
         else:
@@ -158,14 +174,21 @@ class Request(object):
                 raise ValueError(
                     'resource must be one of {0}'.format(self._resources))
             # resource_id: if it is not a str or unicode type,
-            # but, e.g., a model.DataflowDefinition,
+            # but, e.g., a invalid DataflowDefinition,
             # extract its ID
             if resource_id and not isinstance(resource_id, (str_type, str)):
                 resource_id = resource_id.id
 
+            # If key is a dict, validate items against the DSD
+            # and construct the key string which becomes part of the URL
+            # Otherwise, do nothing as key must be a str confirming to the REST
+            # API spec.
+            if resource_type == 'data' and isinstance(key, dict):
+                key = self.make_key(resource_id, key)
+
             # Construct URL from the given non-empty substrings.
-            # if data is requested, omit the agency part. See the query examples
-            # from Eurostat. Hopefully ECB excepts this.
+            # if data is requested, omit the agency part. See the query
+            # examples
             if resource_type in ['data', 'categoryscheme']:
                 agency = ''
             # Remove None's and '' first. Then join them to form the base URL.
@@ -223,7 +246,56 @@ class Request(object):
                         return self.get(tofile=tofile, url=footer_url)
                     except Exception:
                         pass
-        return Response(msg, url, headers, status_code, writer=self.writer)
+        r = Response(msg, url, headers, status_code, writer=self.writer)
+        # store in memory cache if needed
+        if memcache and r.status_code == 200:
+            self.cache[memcache] = r
+        return r
+
+    def make_key(self, flow_id, key):
+        '''
+        Download the dataflow def. and DSD and validate 
+        key(dict) against it. 
+
+        Return: key(str)
+        '''
+        # get the dataflow to thus the DSD ID
+        dataflow = self.get('dataflow', flow_id, memcache=flow_id)
+        dsd_id = dataflow.msg.dataflows[flow_id].structure.id
+        dsd_resp = self.get('datastructure', dsd_id, memcache=dsd_id)
+        dsd = dsd_resp.msg.datastructures[dsd_id]
+        dimensions = dsd.dimensions.aslist()
+        dim_names = [d.id for d in dimensions]
+        # Validate the key dict
+        # First, check correctness of dimension names
+        invalid = [d for d in key.keys()
+                   if d not in dim_names]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension name {0}, allowed are: '.format(invalid, dim_names))
+        # Check for each dimension name if values are correct and construct
+        # of the form 'value1.value2.value3+value4' etc.
+        parts = []
+        # Iterate over the dimensions. If the key dict
+        # contains a value for the dimension, append it to the 'parts' list. Otherwise
+        # append ''. Then join the parts to form the dotted str.
+        for d in dimensions:
+            if d.id not in ['TIME', 'TIME_PERIOD']:
+                try:
+                    values = key[d.id]
+                    values_l = values.split('+')
+                    codelist = d.local_repr.enum
+                    codes = codelist.keys()
+                    invalid = [v for v in values_l if v not in codes]
+                    if invalid:
+                            # ToDo: attach codelist to exception.
+                        raise ValueError("'{0}' is Invalid in dimension '{1}'.".
+                                         format(invalid, d.id))
+                    part = values
+                except KeyError:
+                    part = ''
+                parts.append(part)
+        return '.'.join(parts)
 
 
 class Response(object):

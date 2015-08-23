@@ -17,7 +17,7 @@ from codecs import open
 # s = open('pandasdmx/__init__.py', 'rt').read()
 # m = re.search(r"version = '([a-z0-9.]+)'", s)
 # ver = m.groups(0)[0]
-ver = '0.2.2'
+ver = '0.3.0'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r').read()
@@ -52,6 +52,7 @@ setup(name='pandaSDMX',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis'
       ]

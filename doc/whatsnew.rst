@@ -3,6 +3,20 @@
 What's new?
 ==============
 
+v0.3.0dev
+--------------
+
+* pythonic filters for data requests:
+  Request.get allows the ``key`` keyword argument in a data request to be a dict mapping dimension names 
+  to values. In this case, the dataflow definition and datastructure definition
+  are downloaded on the fly, cached in memory and used to validate the keys. 
+  The dotted key string needed to construct the URL will be generated automatically. 
+* The Response.write method takes a ``parse_time`` keyword arg. Set it to False to avoid
+  parsing of dates, times and time periods as exotic formats may cause crashes.
+* The Request.get method takes a ``memcache`` keyward argument. If set to a string,
+  the received Response instance will be stored in the dict ``Request.cache`` for later use. This is useful
+  when, e.g., a DSD is needed multiple times to validate keys.
+* fixed base URL for Eurostat  
 
 v0.2.2
 --------------

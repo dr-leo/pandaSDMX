@@ -15,6 +15,10 @@ a classes for http access.
 import requests
 from tempfile import SpooledTemporaryFile as STF
 from contextlib import closing
+try:
+    import requests_cache
+except ImportError:
+    pass
 
 
 class REST:
@@ -32,11 +36,13 @@ class REST:
     max_size = 2 ** 24
     '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
 
-    def __init__(self, http_cfg):
+    def __init__(self, cache, http_cfg):
         default_cfg = dict(stream=True, timeout=30.1)
-        for k, v in default_cfg.items():
-            http_cfg.setdefault(k, v)
+        for it in default_cfg.items():
+            http_cfg.setdefault(*it)
         self.config = http_cfg
+        if cache:
+            requests_cache.install_cache(**cache)
 
     def get(self, url, fromfile=None, params={}):
         '''Get SDMX message from REST service or local file

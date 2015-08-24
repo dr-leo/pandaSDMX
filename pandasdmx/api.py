@@ -49,26 +49,30 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas', **http_cfg):
-        '''Set the SDMX agency, writer, and configure http requests.
+                 writer='pandasdmx.writer.data2pandas', cache=None,
+                 **http_cfg):
+        '''
+        Set the SDMX agency, writer, and configure http requests.
 
         Args:
 
             agency(str): identifier of a data provider.
                 Must be one of the dict keys in Request._agencies such as
-                'ESTAT', 'ECB' or ''.
+                'ESTAT', 'ECB', ''GSR' or ''.
                 An empty string has the effect that the instance can only
                 load data or metadata from files or a pre-fabricated URL. .
                 defaults to '', i.e. no agency.
 
             writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
+            cache(dict): args to be passed on to 
+                ``requests_cache.install_cache()``. Default is None (no caching).
 
             **http_cfg: used to configure http requests. E.g., you can 
             specify proxies, authentication information and more.
             See also the docs of the ``requests`` package at 
             http://www.python-requests.org/en/latest/.   
         '''
-        self.client = remote.REST(http_cfg)
+        self.client = remote.REST(cache, http_cfg)
         self.agency = agency
         self.writer = writer
 
@@ -264,7 +268,10 @@ class Request(object):
         dsd_id = dataflow.msg.dataflows[flow_id].structure.id
         dsd_resp = self.get('datastructure', dsd_id, memcache=dsd_id)
         dsd = dsd_resp.msg.datastructures[dsd_id]
-        dimensions = dsd.dimensions.aslist()
+        # Extract dimensions excluding the dimension at observation (time, time-period)
+        # as we are only interested in dimensions for columns, not rows.
+        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
+                      ['TIME', 'TIME_PERIOD']]
         dim_names = [d.id for d in dimensions]
         # Validate the key dict
         # First, check correctness of dimension names
@@ -280,21 +287,20 @@ class Request(object):
         # contains a value for the dimension, append it to the 'parts' list. Otherwise
         # append ''. Then join the parts to form the dotted str.
         for d in dimensions:
-            if d.id not in ['TIME', 'TIME_PERIOD']:
-                try:
-                    values = key[d.id]
-                    values_l = values.split('+')
-                    codelist = d.local_repr.enum
-                    codes = codelist.keys()
-                    invalid = [v for v in values_l if v not in codes]
-                    if invalid:
-                            # ToDo: attach codelist to exception.
-                        raise ValueError("'{0}' is Invalid in dimension '{1}'.".
-                                         format(invalid, d.id))
-                    part = values
-                except KeyError:
-                    part = ''
-                parts.append(part)
+            try:
+                values = key[d.id]
+                values_l = values.split('+')
+                codelist = d.local_repr.enum
+                codes = codelist.keys()
+                invalid = [v for v in values_l if v not in codes]
+                if invalid:
+                        # ToDo: attach codelist to exception.
+                    raise ValueError("'{0}' is Invalid in dimension '{1}'".
+                                     format(invalid, d.id))
+                part = values
+            except KeyError:
+                part = ''
+            parts.append(part)
         return '.'.join(parts)
 
 

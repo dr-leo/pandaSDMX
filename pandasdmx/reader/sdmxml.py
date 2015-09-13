@@ -80,6 +80,8 @@ class SDMXMLReader(BaseReader):
                         namespaces=_nsmap), model.Code),
         'conceptschemes': (XPath('mes:Structures/str:Concepts/str:ConceptScheme',
                                  namespaces=_nsmap), model.ConceptScheme),
+        'constraints': (XPath('mes:Structures/str:Constraints/str:ContentConstraint',
+                              namespaces=_nsmap), model.ContentConstraint),
         'concepts': (XPath('str:Concept',
                            namespaces=_nsmap), model.Concept),
         'categoryschemes': (XPath('mes:Structures/str:CategorySchemes/str:CategoryScheme',

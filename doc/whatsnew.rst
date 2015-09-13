@@ -3,9 +3,11 @@
 What's new?
 ==============
 
-v0.3.0dev
---------------
+v0.3.0 (2015-09-01)
+-----------------------
 
+* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+  memory, MongoDB, Redis or SQLite 
 * pythonic filters for data requests:
   Request.get allows the ``key`` keyword argument in a data request to be a dict mapping dimension names 
   to values. In this case, the dataflow definition and datastructure definition

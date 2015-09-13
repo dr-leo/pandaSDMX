@@ -35,6 +35,8 @@ Main features
 * read and write files including zip archives for offline use
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
+* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+  memory, MongoDB, Redis or SQLite   
 
 Example
 ---------
@@ -63,6 +65,23 @@ pandaSDMX Links
   
 Recent changes 
 ========================
+
+v0.3.0 (2015-09-01)
+-----------------------
+
+* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+  memory, MongoDB, Redis or SQLite 
+* pythonic filters for data requests:
+  Request.get allows the ``key`` keyword argument in a data request to be a dict mapping dimension names 
+  to values. In this case, the dataflow definition and datastructure definition
+  are downloaded on the fly, cached in memory and used to validate the keys. 
+  The dotted key string needed to construct the URL will be generated automatically. 
+* The Response.write method takes a ``parse_time`` keyword arg. Set it to False to avoid
+  parsing of dates, times and time periods as exotic formats may cause crashes.
+* The Request.get method takes a ``memcache`` keyward argument. If set to a string,
+  the received Response instance will be stored in the dict ``Request.cache`` for later use. This is useful
+  when, e.g., a DSD is needed multiple times to validate keys.
+* fixed base URL for Eurostat  
 
 Version 0.2.2
 --------------

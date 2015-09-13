@@ -37,9 +37,9 @@ class Message(SDMXObject):
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
-        for name in self._payload_names:
+        for name, method in self._payload_names.items():
             value = getattr(
-                self._reader, self._payload_names[name])(name, self)
+                self._reader, method)(name, self)
             if value:
                 setattr(self, name, value)
 
@@ -55,6 +55,7 @@ class StructureMessage(Message):
         conceptschemes='read_identifiables',
         dataflows='read_identifiables',
         datastructures='read_identifiables',
+        constraints='read_identifiables',
         categoryschemes='read_identifiables',
         categorisations='read_one')
 
@@ -368,6 +369,10 @@ class Codelist(ItemScheme):
 
 class ConceptScheme(ItemScheme):
     _get_items = 'concepts'
+
+
+class ContentConstraint(MaintainableArtefact):
+    pass
 
 
 class Category(Item):

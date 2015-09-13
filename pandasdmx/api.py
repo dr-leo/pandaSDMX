@@ -223,6 +223,7 @@ class Request(object):
         with source:
             if tofile:
                 with open(tofile, 'wb') as dest:
+                    source.seek(0)
                     dest.write(source.read())
                     source.seek(0)
             # handle zip files

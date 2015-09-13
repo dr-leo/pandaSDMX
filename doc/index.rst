@@ -25,7 +25,9 @@ Main features
 * pythonic representation of the SDMX information model  
 * find dataflows by name or description in multiple languages if available
 * read and write local files for offline use
-* configurable HTTP connections 
+* configurable HTTP connections
+* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+  memory, MongoDB, Redis or SQLite  
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
 
@@ -36,13 +38,15 @@ Example
 .. ipython:: python
 
     from pandasdmx import Request
-    # Get annual unemployment data from Eurostat
-    une_resp = Request('ESTAT').get('data', 'une_rt_a', params={'startPeriod': '2006'})
-    # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
-    une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
-    # Explore the DataFrame
+    # Get annual unemployment data on Greece, Ireland and Spain from Eurostat
+    une_resp = Request('ESTAT').get('data', 'une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
+    # From the received dataset, select the time series on all age groups and write them to a pandas DataFrame
+    une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.AGE == 'TOTAL')
+    # Explore the DataFrame. First, show dimension names
     une_df.columns.names
-    une_df.columns.levels[0:2]
+    # Allowed dimension values
+    une_df.columns.levels
+    # Print total unemployment rates (both sexes combined) 
     une_df.loc[:, ('TOTAL', 'T')]
 
 

@@ -39,8 +39,8 @@ Importing pandaSDMX
         
     from pandasdmx import Request
             
-Connecting to an SDMX web service
---------------------------------------
+Connecting to an SDMX web service, caching
+-----------------------------------------------
 
 We instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
 agency ID as string. The list of supported agencies
@@ -52,6 +52,9 @@ is shown in the error message if an invalid agency ID is passed:
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to
 send requests to other agencies, simply instantiate dedicated ``Request`` objects. 
+
+Configuring the http connection
+:::::::::::::::::::::::::::::::::::::
 
 To pre-configure the HTTP connections to be established by a ``Request`` instance, 
 you can pass all keyword arguments consumed by the underlying HTTP library 
@@ -72,6 +75,18 @@ modified between requests.
 
 The ``Request.client`` attribute acts a bit like a ``requests.Session`` in that it
 conveniently stores the configuration for subsequent HTTP requests. 
+
+Caching received files
+::::::::::::::::::::::::::
+
+Since version 0.3.0, `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ is supported. To use it, 
+pass an optional ``cache`` keyword argument to ``Request()`` constructor.
+If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function. Use it if you
+want to cache SDMX messages in databases such as MongoDB, Redis or SQLite. 
+Read through the `requests-cache`` docs for further information.
+     
+Loading a file instead of requesting it via http
+::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 Any ``Request`` instance
 can load SDMX messages from local files. 
@@ -149,9 +164,9 @@ returned. In our example, however, there is but one:
     list(cs.keys())
     
 :class:`pandasdmx.model.CategoryScheme` inherits from :class:`pandasdmx.utils.DictLike` as well. Its values are 
-:class:`pandasdmx.model.Category` instances, its keyse are their `` id``  attributes. Note that 
+:class:`pandasdmx.model.Category` instances, its keyse are their ``id``  attributes. Note that 
 :class:`pandasdmx.model.DictLike` has a `` aslist``  method. It returns its values as a new
-list sorted by `` id``. The sorting criterion may be overridden in subclasses. We shall see this
+list sorted by ``id``. The sorting criterion may be overridden in subclasses. We shall see this
 when dealing with dimensions in a :class:`pandasdmx.model.DataStructureDefinition` where the dimensions are
 ordered by position. 
 
@@ -178,7 +193,7 @@ already the categorisations at hand. While in the SDMXML file categories are rep
 flat list, pandaSDMX groups them by category and exposes them as a :class:`pandasdmx.utils.DictLike`mapping
 each category ID to a list of :class:`pandasdmx.model.Categorisation` instances each of which
 links its category to a :class:`pandasdmx.model.DataFlowDefinition` instance. Technically, these links
-are represented by :class:`pandasdmx.model.Reference` instances whose `` id`` attribute enables us to access the
+are represented by :class:`pandasdmx.model.Reference` instances whose ``id`` attribute enables us to access the
 dataflow definitions in the selected category '07'. We can print the 
 string representations of the
 dataflows in this category:
@@ -217,13 +232,13 @@ explicitly by issuing:
 Dataflow definitions at a glance
 :::::::::::::::::::::::::::::::::::
 
-A :class:`pandasdmx.model.DataFlowDefinition` has an `` id`` , ``name`` , ``version``  and many
+A :class:`pandasdmx.model.DataFlowDefinition` has an ``id`` , ``name`` , ``version``  and many
 other attributes inherited from various base classes. It is worthwhile to look at the method resolution order to see
 how it works. Many other classes from the model have similar base classes. 
 
 It is crucial to bear in mind two things:
  
-* the `` id``  of a dataflow definition is also used to request data of this dataflow.
+* the ``id``  of a dataflow definition is also used to request data of this dataflow.
 * the ``structure``  attribute of the dataflow definition.
   is a reference to the data structure definition describing datasets of this dataflow.
   
@@ -296,7 +311,7 @@ in a similar fashion.
 Working with datasets
 ------------------------------
 
-Limiting the scope of the dataset to be requested
+Selecting and requesting data from a dataflow
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 Requesting a dataset is as easy as requesting a dataflow definition or any other
@@ -311,18 +326,26 @@ The REST API of SDMX offers two ways to narrow down a data request:
 * limiting the time range or number of observations per series ("vertical filter") 
   
 First, we will specify the CURRENCY dimension to be either 'USD' or 'JPY'.
-This can be done by passing a ``key``  keyword argument to the ``get``  method. It consists of
+This can be done by passing a ``key``  keyword argument to the ``get``  method. 
+It may either be a string (low-level API) or a dict. The dict form 
+introduced in v0.3.0 is more convenient
+as the string form will be derived from the dict. Its keys (= dimension values) and
+values (= dimension values) will be validated against the DSD.
+ 
+If we choose the string form, 
+it must consist of
 '.'-separated slots representing the dimensions. Values are optional. As we saw
-in the previous section, the ECB's dataflow for exchange rates has five dimensions, the
+in the previous section, the ECB's dataflow for exchange rates has five relevant dimensions, the
 'CURRENCY' dimension being at position two. This yields the key '.USD+JPY...'. The '+' can be
-read as an 'OR' operator. 
+read as an 'OR' operator. The dict form is obvious. Here, we
+need not care about the order. 
 
 Second, we will set the start period for the time series to 2014 to
 exclude any prior data from the request.
 
 .. ipython:: python
 
-    data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key = '.USD+JPY...', params = dict(startPeriod = '2014'))
+    data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2014'})
     type(data_resp.msg)
     data = data_resp.msg.data
     type(data)
@@ -377,6 +400,9 @@ We see that this dataset comprises 16 time series of several different period le
 Writing to pandas
 ::::::::::::::::::::::
 
+Selecting columns using the model API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, 
 we must not mix up the time spans. 
 Therefore, we
@@ -391,11 +417,18 @@ generate our pandas DataFrame from daily exchange rate data only:
     cur_df = data_resp.write(daily)
     cur_df.shape
     cur_df.tail()
+
+Controlling the output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 The docstring of :meth:`pandasdmx.writer.data2pandas.Writer.write` explains
 a number of optional arguments to control whether or not another dataframe should be generated for the
 attributes, which attributes it should contain, and, most importantly, if the resulting
 pandas Series should be concatenated to a single DataFrame at all (``asframe = True`` is the default).
+
+Controlling index generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Also, the ``write``  method provides the following parameters to increase performance for
 large datasets with regular indexes (e.g. monthly data:
 
@@ -405,10 +438,9 @@ large datasets with regular indexes (e.g. monthly data:
 * ``reverse_obs``:: if True, return observations in a series in reverse 
   document order. This may be useful to establish chronological order, 
   in particular incombination with ``fromfreq``. Default is False.  
-
-If pandas raises parsing errors due to exotic date-time formats, 
-set ``parse_datetime`` to False to obtain a string index 
-rather than datetime index. Default is True. 
+* If pandas raises parsing errors due to exotic date-time formats, 
+  set ``parse_time`` to False to obtain a string index 
+  rather than datetime index. Default is True. 
 
 Working with files
 ---------------------
@@ -436,6 +468,19 @@ Since version 0.2.1, this second request can be performed automatically through 
 ``get_footer_url`` parameter. It defaults to ``(30, 3)`` which means that three attempts will be made in 30 seconds intervals. 
 This behavior is useful when requesting large datasets from Eurostat. Deactivate it by setting ``get_footer_url`` to None.   
 
+Caching Response instances in memory
+-----------------------------------------------
+
+The ''get'' API provides a rudimentary cache for Response instances. It is a
+simple dict mapping user-provided names to the Response instances.
+If we want to cache a Response, we can provide a suitable name by passing the keyword argument ''cache'' to the get method. 
+Pre-existing items under the same key will
+be overwritten. 
+
+.. note::
+    Caching of http responses can also be achieved through ''requests-cache'. 
+    Activate the cache by instantiating ``pandasdmx.api.Request`` passing a keyword
+    argument ``cache``. It must be a dict mapping config and other values.      
 
 Handling errors
 ----------------

@@ -345,7 +345,7 @@ class Facet:
 class Concept(Item):
     pass
     # core_repr = Instance(Representation)
-    # iso_concept = Instance(IsoConceptReference)
+    # iso_concept = Instance(IsoConceptReference
 
 
 class Component(IdentifiableArtefact):
@@ -371,8 +371,19 @@ class ConceptScheme(ItemScheme):
     _get_items = 'concepts'
 
 
-class ContentConstraint(MaintainableArtefact):
-    pass
+class Constraint(MaintainableArtefact):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.constraint_attachment = self._reader.read_one(
+            'constraint_attachment', self)
+
+
+class ContentConstraint(Constraint):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cube_region = self._reader.read_one('cube_region', self)
 
 
 class Category(Item):
@@ -390,7 +401,7 @@ class Categorisations(SDMXObject, DictLike):
         raw = list(self._reader.categorisation_items(self))
         key_func = attrgetter('categorised_by.id')
         sorted_l = sorted(raw, key=key_func)
-        result = {k: list(g) for k, g in groupby(sorted_l, key_func)}
+        result = {k: set(g) for k, g in groupby(sorted_l, key_func)}
         self.update(result)
 
 

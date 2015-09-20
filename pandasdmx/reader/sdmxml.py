@@ -61,10 +61,10 @@ class SDMXMLReader(BaseReader):
             raise ValueError('Message for datasets has tag %s' % elem.tag)
         return cls(self, elem)
 
-    # Map names to pairs of compiled xpath expressions and callables
+    # Map names to pairs of xpath expressions and callables
     # to be called by read methods. Callable must accept the same args as
     # model.SDMXObject. In most cases it will be a model class so that
-    # read methods return a model class instance. But it may also be a staticmethod if the
+    # read methods return a model class instance. But it may also be a method if the
     # class selection is more involved (see the method get_dataset above). If
     # callable is None, the result of the xpath expressions is returned
     # unchanged. This is useful for strings as attribute values.
@@ -100,11 +100,29 @@ class SDMXMLReader(BaseReader):
         'ref_source': ('str:Source/Ref', model.Ref),
         'ref_target': ('str:Target/Ref', model.Ref),
         'ref_structure': ('str:Structure/Ref', model.Ref),
+        'ref': ('Ref', model.Ref)
     }
 
     # Generate XPath expressions
     for k, v in _model_map.items():
         _model_map[k] = (XPath(v[0], namespaces=_nsmap), v[1])
+
+    _str2path = {
+        'constraint_attachment': 'str:ConstraintAttachment',
+        'include': '@include',
+        'id': '@id',
+        'value': 'com:Value/text()',
+    }
+
+    _cls2path = {
+        model.DataflowDefinition: 'str:Dataflow',
+        model.CubeRegion: 'str:CubeRegion',
+        model.KeyValue: 'com:KeyValue',
+    }
+
+    for d in (_cls2path, _str2path):
+        for key, path in d.items():
+            d[key] = XPath(path, namespaces=_nsmap)
 
     def read_one(self, name, sdmxobj):
         '''
@@ -145,11 +163,31 @@ class SDMXMLReader(BaseReader):
         else:
             return DictLike(result)
 
+    def read_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
+        if offset:
+            base = self._str2path[offset](sdmxobj._elem)[0]
+        else:
+            base = sdmxobj._elem
+        for cls, path in self._cls2path.items():
+            if issubclass(cls, target_cls):
+                result = path(base)
+                if result:
+                    if first_only:
+                        return cls(self, result[0])
+                    else:
+                        return [cls(self, i) for i in result]
+        raise TypeError(
+            'Result set is empty. Cannot generate instance of ' + str(target_cls))
+
     def header_id(self, sdmxobj):
         return sdmxobj._elem.ID[0].text
 
-    def identity(self, sdmxobj):
-        return sdmxobj._elem.get('id')
+    def read_as_str(self, name, sdmxobj, first_only=True):
+        result = self._str2path[name](sdmxobj._elem)
+        if first_only:
+            return result[0]
+        else:
+            return result
 
     def urn(self, sdmxobj):
         return sdmxobj._elem.get('urn')

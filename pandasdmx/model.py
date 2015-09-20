@@ -128,6 +128,10 @@ class Footer(SDMXObject):
         return self._reader.footer_code(self)
 
 
+class Constrainable:
+    pass
+
+
 class Annotation(SDMXObject):
 
     @property
@@ -165,7 +169,13 @@ class IdentifiableArtefact(AnnotableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(IdentifiableArtefact, self).__init__(*args, **kwargs)
-        self.id = self._reader.identity(self)
+        ref = self._reader.read_one('ref', self)
+        if ref:
+            self.ref = ref
+        try:
+            self.id = self.ref.id
+        except AttributeError:
+            self.id = self._reader.read_as_str('id', self)
 
     def __eq__(self, value):
         if isinstance(value, str_type):
@@ -214,8 +224,13 @@ class NameableArtefact(IdentifiableArtefact):
             return self._description
 
     def __str__(self):
-        return ' '.join(
-            (self.__class__.__name__, ':', self.id, ' :', self.name.en))
+        result = ' | '.join(
+            (self.__class__.__name__, self.id))
+        try:
+            result += (' | ' + self.name.en)
+        except AttributeError:
+            pass
+        return result
 
     # Make dicts and lists of Artefacts more readable. Use pprint or altrepr
     # instead?
@@ -375,15 +390,45 @@ class Constraint(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.constraint_attachment = self._reader.read_one(
-            'constraint_attachment', self)
+        self.constraint_attachment = self._reader.read_instance(
+            Constrainable, self, offset='constraint_attachment')
 
 
 class ContentConstraint(Constraint):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cube_region = self._reader.read_one('cube_region', self)
+        self.cube_region = self._reader.read_instance(CubeRegion, self)
+
+
+class KeyValue(SDMXObject):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.id = self._reader.read_as_str('id', self)
+        self.values = self._reader.read_as_str('value', self, first_only=False)
+
+
+class CubeRegion(SDMXObject):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.include = bool(self._reader.read_as_str('include', self))
+        keyvalues = self._reader.read_instance(KeyValue, self,
+                                               first_only=False)
+        self.key_values = {kv.id: kv.values for kv in keyvalues}
+
+    def __contains__(self, v):
+        key, value = v
+        kv = self.key_values
+        if key not in kv.keys():
+            raise KeyError(
+                'Unknown key: {0}. Allowed keys are: {1}'.format(key, list(kv.keys())))
+        if ((value in kv[key] and self.include) or
+                (value not in kv[key] and not self.include)):
+            return True
+        else:
+            return False
 
 
 class Category(Item):
@@ -413,7 +458,7 @@ class Ref(SDMXObject):
 
     @property
     def id(self):
-        return self._reader.identity(self)
+        return self._reader.read_as_str('id', self)
 
     @property
     def ref_class(self):
@@ -440,7 +485,7 @@ class Categorisation(MaintainableArtefact):
         self.artefact = self._reader.read_one('ref_source', self)
 
 
-class DataflowDefinition(StructureUsage):
+class DataflowDefinition(StructureUsage, Constrainable):
     pass
 
 

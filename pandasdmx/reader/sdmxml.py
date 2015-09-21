@@ -69,10 +69,7 @@ class SDMXMLReader(BaseReader):
     # callable is None, the result of the xpath expressions is returned
     # unchanged. This is useful for strings as attribute values.
     _model_map = {
-        'header': ('mes:Header', model.Header),
         'footer': ('footer:Footer/footer:Message', model.Footer),
-        'annotations': ('com:Annotations/com:Annotation', model.Annotation),
-        'annotationtype': ('com:AnnotationType/text()', None),
         'codelists': ('mes:Structures/str:Codelists/str:Codelist', model.Codelist),
         'codes': ('str:Code', model.Code),
         'conceptschemes': ('mes:Structures/str:Concepts/str:ConceptScheme', model.ConceptScheme),
@@ -93,14 +90,6 @@ class SDMXMLReader(BaseReader):
         'attributes': ('str:DataStructureComponents/str:AttributeList', model.AttributeDescriptor),
         'attribute_items': ('str:Attribute', model.DataAttribute),
         'data': ('mes:DataSet', get_dataset),
-        'structured_by': ('mes:Structure/@structureID', None),
-        'dim_at_obs': ('//mes:Header/mes:Structure/@dimensionAtObservation', None),
-        'generic_series': ('gen:Series', model.Series),
-        'generic_groups': ('gen:Group', model.Group),
-        'ref_source': ('str:Source/Ref', model.Ref),
-        'ref_target': ('str:Target/Ref', model.Ref),
-        'ref_structure': ('str:Structure/Ref', model.Ref),
-        'ref': ('Ref', model.Ref)
     }
 
     # Generate XPath expressions
@@ -111,13 +100,32 @@ class SDMXMLReader(BaseReader):
         'constraint_attachment': 'str:ConstraintAttachment',
         'include': '@include',
         'id': '@id',
+        'urn': '@urn',
+        'url': '@url',
+        'uri': '@uri',
+        'agencyID': '@agencyID',
         'value': 'com:Value/text()',
+        'headerID': 'mes:ID/text()',
+        'ref_version': '@version',
+        'ref_package': '@package',
+        'ref_class': '@class',
+        'ref_target': 'str:Target',
+        'ref_source': 'str:Source',
+        'ref_structure': 'str:Structure',
+        'annotationtype': 'com:AnnotationType/text()',
+        'structured_by': 'mes:Structure/@structureID',
+        'dim_at_obs': '//mes:Header/mes:Structure/@dimensionAtObservation',
     }
 
     _cls2path = {
         model.DataflowDefinition: 'str:Dataflow',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
+        model.Ref: 'Ref',
+        model.Header: 'mes:Header',
+        model.Annotation: 'com:Annotations/com:Annotation',
+        model.Group: 'gen:Group',
+        model.Series: 'gen:Series',
     }
 
     for d in (_cls2path, _str2path):
@@ -128,26 +136,14 @@ class SDMXMLReader(BaseReader):
         '''
         return model class instance of the first element in the
         result set of the xpath expression as defined in _model_map. If no elements are found,
-        return None. If no model class is given in _model_map,
-        return result unchanged.
+        return None. 
         '''
         path, cls = self._model_map[name]
         try:
             result = path(sdmxobj._elem)[0]
-            if cls:
-                return cls(self, result)
-            else:
-                return result
+            return cls(self, result)
         except IndexError:
             return None
-
-    def read_iter(self, name, sdmxobj):
-        '''
-        return iterator of model class instances of elements in the
-        result set of the xpath expression as defined in _model_map.
-        '''
-        path, cls = self._model_map[name]
-        return (cls(self, e) for e in path(sdmxobj._elem))
 
     def read_identifiables(self, name, sdmxobj):
         '''
@@ -164,23 +160,26 @@ class SDMXMLReader(BaseReader):
             return DictLike(result)
 
     def read_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
+        '''
+        Iterate over model classes in _cls2path which are subclasses of
+        'target_cls' and instanciate the class whose xpath expression returns a non-empty
+        result. If none of the corresponding paths
+        produces a positive result, None is returned. 
+        '''
         if offset:
             base = self._str2path[offset](sdmxobj._elem)[0]
         else:
             base = sdmxobj._elem
-        for cls, path in self._cls2path.items():
-            if issubclass(cls, target_cls):
-                result = path(base)
-                if result:
-                    if first_only:
-                        return cls(self, result[0])
-                    else:
-                        return [cls(self, i) for i in result]
-        raise TypeError(
-            'Result set is empty. Cannot generate instance of ' + str(target_cls))
-
-    def header_id(self, sdmxobj):
-        return sdmxobj._elem.ID[0].text
+        # make an iterator. But do we really need this?
+        subclasses = (c for c in self._cls2path if issubclass(c, target_cls))
+        for cls in subclasses:
+            result = self._cls2path[cls](base)
+            if result:
+                if first_only:
+                    return cls(self, result[0])
+                else:
+                    return [cls(self, i) for i in result]
+        return None
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)
@@ -188,15 +187,6 @@ class SDMXMLReader(BaseReader):
             return result[0]
         else:
             return result
-
-    def urn(self, sdmxobj):
-        return sdmxobj._elem.get('urn')
-
-    def uri(self, sdmxobj):
-        return sdmxobj._elem.get('uri')
-
-    def agencyID(self, sdmxobj):
-        return sdmxobj._elem.get('agencyID')
 
     def international_str(self, name, sdmxobj):
         '''
@@ -320,14 +310,14 @@ class SDMXMLReader(BaseReader):
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
-        path, cls = self._model_map['generic_series']
+        path = self._cls2path[model.Series]
         for series in path(sdmxobj._elem):
-            yield cls(self, series, dataset=sdmxobj)
+            yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):
-        path, cls = self._model_map['generic_groups']
+        path = self._cls2path[model.Group]
         for series in path(sdmxobj._elem):
-            yield cls(self, series)
+            yield model.Group(self, series)
 
     def series_key(self, sdmxobj):
         series_key_id = self._series_key_id_path(sdmxobj._elem)
@@ -363,19 +353,6 @@ class SDMXMLReader(BaseReader):
             else:
                 obs_attr = None
             yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
-
-    # Methods for References
-    def ref_class(self, sdmxobj):
-        return sdmxobj._elem.get('class')
-
-    def ref_package(self, sdmxobj):
-        return sdmxobj._elem.get('package')
-
-    def ref_version(self, sdmxobj):
-        return sdmxobj._elem.get('version')
-
-    def agency_id(self, sdmxobj):
-        return sdmxobj._elem.get('agencyID')
 
     def categorisation_items(self, sdmxobj):
         path, cls = self._model_map['categorisation_items']

@@ -267,13 +267,24 @@ class Request(object):
         # get the dataflow to thus the DSD ID
         dataflow = self.get('dataflow', flow_id, memcache=flow_id)
         dsd_id = dataflow.msg.dataflows[flow_id].structure.id
-        dsd_resp = self.get('datastructure', dsd_id, memcache=dsd_id)
-        dsd = dsd_resp.msg.datastructures[dsd_id]
+        try:
+            dsd = dataflow.msg.datastructures[dsd_id]
+        except Exception:
+            dsd_resp = self.get('datastructure', dsd_id, memcache=dsd_id)
+            dsd = dsd_resp.msg.datastructures[dsd_id]
         # Extract dimensions excluding the dimension at observation (time, time-period)
         # as we are only interested in dimensions for columns, not rows.
         dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
                       ['TIME', 'TIME_PERIOD']]
         dim_names = [d.id for d in dimensions]
+        # Retrieve any ContentConstraint
+        try:
+            constraint_l = [c for c in dataflow.msg.constraints.aslist()
+                            if c.constraint_attachment.id == flow_id]
+            if constraint_l:
+                constraint = constraint_l[0]
+        except Exception:
+            constraint = None
         # Validate the key dict
         # First, check correctness of dimension names
         invalid = [d for d in key.keys()
@@ -295,9 +306,16 @@ class Request(object):
                 codes = codelist.keys()
                 invalid = [v for v in values_l if v not in codes]
                 if invalid:
-                        # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is Invalid in dimension '{1}'".
+                    # ToDo: attach codelist to exception.
+                    raise ValueError("'{0}' is not in codelist for dimension '{1}'".
                                      format(invalid, d.id))
+                # Check if values are in Contentconstraint if present
+                if constraint:
+                    invalid = [
+                        v for v in values_l if (d.id, v) not in constraint]
+                    if invalid:
+                        raise ValueError("'{0}' out of content_constraint for '{1}'.".
+                                         format(invalid, d.id))
                 part = values
             except KeyError:
                 part = ''

@@ -45,7 +45,7 @@ class Message(SDMXObject):
 
     @property
     def header(self):
-        return self._reader.read_one('header', self)
+        return self._reader.read_instance(Header, self)
 
 
 class StructureMessage(Message):
@@ -88,13 +88,13 @@ class Header(SDMXObject):
         super(Header, self).__init__(*args, **kwargs)
         # Set additional attributes present in DataSet messages
         for name in ['structured_by', 'dim_at_obs']:
-            value = self._reader.read_one(name, self)
+            value = self._reader.read_as_str(name, self)
             if value:
                 setattr(self, name, value)
 
     @property
     def id(self):
-        return self._reader.header_id(self)
+        return self._reader.read_as_str('headerID', self)
 
     @property
     def prepared(self):
@@ -144,11 +144,11 @@ class Annotation(SDMXObject):
 
     @property
     def annotationtype(self):
-        return self._reader.read_one('annotationtype', self)
+        return self._reader.read_as_str('annotationtype', self)
 
     @property
     def url(self):
-        return self._reader.url(self)
+        return self._reader.read_as_str('url', self)
 
     @property
     def text(self):
@@ -162,14 +162,14 @@ class AnnotableArtefact(SDMXObject):
 
     @property
     def annotations(self):
-        return self._reader.read_iter('annotations', self)
+        return self._reader.read_instance(Annotation, self, first_only=False)
 
 
 class IdentifiableArtefact(AnnotableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(IdentifiableArtefact, self).__init__(*args, **kwargs)
-        ref = self._reader.read_one('ref', self)
+        ref = self._reader.read_instance(Ref, self)
         if ref:
             self.ref = ref
         try:
@@ -196,11 +196,11 @@ class IdentifiableArtefact(AnnotableArtefact):
 
     @property
     def urn(self):
-        return self._reader.urn(self)
+        return self._reader.read_as_str('urn', self)
 
     @property
     def uri(self):
-        return self._reader.uri(self)
+        return self._reader.read_as_str('uri', self)
 
 
 class NameableArtefact(IdentifiableArtefact):
@@ -326,7 +326,7 @@ class StructureUsage(MaintainableArtefact):
 
     @property
     def structure(self):
-        return self._reader.read_one('ref_structure', self)
+        return self._reader.read_instance(Ref, self, offset='ref_structure')
 
 
 class ComponentList(IdentifiableArtefact, Scheme):
@@ -400,6 +400,13 @@ class ContentConstraint(Constraint):
         super().__init__(*args, **kwargs)
         self.cube_region = self._reader.read_instance(CubeRegion, self)
 
+    def __contains__(self, v):
+        if self.cube_region:
+            return v in self.cube_region
+        else:
+            raise NotImplementedError(
+                'ContentConstraint does not contain any CubeRegion.')
+
 
 class KeyValue(SDMXObject):
 
@@ -454,7 +461,7 @@ class Ref(SDMXObject):
 
     @property
     def package(self):
-        return self._reader.ref_package(self)
+        return self._reader.read_as_str('ref_package', self)
 
     @property
     def id(self):
@@ -462,15 +469,15 @@ class Ref(SDMXObject):
 
     @property
     def ref_class(self):
-        return self._reader.ref_class(self)
+        return self._reader.read_as_str('ref_class', self)
 
     @property
     def version(self):
-        return self._reader.ref_version(self)
+        return self._reader.read_as_str('ref_version', self)
 
     @property
     def agency_id(self):
-        return self._reader.agency_id(self)
+        return self._reader.read_as_str('agencyID', self)
 
     def resolve(self):
         pkg = getattr(self._reader.msg, self.package)
@@ -481,8 +488,10 @@ class Categorisation(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(Categorisation, self).__init__(*args, **kwargs)
-        self.categorised_by = self._reader.read_one('ref_target', self)
-        self.artefact = self._reader.read_one('ref_source', self)
+        self.categorised_by = self._reader.read_instance(
+            Ref, self, offset='ref_target')
+        self.artefact = self._reader.read_instance(
+            Ref, self, offset='ref_source')
 
 
 class DataflowDefinition(StructureUsage, Constrainable):
@@ -581,7 +590,7 @@ class DataSet(SDMXObject):
 
     @property
     def dim_at_obs(self):
-        return self._reader.read_one('dim_at_obs', self)
+        return self._reader.read_as_str('dim_at_obs', self)
 
     def obs(self, with_values=True, with_attributes=True):
         '''

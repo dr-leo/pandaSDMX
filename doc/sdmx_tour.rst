@@ -85,6 +85,29 @@ The dataflow's ID is used to query the dataset it describes. The dataflow also f
 reference to the DSD which structures the datasets available under this
 dataflow ID. For instance, in the frontpage example we used the dataflow ID 'une_rt_a'.
   
+  
+Constraints
+:::::::::::::::::
+  
+There are two types of constraints:
+  
+A :index:`content-constraint` is a mechanism to express the fact
+that datasets of a given dataflow only comprise columns for a subset of values from
+the code-lists representing dimension values. For example,
+the datastructure definition for a dataflow on exchange rates
+references tha codelist of all country codes in the world, whereas
+the datasets provided under this dataflow only covers the ten largest currencies. These can be 
+enumerated by a content-constraint attached to the dataflow definition.
+Content-constraints can be used to validate dimension names and values (a.k.a. keys)
+when requesting datasets selecting columns of interest.
+
+An :index:`attachment-constraint` describes to which parts of a dataset (column/series,
+group of series, observation, the entire dataset) certain attributes may be attached. Attachment-constraints are not
+supported by pandaSDMX as this feature is needed only for 
+dataset generation. However, pandaSDMX does support attributes in the information model
+and when exporting datasets to pandas.
+
+  
 Category schemes and categorisations
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -117,19 +140,19 @@ much larger than their sister format :index:`StructureSpecificDataSet`. pandaSDM
 dataset messages. 
   
 Another important SDMXML message type is :index:`StructureMessage` 
-which may contain artefacts such das DataStructureDefinitions, codelists,
+which may contain artefacts such as DataStructureDefinitions, codelists,
 conceptschemes, categoryschemes and so forth.
   
 SDMXML provides that each message contains a :index:`Header` containing some metadata about the message.
 Finally, SDMXML messages may contain a :index:`Footer` element. It provides information on any errors
 that have occurred on the server side, e.g., if the requested dataset exceeds the size limit, or the server needs
-sime time to make it available under a given link. 
+some time to make it available under a given link. 
 
 The test suite comes with a number of small SDMXML demo files. View them in your favorite 
 XML editor to get a deeper understanding of the structure and content of various message types. 
 
-SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX v0.2 does not 
-support validation.
+SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX does not 
+yet support validation.
         
         
 SDMX web services
@@ -139,7 +162,13 @@ The SDMX standard defines both a REST and a SOAP web service API. pandaSDMX only
 
 The URL specifies the type, providing agency, and ID of the requested SDMX resource (dataflow, categoryscheme, data etc.).
 The query part of the URL (after the '?') may be used to give optional query parameters. For instance, when
-requesting data, the scope of the dataset may be narrowed down by specifying a startperiod and endperiod for the time series. Moreover,
+requesting data, the scope of the dataset may be narrowed down by specifying a key to select only matching 
+columns (e.g. on a particular country). The dimension names and values
+used to select the rows can be validated by checking if they are
+contained in the relevant codelists referenced by the
+datastructure definition (see above), and any content-constraint attached
+to the dataflow definition for the queried dataset. 
+Moreover, rows may be chosen by specifying a startperiod and endperiod for the time series. In addition,
 the query part may set a :index:`references` parameter to instruct the
 SDMX server to return a number of other artefacts along with the resource actually requested.
 For example, a DataStructureDefinition contains references to codelists and conceptschemes (see above). If the

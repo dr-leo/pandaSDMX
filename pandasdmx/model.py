@@ -389,15 +389,15 @@ class ConceptScheme(ItemScheme):
 class Constraint(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.constraint_attachment = self._reader.read_instance(
-            Constrainable, self, offset='constraint_attachment')
+        super(Constraint, self).__init__(*args, **kwargs)
+        self.constraint_attachment = self._reader.read_subclass_instance(
+            Constrainable, self, offset='constraint_attachment')[0]
 
 
 class ContentConstraint(Constraint):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(ContentConstraint, self).__init__(*args, **kwargs)
         self.cube_region = self._reader.read_instance(CubeRegion, self)
 
     def __contains__(self, v):
@@ -411,7 +411,7 @@ class ContentConstraint(Constraint):
 class KeyValue(SDMXObject):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(KeyValue, self).__init__(*args, **kwargs)
         self.id = self._reader.read_as_str('id', self)
         self.values = self._reader.read_as_str('value', self, first_only=False)
 
@@ -419,7 +419,7 @@ class KeyValue(SDMXObject):
 class CubeRegion(SDMXObject):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(CubeRegion, self).__init__(*args, **kwargs)
         self.include = bool(self._reader.read_as_str('include', self))
         keyvalues = self._reader.read_instance(KeyValue, self,
                                                first_only=False)

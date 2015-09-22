@@ -11,7 +11,20 @@ Prerequisites
 :::::::::::::::::::::::::::::::::::::::
 
 pandaSDMX is a pure `Python <http://www.python.org>`_ package. As such it should run on any platform. 
-It requires Python 2.7 or 3.4. Python 3.3 should work as well, but this is untested.
+It requires Python 2.7 or 3.4. Python 3.3 should work as well, but this is untested. Python 3.5 should work once
+the dependencies have been ported.
+
+It is recommended to use one of the common Python distributions
+for scientific data analysis such as
+ 
+* `Anaconda <https://store.continuum.io/cshop/anaconda/>`_, or
+* `Canopy <https://www.enthought.com/products/canopy/>`_. 
+
+Along with a current Python interpreter these Python distributions include 
+the dependencies as well as lots of
+other useful packages for data analysis.   
+For other Python distributions (not only scientific) see
+`here <https://wiki.python.org/moin/PythonDistributions>`_.  
 
 pandaSDMX has the following dependencies:
 
@@ -23,21 +36,12 @@ pandaSDMX has the following dependencies:
 Optional dependencies
 ::::::::::::::::::::::::::::::::::::::::::
 
+* `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ 
+  allowing to cache SDMX messages in 
+  memory
 * `IPython <http://ipython.org/>`_ is required to build the Sphinx documentation To do this,
   check out the pandaSDMX repository on github.  
 * `nose <https://pypi.python.org/pypi/nose>`_ to run the test suite.
-
-It is probably a good idea to use one of the common Python distributions
-for scientific data analysis such as
- 
-* `Anaconda <https://store.continuum.io/cshop/anaconda/>`_, or
-* `Canopy <https://www.enthought.com/products/canopy/>`_. 
-
-Along with a current Python interpreter these Python distributions include 
-the dependencies as well as lots of
-other useful packages for data analysis.   
-For other Python distributions (not only scientific) see
-`here <https://wiki.python.org/moin/PythonDistributions>`_.  
 
 Download
 :::::::::::::::::::::::::::

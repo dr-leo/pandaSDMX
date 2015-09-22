@@ -115,6 +115,17 @@ class SDMXMLReader(BaseReader):
         'annotationtype': 'com:AnnotationType/text()',
         'structured_by': 'mes:Structure/@structureID',
         'dim_at_obs': '//mes:Header/mes:Structure/@dimensionAtObservation',
+        'generic_obs_path': 'gen:Obs',
+        'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
+        'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
+        'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
+        'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
+        'generic_series_dim_path': 'gen:ObsDimension/@value',
+        'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
+        'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
+        'obs_value_path': 'gen:ObsValue/@value',
+        'attr_id_path': 'gen:Attributes/gen:Value/@id',
+        'attr_values_path': 'gen:Attributes/gen:Value/@value',
     }
 
     _cls2path = {
@@ -159,27 +170,43 @@ class SDMXMLReader(BaseReader):
         else:
             return DictLike(result)
 
-    def read_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
+    def read_instance(self, cls, sdmxobj, offset=None, first_only=True):
         '''
-        Iterate over model classes in _cls2path which are subclasses of
-        'target_cls' and instanciate the class whose xpath expression returns a non-empty
-        result. If none of the corresponding paths
-        produces a positive result, None is returned. 
+        If cls in _cls2path and matches,
+        return an instance of cls with the first XML element,
+        or, if fest_only is False, a list of cls instances 
+        for all elements found,
+        If no matches were found, return None.  
         '''
         if offset:
             base = self._str2path[offset](sdmxobj._elem)[0]
         else:
             base = sdmxobj._elem
-        # make an iterator. But do we really need this?
+        result = self._cls2path[cls](base)
+        if result:
+            if first_only:
+                return cls(self, result[0])
+            else:
+                return [cls(self, i) for i in result]
+
+    def read_subclass_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
+        '''
+        Iterate over model classes in _cls2path which are subclasses of
+        'target_cls' and instanciate the classes whose xpath expression returns a non-empty result.
+        Return a list of subclass instances.
+        '''
+        if offset:
+            base = self._str2path[offset](sdmxobj._elem)[0]
+        else:
+            base = sdmxobj._elem
         subclasses = (c for c in self._cls2path if issubclass(c, target_cls))
+        matches = []
         for cls in subclasses:
-            result = self._cls2path[cls](base)
-            if result:
-                if first_only:
-                    return cls(self, result[0])
-                else:
-                    return [cls(self, i) for i in result]
-        return None
+            match = self._cls2path[cls](base)
+            if match:
+                for m in match:
+                    matches.append(cls(self, m))
+        return matches
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)
@@ -268,42 +295,25 @@ class SDMXMLReader(BaseReader):
         'GenericObservation', ('key', 'value', 'attrib'))
     _SeriesObsTuple = namedtuple_factory(
         'SeriesObservation', ('dim', 'value', 'attrib'))
-    _generic_obs_path = XPath('gen:Obs', namespaces=_nsmap)
-    _obs_key_id_path = XPath('gen:ObsKey/gen:Value/@id', namespaces=_nsmap)
-    _obs_key_values_path = XPath(
-        'gen:ObsKey/gen:Value/@value', namespaces=_nsmap)
-    _series_key_values_path = XPath(
-        'gen:SeriesKey/gen:Value/@value', namespaces=_nsmap)
-    _series_key_id_path = XPath(
-        'gen:SeriesKey/gen:Value/@id', namespaces=_nsmap)
-    _generic_series_dim_path = XPath(
-        'gen:ObsDimension/@value', namespaces=_nsmap)
-    _group_key_values_path = XPath(
-        'gen:GroupKey/gen:Value/@value', namespaces=_nsmap)
-    _group_key_id_path = XPath('gen:GroupKey/gen:Value/@id', namespaces=_nsmap)
-    _obs_value_path = XPath('gen:ObsValue/@value', namespaces=_nsmap)
-    _attr_id_path = XPath('gen:Attributes/gen:Value/@id', namespaces=_nsmap)
-    _attr_values_path = XPath(
-        'gen:Attributes/gen:Value/@value', namespaces=_nsmap)
 
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
-        for obs in self._generic_obs_path(sdmxobj._elem):
+        for obs in self._str2path['generic_obs_path'](sdmxobj._elem):
             # Construct the namedtuple for the ObsKey.
             # The namedtuple class is created on first iteration.
-            obs_key_values = self._obs_key_values_path(obs)
+            obs_key_values = self._str2path['obs_key_values_path'](obs)
             try:
                 obs_key = ObsKeyTuple._make(obs_key_values)
             except NameError:
-                obs_key_id = self._obs_key_id_path(obs)
+                obs_key_id = self._str2path['obs_key_id_path'](obs)
                 ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
                 obs_key = ObsKeyTuple._make(obs_key_values)
             if with_value:
-                obs_value = self._obs_value_path(obs)[0]
+                obs_value = self._str2path['obs_value_path'](obs)[0]
             else:
                 obs_value = None
             if with_attributes:
-                obs_attr_values = self._attr_values_path(obs)
-                obs_attr_id = self._attr_id_path(obs)
+                obs_attr_values = self._str2path['attr_values_path'](obs)
+                obs_attr_id = self._str2path['attr_id_path'](obs)
                 obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
             else:
                 obs_attr = None
@@ -320,20 +330,22 @@ class SDMXMLReader(BaseReader):
             yield model.Group(self, series)
 
     def series_key(self, sdmxobj):
-        series_key_id = self._series_key_id_path(sdmxobj._elem)
-        series_key_values = self._series_key_values_path(sdmxobj._elem)
+        series_key_id = self._str2path['series_key_id_path'](sdmxobj._elem)
+        series_key_values = self._str2path[
+            'series_key_values_path'](sdmxobj._elem)
         SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
         return SeriesKeyTuple._make(series_key_values)
 
     def group_key(self, sdmxobj):
-        group_key_id = self._group_key_id_path(sdmxobj._elem)
-        group_key_values = self._group_key_values_path(sdmxobj._elem)
+        group_key_id = self._str2path['group_key_id_path'](sdmxobj._elem)
+        group_key_values = self._str2path[
+            'group_key_values_path'](sdmxobj._elem)
         GroupKeyTuple = namedtuple_factory('GroupKey', group_key_id)
         return GroupKeyTuple._make(group_key_values)
 
     def series_attrib(self, sdmxobj):
-        attr_id = self._attr_id_path(sdmxobj._elem)
-        attr_values = self._attr_values_path(sdmxobj._elem)
+        attr_id = self._str2path['attr_id_path'](sdmxobj._elem)
+        attr_values = self._str2path['attr_values_path'](sdmxobj._elem)
         return DictLike(zip(attr_id, attr_values))
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
@@ -341,14 +353,14 @@ class SDMXMLReader(BaseReader):
         for obs in sdmxobj._elem.iterchildren(
                 '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
                 reversed=reverse_obs):
-            obs_dim = self._generic_series_dim_path(obs)[0]
+            obs_dim = self._str2path['generic_series_dim_path'](obs)[0]
             if with_value:
-                obs_value = self._obs_value_path(obs)[0]
+                obs_value = self._str2path['obs_value_path'](obs)[0]
             else:
                 obs_value = None
             if with_attributes:
-                obs_attr_values = self._attr_values_path(obs)
-                obs_attr_id = self._attr_id_path(obs)
+                obs_attr_values = self._str2path['attr_values_path'](obs)
+                obs_attr_id = self._str2path['attr_id_path'](obs)
                 obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
             else:
                 obs_attr = None

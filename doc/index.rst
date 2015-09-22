@@ -18,13 +18,15 @@ Main features
 * support for many SDMX features including
 
   - generic datasets
-  - data structure definitions, codelists and concept schemes
-  - dataflow definitions
+  - data structure definitions, code lists and concept schemes
+  - dataflow definitions and content-constraints
   - categorisations and category schemes
 
 * pythonic representation of the SDMX information model  
 * find dataflows by name or description in multiple languages if available
-* read and write local files for offline use
+* When requesting datasets, validate column selections against code lists 
+  and content-constraints if available 
+* read and write SDMX messages to and from local files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite  
@@ -38,15 +40,15 @@ Example
 .. ipython:: python
 
     from pandasdmx import Request
-    # Get annual unemployment data on Greece, Ireland and Spain from Eurostat
+    # Get recent annual unemployment data on Greece, Ireland and Spain from Eurostat
     une_resp = Request('ESTAT').get('data', 'une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
     # From the received dataset, select the time series on all age groups and write them to a pandas DataFrame
     une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.AGE == 'TOTAL')
     # Explore the DataFrame. First, show dimension names
     une_df.columns.names
-    # Allowed dimension values
+    # corresponding dimension values
     une_df.columns.levels
-    # Print total unemployment rates (both sexes combined) 
+    # Print aggregate unemployment rates across ages and sexes 
     une_df.loc[:, ('TOTAL', 'T')]
 
 

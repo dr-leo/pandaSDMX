@@ -311,11 +311,14 @@ class Request(object):
                                      format(invalid, d.id))
                 # Check if values are in Contentconstraint if present
                 if constraint:
-                    invalid = [
-                        v for v in values_l if (d.id, v) not in constraint]
-                    if invalid:
-                        raise ValueError("'{0}' out of content_constraint for '{1}'.".
-                                         format(invalid, d.id))
+                    try:
+                        invalid = [
+                            v for v in values_l if (d.id, v) not in constraint]
+                        if invalid:
+                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
+                                             format(invalid, d.id))
+                    except NotImplementedError:
+                        pass
                 part = values
             except KeyError:
                 part = ''

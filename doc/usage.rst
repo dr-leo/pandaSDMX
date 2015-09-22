@@ -11,8 +11,10 @@ This chapter illustrates the main steps of a typical workflow, namely:
 1. retrieving relevant
    dataflows by category or from a complete list of dataflows,  
 #. exploring the data structure definition of the selected dataflow
-#. obtaining a dataset and exploring it through the information model
-#. writing a dataset to a pandas DataFrame or Series 
+#. selecting relevant series (columns) and a time-range (rows) from a dataset provided under the chosen dataflow 
+   and requesting the data via http   
+#. exploring the received data using the information model
+#. writing a dataset or selected series thereof to a pandas DataFrame or Series 
 #. Reading and writing SDMX files
 #. Handling errors
 
@@ -319,28 +321,37 @@ SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass i
 
 However, we only want to download those parts of the data we are 
 interested in. Not only does this increase
-performance. Rather, some dataflows are really huge, and would exceed the server limits.
+performance. Rather, some dataflows are really huge, and would exceed the server or client limits.
 The REST API of SDMX offers two ways to narrow down a data request:
  
 * specifying dimension values which the series to be returned must match ("horizontal filter") or
 * limiting the time range or number of observations per series ("vertical filter") 
   
-First, we will specify the CURRENCY dimension to be either 'USD' or 'JPY'.
+From the ECB's dataflow on exchange rates, 
+we specify the CURRENCY dimension to be either 'USD' or 'JPY'.
 This can be done by passing a ``key``  keyword argument to the ``get``  method. 
 It may either be a string (low-level API) or a dict. The dict form 
-introduced in v0.3.0 is more convenient
-as the string form will be derived from the dict. Its keys (= dimension values) and
-values (= dimension values) will be validated against the DSD.
+introduced in v0.3.0 is more convenient and pythonic
+as it allows pandaSDMX to infer the string form from the dict. 
+Its keys (= dimension values) and
+values (= dimension values) will be validated against the 
+datastructure definition as well as the content-constraint if available. 
+
+As of v0.3.0, content-constraints are
+implemented only in their CubeRegion flavor. KeyValueSets are not yet supported. In this
+case, the provided demension values will be validated only against the code-list. It is thus not
+always guaranteed that the dataset actually contains the desired data, e.g., 
+because the country of
+interest does not deliver the data to the SDMX data provider.  
  
-If we choose the string form, 
+If we choose the string form of the key, 
 it must consist of
 '.'-separated slots representing the dimensions. Values are optional. As we saw
 in the previous section, the ECB's dataflow for exchange rates has five relevant dimensions, the
 'CURRENCY' dimension being at position two. This yields the key '.USD+JPY...'. The '+' can be
-read as an 'OR' operator. The dict form is obvious. Here, we
-need not care about the order. 
+read as an 'OR' operator. The dict form is shown below.
 
-Second, we will set the start period for the time series to 2014 to
+Further, we will set the start period for the time series to 2014 to
 exclude any prior data from the request.
 
 .. ipython:: python
@@ -353,11 +364,11 @@ exclude any prior data from the request.
 Generic datasets 
 ::::::::::::::::::::
 
-As per v0.2, pandaSDMX can only process generic datasets, i.e. datasets that encompass sufficient
+At present, pandaSDMX can only process generic datasets, i.e. datasets that encompass sufficient
 structural information to be interpreted without consulting the related DSD. However, as we saw,
 we need the DSD anyway to understand the data structure, the meaning of dimension
-and attribute values, and to construct 
-the horizontal filter.
+and attribute values, and to select series
+by specifying a valid key.
 
 The :class:`pandasdmx.model.GenericDataSet` has the following features:
 

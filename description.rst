@@ -13,7 +13,7 @@ It should work with all
 SDMX data providers supporting SDMX 2.1. Currently,
 this is tested for the European statistics office (Eurostat),
 and the European Central Bank (ECB) each providing hundreds of
-thousands of indicators. 
+thousands of time series. 
 
 While pandaSDMX is extensible to 
 cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
@@ -26,32 +26,24 @@ Main features
 * support for many SDMX features including
 
   - generic datasets
-  - data structure definitions, codelists and concept schemes
-  - dataflow definitions
+  - data structure definitions, code lists and concept schemes
+  - dataflow definitions and content-constraints
   - categorisations and category schemes
 
 * pythonic representation of the SDMX information model  
 * find dataflows by name or description in multiple languages if available
-* read and write files including zip archives for offline use
+* When requesting datasets, validate column selections against code lists 
+  and content-constraints if available 
+* read and write SDMX messages to and from local files 
+* configurable HTTP connections
+* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+  memory, MongoDB, Redis or SQLite  
 * writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
-* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
-  memory, MongoDB, Redis or SQLite   
 
-Example
----------
-
-
-
-    >>> from pandasdmx import Request
-    >>> # Get annual unemployment data from Eurostat
-    >>> une_resp = Request('ESTAT').get(resource_type = 'data', resource_id = 'une_rt_a')
-    >>> # From the received dataset, select the time series on Greece, Ireland and Spain, and write them to a pandas DataFrame
-    >>> une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.GEO in ['EL', 'ES', 'IE'])
-    >>> # Explore the DataFrame
-    >>> une_df.columns.names
-    >>> une_df.columns.levels[0:2]
-    >>> une_df.loc[:'2006', ('TOTAL', 'T')]
+For further details including extensive code examples
+see the 
+`documentation <http://pandasdmx.readthedocs.org>`_ . 
 
 
 pandaSDMX Links
@@ -66,14 +58,16 @@ pandaSDMX Links
 Recent changes 
 ========================
 
-v0.3.0 (2015-09-01)
+v0.3.0 (2015-09-22)
 -----------------------
+
 
 * support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite 
-* pythonic filters for data requests:
+* pythonic selection of series when requesting a dataset:
   Request.get allows the ``key`` keyword argument in a data request to be a dict mapping dimension names 
-  to values. In this case, the dataflow definition and datastructure definition
+  to values. In this case, the dataflow definition and datastructure 
+  definition, and content-constraint
   are downloaded on the fly, cached in memory and used to validate the keys. 
   The dotted key string needed to construct the URL will be generated automatically. 
 * The Response.write method takes a ``parse_time`` keyword arg. Set it to False to avoid
@@ -82,9 +76,10 @@ v0.3.0 (2015-09-01)
   the received Response instance will be stored in the dict ``Request.cache`` for later use. This is useful
   when, e.g., a DSD is needed multiple times to validate keys.
 * fixed base URL for Eurostat  
+* major refactorings to enhance code maintainability
 
-Version 0.2.2
---------------
+v0.2.2 (2015-05-19)
+-------------------------------
 
 * Make HTTP connections configurable by exposing the 
   `requests.get API <http://www.python-requests.org/en/latest/>`_ 
@@ -95,7 +90,7 @@ Version 0.2.2
 * Responses now have an ``http_headers`` attribute containing the headers returned by the SDMX server
 
 
-Version 0.2.1 (2015-04-22)
+v0.2.1 (2015-04-22)
 ----------------------------------
 
 * API: add support for zip archives received from an SDMX server. 
@@ -106,7 +101,7 @@ Version 0.2.1 (2015-04-22)
 * enhance documentation
 * make pandas writer parse more time period formats and increase its performance  
   
-Version 0.2.0 (2015-04-13)
+v0.2.0 (2015-04-13)
 ------------------------------------
 
 

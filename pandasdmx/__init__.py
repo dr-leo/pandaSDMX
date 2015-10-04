@@ -17,4 +17,4 @@ pandaSDMX - a Python package for SDMX - Statistical Data and Metadata eXchange
 from pandasdmx.api import Request
 
 
-version = '0.3.0'
+version = '0.3.1'

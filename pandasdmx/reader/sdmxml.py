@@ -113,7 +113,7 @@ class SDMXMLReader(BaseReader):
         'ref_source': 'str:Source',
         'ref_structure': 'str:Structure',
         'annotationtype': 'com:AnnotationType/text()',
-        'structured_by': 'mes:Structure/@structureID',
+        'structured_by': '//mes:Header/mes:Structure/@structureID',
         'dim_at_obs': '//mes:Header/mes:Structure/@dimensionAtObservation',
         'generic_obs_path': 'gen:Obs',
         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
@@ -210,10 +210,11 @@ class SDMXMLReader(BaseReader):
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)
-        if first_only:
-            return result[0]
-        else:
-            return result
+        if result:
+            if first_only:
+                return result[0]
+            else:
+                return result
 
     def international_str(self, name, sdmxobj):
         '''

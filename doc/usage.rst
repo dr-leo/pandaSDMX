@@ -154,7 +154,7 @@ If dict keys are valid attribute names, you can use attribute syntax. This is th
 
 Likewise, ``cat_msg.categoryschemes`` is an instance of ``DictLike``. This is
 because by calling `` ecb.get``  without specifying a resource_id,
-we instructed the SDMX service to return all available categorisation schemes. The ``DictLike`` 
+we instructed the SDMX service to return all available categorisation schemes. The ``DictLike `` 
 container for the received category schemes uses the ``ID`` attribute of :class:`pandasdmx.model.CategoryScheme` as keys.
 This level of generality is required to cater for situations in which more than one category scheme is 
 returned. In our example, however, there is but one:
@@ -497,7 +497,7 @@ Handling errors
 ----------------
 
 The :class:`pandasdmx.api.Response` instance generated after the response from the server has
-been received has a ``status_code``  attribute. The SDMX web services guidelines explain the meaing
+been received has a ``status_code``  attribute. The SDMX web services guidelines explain the meaning
 of these codes. In addition,
 if the SDMX server has encountered an error, 
 it may return a message which

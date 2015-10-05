@@ -58,6 +58,11 @@ pandaSDMX Links
 Recent changes 
 ========================
 
+v0.3.1 (2015-10-04)
+-----------------------
+
+This release fixes a few bugs which caused crashes in some situations. 
+
 v0.3.0 (2015-09-22)
 -----------------------
 

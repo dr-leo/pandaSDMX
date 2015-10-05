@@ -96,7 +96,7 @@ class Request(object):
     def clear_cache(self):
         self.cache.clear()
 
-    def get(self, resource_type='', resource_id='', agency='', key='', params={},
+    def get(self, resource_type='', resource_id='', agency='', key='', params=None,
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
@@ -163,7 +163,7 @@ class Request(object):
 
         '''
         # Try to get resource from memory cache if specified
-        if memcache and memcache in self.cache:
+        if memcache in self.cache:
             return self.cache[memcache]
 
         if url:
@@ -171,6 +171,8 @@ class Request(object):
         else:
             # Construct URL from args unless ``tofile`` is given
             # Validate args
+            if params is None:
+                params = {}
             if not agency:
                 agency = self.agency
             # Validate resource if no filename is specified
@@ -265,13 +267,12 @@ class Request(object):
         Return: key(str)
         '''
         # get the dataflow to thus the DSD ID
-        dataflow = self.get('dataflow', flow_id, memcache=flow_id)
+        dataflow = self.get('dataflow', flow_id,
+                            memcache='dataflow' + flow_id)
         dsd_id = dataflow.msg.dataflows[flow_id].structure.id
-        try:
-            dsd = dataflow.msg.datastructures[dsd_id]
-        except Exception:
-            dsd_resp = self.get('datastructure', dsd_id, memcache=dsd_id)
-            dsd = dsd_resp.msg.datastructures[dsd_id]
+        dsd_resp = self.get('datastructure', dsd_id,
+                            memcache='datastructure' + dsd_id)
+        dsd = dsd_resp.msg.datastructures[dsd_id]
         # Extract dimensions excluding the dimension at observation (time, time-period)
         # as we are only interested in dimensions for columns, not rows.
         dimensions = [d for d in dsd.dimensions.aslist() if d.id not in

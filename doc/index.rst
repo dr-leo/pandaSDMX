@@ -41,9 +41,9 @@ Example
 
     from pandasdmx import Request
     # Get recent annual unemployment data on Greece, Ireland and Spain from Eurostat
-    une_resp = Request('ESTAT').get('data', 'une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
+    resp = Request('ESTAT').get('data', 'une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
     # From the received dataset, select the time series on all age groups and write them to a pandas DataFrame
-    une_df = une_resp.write(s for s in une_resp.msg.data.series if s.key.AGE == 'TOTAL')
+    une_df = resp.write(s for s in resp.data.series if s.key.AGE == 'TOTAL')
     # Explore the DataFrame. First, show dimension names
     une_df.columns.names
     # corresponding dimension values

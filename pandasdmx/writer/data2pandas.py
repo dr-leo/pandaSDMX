@@ -175,16 +175,17 @@ class Writer(BaseWriter):
                     if f == 'Q':
                         start_date = PD.datetime(year, (subdiv - 1) * 3 + 1, 1)
                         series_index = PD.period_range(
-                            start=start_date, periods=l, freq='Q')
+                            start=start_date, periods=l, freq='Q',
+                            name=dim_at_obs)
                     elif 'S' in od0:
                         # pandas cannot represent semesters as periods. So we
                         # use date_range.
                         start_date = PD.datetime(year, (subdiv - 1) * 6 + 1, 1)
                         series_index = PD.date_range(
-                            start=start_date, periods=l, freq='6M')
+                            start=start_date, periods=l, freq='6M', name=dim_at_obs)
                     else:
                         series_index = PD.period_range(start=od0, periods=l,
-                                                       freq=f)
+                                                       freq=f, name=dim_at_obs)
                 elif 'FREQ' in series.key._fields:
                     # fromfreq is False. So generate the index from all the
                     # strings
@@ -192,24 +193,26 @@ class Writer(BaseWriter):
                     # Generate arrays for years and subdivisions (quarters or
                     # semesters
                     if f == 'Q':
-                        series_index = PD.Index(PD.Period(year=int(d[:4]), quarter=int(d[-1]), freq='Q')
-                                                for d in obs_dim)
+                        series_index = PD.Index((PD.Period(year=int(d[:4]), quarter=int(d[-1]), freq='Q')
+                                                 for d in obs_dim), name=dim_at_obs)
                     elif f == 'H':
                         series_index = PD.Index(
-                            PD.datetime(int(d[:4]), (int(d[-1]) - 1) * 6 + 1, 1) for d in obs_dim)
+                            (PD.datetime(
+                                int(d[:4]), (int(d[-1]) - 1) * 6 + 1, 1) for d in obs_dim),
+                            name=dim_at_obs)
                     else:  # other freq such as 'A' or 'M'
                         series_index = PD.PeriodIndex(obs_dim,
-                                                      freq=f)
+                                                      freq=f, name=dim_at_obs)
             elif parse_time and dim_at_obs == 'TIME':
                 if fromfreq and 'FREQ' in series.key._fields:
                     f = series.key.FREQ
                     series_index = PD.date_range(
-                        start=obs_dim[0], periods=l, freq=f)
+                        start=obs_dim[0], periods=l, freq=f, name=dim_at_obs)
                 else:
-                    series_index = PD.DatetimeIndex(obs_dim)
+                    series_index = PD.DatetimeIndex(obs_dim, name=dim_at_obs)
             # Not a datetime or period index or don't parse it
             else:
-                series_index = PD.Index(obs_dim)
+                series_index = PD.Index(obs_dim, name=dim_at_obs)
 
             if dtype:
                 value_series = PD.Series(

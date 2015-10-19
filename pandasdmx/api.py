@@ -363,6 +363,12 @@ class Response(object):
         if hasattr(self.msg, 'data'):
             self.init_writer(writer)
 
+    def __getattr__(self, name):
+        '''
+        Make Message attributes directly readable from Response instance
+        '''
+        return getattr(self.msg, name)
+
     def init_writer(self, writer):
         # Initialize the writer if given
         if writer:
@@ -373,7 +379,7 @@ class Response(object):
             self._writer = None
 
     def write(self, source=None, **kwargs):
-        '''Wrapper to call the writer's write method if present.
+        '''Wrappe    r to call the writer's write method if present.
 
         Args:
             source(pandasdmx.model.Message, iterable): stuff to be written.

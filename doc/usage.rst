@@ -166,7 +166,7 @@ returned. In our example, however, there is but one:
     list(cs.keys())
     
 :class:`pandasdmx.model.CategoryScheme` inherits from :class:`pandasdmx.utils.DictLike` as well. Its values are 
-:class:`pandasdmx.model.Category` instances, its keyse are their ``id``  attributes. Note that 
+:class:`pandasdmx.model.Category` instances, its keys are their ``id``  attributes. Note that 
 :class:`pandasdmx.model.DictLike` has a `` aslist``  method. It returns its values as a new
 list sorted by ``id``. The sorting criterion may be overridden in subclasses. We shall see this
 when dealing with dimensions in a :class:`pandasdmx.model.DataStructureDefinition` where the dimensions are
@@ -192,14 +192,13 @@ Extracting the dataflows in a particular category
 
 As we saw from the attributes of ``cat_msg``, the SDMX message, we have
 already the categorisations at hand. While in the SDMXML file categories are represented as a
-flat list, pandaSDMX groups them by category and exposes them as a :class:`pandasdmx.utils.DictLike`mapping
-each category ID to a list of :class:`pandasdmx.model.Categorisation` instances each of which
+flat list, pandaSDMX groups them by category and exposes them as a :class:`pandasdmx.utils.DictLike` -mapping
+each category ID to a list of :class:`pandasdmx.model.Categorisations` instances each of which
 links its category to a :class:`pandasdmx.model.DataFlowDefinition` instance. Technically, these links
-are represented by :class:`pandasdmx.model.Reference` instances whose ``id`` attribute enables us to access the
+are represented by :class:`pandasdmx.model.Ref` instances whose ``id`` attribute enables us to access the
 dataflow definitions in the selected category '07'. We can print the 
 string representations of the
-dataflows in this category:
-
+dataflows in this category like so:
  
 .. ipython:: python
 
@@ -248,10 +247,8 @@ It is crucial to bear in mind two things:
 Getting the data structure definition (DSD)
 ::::::::::::::::::::::::::::::::::::::::::::::
 
-We can extract the DSD's ID and request the DSD. Then we will 
-show some of its attributes.
-
-Next, we extract the DSD's ID and download the DSD together with all artefacts
+We can extract the DSD's ID from the dataflow definition 
+and download the DSD together with all artefacts
 that it refers to and that refer to it. We set the ``params`` keyword argument 
 explicitly to show how it works.
 
@@ -273,7 +270,7 @@ A DSD essentially defines two things:
   
   - at the individual observation
   - at series level
-  - at group level (i.e. a subset of series defind by dimension values)
+  - at group level (i.e. a subset of series defined by dimension values)
   - at dataset level.   
 
 Let's look at the dimensions and for the 'CURRENCY' dimension 
@@ -333,7 +330,7 @@ This can be done by passing a ``key``  keyword argument to the ``get``  method.
 It may either be a string (low-level API) or a dict. The dict form 
 introduced in v0.3.0 is more convenient and pythonic
 as it allows pandaSDMX to infer the string form from the dict. 
-Its keys (= dimension values) and
+Its keys (= dimension names) and
 values (= dimension values) will be validated against the 
 datastructure definition as well as the content-constraint if available. 
 
@@ -370,7 +367,7 @@ we need the DSD anyway to understand the data structure, the meaning of dimensio
 and attribute values, and to select series
 by specifying a valid key.
 
-The :class:`pandasdmx.model.GenericDataSet` has the following features:
+The :class:`pandasdmx.model.GenericDataSet` class has the following features:
 
 ``dim_at_obs``  
     attribute showing which dimension is at
@@ -385,7 +382,7 @@ attributes
     namedtuple of attributes, if any, that are
     attached at dataset level
        
-The :class:`pandasdmx.model.Series` has the following features:
+The :class:`pandasdmx.model.Series` class has the following features:
 
 key
     nnamedtuple mapping dimension names to dimension values
@@ -406,7 +403,11 @@ groups
     set(s.key.FREQ for s in data.series)
     
 
-We see that this dataset comprises 16 time series of several different period lengths.
+This dataset thus comprises 16 time series of several different period lengths.
+We could have chosen to request only daily data 
+in the first place by providing the value ``D`` for the ``FREQ`` dimension. In the next section
+we will show how columns from a dataset can be selected through the 
+information model when writing to a pandas DataFrame.
 
 Writing to pandas
 ::::::::::::::::::::::
@@ -418,7 +419,7 @@ As we want to write data to a pandas DataFrame rather than an iterator of pandas
 we must not mix up the time spans. 
 Therefore, we
 single out the daily data first.  
-The :meth:`pandasdmx.api.Response.write` accepts an optional iterable to select a subset
+The :meth:`pandasdmx.api.Response.write` method accepts an optional iterable to select a subset
 of the series contained in the dataset. Thus we can now
 generate our pandas DataFrame from daily exchange rate data only:
 
@@ -432,7 +433,7 @@ generate our pandas DataFrame from daily exchange rate data only:
 Controlling the output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-The docstring of :meth:`pandasdmx.writer.data2pandas.Writer.write` explains
+The docstring of the :meth:`pandasdmx.writer.data2pandas.Writer.write` method explains
 a number of optional arguments to control whether or not another dataframe should be generated for the
 attributes, which attributes it should contain, and, most importantly, if the resulting
 pandas Series should be concatenated to a single DataFrame at all (``asframe = True`` is the default).
@@ -440,8 +441,10 @@ pandas Series should be concatenated to a single DataFrame at all (``asframe = T
 Controlling index generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Also, the ``write``  method provides the following parameters to increase performance for
-large datasets with regular indexes (e.g. monthly data:
+The ``write``  method provides the following parameters to control index generation. 
+This is useful to increase performance for
+large datasets with regular indexes (e.g. monthly data, and to avoid crashes caused
+by exotic datetime formats:
 
 * ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency. 
   This is only robust if the dataset has a uniform index, 
@@ -456,7 +459,7 @@ large datasets with regular indexes (e.g. monthly data:
 Working with files
 ---------------------
 
-The :class:`pandasdmx.api.Request.get` method accepts two optional keyword
+The :meth:`pandasdmx.api.Request.get` method accepts two optional keyword
 arguments ``tofile``  and ``fromfile``. If a file path or, in case of ``fromfile``, 
 a  file-like object is given,
 any SDMX message received from the server will be written to a file, or a file will be read
@@ -484,20 +487,20 @@ Caching Response instances in memory
 
 The ''get'' API provides a rudimentary cache for Response instances. It is a
 simple dict mapping user-provided names to the Response instances.
-If we want to cache a Response, we can provide a suitable name by passing the keyword argument ''cache'' to the get method. 
+If we want to cache a Response, we can provide a suitable name by passing the keyword argument ``memcache`` to the get method. 
 Pre-existing items under the same key will
 be overwritten. 
 
 .. note::
     Caching of http responses can also be achieved through ''requests-cache'. 
-    Activate the cache by instantiating ``pandasdmx.api.Request`` passing a keyword
+    Activate the cache by instantiating :class:`pandasdmx.api.Request` passing a keyword
     argument ``cache``. It must be a dict mapping config and other values.      
 
 Handling errors
 ----------------
 
-The :class:`pandasdmx.api.Response` instance generated after the response from the server has
-been received has a ``status_code``  attribute. The SDMX web services guidelines explain the meaning
+The :class:`pandasdmx.api.Response` instance generated upon receipt of the response from the server 
+has a ``status_code``  attribute. The SDMX web services guidelines explain the meaning
 of these codes. In addition,
 if the SDMX server has encountered an error, 
 it may return a message which

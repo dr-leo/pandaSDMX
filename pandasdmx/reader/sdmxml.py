@@ -93,8 +93,8 @@ class SDMXMLReader(BaseReader):
     }
 
     # Generate XPath expressions
-    for k, v in _model_map.items():
-        _model_map[k] = (XPath(v[0], namespaces=_nsmap), v[1])
+    for key, v in _model_map.items():
+        _model_map[key] = (XPath(v[0], namespaces=_nsmap), v[1])
 
     _str2path = {
         'constraint_attachment': 'str:ConstraintAttachment',
@@ -142,6 +142,7 @@ class SDMXMLReader(BaseReader):
     for d in (_cls2path, _str2path):
         for key, path in d.items():
             d[key] = XPath(path, namespaces=_nsmap)
+    del d, key, path, v
 
     def read_one(self, name, sdmxobj):
         '''

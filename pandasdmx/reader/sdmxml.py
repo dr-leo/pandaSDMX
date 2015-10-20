@@ -61,42 +61,8 @@ class SDMXMLReader(BaseReader):
             raise ValueError('Message for datasets has tag %s' % elem.tag)
         return cls(self, elem)
 
-    # Map names to pairs of xpath expressions and callables
-    # to be called by read methods. Callable must accept the same args as
-    # model.SDMXObject. In most cases it will be a model class so that
-    # read methods return a model class instance. But it may also be a method if the
-    # class selection is more involved (see the method get_dataset above). If
-    # callable is None, the result of the xpath expressions is returned
-    # unchanged. This is useful for strings as attribute values.
-    _model_map = {
-        'footer': ('footer:Footer/footer:Message', model.Footer),
-        'codelists': ('mes:Structures/str:Codelists/str:Codelist', model.Codelist),
-        'codes': ('str:Code', model.Code),
-        'conceptschemes': ('mes:Structures/str:Concepts/str:ConceptScheme', model.ConceptScheme),
-        'constraints': ('mes:Structures/str:Constraints/str:ContentConstraint', model.ContentConstraint),
-        'concepts': ('str:Concept', model.Concept),
-        'categoryschemes': ('mes:Structures/str:CategorySchemes/str:CategoryScheme', model.CategoryScheme),
-        'categories': ('str:Category', model.Category),
-        'categorisations': ('mes:Structures/str:Categorisations', model.Categorisations),
-        'categorisation_items': ('str:Categorisation', model.Categorisation),
-        'dataflows': ('mes:Structures/str:Dataflows/str:Dataflow', model.DataflowDefinition),
-        'datastructures': ('mes:Structures/str:DataStructures/str:DataStructure', model.DataStructureDefinition),
-        'dimdescriptor': ('str:DataStructureComponents/str:DimensionList', model.DimensionDescriptor),
-        'dimensions': ('str:Dimension', model.Dimension),
-        'time_dimension': ('str:TimeDimension', model.TimeDimension),
-        'measure_dimension': ('str:MeasureDimension', model.MeasureDimension),
-        'measures': ('str:DataStructureComponents/str:MeasureList', model.MeasureDescriptor),
-        'measure_items': ('str:PrimaryMeasure', model.PrimaryMeasure),
-        'attributes': ('str:DataStructureComponents/str:AttributeList', model.AttributeDescriptor),
-        'attribute_items': ('str:Attribute', model.DataAttribute),
-        'data': ('mes:DataSet', get_dataset),
-    }
-
-    # Generate XPath expressions
-    for key, v in _model_map.items():
-        _model_map[key] = (XPath(v[0], namespaces=_nsmap), v[1])
-
     _str2path = {
+        'footer_text': 'com:Text/text()',
         'constraint_attachment': 'str:ConstraintAttachment',
         'include': '@include',
         'id': '@id',
@@ -113,7 +79,7 @@ class SDMXMLReader(BaseReader):
         'ref_source': 'str:Source',
         'ref_structure': 'str:Structure',
         'annotationtype': 'com:AnnotationType/text()',
-        'structured_by': '//mes:Header/mes:Structure/@structureID',
+        'structured_by': 'mes:Structure/@structureID',
         'dim_at_obs': '//mes:Header/mes:Structure/@dimensionAtObservation',
         'generic_obs_path': 'gen:Obs',
         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
@@ -129,6 +95,27 @@ class SDMXMLReader(BaseReader):
     }
 
     _cls2path = {
+        model.Code: 'str:Code',
+        model.Categorisation: 'str:Categorisation',
+        model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
+        model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
+        model.DataflowDefinition: 'mes:Structures/str:Dataflows/str:Dataflow',
+        model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
+        model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
+        model.Concept: 'str:Concept',
+        model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
+        get_dataset: 'mes:DataSet',
+        model.Categorisations: 'mes:Structures/str:Categorisations',
+        model.Footer: 'footer:Footer/footer:Message',
+        model.Category: 'str:Category',
+        model.DimensionDescriptor: 'str:DataStructureComponents/str:DimensionList',
+        model.Dimension: 'str:Dimension',
+        model.TimeDimension: 'str:TimeDimension',
+        model.MeasureDimension: 'str:MeasureDimension',
+        model.MeasureDescriptor: 'str:DataStructureComponents/str:MeasureList',
+        model.PrimaryMeasure: 'str:PrimaryMeasure',
+        model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
+        model.DataAttribute: 'str:Attribute',
         model.DataflowDefinition: 'str:Dataflow',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
@@ -142,7 +129,6 @@ class SDMXMLReader(BaseReader):
     for d in (_cls2path, _str2path):
         for key, path in d.items():
             d[key] = XPath(path, namespaces=_nsmap)
-    del d, key, path, v
 
     def read_one(self, name, sdmxobj):
         '''
@@ -157,14 +143,14 @@ class SDMXMLReader(BaseReader):
         except IndexError:
             return None
 
-    def read_identifiables(self, name, sdmxobj):
+    def read_identifiables(self, cls, sdmxobj):
         '''
         If sdmxobj inherits from dict: update it  with modelized elements.
         These must be instances of model.IdentifiableArtefact,
         i.e. have an 'id' attribute. This will be used as dict keys.
         If sdmxobj does not inherit from dict: return a new DictLike.
         '''
-        path, cls = self._model_map[name]
+        path = self._cls2path[cls]
         result = {e.get('id'): cls(self, e) for e in path(sdmxobj._elem)}
         if isinstance(sdmxobj, dict):
             sdmxobj.update(result)
@@ -189,33 +175,14 @@ class SDMXMLReader(BaseReader):
                 return cls(self, result[0])
             else:
                 return [cls(self, i) for i in result]
-
-    def read_subclass_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
-        '''
-        Iterate over model classes in _cls2path which are subclasses of
-        'target_cls' and instanciate the classes whose xpath expression returns a non-empty result.
-        Return a list of subclass instances.
-        '''
-        if offset:
-            base = self._str2path[offset](sdmxobj._elem)[0]
-        else:
-            base = sdmxobj._elem
-        subclasses = (c for c in self._cls2path if issubclass(c, target_cls))
-        matches = []
-        for cls in subclasses:
-            match = self._cls2path[cls](base)
-            if match:
-                for m in match:
-                    matches.append(cls(self, m))
-        return matches
+        return None
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)
-        if result:
-            if first_only:
-                return result[0]
-            else:
-                return result
+        if first_only:
+            return result[0]
+        else:
+            return result
 
     def international_str(self, name, sdmxobj):
         '''
@@ -232,15 +199,6 @@ class SDMXMLReader(BaseReader):
         if not elem_attrib:
             elem_attrib = ['en']
         return DictLike(zip(elem_attrib, values))
-
-    def footer_text(self, sdmxobj):
-        '''
-        return list of xml:lang attributes. If node has no attributes,
-        assume that language is 'en'.
-        '''
-        values = sdmxobj._elem.xpath('com:Text/text()',
-                                     namespaces=self._nsmap)
-        return values
 
     def footer_code(self, sdmxobj):
         return int(sdmxobj._elem.get('code'))
@@ -367,8 +325,3 @@ class SDMXMLReader(BaseReader):
             else:
                 obs_attr = None
             yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
-
-    def categorisation_items(self, sdmxobj):
-        path, cls = self._model_map['categorisation_items']
-        for c in path(sdmxobj._elem):
-            yield cls(self, c)

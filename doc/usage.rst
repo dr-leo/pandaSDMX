@@ -118,16 +118,21 @@ ECB's SDMX service and explore the response like so:
 
     cat_resp = ecb.get(resource_type = 'categoryscheme')
     type(cat_resp)
-    cat_msg = cat_resp.msg
-    type(cat_msg)
-    cat_header = cat_msg.header
+    type(cat_resp.msg)
+    cat_header = cat_resp.header
     type(cat_header)
-    categorisations = cat_msg.categorisations
+    categorisations = cat_resp.categorisations
     type(categorisations)
    
     
-The content of the SDMX message, its header and its payload are exposed as attributes. Try ``dir(cat_msg)`` to find out
-that we have not only obtained the category scheme, but also the dataflows and categorisations.
+The content of the SDMX message, its header and its payload are exposed as attributes. These are also accessible directly from the containing
+:class:`pandasdmx.api.Response` instance (new in v0.3.2). We will use this
+shortcut throughout this document. But keep in mind
+that all payload is attached to a 
+:class:`pandasdmx.model.Message` instance, rather than the Response object.
+  
+Try ``dir(cat_resp.msg)`` to see what we have received: 
+There is not only the category scheme, but also the dataflows and categorisations.
 This is because the ``get`` method has set the ``references`` parameter
 to the appropriate default value. We can see this from the URL:
 
@@ -152,7 +157,7 @@ subclasses of ``dict``.
 If dict keys are valid attribute names, you can use attribute syntax. This is thanks to
 :class:`pandasdmx.utils.DictLike`, a thin wrapper around ``dict`` that internally uses a patched third-party tool.
 
-Likewise, ``cat_msg.categoryschemes`` is an instance of ``DictLike``. This is
+Likewise, ``cat_resp.categoryschemes`` is an instance of ``DictLike``. This is
 because by calling `` ecb.get``  without specifying a resource_id,
 we instructed the SDMX service to return all available categorisation schemes. The ``DictLike `` 
 container for the received category schemes uses the ``ID`` attribute of :class:`pandasdmx.model.CategoryScheme` as keys.
@@ -161,7 +166,7 @@ returned. In our example, however, there is but one:
 
 .. ipython:: python
 
-    cs = cat_msg.categoryschemes
+    cs = cat.categoryschemes
     type(cs)
     list(cs.keys())
     
@@ -190,7 +195,7 @@ category scheme like so:
 Extracting the dataflows in a particular category
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-As we saw from the attributes of ``cat_msg``, the SDMX message, we have
+As we saw from the attributes of ``cat_resp.msg``, the SDMX message, we have
 already the categorisations at hand. While in the SDMXML file categories are represented as a
 flat list, pandaSDMX groups them by category and exposes them as a :class:`pandasdmx.utils.DictLike` -mapping
 each category ID to a list of :class:`pandasdmx.model.Categorisations` instances each of which
@@ -202,8 +207,8 @@ dataflows in this category like so:
  
 .. ipython:: python
 
-    cat07_l = cat_msg.categorisations['07']
-    list(cat_msg.dataflows[i.artefact.id] for i in cat07_l)
+    cat07_l = cat_resp.categorisations['07']
+    list(cat_resp.dataflows[i.artefact.id] for i in cat07_l)
      
 These are all dataflows offered by the ECB in the category on exchange rates. 
 
@@ -217,7 +222,7 @@ Here, :meth:`pandasdmx.utils.DictLike.find` comes in handy:
 
 .. ipython:: python
 
-    cat_msg.dataflows.find('rates')
+    cat_resp.dataflows.find('rates')
     
 Extracting the data structure and data from a dataflow
 -----------------------------------------------------------
@@ -258,7 +263,7 @@ explicitly to show how it works.
     dsd_id
     refs = dict(references = 'all')
     dsd_resp = ecb.get(resource_type = 'datastructure', resource_id = dsd_id, params = refs)
-    dsd = dsd_resp.msg.datastructures[dsd_id]
+    dsd = dsd_resp.datastructures[dsd_id]
  
 A DSD essentially defines two things:
 
@@ -355,7 +360,7 @@ exclude any prior data from the request.
 
     data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2014'})
     type(data_resp.msg)
-    data = data_resp.msg.data
+    data = data_resp.data
     type(data)
     
 Generic datasets 
@@ -473,7 +478,7 @@ large. In this case the first request will yield
 a message with a footer containing a link to a zip file to be made
 available after some time. The link may be extracted by issuing something like:
  
-    >>> resp.msg.footer.text[1]  
+    >>> resp.footer.text[1]  
     
 and passed as ``url`` argument when calling ``get`` a second time to
 get the zipped data message. 

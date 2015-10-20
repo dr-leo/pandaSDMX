@@ -30,58 +30,6 @@ class SDMXObject(object):
         super(SDMXObject, self).__init__(**kwargs)
 
 
-class Message(SDMXObject):
-    _payload_names = OrderedDict(
-        footer='read_one')
-
-    def __init__(self, *args, **kwargs):
-        super(Message, self).__init__(*args, **kwargs)
-        # Initialize data attributes for which the response contains payload
-        for name, method in self._payload_names.items():
-            value = getattr(
-                self._reader, method)(name, self)
-            if value:
-                setattr(self, name, value)
-
-    @property
-    def header(self):
-        return self._reader.read_instance(Header, self)
-
-
-class StructureMessage(Message):
-    _payload_names = OrderedDict(
-        footer='read_one',
-        codelists='read_identifiables',
-        conceptschemes='read_identifiables',
-        dataflows='read_identifiables',
-        datastructures='read_identifiables',
-        constraints='read_identifiables',
-        categoryschemes='read_identifiables',
-        categorisations='read_one')
-
-    def __init__(self, *args, **kwargs):
-        super(StructureMessage, self).__init__(*args, **kwargs)
-
-
-class DataMessage(Message):
-
-    def __init__(self, *args, **kwargs):
-        super(DataMessage, self).__init__(*args, **kwargs)
-        # Set data attribute assuming the
-        # message contains at most one dataset.
-        data = self._reader.read_one('data', self)
-        if data:
-            self.data = data
-
-
-class GenericDataMessage(DataMessage):
-    pass
-
-
-class StructureSpecificDataMessage(DataMessage):
-    pass
-
-
 class Header(SDMXObject):
 
     def __init__(self, *args, **kwargs):
@@ -117,7 +65,7 @@ class Footer(SDMXObject):
 
     @property
     def text(self):
-        return self._reader.footer_text(self)
+        return self._reader.read_as_str('footer_text', self, first_only=False)
 
     @property
     def severity(self):
@@ -379,11 +327,11 @@ class Code(Item):
 
 
 class Codelist(ItemScheme):
-    _get_items = 'codes'
+    _get_items = Code
 
 
 class ConceptScheme(ItemScheme):
-    _get_items = 'concepts'
+    _get_items = Concept
 
 
 class Constraint(MaintainableArtefact):
@@ -443,17 +391,18 @@ class Category(Item):
 
 
 class CategoryScheme(ItemScheme):
-    _get_items = 'categories'
+    _get_items = Category
 
 
 class Categorisations(SDMXObject, DictLike):
+    _key_func = attrgetter('categorised_by.id')
 
     def __init__(self, *args, **kwargs):
         super(Categorisations, self).__init__(*args, **kwargs)
-        raw = list(self._reader.categorisation_items(self))
-        key_func = attrgetter('categorised_by.id')
-        sorted_l = sorted(raw, key=key_func)
-        result = {k: set(g) for k, g in groupby(sorted_l, key_func)}
+        raw = self._reader.read_instance(
+            Categorisation, self, first_only=False)
+        sorted_l = sorted(raw, key=self._key_func)
+        result = {k: set(g) for k, g in groupby(sorted_l, self._key_func)}
         self.update(result)
 
 
@@ -502,50 +451,10 @@ class DataStructureDefinition(Structure):
 
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions = self._reader.read_one('dimdescriptor', self)
-        self.measures = self._reader.read_one('measures', self)
-        self.attributes = self._reader.read_one('attributes', self)
-
-
-class DimensionDescriptor(ComponentList):
-    _get_items = 'dimensions'
-    _sort_key = '_position'
-
-    def __init__(self, *args, **kwargs):
-        super(DimensionDescriptor, self).__init__(*args, **kwargs)
-        # add time_dimension and measure_dimension to the scheme
-        self._reader.read_identifiables('time_dimension', self)
-        self._reader.read_identifiables('measure_dimension', self)
-
-
-class PrimaryMeasure(Component):
-    pass
-
-
-class MeasureDescriptor(ComponentList):
-    _get_items = 'measure_items'
-
-
-class AttributeDescriptor(ComponentList):
-    _get_items = 'attribute_items'
-
-
-class DataAttribute(Component):
-
-    @property
-    def related_to(self):
-        return self._reader.attr_relationship(self)
-
-    # fix this
-    # role = Instance(Concept)
-
-    @property
-    def usage_status(self):
-        return self._reader.assignment_status(self)
-
-
-class ReportingYearStartDay(DataAttribute):
-    pass
+        self.dimensions = self._reader.read_instance(
+            DimensionDescriptor, self, first_only=False)
+        self.measures = self._reader.read_instance(MeasureDescriptor, self)
+        self.attributes = self._reader.read_instance(AttributeDescriptor, self)
 
 
 class Dimension(Component):
@@ -565,6 +474,47 @@ class MeasureDimension(Dimension):
     pass
     # representation: must be concept scheme and local, i.e. no
    # inheritance from concept
+
+
+class DimensionDescriptor(ComponentList):
+    _get_items = Dimension
+    _sort_key = '_position'
+
+    def __init__(self, *args, **kwargs):
+        super(DimensionDescriptor, self).__init__(*args, **kwargs)
+        # add time_dimension and measure_dimension to the scheme
+        self._reader.read_identifiables(TimeDimension, self)
+        self._reader.read_identifiables(MeasureDimension, self)
+
+
+class PrimaryMeasure(Component):
+    pass
+
+
+class MeasureDescriptor(ComponentList):
+    _get_items = Measure
+
+
+class AttributeDescriptor(ComponentList):
+    _get_items = Attribute
+
+
+class DataAttribute(Component):
+
+    @property
+    def related_to(self):
+        return self._reader.attr_relationship(self)
+
+    # fix this
+    # role = Instance(Concept)
+
+    @property
+    def usage_status(self):
+        return self._reader.assignment_status(self)
+
+
+class ReportingYearStartDay(DataAttribute):
+    pass
 
 
 class DataSet(SDMXObject):
@@ -689,3 +639,55 @@ class Group(SDMXObject):
             if getattr(group_key, f) != getattr(series_key, f):
                 return False
         return True
+
+
+class Message(SDMXObject):
+    _payload_names = [
+        ('footer', 'read_instance', Footer)]
+
+    def __init__(self, *args, **kwargs):
+        super(Message, self).__init__(*args, **kwargs)
+        # Initialize data attributes for which the response contains payload
+        for name, method, cls in self._payload_names:
+            value = getattr(
+                self._reader, method)(cls, self)
+            if value:
+                setattr(self, name, value)
+
+    @property
+    def header(self):
+        return self._reader.read_instance(Header, self)
+
+
+class StructureMessage(Message):
+    _payload_names = [
+        ('footer', 'read_instance', Footer),
+        ('codelists', 'read_identifiables', Codelist),
+        ('conceptschemes', 'read_identifiables', ConceptScheme),
+        ('dataflows', 'read_identifiables', DataflowDefinition),
+        ('datastructures', 'read_identifiables', DataStructureDefinition),
+        ('constraints', 'read_identifiables', ContentConstraint),
+        ('categoryschemes', 'read_identifiables', CategoryScheme),
+        ('categorisations', 'read_instance', Categorisations)]
+
+    def __init__(self, *args, **kwargs):
+        super(StructureMessage, self).__init__(*args, **kwargs)
+
+
+class DataMessage(Message):
+
+    def __init__(self, *args, **kwargs):
+        super(DataMessage, self).__init__(*args, **kwargs)
+        # Set data attribute assuming the
+        # message contains at most one dataset.
+        data = self._reader.read_instance(_reader.get_dataset, self)
+        if data:
+            self.data = data
+
+
+class GenericDataMessage(DataMessage):
+    pass
+
+
+class StructureSpecificDataMessage(DataMessage):
+    pass

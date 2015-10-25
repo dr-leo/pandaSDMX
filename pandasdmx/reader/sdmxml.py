@@ -63,6 +63,7 @@ class SDMXMLReader(BaseReader):
 
     _str2path = {
         'footer_text': 'com:Text/text()',
+        'dataflow_from_msg': 'mes:Structures/str:Dataflows',
         'constraint_attachment': 'str:ConstraintAttachment',
         'include': '@include',
         'id': '@id',
@@ -99,7 +100,7 @@ class SDMXMLReader(BaseReader):
         model.Categorisation: 'str:Categorisation',
         model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
         model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
-        model.DataflowDefinition: 'mes:Structures/str:Dataflows/str:Dataflow',
+        model.DataflowDefinition: 'str:Dataflow',
         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
         model.Concept: 'str:Concept',
@@ -116,7 +117,7 @@ class SDMXMLReader(BaseReader):
         model.PrimaryMeasure: 'str:PrimaryMeasure',
         model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
         model.DataAttribute: 'str:Attribute',
-        model.DataflowDefinition: 'str:Dataflow',
+        # model.DataflowDefinition: 'str:Dataflow',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
         model.Ref: 'Ref',
@@ -129,21 +130,9 @@ class SDMXMLReader(BaseReader):
     for d in (_cls2path, _str2path):
         for key, path in d.items():
             d[key] = XPath(path, namespaces=_nsmap)
+    del d, key, path
 
-    def read_one(self, name, sdmxobj):
-        '''
-        return model class instance of the first element in the
-        result set of the xpath expression as defined in _model_map. If no elements are found,
-        return None. 
-        '''
-        path, cls = self._model_map[name]
-        try:
-            result = path(sdmxobj._elem)[0]
-            return cls(self, result)
-        except IndexError:
-            return None
-
-    def read_identifiables(self, cls, sdmxobj):
+    def read_identifiables(self, cls,  sdmxobj, offset=None):
         '''
         If sdmxobj inherits from dict: update it  with modelized elements.
         These must be instances of model.IdentifiableArtefact,
@@ -151,7 +140,14 @@ class SDMXMLReader(BaseReader):
         If sdmxobj does not inherit from dict: return a new DictLike.
         '''
         path = self._cls2path[cls]
-        result = {e.get('id'): cls(self, e) for e in path(sdmxobj._elem)}
+        if offset:
+            try:
+                base = self._str2path[offset](sdmxobj._elem)[0]
+            except IndexError:
+                return None
+        else:
+            base = sdmxobj._elem
+        result = {e.get('id'): cls(self, e) for e in path(base)}
         if isinstance(sdmxobj, dict):
             sdmxobj.update(result)
         else:
@@ -166,7 +162,10 @@ class SDMXMLReader(BaseReader):
         If no matches were found, return None.  
         '''
         if offset:
-            base = self._str2path[offset](sdmxobj._elem)[0]
+            try:
+                base = self._str2path[offset](sdmxobj._elem)[0]
+            except IndexError:
+                return None
         else:
             base = sdmxobj._elem
         result = self._cls2path[cls](base)
@@ -175,7 +174,26 @@ class SDMXMLReader(BaseReader):
                 return cls(self, result[0])
             else:
                 return [cls(self, i) for i in result]
-        return None
+
+    def read_subclass_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
+        '''
+        Iterate over model classes in _cls2path which are subclasses of
+        'target_cls' and instanciate the classes whose xpath expression returns a non-empty result.
+        Return a list of subclass instances.
+        '''
+        if offset:
+            base = self._str2path[offset](sdmxobj._elem)[0]
+        else:
+            base = sdmxobj._elem
+        subclasses = (c for c in self._cls2path if type(c) is type
+                      and issubclass(c, target_cls))
+        matches = []
+        for cls in subclasses:
+            match = self._cls2path[cls](base)
+            if match:
+                for m in match:
+                    matches.append(cls(self, m))
+        return matches
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)

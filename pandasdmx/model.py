@@ -1,5 +1,4 @@
 
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
@@ -65,7 +64,7 @@ class Footer(SDMXObject):
 
     @property
     def text(self):
-        return self._reader.read_as_str('footer_text', self, first_only=False)
+        return self._reader.footer_text(self)
 
     @property
     def severity(self):
@@ -395,14 +394,14 @@ class CategoryScheme(ItemScheme):
 
 
 class Categorisations(SDMXObject, DictLike):
-    _key_func = attrgetter('categorised_by.id')
 
     def __init__(self, *args, **kwargs):
         super(Categorisations, self).__init__(*args, **kwargs)
-        raw = self._reader.read_instance(
-            Categorisation, self, first_only=False)
-        sorted_l = sorted(raw, key=self._key_func)
-        result = {k: set(g) for k, g in groupby(sorted_l, self._key_func)}
+        raw = list(self._reader.read_instance(
+            Categorisation, self, first_only=False))
+        key_func = attrgetter('categorised_by.id')
+        sorted_l = sorted(raw, key=key_func)
+        result = {k: set(g) for k, g in groupby(sorted_l, key_func)}
         self.update(result)
 
 
@@ -447,12 +446,25 @@ class DataflowDefinition(StructureUsage, Constrainable):
     pass
 
 
+class DataAttribute(Component):
+
+    @property
+    def related_to(self):
+        return self._reader.attr_relationship(self)
+
+    # fix this
+    # role = Instance(Concept)
+
+    @property
+    def usage_status(self):
+        return self._reader.assignment_status(self)
+
+
 class DataStructureDefinition(Structure):
 
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions = self._reader.read_instance(
-            DimensionDescriptor, self, first_only=False)
+        self.dimensions = self._reader.read_instance(DimensionDescriptor, self)
         self.measures = self._reader.read_instance(MeasureDescriptor, self)
         self.attributes = self._reader.read_instance(AttributeDescriptor, self)
 
@@ -492,25 +504,11 @@ class PrimaryMeasure(Component):
 
 
 class MeasureDescriptor(ComponentList):
-    _get_items = Measure
+    _get_items = PrimaryMeasure
 
 
 class AttributeDescriptor(ComponentList):
-    _get_items = Attribute
-
-
-class DataAttribute(Component):
-
-    @property
-    def related_to(self):
-        return self._reader.attr_relationship(self)
-
-    # fix this
-    # role = Instance(Concept)
-
-    @property
-    def usage_status(self):
-        return self._reader.assignment_status(self)
+    _get_items = DataAttribute
 
 
 class ReportingYearStartDay(DataAttribute):
@@ -643,14 +641,14 @@ class Group(SDMXObject):
 
 class Message(SDMXObject):
     _payload_names = [
-        ('footer', 'read_instance', Footer)]
+        ('footer', 'read_instance', Footer, None)]
 
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
-        for name, method, cls in self._payload_names:
+        for name, method, cls, offset in self._payload_names:
             value = getattr(
-                self._reader, method)(cls, self)
+                self._reader, method)(cls, self, offset=offset)
             if value:
                 setattr(self, name, value)
 
@@ -660,18 +658,17 @@ class Message(SDMXObject):
 
 
 class StructureMessage(Message):
-    _payload_names = [
-        ('footer', 'read_instance', Footer),
-        ('codelists', 'read_identifiables', Codelist),
-        ('conceptschemes', 'read_identifiables', ConceptScheme),
-        ('dataflows', 'read_identifiables', DataflowDefinition),
-        ('datastructures', 'read_identifiables', DataStructureDefinition),
-        ('constraints', 'read_identifiables', ContentConstraint),
-        ('categoryschemes', 'read_identifiables', CategoryScheme),
-        ('categorisations', 'read_instance', Categorisations)]
-
-    def __init__(self, *args, **kwargs):
-        super(StructureMessage, self).__init__(*args, **kwargs)
+    _payload_names = Message._payload_names.copy()
+    _payload_names.extend([
+        ('codelists', 'read_identifiables', Codelist, None),
+        ('conceptschemes', 'read_identifiables', ConceptScheme, None),
+        ('dataflows', 'read_identifiables', DataflowDefinition,
+         'dataflow_from_msg'),
+        ('datastructures', 'read_identifiables',
+         DataStructureDefinition, None),
+        ('constraints', 'read_identifiables', ContentConstraint, None),
+        ('categoryschemes', 'read_identifiables', CategoryScheme, None),
+        ('categorisations', 'read_instance', Categorisations, None)])
 
 
 class DataMessage(Message):
@@ -680,13 +677,17 @@ class DataMessage(Message):
         super(DataMessage, self).__init__(*args, **kwargs)
         # Set data attribute assuming the
         # message contains at most one dataset.
-        data = self._reader.read_instance(_reader.get_dataset, self)
+        data = self._reader.read_instance(
+            self._reader.__class__.get_dataset, self)
         if data:
             self.data = data
 
 
 class GenericDataMessage(DataMessage):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super(GenericDataMessage, self).__init__(*args, **kwargs)
+        # Set data attribute assuming the
 
 
 class StructureSpecificDataMessage(DataMessage):

@@ -52,15 +52,6 @@ class SDMXMLReader(BaseReader):
 
     _root_tag = XPath('name(//*[1])')
 
-    def get_dataset(self, elem):
-        if 'Generic' in self._root_tag(elem):
-            cls = model.GenericDataSet
-        elif 'StructureSpecific' in self._root_tag(elem):
-            cls = model.StructureSpecificDataSet
-        else:
-            raise ValueError('Message for datasets has tag %s' % elem.tag)
-        return cls(self, elem)
-
     _str2path = {
         'footer_text': 'com:Text/text()',
         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
@@ -105,7 +96,6 @@ class SDMXMLReader(BaseReader):
         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
         model.Concept: 'str:Concept',
         model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
-        get_dataset: 'mes:DataSet',
         model.Categorisations: 'mes:Structures/str:Categorisations',
         model.Footer: 'footer:Footer/footer:Message',
         model.Category: 'str:Category',
@@ -117,7 +107,6 @@ class SDMXMLReader(BaseReader):
         model.PrimaryMeasure: 'str:PrimaryMeasure',
         model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
         model.DataAttribute: 'str:Attribute',
-        # model.DataflowDefinition: 'str:Dataflow',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
         model.Ref: 'Ref',
@@ -125,6 +114,7 @@ class SDMXMLReader(BaseReader):
         model.Annotation: 'com:Annotations/com:Annotation',
         model.Group: 'gen:Group',
         model.Series: 'gen:Series',
+        model.GenericDataSet: 'mes:DataSet',
     }
 
     for d in (_cls2path, _str2path):
@@ -197,10 +187,11 @@ class SDMXMLReader(BaseReader):
 
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._str2path[name](sdmxobj._elem)
-        if first_only:
-            return result[0]
-        else:
-            return result
+        if result:
+            if first_only:
+                return result[0]
+            else:
+                return result
 
     def international_str(self, name, sdmxobj):
         '''

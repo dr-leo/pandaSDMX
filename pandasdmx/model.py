@@ -641,6 +641,7 @@ class Group(SDMXObject):
 
 class Message(SDMXObject):
     _payload_names = [
+        ('header', 'read_instance', Header, None),
         ('footer', 'read_instance', Footer, None)]
 
     def __init__(self, *args, **kwargs):
@@ -651,10 +652,6 @@ class Message(SDMXObject):
                 self._reader, method)(cls, self, offset=offset)
             if value:
                 setattr(self, name, value)
-
-    @property
-    def header(self):
-        return self._reader.read_instance(Header, self)
 
 
 class StructureMessage(Message):
@@ -672,22 +669,13 @@ class StructureMessage(Message):
 
 
 class DataMessage(Message):
-
-    def __init__(self, *args, **kwargs):
-        super(DataMessage, self).__init__(*args, **kwargs)
-        # Set data attribute assuming the
-        # message contains at most one dataset.
-        data = self._reader.read_instance(
-            self._reader.__class__.get_dataset, self)
-        if data:
-            self.data = data
+    pass
 
 
 class GenericDataMessage(DataMessage):
-
-    def __init__(self, *args, **kwargs):
-        super(GenericDataMessage, self).__init__(*args, **kwargs)
-        # Set data attribute assuming the
+    _payload_names = DataMessage._payload_names.copy()
+    _payload_names.extend([
+        ('data', 'read_instance', GenericDataSet, None)])
 
 
 class StructureSpecificDataMessage(DataMessage):

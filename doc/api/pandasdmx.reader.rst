@@ -12,14 +12,6 @@ pandasdmx.reader.sdmxml module
     :undoc-members:
     :show-inheritance:
 
-pandasdmx.reader.sdmxml_new module
-----------------------------------
-
-.. automodule:: pandasdmx.reader.sdmxml_new
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

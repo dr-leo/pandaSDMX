@@ -45,7 +45,7 @@ class Header(SDMXObject):
 
     @property
     def prepared(self):
-        return self._reader.header_prepared(self)
+        return self._reader.read_as_str('header_prepared', self)
 
     @property
     def sender(self):
@@ -54,10 +54,6 @@ class Header(SDMXObject):
     @property
     def error(self):
         return self._reader.header_error(self)
-
-    @property
-    def structure(self):
-        return self._reader.read_one(self._elem)
 
 
 class Footer(SDMXObject):
@@ -337,8 +333,8 @@ class Constraint(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(Constraint, self).__init__(*args, **kwargs)
-        self.constraint_attachment = self._reader.read_subclass_instance(
-            Constrainable, self, offset='constraint_attachment')[0]
+        self.constraint_attachment = self._reader.read_instance(
+            DataflowDefinition, self, offset='constraint_attachment')
 
 
 class ContentConstraint(Constraint):
@@ -472,9 +468,9 @@ class DataStructureDefinition(Structure):
 class Dimension(Component):
     # role = Instance(Concept)
 
-    @property
-    def _position(self):
-        return self._reader.position(self)
+    def __init__(self, *args, **kwargs):
+        super(Dimension, self).__init__(*args, **kwargs)
+        self._position = int(self._reader.read_as_str('position', self))
 
 
 class TimeDimension(Dimension):
@@ -640,14 +636,17 @@ class Group(SDMXObject):
 
 
 class Message(SDMXObject):
-    _payload_names = [
+    # Describe supported message content as 4-tuples of the form
+    # (attribute_name, reader_method_name,
+    # class_object_to_be_instantiated, optional_offset_path_name)
+    _content_types = [
         ('header', 'read_instance', Header, None),
         ('footer', 'read_instance', Footer, None)]
 
     def __init__(self, *args, **kwargs):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
-        for name, method, cls, offset in self._payload_names:
+        for name, method, cls, offset in self._content_types:
             value = getattr(
                 self._reader, method)(cls, self, offset=offset)
             if value:
@@ -655,8 +654,8 @@ class Message(SDMXObject):
 
 
 class StructureMessage(Message):
-    _payload_names = Message._payload_names.copy()
-    _payload_names.extend([
+    _content_types = Message._content_types.copy()
+    _content_types.extend([
         ('codelists', 'read_identifiables', Codelist, None),
         ('conceptschemes', 'read_identifiables', ConceptScheme, None),
         ('dataflows', 'read_identifiables', DataflowDefinition,
@@ -673,8 +672,8 @@ class DataMessage(Message):
 
 
 class GenericDataMessage(DataMessage):
-    _payload_names = DataMessage._payload_names.copy()
-    _payload_names.extend([
+    _content_types = DataMessage._content_types.copy()
+    _content_types.extend([
         ('data', 'read_instance', GenericDataSet, None)])
 
 

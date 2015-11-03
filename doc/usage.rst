@@ -166,7 +166,7 @@ returned. In our example, however, there is but one:
 
 .. ipython:: python
 
-    cs = cat.categoryschemes
+    cs = cat_resp.categoryschemes
     type(cs)
     list(cs.keys())
     
@@ -259,7 +259,7 @@ explicitly to show how it works.
 
 .. ipython:: python
 
-    dsd_id = cat_msg.dataflows.EXR.structure.id
+    dsd_id = cat_resp.dataflows.EXR.structure.id
     dsd_id
     refs = dict(references = 'all')
     dsd_resp = ecb.get(resource_type = 'datastructure', resource_id = dsd_id, params = refs)

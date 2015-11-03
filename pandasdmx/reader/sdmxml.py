@@ -35,6 +35,9 @@ class SDMXMLReader(BaseReader):
     }
 
     def initialize(self, source):
+        # Compile the above xpath expressions if not already done
+        if type(self._paths['urn']) is str:
+            self._compile_paths()
         tree = etree.parse(source)
         root = tree.getroot()
         if root.tag.endswith('Structure'):
@@ -64,7 +67,11 @@ class SDMXMLReader(BaseReader):
         'agencyID': '@agencyID',
         'value': 'com:Value/text()',
         'headerID': 'mes:ID/text()',
+        'header_prepared': 'mes:Prepared/text()',
+        'header_sender': 'mes:Sender/@*',
         'ref_version': '@version',
+        'position': '@position',
+        'isfinal': '@isfinal',
         'ref_package': '@package',
         'ref_class': '@class',
         'ref_target': 'str:Target',
@@ -114,9 +121,9 @@ class SDMXMLReader(BaseReader):
         model.GenericDataSet: 'mes:DataSet',
     }
 
-    for key, path in _paths.items():
-        _paths[key] = XPath(path, namespaces=_nsmap)
-    del key, path
+    def _compile_paths(self):
+        for key, path in self._paths.items():
+            self._paths[key] = XPath(path, namespaces=self._nsmap)
 
     def read_identifiables(self, cls,  sdmxobj, offset=None):
         '''
@@ -161,26 +168,6 @@ class SDMXMLReader(BaseReader):
             else:
                 return [cls(self, i) for i in result]
 
-    def read_subclass_instance(self, target_cls, sdmxobj, offset=None, first_only=True):
-        '''
-        Iterate over model classes in _paths which are subclasses of
-        'target_cls' and instanciate the classes whose xpath expression returns a non-empty result.
-        Return a list of subclass instances.
-        '''
-        if offset:
-            base = self._paths[offset](sdmxobj._elem)[0]
-        else:
-            base = sdmxobj._elem
-        subclasses = (c for c in self._paths if type(c) is type
-                      and issubclass(c, target_cls))
-        matches = []
-        for cls in subclasses:
-            match = self._paths[cls](base)
-            if match:
-                for m in match:
-                    matches.append(cls(self, m))
-        return matches
-
     def read_as_str(self, name, sdmxobj, first_only=True):
         result = self._paths[name](sdmxobj._elem)
         if result:
@@ -211,9 +198,6 @@ class SDMXMLReader(BaseReader):
     def footer_severity(self, sdmxobj):
         return sdmxobj._elem.get('severity')
 
-    def header_prepared(self, sdmxobj):
-        return sdmxobj._elem.Prepared[0].text  # convert this to datetime obj?
-
     def header_sender(self, sdmxobj):
         return DictLike(sdmxobj._elem.Sender.attrib)
 
@@ -233,10 +217,6 @@ class SDMXMLReader(BaseReader):
         parent_id = sdmxobj._elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
                                         namespaces=self._nsmap)[0]
         return self.message.conceptschemes[parent_id][c_id]
-
-    def position(self, sdmxobj):
-        # called by model.Dimension
-        return int(sdmxobj._elem.get('position'))
 
     def localrepr(self, sdmxobj):
         node = sdmxobj._elem.xpath('str:LocalRepresentation',

@@ -49,7 +49,7 @@ class Request(object):
                   'categorisation', 'codelist', 'conceptscheme']
 
     def __init__(self, agency='',
-                 writer='pandasdmx.writer.data2pandas', cache=None,
+                 writer=None, cache=None,
                  **http_cfg):
         '''
         Set the SDMX agency, writer, and configure http requests.
@@ -253,6 +253,12 @@ class Request(object):
                         return self.get(tofile=tofile, url=footer_url)
                     except Exception:
                         pass
+        # Select default writer
+        if not self.writer:
+            if hasattr(msg, 'data'):
+                self.writer = 'pandasdmx.writer.data2pandas'
+            else:
+                self.writer = 'pandasdmx.writer.structure2pd'
         r = Response(msg, url, headers, status_code, writer=self.writer)
         # store in memory cache if needed
         if memcache and r.status_code == 200:
@@ -360,8 +366,7 @@ class Response(object):
         self.url = url
         self.http_headers = headers
         self.status_code = status_code
-        if hasattr(self.msg, 'data'):
-            self.init_writer(writer)
+        self.init_writer(writer)
 
     def __getattr__(self, name):
         '''

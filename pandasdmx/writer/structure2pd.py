@@ -20,7 +20,7 @@ from itertools import chain, repeat
 
 class Writer(BaseWriter):
 
-    def write(self, source=None, name='codelists', attrib=['name', 'description'], lang='en'):
+    def write(self, source=None, name='codelists', attrib=['name'], lang='en'):
         '''
         Transfform a collection of nameable SDMX objects 
         from a :class:`pandasdmx.model.StructureMessage` instance to a pandas DataFrame.
@@ -39,6 +39,22 @@ class Writer(BaseWriter):
                 DataFrame. If a list, it must contain strings
                 that are valid attibute values. Defaults to: ['name', 'description']
         '''
+        def handle_language(item):
+            try:
+                return item[lang]
+            except KeyError:
+                return None
+            except TypeError:
+                return item
+
+        def get_data(scheme_id, item_id):
+            if item_id == '_':
+                raw = [getattr(content[scheme_id], s) for s in attrib]
+            else:
+                raw = [getattr(content[scheme_id][item_id], s) for s in attrib]
+            # Select language for international strings represented as dict
+            return tuple(map(handle_language, raw))
+
         if type(attrib) not in [list, tuple]:
             attrib = [attrib]
         content = getattr(source, name)
@@ -50,9 +66,16 @@ class Writer(BaseWriter):
             tuples = sorted(chain(*(zip(repeat(scheme_id),  # 1st level eg codelist ID
                                         content[scheme_id].keys())  # 2nd level eg code ID's
                                     for scheme_id in content)))  # iterate over all codelists etc.
+            # insert rows to store metadata for each codelist rather than just
+            # the codes
+            first_col = [t[0] for t in tuples]
+            for scheme_id in content:
+                i = first_col.index(scheme_id)
+                tuples.insert(i, (scheme_id, '_'))
+                first_col.insert(i, scheme_id)
             idx = PD.MultiIndex.from_tuples(
                 tuples, names=[name + 'ID', 'ItemID'])
             # Extract the values
-            data = [getattr(content[i][j], attrib[0])[lang] for i, j in tuples]
+            data = [get_data(*t) for t in tuples]
         # Generate pandas DataFrame
-        return PD.DataFrame(data, index=idx, columns=attrib[:1])
+        return PD.DataFrame(data, index=idx, columns=attrib)

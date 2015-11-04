@@ -291,7 +291,7 @@ class Request(object):
                    if d not in dim_names]
         if invalid:
             raise ValueError(
-                'Invalid dimension name {0}, allowed are: '.format(invalid, dim_names))
+                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
         # Check for each dimension name if values are correct and construct
         # of the form 'value1.value2.value3+value4' etc.
         parts = []

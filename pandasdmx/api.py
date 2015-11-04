@@ -307,8 +307,8 @@ class Request(object):
                 invalid = [v for v in values_l if v not in codes]
                 if invalid:
                     # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is not in codelist for dimension '{1}'".
-                                     format(invalid, d.id))
+                    raise ValueError("'{0}' is not in codelist for dimension '{1}': {2}".
+                                     format(invalid, d.id, codes))
                 # Check if values are in Contentconstraint if present
                 if constraint:
                     try:

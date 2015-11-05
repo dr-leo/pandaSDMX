@@ -654,7 +654,7 @@ class Message(SDMXObject):
 
 
 class StructureMessage(Message):
-    _content_types = Message._content_types.copy()
+    _content_types = Message._content_types[:]
     _content_types.extend([
         ('codelists', 'read_identifiables', Codelist, None),
         ('conceptschemes', 'read_identifiables', ConceptScheme, None),
@@ -672,7 +672,7 @@ class DataMessage(Message):
 
 
 class GenericDataMessage(DataMessage):
-    _content_types = DataMessage._content_types.copy()
+    _content_types = DataMessage._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', GenericDataSet, None)])
 

@@ -46,7 +46,7 @@ class Request(object):
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'categorisation', 'codelist', 'conceptscheme']
+                  'categorisation', 'codelist', 'conceptscheme', 'constraint']
 
     def __init__(self, agency='',
                  writer=None, cache=None,
@@ -300,7 +300,7 @@ class Request(object):
             raise ValueError(
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
         # Check for each dimension name if values are correct and construct
-        # of the form 'value1.value2.value3+value4' etc.
+        # string of the form 'value1.value2.value3+value4' etc.
         parts = []
         # Iterate over the dimensions. If the key dict
         # contains a value for the dimension, append it to the 'parts' list. Otherwise

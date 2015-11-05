@@ -3,11 +3,14 @@
 What's new?
 ==============
 
-v0.3.2 (2015-11?)
+v0.4.0 (2015-12)
 -----------------------
 
-* Response instances: expose Message attributes directly to enhance usability 
- 
+* Response instances: propagate Message attributes to enhance usability 
+ * add structure2pd writer to export codelists, dataflow-definitions and other
+   nameable SDMX artefacts from structure messages 
+   as multi-indexed DataFrames. Desired attributes can be specified and will be
+   represented by columns. 
 
 v0.3.1 (2015-10-04)
 -----------------------

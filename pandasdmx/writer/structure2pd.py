@@ -60,7 +60,7 @@ class Writer(BaseWriter):
         content = getattr(source, name)
         if name == 'dataflows':
             idx = PD.Index(sorted(content.keys()), name=name)
-            data = [getattr(content[i], attrib[0])[lang] for i in idx]
+            data = [get_data(*t) for t in idx]
         else:
             # generate index
             tuples = sorted(chain(*(zip(repeat(scheme_id),  # 1st level eg codelist ID

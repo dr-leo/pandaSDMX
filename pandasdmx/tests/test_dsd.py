@@ -32,6 +32,10 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
             self.assertIsInstance(
                 self.resp.msg.codelists.CL_FREQ.D, model.Code)
 
+    def test_writer(self):
+        df = self.resp.write()
+        self.assertEqual(df.shape, (79, 1))
+
     def tearDown(self):
         pass
 

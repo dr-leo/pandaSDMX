@@ -19,7 +19,7 @@ SOAP interface.
 
 from pandasdmx import remote
 from pandasdmx.utils import str_type
-from pandasdmx.reader.sdmxml import SDMXMLReader
+from pandasdmx.reader.sdmxml import Reader
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
@@ -78,7 +78,7 @@ class Request(object):
 
     def get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
-        return SDMXMLReader(self)
+        return Reader(self)
 
     @property
     def agency(self):

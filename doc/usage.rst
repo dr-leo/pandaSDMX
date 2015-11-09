@@ -182,7 +182,7 @@ category scheme like so:
 
 .. ipython:: python
 
-    cs0 = cs.aslist()[0]
+    cs0 = cs.any()
     type(cs0)
 
     # Print the number of categories    

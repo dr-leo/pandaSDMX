@@ -27,8 +27,20 @@ class DictLike(aadict):
     '''
 
     def aslist(self):
-        '''property returning values() as unordered list'''
+        '''
+        return values() as unordered list
+        '''
         return list(self.values())
+
+    def any(self):
+        '''
+        return an arbitrary or the only value. If dict is empty,
+        raise KeyError.
+        '''
+        try:
+            next(iter(self.values()))
+        except StopIteration:
+            raise KeyError('DictLike is empty.')
 
     def find(self, search_str, by='name', language='en'):
         '''Select values by attribute

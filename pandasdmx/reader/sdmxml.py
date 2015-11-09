@@ -20,7 +20,7 @@ from lxml import etree
 from lxml.etree import XPath
 
 
-class SDMXMLReader(BaseReader):
+class Reader(BaseReader):
 
     """
     Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model

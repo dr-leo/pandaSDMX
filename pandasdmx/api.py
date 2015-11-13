@@ -48,11 +48,9 @@ class Request(object):
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
                   'categorisation', 'codelist', 'conceptscheme', 'constraint']
 
-    def __init__(self, agency='',
-                 writer=None, cache=None,
-                 **http_cfg):
+    def __init__(self, agency='', cache=None, **http_cfg):
         '''
-        Set the SDMX agency, writer, and configure http requests.
+        Set the SDMX agency, and configure http requests for this instance.
 
         Args:
 
@@ -63,7 +61,6 @@ class Request(object):
                 load data or metadata from files or a pre-fabricated URL. .
                 defaults to '', i.e. no agency.
 
-            writer(str): the module path of a writer class, defaults to 'pandasdmx.writer.data2pandas'
             cache(dict): args to be passed on to 
                 ``requests_cache.install_cache()``. Default is None (no caching).
 
@@ -74,7 +71,6 @@ class Request(object):
         '''
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
-        self.writer = writer
 
     def get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
@@ -98,7 +94,7 @@ class Request(object):
 
     def get(self, resource_type='', resource_id='', agency='', key='', params=None,
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None):
+            memcache=None, writer=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -155,7 +151,10 @@ class Request(object):
                 is returned. The ``tofile`` argument is propagated. Note that the written file may be
                 a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3).
             memcache(str): If given, return Response instance if already in self.cache(dict), 
-            otherwise download resource and cache Response instance. 
+            otherwise download resource and cache Response instance.             
+        writer(str): optional custom writer class. 
+            Should inherit from pandasdmx.writer.BaseWriter. Defaults to None, 
+            i.e. one of the included writers is selected as appropriate. 
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -254,12 +253,12 @@ class Request(object):
                     except Exception:
                         pass
         # Select default writer
-        if not self.writer:
+        if not writer:
             if hasattr(msg, 'data'):
-                self.writer = 'pandasdmx.writer.data2pandas'
+                writer = 'pandasdmx.writer.data2pandas'
             else:
-                self.writer = 'pandasdmx.writer.structure2pd'
-        r = Response(msg, url, headers, status_code, writer=self.writer)
+                writer = 'pandasdmx.writer.structure2pd'
+        r = Response(msg, url, headers, status_code, writer=writer)
         # store in memory cache if needed
         if memcache and r.status_code == 200:
             self.cache[memcache] = r

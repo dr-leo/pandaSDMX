@@ -106,6 +106,7 @@ class Writer(BaseWriter):
                 series_list = list(s for s in self.iter_pd_series(
                     iter_series, dim_at_obs, dtype, attributes,
                     reverse_obs, fromfreq, parse_time))
+                key_fields = series_list[0].name._fields
                 if dtype and attributes:
                     pd_series, pd_attributes = zip(*series_list)
                     index_source = pd_series
@@ -114,24 +115,14 @@ class Writer(BaseWriter):
                 elif attributes:
                     pd_attributes = index_source = series_list
 
-                # Extract dimensions
-                index_tuples = list(s.name for s in index_source)
-                level_names = list(index_source[0].name._fields)
-                col_index = PD.MultiIndex.from_tuples(index_tuples,
-                                                      names=level_names)
-
                 if dtype:
-                    for s in pd_series:
-                        s.name = None
                     # Merge series into multi-indexed DataFrame and return it.
                     d_frame = PD.concat(list(pd_series), axis=1, copy=False)
-                    d_frame.columns = col_index
+                    d_frame.columns.set_names(key_fields, inplace=True)
 
                 if attributes:
-                    for s in pd_attributes:
-                        s.name = None
                     a_frame = PD.concat(pd_attributes, axis=1, copy=False)
-                    a_frame.columns = col_index
+                    a_frame.columns.set_names(key_fields, inplace=True)
                 # decide what to return
                 if dtype and attributes:
                     return d_frame, a_frame
@@ -229,7 +220,7 @@ class Writer(BaseWriter):
                     if d_in_attrib:
                         d.update(series.dataset.attrib)
                 attrib_series = PD.Series(obs_attrib,
-                                          index=series_index, dtype='object')
+                                          index=series_index, dtype='object', name=series.key)
 
             # decide what to yield
             if dtype and attributes:

@@ -15,6 +15,7 @@ module pandasdmx.utils - helper classes and functions
 
 from .aadict import aadict
 from collections import namedtuple
+from itertools import chain
 import sys
 
 
@@ -85,7 +86,7 @@ has already been created.
 
     def __call__(self, name, fields):
         """
-        return a subclass of tuple instance as does namedtuple
+        return namedtuple class as singleton 
         """
 
         fields = tuple(fields)
@@ -95,6 +96,28 @@ has already been created.
         return self.cache[fields]
 
 namedtuple_factory = NamedTupleFactory()
+
+
+def concat_namedtuples(*tup, name=None):
+    '''
+    Concatenate 2 or more namedtuples. The new namedtuple type
+    is provided by :class:`NamedTupleFactory`
+    return new namedtuple instance
+    '''
+    # filter out empty elements
+    filtered = [i for i in filter(None, tup)]
+    if filtered:
+        if len(filtered) == 1:
+            return filtered[0]
+        else:
+            fields = chain(*(t._fields for t in filtered))
+            values = chain(*(t for t in filtered))
+            if not name:
+                name = 'SDMXNamedTuple'
+            ConcatType = namedtuple_factory(name, fields)
+            return ConcatType(*values)
+    else:
+        return ()
 
 
 # 2to3 compatibility

@@ -23,15 +23,17 @@ Main features
   - categorisations and category schemes
 
 * pythonic representation of the SDMX information model  
-* find dataflows by name or description in multiple languages if available
 * When requesting datasets, validate column selections against code lists 
-  and content-constraints if available 
+  and content-constraints if available
+* export generic data sets as multi-indexed pandas DataFrames or Series of observations and attributes
+* export structural metadata such as code lists and dataflow definitions 
+  as multi-indexed pandas DataFrames   
 * read and write SDMX messages to and from local files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite  
-* writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
+* growing test suite
 
 Example
 ---------

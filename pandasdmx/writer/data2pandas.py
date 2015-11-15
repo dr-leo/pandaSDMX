@@ -13,9 +13,10 @@ pandas dataframes or series.
 '''
 
 
+from pandasdmx.writer import BaseWriter
+from pandasdmx.utils import concat_namedtuples
 import pandas as PD
 import numpy as NP
-from pandasdmx.writer import BaseWriter
 
 
 class Writer(BaseWriter):
@@ -109,11 +110,10 @@ class Writer(BaseWriter):
                 key_fields = series_list[0].name._fields
                 if dtype and attributes:
                     pd_series, pd_attributes = zip(*series_list)
-                    index_source = pd_series
                 elif dtype:
-                    pd_series = index_source = series_list
+                    pd_series = series_list
                 elif attributes:
-                    pd_attributes = index_source = series_list
+                    pd_attributes = series_list
 
                 if dtype:
                     # Merge series into multi-indexed DataFrame and return it.
@@ -138,11 +138,6 @@ class Writer(BaseWriter):
 
     def iter_pd_series(self, iter_series, dim_at_obs, dtype,
                        attributes, reverse_obs, fromfreq, parse_time):
-        # Pre-compute some values before looping over the series
-        o_in_attrib = 'o' in attributes
-        s_in_attrib = 's' in attributes
-        g_in_attrib = 'g' in attributes
-        d_in_attrib = 'd' in attributes
 
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
@@ -151,7 +146,7 @@ class Writer(BaseWriter):
             l = len(obs_dim)
             obs_values = NP.array(next(obs_zip), dtype=dtype)
             if attributes:
-                obs_attrib = NP.array(tuple(next(obs_zip)), dtype='O')
+                obs_attrib = next(obs_zip)
 
             # Generate the index
             if parse_time and dim_at_obs == 'TIME_PERIOD':
@@ -210,16 +205,31 @@ class Writer(BaseWriter):
                     obs_values, index=series_index, name=series.key)
 
             if attributes:
-                for d in obs_attrib:
-                    if not o_in_attrib:
-                        d.clear()
-                    if s_in_attrib:
-                        d.update(series.attrib)
-                    if g_in_attrib:
-                        d.update(series.group_attrib)
-                    if d_in_attrib:
-                        d.update(series.dataset.attrib)
-                attrib_series = PD.Series(obs_attrib,
+                # Assemble attributes of dataset, group and series if needed
+                gen_attrib = [attr
+                              for flag, attr in (('s', series.attrib),
+                                                 ('g', series.group_attrib), ('d', series.dataset.attrib))
+                              if (flag in attributes) and attr]
+                if gen_attrib:
+                    gen_attrib = concat_namedtuples(*gen_attrib)
+                else:
+                    gen_attrib = None
+
+                if 'o' in attributes:
+                    # concat with general attributes if any
+                    if gen_attrib:
+                        attrib_iter = (concat_namedtuples(a, gen_attrib,
+                                                          name='Attrib') for a in obs_attrib)
+                    else:
+                        # Simply take the obs attributes
+                        attrib_iter = obs_attrib
+                else:
+                    # Make iterator yielding the constant general attribute set
+                    # It may be None.
+                    # for each obs
+                    attrib_iter = (gen_attrib for d in obs_attrib)
+
+                attrib_series = PD.Series(attrib_iter,
                                           index=series_index, dtype='object', name=series.key)
 
             # decide what to yield

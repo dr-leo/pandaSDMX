@@ -41,7 +41,7 @@ Optional dependencies
   memory
 * `IPython <http://ipython.org/>`_ is required to build the Sphinx documentation To do this,
   check out the pandaSDMX repository on github.  
-* `nose <https://pypi.python.org/pypi/nose>`_ to run the test suite.
+* `py.test <http://pytest.org/latest/>`_ to run the test suite.
 
 Download
 :::::::::::::::::::::::::::

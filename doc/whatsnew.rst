@@ -11,6 +11,9 @@ v0.4.0 (2015-12)
    nameable SDMX artefacts from structure messages 
    as multi-indexed DataFrames. Desired attributes can be specified and will be
    represented by columns. 
+* data2pd writer: return attributes as namedtuples rather than dict
+* testing: switch from nose to py.test
+* lots of refactorings and code clean-ups
 
 v0.3.1 (2015-10-04)
 -----------------------

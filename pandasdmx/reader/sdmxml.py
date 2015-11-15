@@ -259,7 +259,9 @@ class Reader(BaseReader):
             if with_attributes:
                 obs_attr_values = self._paths['attr_values_path'](obs)
                 obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
+                obs_attr_type = namedtuple_factory(
+                    'ObsAttributes', obs_attr_id)
+                obs_attr = obs_attr_type(*obs_attr_values)
             else:
                 obs_attr = None
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
@@ -291,7 +293,7 @@ class Reader(BaseReader):
     def series_attrib(self, sdmxobj):
         attr_id = self._paths['attr_id_path'](sdmxobj._elem)
         attr_values = self._paths['attr_values_path'](sdmxobj._elem)
-        return DictLike(zip(attr_id, attr_values))
+        return namedtuple_factory('Attrib', attr_id)(*attr_values)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):
@@ -306,7 +308,9 @@ class Reader(BaseReader):
             if with_attributes:
                 obs_attr_values = self._paths['attr_values_path'](obs)
                 obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr = DictLike(zip(obs_attr_id, obs_attr_values))
+                obs_attr_type = namedtuple_factory(
+                    'ObsAttributes', obs_attr_id)
+                obs_attr = obs_attr_type(*obs_attr_values)
             else:
                 obs_attr = None
             yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)

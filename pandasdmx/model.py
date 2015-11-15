@@ -14,7 +14,7 @@ This module is part of the pandaSDMX package
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from .utils import DictLike, str_type
+from pandasdmx.utils import DictLike, concat_namedtuples, str_type
 from operator import attrgetter
 from collections import OrderedDict
 from itertools import groupby
@@ -601,11 +601,9 @@ class Series(SDMXObject):
         to groups of which the given series is a member
         for each group of which the series is a member
         '''
-        g_attrib = DictLike()
-        for g in self.dataset.groups:
-            if self in g:
-                g_attrib.update(g.attrib)
-        return g_attrib
+        group_attributes = [g.attrib for g in self.dataset.groups if self in g]
+        if group_attributes:
+            return concat_namedtuples(*group_attributes)
 
     def obs(self, with_values=True, with_attributes=True, reverse_obs=False):
         '''

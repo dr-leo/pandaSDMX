@@ -20,8 +20,27 @@ from itertools import chain, repeat
 
 class Writer(BaseWriter):
 
-    def write(self, source=None, rows=None, constraint=None,
-              dimensions_only=False, columns=['name'], lang='en'):
+    _row_content = {'codelists', 'conceptschemes', 'dataflows',
+                    'categoryschemes', 'dimensions', 'attributes'}
+
+    def write(self, source=None, rows=None, **kwargs):
+        # Set convenient default values for args
+        if rows is None:
+            rows = [i for i in self._row_content if hasattr(source, i)]
+        # is rows a string?
+        if not isinstance(rows, (list, tuple)):
+            rows = [rows]
+        frames = [self.make_dataframe(source, r, **kwargs) for r in rows]
+        if len(frames) == 1:
+            return frames[0]
+        else:
+            # concat the frames if their indices match
+            # Looks complicated. Is it worth it?
+            # return PD.concat(frames, keys=rows)
+            return frames
+
+    def make_dataframe(self, source, rows, constraint=None,
+                       dimensions_only=False, columns=['name'], lang='en'):
         '''
         Transfform a collection of nameable SDMX objects 
         from a :class:`pandasdmx.model.StructureMessage` instance to a pandas DataFrame.
@@ -75,32 +94,32 @@ class Writer(BaseWriter):
                 return (i for i in content if i in cl2dim)
             return content
 
-        # Set convenient default values for kwargs
-        if rows is None:
-            if hasattr(source, 'codelists'):
-                rows = 'codelists'
-            elif hasattr(source, 'dataflows'):
-                rows = 'dataflows'
-        if rows == 'codelists' and constraint:
-            try:
-                constraint = constraint.constraints.any()
-            except AttributeError:
-                constraint = source.constraints.any()
+        if rows == 'codelists':
             dsd = source.datastructures.any()
-            # Dimensions represented by a codelist
+            # Dimensions represented by the code lists
             dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
                           ['TIME', 'TIME_PERIOD']]
             # map codelist ID's to dimension names of the DSD.
             # This is needed to efficiently check for any constraint
             cl2dim = {d.local_repr.enum.id: d.id for d in dimensions}
-        if type(columns) not in [list, tuple]:
+            if constraint:
+                try:
+                    # use any user-provided constraint
+                    constraint = constraint.constraints.any()
+                except AttributeError:
+                    # So the Message must containe one
+                    constraint = source.constraints.any()
+                # We assume that where there's a code list, a DSD is not far.
+
+        # allow `columns` arg to be a str
+        if not isinstance(columns, (list, tuple)):
             columns = [columns]
+
         content = getattr(source, rows)
-        if rows == 'dataflows':
-            keys = sorted(content.keys())
-            idx = PD.Index(keys, name=rows)
-            data = [get_data(t, '_') for t in keys]
-        else:
+        # Distinguish hierarchical content consisting of a dict of dicts, and
+        # flat content consisting of a dict of atomic values. In the former case,
+        # the resulting DataFrame will have 2 index levels.
+        if isinstance(content.any(), dict):
             # generate index
             tuples = sorted(chain(*(zip(repeat(scheme_id),  # 1st level eg codelist ID
                                         iter_keys(scheme_id))  # 2nd level eg code ID's
@@ -118,5 +137,9 @@ class Writer(BaseWriter):
                 tuples, names=[rows + 'ID', 'ItemID'])
             # Extract the values
             data = [get_data(*t) for t in tuples]
-        # Generate pandas DataFrame
+        else:
+            # flatt structure, e.g., dataflow definitions
+            keys = sorted(content.keys())
+            idx = PD.Index(keys, name=rows)
+            data = [get_data(t, '_') for t in keys]
         return PD.DataFrame(data, index=idx, columns=columns)

@@ -10,9 +10,10 @@ Installation
 Prerequisites
 :::::::::::::::::::::::::::::::::::::::
 
-pandaSDMX is a pure `Python <http://www.python.org>`_ package. As such it should run on any platform. 
-It requires Python 2.7 or 3.4. Python 3.3 should work as well, but this is untested. Python 3.5 should work once
-the dependencies have been ported.
+pandaSDMX is a pure `Python <http://www.python.org>`_ package. 
+As such it should run on any platform. 
+It requires Python 2.7, 3.4 or 3.5. Python 3.3 should work as well, 
+but this is untested. 
 
 It is recommended to use one of the common Python distributions
 for scientific data analysis such as
@@ -30,15 +31,15 @@ pandaSDMX has the following dependencies:
 
 * the data analysis library  
   `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages
-* `requests <https://pypi.python.org/pypi/requests/>`_
-* `LXML <http://www.lxml.de>`_ 
+* the HTTP library `requests <https://pypi.python.org/pypi/requests/>`_
+* `LXML <http://www.lxml.de>`_ for XML processing. 
 
 Optional dependencies
 ::::::::::::::::::::::::::::::::::::::::::
 
 * `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ 
   allowing to cache SDMX messages in 
-  memory
+  memory, MongoDB, Redis and more.
 * `IPython <http://ipython.org/>`_ is required to build the Sphinx documentation To do this,
   check out the pandaSDMX repository on github.  
 * `py.test <http://pytest.org/latest/>`_ to run the test suite.

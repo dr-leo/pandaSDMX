@@ -39,7 +39,7 @@ class DictLike(aadict):
         raise KeyError.
         '''
         try:
-            next(iter(self.values()))
+            return next(iter(self.values()))
         except StopIteration:
             raise KeyError('DictLike is empty.')
 

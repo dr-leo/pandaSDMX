@@ -12,7 +12,7 @@ codes from a codelist or concepts from a concept scheme. The writer is more gene
 output any collection of nameable SDMX objects.
 '''
 
-
+from pandasdmx.utils import DictLike
 from pandasdmx.writer import BaseWriter
 import pandas as PD
 from itertools import chain, repeat
@@ -24,23 +24,6 @@ class Writer(BaseWriter):
                     'categoryschemes', 'dimensions', 'attributes'}
 
     def write(self, source=None, rows=None, **kwargs):
-        # Set convenient default values for args
-        if rows is None:
-            rows = [i for i in self._row_content if hasattr(source, i)]
-        # is rows a string?
-        if not isinstance(rows, (list, tuple)):
-            rows = [rows]
-        frames = [self.make_dataframe(source, r, **kwargs) for r in rows]
-        if len(frames) == 1:
-            return frames[0]
-        else:
-            # concat the frames if their indices match
-            # Looks complicated. Is it worth it?
-            # return PD.concat(frames, keys=rows)
-            return frames
-
-    def make_dataframe(self, source, rows, constraint=None,
-                       dimensions_only=False, columns=['name'], lang='en'):
         '''
         Transfform a collection of nameable SDMX objects 
         from a :class:`pandasdmx.model.StructureMessage` instance to a pandas DataFrame.
@@ -62,6 +45,30 @@ class Writer(BaseWriter):
                 DataFrame. If a list, it must contain strings
                 that are valid attibute values. Defaults to: ['name', 'description']
         '''
+
+        # Set convenient default values for args
+        # is rows a string?
+        if rows is not None and not isinstance(rows, (list, tuple)):
+            rows = [rows]
+            return_df = True
+        elif isinstance(rows, (list, tuple)) and len(rows) == 1:
+            return_df = True
+        else:
+            return_df = False
+        if rows is None:
+            rows = [i for i in self._row_content if hasattr(source, i)]
+        # Generate the DataFrame or -Frames and store them in a DictLike with
+        # content-type names as keys
+        frames = DictLike(
+            {r: self.make_dataframe(source, r, **kwargs) for r in rows})
+        if return_df:
+            # There is only one item. So return the only value.
+            return frames.any()
+        else:
+            return frames
+
+    def make_dataframe(self, source, rows, constraint=None,
+                       dimensions_only=False, columns=['name'], lang='en'):
         def handle_language(item):
             try:
                 return item[lang]

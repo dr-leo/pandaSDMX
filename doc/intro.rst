@@ -58,7 +58,7 @@ Running the test suite
  
 From the package directory, issue the folloing command::
  
-    >>> nosetests pandasdmx
+    >>> py.test
 
     
 Package overview

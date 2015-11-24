@@ -78,7 +78,7 @@ class Writer(BaseWriter):
                 return item
 
         def get_data(scheme_id, item_id):
-            if item_id == '_':
+            if item_id.startswith('__'):
                 raw = [getattr(content[scheme_id], s) for s in columns]
             else:
                 raw = [getattr(content[scheme_id][item_id], s)
@@ -86,20 +86,20 @@ class Writer(BaseWriter):
             # Select language for international strings represented as dict
             return tuple(map(handle_language, raw))
 
-        def iter_keys(scheme_id):
+        def iter_keys(container):
             if rows == 'codelists' and constraint:
                 try:
-                    dim_id = cl2dim[scheme_id]
-                    return (key for key in content[scheme_id] if (dim_id, key) in constraint)
+                    dim_id = cl2dim[container.id]
+                    return (key for key in container if (dim_id, key) in constraint)
                 except KeyError:
                     pass
-            return content[scheme_id]
+            return container
 
         def iter_schemes():
             # iterate only over codelists representing dimensions?
             if rows == 'codelists' and dimensions_only:
-                return (i for i in content if i in cl2dim)
-            return content
+                return (i for i in content.values() if i.id in cl2dim)
+            return content.values()
 
         if rows == 'codelists':
             dsd = source.datastructures.any()
@@ -128,18 +128,16 @@ class Writer(BaseWriter):
         # the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
             # generate index
-            tuples = sorted(chain(*(zip(repeat(scheme_id),  # 1st level eg codelist ID
-                                        iter_keys(scheme_id))  # 2nd level eg code ID's
-                                    for scheme_id in iter_schemes())))  # iterate over all codelists etc.
-            # insert rows to store metadata for each codelist rather than just
-            # the codes.
-            # first_col tracks all inserts. It serves to apply .index()
-            # efficiently.
-            first_col = [t[0] for t in tuples]
-            for scheme_id in iter_schemes():
-                i = first_col.index(scheme_id)
-                tuples.insert(i, (scheme_id, '_'))
-                first_col.insert(i, scheme_id)
+            tuples = sorted(chain(*(zip(
+                # 1st index level eg codelist ID
+                repeat(container.id),
+                # 2nd index level: first row in each codelist is the corresponding
+                # dimension name. The following rows are code ID's. Hence the chain.
+                # Need to access cl2dim and make cl2attr.
+                # Then fix the following
+                chain(('__' + container.id,), iter_keys(container)))
+                for container in iter_schemes())))  # iterate over all codelists etc.
+            # Now actually generate the index
             idx = PD.MultiIndex.from_tuples(
                 tuples, names=[rows + 'ID', 'ItemID'])
             # Extract the values

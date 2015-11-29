@@ -13,7 +13,3 @@ def test_concat_namedtuples():
     concat1 = concat_namedtuples(*tuples)
     assert isinstance(concat1, tuple)
     assert concat1.A == 0
-
-
-if __name__ == '__main__':
-    test_concat_namedtuples()

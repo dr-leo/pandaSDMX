@@ -218,4 +218,4 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         f = resp.footer
         assert f.code == 413
         assert f.severity == 'Infomation'
-        assert f.text[0].startswith('http')
+        assert f.text[1].startswith('http')

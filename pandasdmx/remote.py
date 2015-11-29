@@ -21,6 +21,13 @@ except ImportError:
     pass
 
 
+def is_url(s):
+    '''
+    return True if s (str) is a valid URL, False otherwise.
+    '''
+    return bool(requests.utils.urlparse(s).scheme)
+
+
 class REST:
 
     """

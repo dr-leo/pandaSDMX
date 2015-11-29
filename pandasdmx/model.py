@@ -60,7 +60,7 @@ class Footer(SDMXObject):
 
     @property
     def text(self):
-        return self._reader.read_as_str('footer_text', self)
+        return self._reader.read_as_str('footer_text', self, first_only=False)
 
     @property
     def severity(self):

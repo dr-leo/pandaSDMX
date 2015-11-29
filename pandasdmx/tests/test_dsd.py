@@ -65,8 +65,3 @@ class test_dsd_common(unittest.TestCase):
         self.assertIsInstance(a, model.Annotation)
         self.assertTrue(a.text.en.startswith('It is'))
         self.assertEqual(a.annotationtype, 'NOTE')
-
-
-if __name__ == "__main__":
-    import nose
-    nose.main()

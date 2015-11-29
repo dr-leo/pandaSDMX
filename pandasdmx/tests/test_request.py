@@ -18,8 +18,3 @@ class Test_request(unittest.TestCase):
 
     def test_validate_unknown_agency(self):
         self.assertRaises(ValueError, Request, 'noagency')
-
-
-if __name__ == "__main__":
-    import nose
-    nose.main()

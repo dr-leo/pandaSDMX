@@ -241,7 +241,7 @@ class Request(object):
         if get_footer_url and hasattr(msg, 'footer'):
             # Retrieve the first URL in the footer, if any
             url_l = [
-                i for i in msg.footer.text if remote.requests.utils.urlparse(i).scheme]
+                i for i in msg.footer.text if remote.is_url(i)]
             if url_l:
                 # found an URL. Wait and try to request it
                 footer_url = url_l[0]

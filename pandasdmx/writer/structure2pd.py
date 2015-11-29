@@ -15,7 +15,7 @@ output any collection of nameable SDMX objects.
 from pandasdmx.utils import DictLike
 from pandasdmx.writer import BaseWriter
 import pandas as PD
-from itertools import chain, repeat
+from itertools import chain, repeat, starmap
 from operator import attrgetter
 
 
@@ -135,17 +135,18 @@ class Writer(BaseWriter):
         # the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
             # generate index
-            raw_tuples = chain(*(zip(
+            raw_tuples = sorted(chain(*(zip(
                 # 1st index level eg codelist ID
                 repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
                 # dimension name. The following rows are code ID's. Hence the chain.
                 # Need to access cl2dim and make cl2attr.
                 chain((container,), iter_keys(container)))
-                for container in iter_schemes()))
+                for container in iter_schemes())),
+                key=lambda x: x[0].id + x[1].id)
             # Now actually generate the index
             idx = PD.MultiIndex.from_tuples(
-                sorted(_make_pair(*i) for i in raw_tuples))
+                [_make_pair(*i) for i in raw_tuples])
             # Extract the values
             data = [get_data(*t) for t in raw_tuples]
         else:
@@ -153,5 +154,4 @@ class Writer(BaseWriter):
             raw_values = sorted(content.values(), key=attrgetter('id'))
             idx = PD.Index([r.id for i in raw_values], name=rows)
             data = [get_data(t, '_') for t in raw_values]
-        raw_df = PD.DataFrame(data, index=idx, columns=columns)
-        return raw_df
+        return PD.DataFrame(data, index=idx, columns=columns)

@@ -98,12 +98,14 @@ has already been created.
 namedtuple_factory = NamedTupleFactory()
 
 
-def concat_namedtuples(*tup, name=None):
+def concat_namedtuples(*tup, **kwargs):
     '''
     Concatenate 2 or more namedtuples. The new namedtuple type
     is provided by :class:`NamedTupleFactory`
     return new namedtuple instance
     '''
+    name = kwargs['name'] if 'name' in kwargs else None
+    
     # filter out empty elements
     filtered = [i for i in filter(None, tup)]
     if filtered:

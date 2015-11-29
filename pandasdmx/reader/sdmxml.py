@@ -57,6 +57,8 @@ class Reader(BaseReader):
 
     _paths = {
         'footer_text': 'com:Text/text()',
+        'footer_code': '@code',
+        'footer_severity': '@severity',
         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
         'constraint_attachment': 'str:ConstraintAttachment',
         'include': '@include',
@@ -191,12 +193,6 @@ class Reader(BaseReader):
         if not elem_attrib:
             elem_attrib = ['en']
         return DictLike(zip(elem_attrib, values))
-
-    def footer_code(self, sdmxobj):
-        return int(sdmxobj._elem.get('code'))
-
-    def footer_severity(self, sdmxobj):
-        return sdmxobj._elem.get('severity')
 
     def header_sender(self, sdmxobj):
         return DictLike(sdmxobj._elem.Sender.attrib)

@@ -16,6 +16,7 @@ from pandasdmx.utils import DictLike
 from pandasdmx.writer import BaseWriter
 import pandas as PD
 from itertools import chain, repeat
+from operator import attrgetter
 
 
 class Writer(BaseWriter):
@@ -60,15 +61,15 @@ class Writer(BaseWriter):
         # Generate the DataFrame or -Frames and store them in a DictLike with
         # content-type names as keys
         frames = DictLike(
-            {r: self.make_dataframe(source, r, **kwargs) for r in rows})
+            {r: self._make_dataframe(source, r, **kwargs) for r in rows})
         if return_df:
             # There is only one item. So return the only value.
             return frames.any()
         else:
             return frames
 
-    def make_dataframe(self, source, rows, constraint=None,
-                       dimensions_only=False, columns=['name'], lang='en'):
+    def _make_dataframe(self, source, rows, constraint=None,
+                        dimensions_only=False, columns=['name'], lang='en'):
         def handle_language(item):
             try:
                 return item[lang]
@@ -77,11 +78,11 @@ class Writer(BaseWriter):
             except TypeError:
                 return item
 
-        def get_data(scheme_id, item_id):
-            if item_id.startswith('__'):
-                raw = [getattr(content[scheme_id], s) for s in columns]
+        def get_data(scheme, item):
+            if scheme is item:
+                raw = [getattr(scheme, s) for s in columns]
             else:
-                raw = [getattr(content[scheme_id][item_id], s)
+                raw = [getattr(item, s)
                        for s in columns]
             # Select language for international strings represented as dict
             return tuple(map(handle_language, raw))
@@ -90,16 +91,22 @@ class Writer(BaseWriter):
             if rows == 'codelists' and constraint:
                 try:
                     dim_id = cl2dim[container.id]
-                    return (key for key in container if (dim_id, key) in constraint)
+                    return (v for v in container.values() if (dim_id, v.id) in constraint)
                 except KeyError:
                     pass
-            return container
+            return container.values()
 
         def iter_schemes():
             # iterate only over codelists representing dimensions?
             if rows == 'codelists' and dimensions_only:
                 return (i for i in content.values() if i.id in cl2dim)
             return content.values()
+
+        def _make_pair(i0, i1):
+            if i0 is i1:
+                return (i0.id, '__' + i1.id)
+            else:
+                return (i0.id, i1.id)
 
         if rows == 'codelists':
             dsd = source.datastructures.any()
@@ -128,23 +135,23 @@ class Writer(BaseWriter):
         # the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
             # generate index
-            tuples = sorted(chain(*(zip(
+            raw_tuples = chain(*(zip(
                 # 1st index level eg codelist ID
-                repeat(container.id),
+                repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
                 # dimension name. The following rows are code ID's. Hence the chain.
                 # Need to access cl2dim and make cl2attr.
-                # Then fix the following
-                chain(('__' + container.id,), iter_keys(container)))
-                for container in iter_schemes())))  # iterate over all codelists etc.
+                chain((container,), iter_keys(container)))
+                for container in iter_schemes()))
             # Now actually generate the index
             idx = PD.MultiIndex.from_tuples(
-                tuples, names=[rows + 'ID', 'ItemID'])
+                sorted(_make_pair(*i) for i in raw_tuples))
             # Extract the values
-            data = [get_data(*t) for t in tuples]
+            data = [get_data(*t) for t in raw_tuples]
         else:
             # flatt structure, e.g., dataflow definitions
-            keys = sorted(content.keys())
-            idx = PD.Index(keys, name=rows)
-            data = [get_data(t, '_') for t in keys]
-        return PD.DataFrame(data, index=idx, columns=columns)
+            raw_values = sorted(content.values(), key=attrgetter('id'))
+            idx = PD.Index([r.id for i in raw_values], name=rows)
+            data = [get_data(t, '_') for t in raw_values]
+        raw_df = PD.DataFrame(data, index=idx, columns=columns)
+        return raw_df

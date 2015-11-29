@@ -210,7 +210,12 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         self.assertIsInstance(g_attrib, tuple)
         self.assertEqual(len(g_attrib), 5)
 
-
-if __name__ == "__main__":
-    import nose
-    nose.main()
+    def test_footer(self):
+        filepath = os.path.join(
+            pkg_path, 'data/estat/footer.xml')
+        resp = self.estat.get(
+            fromfile=filepath, get_footer_url=None)
+        f = resp.footer
+        assert f.code == 413
+        assert f.severity == 'Infomation'
+        assert f.text[0].startswith('http')

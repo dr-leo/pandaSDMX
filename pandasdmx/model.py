@@ -60,15 +60,15 @@ class Footer(SDMXObject):
 
     @property
     def text(self):
-        return self._reader.footer_text(self)
+        return self._reader.read_as_str('footer_text', self)
 
     @property
     def severity(self):
-        return self._reader.footer_severity(self)
+        return self._reader.read_as_str('footer_severity', self)
 
     @property
     def code(self):
-        return self._reader.footer_code(self)
+        return int(self._reader.read_as_str('footer_code', self))
 
 
 class Constrainable:
@@ -235,10 +235,10 @@ class Scheme(DictLike):
     # DictLike.aslist returns a list sorted by _sort_key.
     # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this
     # to sort by position.
-    _sort_key = 'id'
+    _sort_key = attrgetter('id')
 
     def aslist(self):
-        return sorted(self.values(), key=attrgetter(self._sort_key))
+        return sorted(self.values(), key=self._sort_key)
 
 
 class ItemScheme(MaintainableArtefact, Scheme):
@@ -486,7 +486,7 @@ class MeasureDimension(Dimension):
 
 class DimensionDescriptor(ComponentList):
     _get_items = Dimension
-    _sort_key = '_position'
+    _sort_key = attrgetter('_position')
 
     def __init__(self, *args, **kwargs):
         super(DimensionDescriptor, self).__init__(*args, **kwargs)

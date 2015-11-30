@@ -15,6 +15,7 @@ output any collection of nameable SDMX objects.
 from pandasdmx.utils import DictLike
 from pandasdmx.writer import BaseWriter
 import pandas as PD
+import numpy as NP
 from itertools import chain, repeat, starmap
 from operator import attrgetter
 
@@ -70,13 +71,6 @@ class Writer(BaseWriter):
 
     def _make_dataframe(self, source, rows, constraint=None,
                         dimensions_only=False, columns=['name'], lang='en'):
-        def handle_language(item):
-            try:
-                return item[lang]
-            except KeyError:
-                return None
-            except TypeError:
-                return item
 
         def get_data(scheme, item):
             if scheme is item:
@@ -85,7 +79,11 @@ class Writer(BaseWriter):
                 raw = [getattr(item, s)
                        for s in columns]
             # Select language for international strings represented as dict
-            return tuple(map(handle_language, raw))
+            translated = tuple(s[lang] if lang in s else s['en'] for s in raw)
+            if len(translated) > 1:
+                return translated
+            else:
+                return translated[0]
 
         def iter_keys(container):
             if rows == 'codelists' and constraint:
@@ -98,15 +96,12 @@ class Writer(BaseWriter):
 
         def iter_schemes():
             # iterate only over codelists representing dimensions?
+            # check tis condition. is rows correct?
             if rows == 'codelists' and dimensions_only:
-                return (i for i in content.values() if i.id in cl2dim)
-            return content.values()
-
-        def _make_pair(i0, i1):
-            if i0 is i1:
-                return (i0.id, '__' + i1.id)
+                raw = (i for i in content.values() if i.id in cl2dim)
             else:
-                return (i0.id, i1.id)
+                raw = content.values()
+            return sorted(raw, key=attrgetter('id'))
 
         if rows == 'codelists':
             dsd = source.datastructures.any()
@@ -145,13 +140,14 @@ class Writer(BaseWriter):
                 for container in iter_schemes())),
                 key=lambda x: x[0].id + x[1].id)
             # Now actually generate the index
-            idx = PD.MultiIndex.from_tuples(
-                [_make_pair(*i) for i in raw_tuples])
-            # Extract the values
-            data = [get_data(*t) for t in raw_tuples]
+            raw_idx, data = zip(*(((i.id, '__' + j.id) if i is j else (i.id, j.id),
+                                   get_data(i, j))
+                                  for i, j in raw_tuples))
+            idx = PD.MultiIndex.from_tuples(raw_idx)  # set names?
         else:
             # flatt structure, e.g., dataflow definitions
-            raw_values = sorted(content.values(), key=attrgetter('id'))
-            idx = PD.Index([r.id for i in raw_values], name=rows)
-            data = [get_data(t, '_') for t in raw_values]
-        return PD.DataFrame(data, index=idx, columns=columns)
+            raw_tuples = sorted(content.values(), key=attrgetter('id'))
+            raw_idx, data = zip(*((t.id, get_data(t, '_'))
+                                  for t in raw_tuples))  # pass '_' to get_data?
+            idx = PD.Index(raw_idx, name=rows)
+        return PD.DataFrame(NP.array(data), index=idx, columns=columns)

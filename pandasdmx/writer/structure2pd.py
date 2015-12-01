@@ -16,7 +16,7 @@ from pandasdmx.utils import DictLike
 from pandasdmx.writer import BaseWriter
 import pandas as PD
 import numpy as NP
-from itertools import chain, repeat, starmap
+from itertools import chain, repeat
 from operator import attrgetter
 
 
@@ -76,6 +76,10 @@ class Writer(BaseWriter):
             if scheme is item:
                 raw = [getattr(scheme, s) for s in columns]
             else:
+                # Prepare for flat list where item is None and all the
+                # gist is in scheme.
+                if item is None:
+                    item = scheme
                 raw = [getattr(item, s)
                        for s in columns]
             # Select language for international strings represented as dict
@@ -89,10 +93,12 @@ class Writer(BaseWriter):
             if rows == 'codelists' and constraint:
                 try:
                     dim_id = cl2dim[container.id]
-                    return (v for v in container.values() if (dim_id, v.id) in constraint)
+                    result = (
+                        v for v in container.values() if (dim_id, v.id) in constraint)
                 except KeyError:
                     pass
-            return container.values()
+            result = container.values()
+            return sorted(result, key=attrgetter('id'))
 
         def iter_schemes():
             # iterate only over codelists representing dimensions?
@@ -130,15 +136,14 @@ class Writer(BaseWriter):
         # the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
             # generate index
-            raw_tuples = sorted(chain(*(zip(
+            raw_tuples = chain(*(zip(
                 # 1st index level eg codelist ID
                 repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
                 # dimension name. The following rows are code ID's. Hence the chain.
                 # Need to access cl2dim and make cl2attr.
                 chain((container,), iter_keys(container)))
-                for container in iter_schemes())),
-                key=lambda x: x[0].id + x[1].id)
+                for container in iter_schemes()))
             # Now actually generate the index
             raw_idx, data = zip(*(((i.id, '__' + j.id) if i is j else (i.id, j.id),
                                    get_data(i, j))
@@ -147,7 +152,7 @@ class Writer(BaseWriter):
         else:
             # flatt structure, e.g., dataflow definitions
             raw_tuples = sorted(content.values(), key=attrgetter('id'))
-            raw_idx, data = zip(*((t.id, get_data(t, '_'))
+            raw_idx, data = zip(*((t.id, get_data(t, None))
                                   for t in raw_tuples))  # pass '_' to get_data?
             idx = PD.Index(raw_idx, name=rows)
         return PD.DataFrame(NP.array(data), index=idx, columns=columns)

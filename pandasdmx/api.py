@@ -23,8 +23,22 @@ from pandasdmx.reader.sdmxml import Reader
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
+from functools import partial
 
 __all__ = ['Request']
+
+
+class ResourceGetter(object):
+    '''
+    Descriptor to wrap Request.get vor convenient calls 
+    without specifying the resource as arg.
+    '''
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, inst, cls):
+        return partial(inst.get, self.name)
 
 
 class Request(object):
@@ -48,6 +62,11 @@ class Request(object):
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
                   'categorisation', 'codelist', 'conceptscheme', 'constraint']
 
+    @classmethod
+    def _make_get_wrappers(cls):
+        for r in cls._resources:
+            setattr(cls, r, ResourceGetter(r))
+
     def __init__(self, agency='', cache=None, **http_cfg):
         '''
         Set the SDMX agency, and configure http requests for this instance.
@@ -69,6 +88,9 @@ class Request(object):
             See also the docs of the ``requests`` package at 
             http://www.python-requests.org/en/latest/.   
         '''
+        # If needed, generate wrapper properties for get method
+        if not hasattr(self, 'data'):
+            self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
 

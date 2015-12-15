@@ -50,9 +50,9 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.attrib.DECIMALS, '4')
 
     def test_write2pandas(self):
-        pd_series = self.resp.write(attributes='',
-                                    asframe=False, reverse_obs=False)
-        self.assertIsInstance(pd_series, pandas.Series)
+        data_series = self.resp.write(attributes='',
+                                      asframe=False, reverse_obs=False)
+        self.assertIsInstance(data_series, pandas.Series)
 
 
 class TestGenericSeriesDataSet(unittest.TestCase):
@@ -117,6 +117,17 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(len(a3), 3)
         # access an attribute of the first value
         self.assertEqual(a3[0].OBS_STATUS, 'A')
+
+    def test_write2pandas(self):
+        df = self.resp.write(attributes='',
+                             reverse_obs=False)
+        self.assertIsInstance(df, pandas.DataFrame)
+        assert df.shape == (3, 4)
+        # with metadata
+        df, mdf = self.resp.write(attributes='osgd',
+                                  reverse_obs=False)
+        assert mdf.shape == (3, 4)
+        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
 
 class TestGenericSeriesDataSet2(unittest.TestCase):

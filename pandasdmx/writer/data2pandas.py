@@ -45,7 +45,7 @@ class Writer(BaseWriter):
                 or any combination thereof such as 'os', 'go'. Defaults to 'osgd'.
                 Where 'o', 's', 'g', and 'd' mean that attributes at observation,
                 series, group and dataset level will be returned as members of
-                per-observation dict-likes with attribute-like access.
+                per-observation namedtuples.
             reverse_obs(bool): if True, return observations in 
                 reverse order. Default: False
             fromfreq(bool): if True, extrapolate time periods 
@@ -72,7 +72,7 @@ class Writer(BaseWriter):
                 raise ValueError(
                     "'attributes' must only contain 'o', 's', 'd' or 'g'.")
 
-        # Allow source to be either an iterator or a model.DataSet instance
+        # Allow source to be either an iterable or a model.DataSet instance
         if hasattr(source, '__iter__'):
             iter_series = source
         elif hasattr(source, 'series'):
@@ -107,12 +107,16 @@ class Writer(BaseWriter):
                 series_list = list(s for s in self.iter_pd_series(
                     iter_series, dim_at_obs, dtype, attributes,
                     reverse_obs, fromfreq, parse_time))
-                key_fields = series_list[0].name._fields
                 if dtype and attributes:
+                    # series_list is actually a list of pairs of series
+                    # containing data and metadata respectively
+                    key_fields = series_list[0][0].name._fields
                     pd_series, pd_attributes = zip(*series_list)
                 elif dtype:
+                    key_fields = series_list[0].name._fields
                     pd_series = series_list
                 elif attributes:
+                    key_fields = series_list[0].name._fields
                     pd_attributes = series_list
 
                 if dtype:

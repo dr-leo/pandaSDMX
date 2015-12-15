@@ -35,9 +35,6 @@ class Reader(BaseReader):
     }
 
     def initialize(self, source):
-        # Compile the above xpath expressions if not already done
-        if type(self._paths['urn']) is str:
-            self._compile_paths()
         tree = etree.parse(source)
         root = tree.getroot()
         if root.tag.endswith('Structure'):
@@ -53,7 +50,8 @@ class Reader(BaseReader):
         self.message = cls(self, root)
         return self.message
 
-    _root_tag = XPath('name(//*[1])')
+    # flag to prevent multiple compiling. See BaseReader.__init__
+    _compiled = False
 
     _paths = {
         'footer_text': 'com:Text/text()',
@@ -121,62 +119,15 @@ class Reader(BaseReader):
         model.Group: 'gen:Group',
         model.Series: 'gen:Series',
         model.GenericDataSet: 'mes:DataSet',
+        'int_str_names': './*[local-name() = $name]/@xml:lang',
+        'int_str_values': './*[local-name() = $name]/text()',
     }
 
-    def _compile_paths(self):
-        for key, path in self._paths.items():
-            self._paths[key] = XPath(path, namespaces=self._nsmap)
-
-    def read_identifiables(self, cls,  sdmxobj, offset=None):
-        '''
-        If sdmxobj inherits from dict: update it  with modelized elements.
-        These must be instances of model.IdentifiableArtefact,
-        i.e. have an 'id' attribute. This will be used as dict keys.
-        If sdmxobj does not inherit from dict: return a new DictLike.
-        '''
-        path = self._paths[cls]
-        if offset:
-            try:
-                base = self._paths[offset](sdmxobj._elem)[0]
-            except IndexError:
-                return None
-        else:
-            base = sdmxobj._elem
-        result = {e.get('id'): cls(self, e) for e in path(base)}
-        if isinstance(sdmxobj, dict):
-            sdmxobj.update(result)
-        else:
-            return DictLike(result)
-
-    def read_instance(self, cls, sdmxobj, offset=None, first_only=True):
-        '''
-        If cls in _paths and matches,
-        return an instance of cls with the first XML element,
-        or, if fest_only is False, a list of cls instances 
-        for all elements found,
-        If no matches were found, return None.  
-        '''
-        if offset:
-            try:
-                base = self._paths[offset](sdmxobj._elem)[0]
-            except IndexError:
-                return None
-        else:
-            base = sdmxobj._elem
-        result = self._paths[cls](base)
-        if result:
-            if first_only:
-                return cls(self, result[0])
-            else:
-                return [cls(self, i) for i in result]
-
-    def read_as_str(self, name, sdmxobj, first_only=True):
-        result = self._paths[name](sdmxobj._elem)
-        if result:
-            if first_only:
-                return result[0]
-            else:
-                return result
+    @classmethod
+    def _compile_paths(cls):
+        for key, path in cls._paths.items():
+            cls._paths[key] = XPath(
+                path, namespaces=cls._nsmap, smart_strings=False)
 
     def international_str(self, name, sdmxobj):
         '''
@@ -184,11 +135,8 @@ class Reader(BaseReader):
         assume that language is 'en'.
         '''
         # Get language tokens like 'en', 'fr'...
-        # Can we simplify the xpath expressions by not using .format?
-        elem_attrib = sdmxobj._elem.xpath('com:{0}/@xml:lang'.format(name),
-                                          namespaces=self._nsmap)
-        values = sdmxobj._elem.xpath('com:{0}/text()'.format(name),
-                                     namespaces=self._nsmap)
+        elem_attrib = self._paths['int_str_names'](sdmxobj._elem, name=name)
+        values = self._paths['int_str_values'](sdmxobj._elem, name=name)
         # Unilingual strings have no attributes. Assume 'en' instead.
         if not elem_attrib:
             elem_attrib = ['en']

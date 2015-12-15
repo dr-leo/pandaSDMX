@@ -6,14 +6,19 @@ What's new?
 v0.4.0 (2015-12)
 -----------------------
 
-* Response instances: propagate Message attributes to enhance usability 
- * add structure2pd writer to export codelists, dataflow-definitions and other
-   nameable SDMX artefacts from structure messages 
-   as multi-indexed DataFrames. Desired attributes can be specified and will be
-   represented by columns. 
+* Responses expose Message attributes to save typing
+* Requests expose resource names such as data, datastructure, dataflow etc. 
+  as descriptors calling 'get' without specifying the resource type as string. 
+  In interactive environments, this
+  saves typing and enables code completion. 
+* add structure2pd writer to export codelists, dataflow-definitions and other
+  nameable SDMX artefacts from structure messages 
+  as multi-indexed DataFrames. Desired attributes can be specified and are
+  represented by columns. 
 * data2pd writer: return attributes as namedtuples rather than dict
 * testing: switch from nose to py.test
-* lots of refactorings and code clean-ups
+* sdmxml reader: return strings or unicode strings instead of LXML smart strings
+* lots of bug fixes and code clean-ups
 
 v0.3.1 (2015-10-04)
 -----------------------

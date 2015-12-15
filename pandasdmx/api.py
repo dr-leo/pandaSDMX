@@ -34,11 +34,11 @@ class ResourceGetter(object):
     without specifying the resource as arg.
     '''
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, resource_type):
+        self.resource_type = resource_type
 
     def __get__(self, inst, cls):
-        return partial(inst.get, self.name)
+        return partial(inst.get, self.resource_type)
 
 
 class Request(object):
@@ -60,7 +60,7 @@ class Request(object):
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'categorisation', 'codelist', 'conceptscheme', 'constraint']
+                  'categorisation', 'codelist', 'conceptscheme']
 
     @classmethod
     def _make_get_wrappers(cls):
@@ -94,7 +94,7 @@ class Request(object):
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
 
-    def get_reader(self):
+    def _get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
         return Reader(self)
 
@@ -211,7 +211,7 @@ class Request(object):
             # Otherwise, do nothing as key must be a str confirming to the REST
             # API spec.
             if resource_type == 'data' and isinstance(key, dict):
-                key = self.make_key(resource_id, key)
+                key = self._make_key(resource_id, key)
 
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
@@ -258,7 +258,7 @@ class Request(object):
             else:
                 # undo side effect of is_zipfile
                 source.seek(0)
-            msg = self.get_reader().initialize(source)
+            msg = self._get_reader().initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             # Retrieve the first URL in the footer, if any
@@ -286,7 +286,7 @@ class Request(object):
             self.cache[memcache] = r
         return r
 
-    def make_key(self, flow_id, key):
+    def _make_key(self, flow_id, key):
         '''
         Download the dataflow def. and DSD and validate 
         key(dict) against it. 

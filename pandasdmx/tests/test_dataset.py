@@ -26,15 +26,15 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertIsInstance(self.resp.msg, model.GenericDataMessage)
 
     def test_header_attributes(self):
-        self.assertEqual(self.resp.msg.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.msg.header.dim_at_obs, 'AllDimensions')
+        self.assertEqual(self.resp.header.structured_by, 'STR1')
+        self.assertEqual(self.resp.header.dim_at_obs, 'AllDimensions')
 
     def test_dataset_cls(self):
-        self.assertIsInstance(self.resp.msg.data, model.GenericDataSet)
+        self.assertIsInstance(self.resp.data, model.GenericDataSet)
         self.assertEqual(self.resp.msg.data.dim_at_obs, 'AllDimensions')
 
     def test_generic_obs(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         # empty series list
         self.assertEqual(len(list(data.series)), 0)
         obs_list = list(data.obs())
@@ -61,17 +61,17 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts_gf.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+        self.resp = self.estat.data(fromfile=filepath)
 
     def test_header_attributes(self):
-        self.assertEqual(self.resp.msg.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.msg.header.dim_at_obs, 'TIME_PERIOD')
+        self.assertEqual(self.resp.header.structured_by, 'STR1')
+        self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_dataset_cls(self):
         self.assertIsInstance(self.resp.msg.data, model.GenericDataSet)
 
     def test_generic_obs(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         # empty obs iterator
         self.assertEqual(len(list(data.obs())), 0)
         series_list = list(data.series)
@@ -93,7 +93,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
 
     def test_pandas(self):
         resp = self.resp
-        data = resp.msg.data
+        data = resp.data
         pd_series = [s for s in resp.write(
             data, attributes='', reverse_obs=True, asframe=False)]
         self.assertEqual(len(pd_series), 4)
@@ -125,17 +125,17 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+        self.resp = self.estat.data(fromfile=filepath)
 
     def test_header_attributes(self):
-        self.assertEqual(self.resp.msg.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.msg.header.dim_at_obs, 'TIME_PERIOD')
+        self.assertEqual(self.resp.header.structured_by, 'STR1')
+        self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_dataset_cls(self):
-        self.assertIsInstance(self.resp.msg.data, model.GenericDataSet)
+        self.assertIsInstance(self.resp.data, model.GenericDataSet)
 
     def test_generic_obs(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         # empty obs iterator
         self.assertEqual(len(list(data.obs())), 0)
         series_list = list(data.series)
@@ -156,7 +156,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
 
     def test_dataframe(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         df = self.resp.write(
             data, attributes='', asframe=True, reverse_obs=True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
@@ -172,7 +172,7 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_groups(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         self.assertEqual(len(list(data.groups)), 4)
         self.assertEqual(len(list(data.series)), 4)
         g2 = list(data.groups)[2]
@@ -196,7 +196,7 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_groups(self):
-        data = self.resp.msg.data
+        data = self.resp.data
         self.assertEqual(len(list(data.groups)), 5)
         self.assertEqual(len(list(data.series)), 4)
         g2 = list(data.groups)[2]

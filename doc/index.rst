@@ -43,15 +43,18 @@ Example
 
     from pandasdmx import Request
     # Get recent annual unemployment data on Greece, Ireland and Spain from Eurostat
-    resp = Request('ESTAT').get('data', 'une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
-    # From the received dataset, select the time series on all age groups and write them to a pandas DataFrame
-    une_df = resp.write(s for s in resp.data.series if s.key.AGE == 'TOTAL')
-    # Explore the DataFrame. First, show dimension names
-    une_df.columns.names
+    resp = Request('ESTAT').data('une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
+    # Select data and corresponding metadata across age groups and write them to pandas DataFrames
+    data, metadata = resp.write((s for s in resp.data.series if s.key.AGE == 'TOTAL'),
+    attributes='osgd')
+    # Explore the data set. First, show dimension names
+    data.columns.names
     # corresponding dimension values
-    une_df.columns.levels
+    data.columns.levels
     # Print aggregate unemployment rates across ages and sexes 
-    une_df.loc[:, ('TOTAL', 'T')]
+    data.loc[:, ('TOTAL', 'T')]
+    # And corresponding attributes
+    metadata.loc[:, ('TOTAL', 'T')]
 
 
 pandaSDMX Links

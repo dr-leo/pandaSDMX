@@ -15,6 +15,21 @@ pandaSDMX - a Python package for SDMX - Statistical Data and Metadata eXchange
 
 
 from pandasdmx.api import Request
+import logging
 
+__all__ = ['Request']
 
 version = '0.3.1'
+
+
+def _init_logger():
+    logger = logging.getLogger('pandasdmx')
+    handler = logging.StreamHandler()
+    fmt = logging.Formatter(
+        '%(asctime)s %(name)s - %(levelname)s: %(message)s')
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    return logger
+
+logger = _init_logger()

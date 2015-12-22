@@ -53,8 +53,8 @@ Example
     data.columns.levels
     # Print aggregate unemployment rates across ages and sexes 
     data.loc[:, ('TOTAL', 'T')]
-    # And corresponding attributes
-    metadata.loc[:, ('TOTAL', 'T')]
+    # And corresponding attributes, only for one data point to ease printing 
+    metadata.iloc[0, 2]
 
 
 pandaSDMX Links

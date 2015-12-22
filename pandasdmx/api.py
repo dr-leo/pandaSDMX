@@ -24,8 +24,9 @@ from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
 from functools import partial
+import logging
 
-__all__ = ['Request']
+logger = logging.getLogger('pandasdmx.api')
 
 
 class ResourceGetter(object):
@@ -67,7 +68,8 @@ class Request(object):
         for r in cls._resources:
             setattr(cls, r, ResourceGetter(r))
 
-    def __init__(self, agency='', cache=None, **http_cfg):
+    def __init__(self, agency='', cache=None, log_level=logging.ERROR,
+                 **http_cfg):
         '''
         Set the SDMX agency, and configure http requests for this instance.
 
@@ -82,7 +84,10 @@ class Request(object):
 
             cache(dict): args to be passed on to 
                 ``requests_cache.install_cache()``. Default is None (no caching).
-
+            log_level(int): set log level. For details see the docs on the 
+                logging package from the standard lib. Default: logging.ERROR.
+                As pandasdmx only logs with level ``logging.INFO``, this 
+                suppresses all messages.     
             **http_cfg: used to configure http requests. E.g., you can 
             specify proxies, authentication information and more.
             See also the docs of the ``requests`` package at 
@@ -93,6 +98,7 @@ class Request(object):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
+        logger.setLevel(log_level)
 
     def _get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
@@ -113,6 +119,13 @@ class Request(object):
 
     def clear_cache(self):
         self.cache.clear()
+
+    def set_timeout(self, t=30.1):
+        '''
+        Convenience method to set timeout parameter for http requests.
+        Default is 30.1 (in seconds)
+        '''
+        self.client.config['timeout'] = t
 
     def get(self, resource_type='', resource_id='', agency='', key='', params=None,
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
@@ -240,11 +253,16 @@ class Request(object):
                     'If `` url`` is not specified, either agency or fromfile must be given.')
 
         # Now get the SDMX message either via http or as local file
+        logger.info(
+            'Requesting resource from URL/file %s', (base_url or fromfile))
         source, url, headers, status_code = self.client.get(
             base_url, params=params, fromfile=fromfile)
+        logger.info(
+            'Loaded file into memory from URL/file: %s', (url or fromfile))
         # write msg to file and unzip it as required, then parse it
         with source:
             if tofile:
+                self.   log.info('Writing to file %s', tofile)
                 with open(tofile, 'wb') as dest:
                     source.seek(0)
                     dest.write(source.read())
@@ -261,6 +279,7 @@ class Request(object):
             msg = self._get_reader().initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
+            logger.info('Footer found in SDMX message.')
             # Retrieve the first URL in the footer, if any
             url_l = [
                 i for i in msg.footer.text if remote.is_url(i)]
@@ -268,12 +287,15 @@ class Request(object):
                 # found an URL. Wait and try to request it
                 footer_url = url_l[0]
                 seconds, attempts = get_footer_url
+                logger.info(
+                    'Found URL in footer. Making %i requests, waiting %i seconds in between.', attempts, seconds)
                 for a in range(attempts):
                     sleep(seconds)
                     try:
                         return self.get(tofile=tofile, url=footer_url)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.info(
+                            'Attempt #%i raised the following exeption: %s', a, str(e))
         # Select default writer
         if not writer:
             if hasattr(msg, 'data'):

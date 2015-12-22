@@ -105,7 +105,7 @@ def concat_namedtuples(*tup, **kwargs):
     return new namedtuple instance
     '''
     name = kwargs['name'] if 'name' in kwargs else None
-    
+
     # filter out empty elements
     filtered = [i for i in filter(None, tup)]
     if filtered:

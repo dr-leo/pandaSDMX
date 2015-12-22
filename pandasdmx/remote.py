@@ -13,6 +13,7 @@ a classes for http access.
 
 
 import requests
+from pandasdmx.utils import DictLike
 from tempfile import SpooledTemporaryFile as STF
 from contextlib import closing
 try:
@@ -47,7 +48,7 @@ class REST:
         default_cfg = dict(stream=True, timeout=30.1)
         for it in default_cfg.items():
             http_cfg.setdefault(*it)
-        self.config = http_cfg
+        self.config = DictLike(http_cfg)
         if cache:
             requests_cache.install_cache(**cache)
 

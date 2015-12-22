@@ -6,6 +6,11 @@ What's new?
 v0.4.0 (2015-12)
 -----------------------
 
+* module-level logging. Used for making requests or loading and saving files.
+  ``pandasdmx.api.Request`` constructor accepts a ``log_level`` keyword arg which can be set
+  to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
+*  ``pandasdmx.api.Request`` has a ``set_timeout`` convenience method to set
+  the timeout for http requests   
 * Responses expose Message attributes to save typing
 * Requests expose resource names such as data, datastructure, dataflow etc. 
   as descriptors calling 'get' without specifying the resource type as string. 

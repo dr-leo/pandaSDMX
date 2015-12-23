@@ -89,7 +89,13 @@ has already been created.
         return namedtuple class as singleton 
         """
 
-        fields = tuple(fields)
+        _fields = []
+        for field in fields:
+            if "-" in field:
+                field = field.replace("-", "_")
+            _fields.append(field)
+
+        fields = tuple(_fields)
         if not fields in self.cache:
             self.cache[fields] = namedtuple(
                 name, fields)

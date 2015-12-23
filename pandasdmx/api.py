@@ -262,7 +262,7 @@ class Request(object):
         # write msg to file and unzip it as required, then parse it
         with source:
             if tofile:
-                self.   log.info('Writing to file %s', tofile)
+                logger.info('Writing to file %s', tofile)
                 with open(tofile, 'wb') as dest:
                     source.seek(0)
                     dest.write(source.read())

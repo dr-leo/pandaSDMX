@@ -120,12 +120,13 @@ class Request(object):
     def clear_cache(self):
         self.cache.clear()
 
-    def set_timeout(self, t=30.1):
-        '''
-        Convenience method to set timeout parameter for http requests.
-        Default is 30.1 (in seconds)
-        '''
-        self.client.config['timeout'] = t
+    @property
+    def timeout(self):
+        return self.client.config['timeout']
+
+    @timeout.setter
+    def timeout(self, value):
+        self.client.config['timeout'] = value
 
     def get(self, resource_type='', resource_id='', agency='', key='', params=None,
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),

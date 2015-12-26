@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<message:GenericData xmlns:footer="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer" xmlns:generic="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<message:Header>
+		<message:ID>CNA-2010-CONSO-SI-A17_1450906915961</message:ID>
+		<message:Test>false</message:Test>
+		<message:Prepared>2015-12-23T21:41:55</message:Prepared>
+		<message:Sender id="FR1">
+			<common:Name xml:lang="fr">Institut national de la statistique et des études économiques</common:Name>
+		</message:Sender>
+		<message:Structure structureID="FR1_CNA-2010-CONSO-SI-A17_1_0" dimensionAtObservation="TIME_PERIOD"><common:StructureUsage><Ref agencyID="FR1" id="CNA-2010-CONSO-SI-A17" version="1.0"/></common:StructureUsage></message:Structure><message:Source xml:lang="fr">Banque de données macro-économiques</message:Source>
+	</message:Header>
+<message:DataSet structureRef="FR1_CNA-2010-CONSO-SI-A17_1_0">
+	<generic:Series>
+		<generic:SeriesKey><generic:Value id="SECT-INST" value="S13"/><generic:Value id="OPERATION" value="P3"/><generic:Value id="PRODUIT" value="A10-BE"/><generic:Value id="PRIX" value="IPCH"/></generic:SeriesKey><generic:Attributes><generic:Value id="FREQ" value="A"/><generic:Value id="IDBANK" value="001702690"/><generic:Value id="TITLE" value="Comptes nationaux annuels base 2010 - Dépense de consommation finale - Administrations publiques - Industrie manufacturière, industries extractives et autres - Indice de prix chaîné année de base (non équilibré)"/><generic:Value id="LAST_UPDATE" value="2015-08-06"/><generic:Value id="UNIT_MEASURE" value="SO"/><generic:Value id="UNIT_MULT" value="0"/><generic:Value id="REF_AREA" value="FE"/><generic:Value id="DECIMALS" value="1"/><generic:Value id="BASE_PER" value="2010"/><generic:Value id="TIME_PER_COLLECT" value="PERIODE"/></generic:Attributes><generic:Obs><generic:ObsDimension value="2014"/><generic:ObsValue value="89.9"/><generic:Attributes><generic:Value id="OBS_STATUS" value="P"/></generic:Attributes></generic:Obs><generic:Obs><generic:ObsDimension value="2013"/><generic:ObsValue value="92.7"/><generic:Attributes><generic:Value id="OBS_STATUS" value="SD"/></generic:Attributes></generic:Obs>
+	</generic:Series>
+</message:DataSet>
+</message:GenericData>

@@ -52,7 +52,7 @@ class REST:
         if cache:
             requests_cache.install_cache(**cache)
 
-    def get(self, url, fromfile=None, params={}):
+    def get(self, url, fromfile=None, params={}, headers={}):
         '''Get SDMX message from REST service or local file
 
         Args:
@@ -87,10 +87,10 @@ class REST:
             final_url = headers = status_code = None
         else:
             source, final_url, headers, status_code = self.request(
-                url, params=params)
+                url, params=params, headers=headers)
         return source, final_url, headers, status_code
 
-    def request(self, url, params={}):
+    def request(self, url, params={}, headers={}):
         """
         Retrieve SDMX messages.
         If needed, override in subclasses to support other data providers.
@@ -100,7 +100,7 @@ class REST:
         :return: the xml data as file-like object
         """
 
-        with closing(requests.get(url, params=params, **self.config)) as response:
+        with closing(requests.get(url, params=params, headers=headers, **self.config)) as response:
             if response.status_code == requests.codes.OK:
                 source = STF(max_size=self.max_size)
                 for c in response.iter_content(chunk_size=1000000):

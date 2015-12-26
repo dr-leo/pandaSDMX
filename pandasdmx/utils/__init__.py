@@ -92,7 +92,7 @@ has already been created.
             self.cache[fields] = namedtuple(
                 name, fields)
         return self.cache[fields]
-
+    
 namedtuple_factory = NamedTupleFactory()
 
 

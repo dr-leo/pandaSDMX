@@ -130,7 +130,7 @@ class Request(object):
 
     def get(self, resource_type='', resource_id='', agency='', key='', params=None,
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None, writer=None):
+            memcache=None, writer=None, headers={}):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -257,13 +257,13 @@ class Request(object):
         logger.info(
             'Requesting resource from URL/file %s', (base_url or fromfile))
         source, url, headers, status_code = self.client.get(
-            base_url, params=params, fromfile=fromfile)
+            base_url, params=params, fromfile=fromfile, headers=headers)
         logger.info(
             'Loaded file into memory from URL/file: %s', (url or fromfile))
         # write msg to file and unzip it as required, then parse it
         with source:
             if tofile:
-                self.   log.info('Writing to file %s', tofile)
+                logger.info('Writing to file %s', tofile)
                 with open(tofile, 'wb') as dest:
                     source.seek(0)
                     dest.write(source.read())

@@ -16,7 +16,7 @@ SOAP interface.
 
 '''
 
-
+import pandasdmx
 from pandasdmx import remote
 from pandasdmx.utils import str_type
 from pandasdmx.reader.sdmxml import Reader
@@ -98,7 +98,7 @@ class Request(object):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
-        logger.setLevel(log_level)
+        pandasdmx.logger.setLevel(log_level)
 
     def _get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''

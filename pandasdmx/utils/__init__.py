@@ -1,5 +1,3 @@
-
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
@@ -14,7 +12,7 @@ module pandasdmx.utils - helper classes and functions
 
 
 from .aadict import aadict
-from collections import namedtuple
+from pandasdmx.utils.anynamedtuple import namedtuple
 from itertools import chain
 import sys
 

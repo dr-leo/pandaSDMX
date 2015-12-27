@@ -9,8 +9,12 @@ v0.4.0 (2015-12)
 * module-level logging. Used for making requests or loading and saving files.
   ``pandasdmx.api.Request`` constructor accepts a ``log_level`` keyword arg which can be set
   to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
-*  ``pandasdmx.api.Request`` has a ``set_timeout`` convenience method to set
-  the timeout for http requests   
+*  ``pandasdmx.api.Request`` has a ``timeout`` property to set
+  the timeout for http requests
+* extend api.Request._agencies configutation to specify agency- and resource-specific 
+  settings such as headers. Future versions may exploit this to provide 
+  reader selection information.
+* api.Request.get: specify http_headers per request. Defaults are set accoring to agency configuration   
 * Responses expose Message attributes to save typing
 * Requests expose resource names such as data, datastructure, dataflow etc. 
   as descriptors calling 'get' without specifying the resource type as string. 
@@ -23,6 +27,8 @@ v0.4.0 (2015-12)
 * data2pd writer: return attributes as namedtuples rather than dict
 * testing: switch from nose to py.test
 * sdmxml reader: return strings or unicode strings instead of LXML smart strings
+* use patched version of namedtuple that accepts non-identifier strings 
+  as field names and makes all fields accessible through dict syntax.
 * lots of bug fixes and code clean-ups
 
 v0.3.1 (2015-10-04)

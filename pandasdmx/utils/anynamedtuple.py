@@ -1,7 +1,25 @@
 import sys as _sys
-
 from operator import itemgetter as _itemgetter, eq as _eq
 from keyword import iskeyword as _iskeyword
+
+# 2to3 helpers
+
+
+def _isidentifier3(name):
+    return name.isidentifier()
+
+
+def _isidentifier2(name):
+    if (name[0].isdigit()
+            or [c for c in name if not (c.isalnum() or c == '_')]):
+        return False
+    else:
+        return True
+
+if _sys.version.startswith('3'):
+    _isidentifier = _isidentifier3
+else:
+    _isidentifier = _isidentifier2
 
 
 ##########################################################################
@@ -9,7 +27,7 @@ from keyword import iskeyword as _iskeyword
 ##########################################################################
 
 _class_template = """\
-from builtins import property as _property, tuple as _tuple
+from pandasdmx.utils import str_type
 from operator import itemgetter as _itemgetter
 from collections import OrderedDict
 
@@ -22,7 +40,7 @@ class {typename}(tuple):
 
     def __new__(_cls, {arg_list}):
         'Create new instance of {typename}({arg_list})'
-        return _tuple.__new__(_cls, ({arg_list}))
+        return tuple.__new__(_cls, ({arg_list}))
 
     @classmethod
     def _make(cls, iterable, new=tuple.__new__, len=len):
@@ -52,10 +70,11 @@ class {typename}(tuple):
         return tuple(self)
 
     def __getitem__(self, key):
-        if isinstance(key, int):
-            return super({typename}, self).__getitem__(key)
+        if isinstance(key, str_type):
+            return super({typename}, self).__getitem__(self._fields.index(key))
         else:
-            return super({typename}, self).__getitem__(self._fields.index(key)) 
+            return super({typename}, self).__getitem__(key)
+             
             
 {field_defs}
 """
@@ -63,12 +82,18 @@ class {typename}(tuple):
 _repr_template = '{name}=%r'
 
 _field_template = '''\
-    {name} = _property(_itemgetter({index:d}), doc='Alias for field number {index:d}')
+    {name} = property(_itemgetter({index:d}), doc='Alias for field number {index:d}')
 '''
 
 
 def namedtuple(typename, field_names, verbose=False, rename=False):
     """Returns a new subclass of tuple with named fields.
+    This is a patched version of collections.namedtuple from the stdlib.
+    Unlike the latter, it accepts non-identifier strings as field names.
+    All values are accessible through dict syntax. Fields whose names are
+    identifiers are also accessible via attribute syntax as in ordinary namedtuples, alongside traditional
+    indexing. This feature is needed as SDMX allows field names
+    to contain '-'. 
 
     >>> Point = namedtuple('Point', ['x', 'y'])
     >>> Point.__doc__                   # docstring for the new class
@@ -101,7 +126,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         if _iskeyword(name):
             raise ValueError('Type names and field names cannot be a '
                              'keyword: %r' % name)
-    if not typename.isidentifier():
+    if not _isidentifier(typename):
         raise ValueError('Type names must be valid '
                          'identifiers: %r' % name)
     seen = set()
@@ -122,7 +147,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         repr_fmt=', '.join(_repr_template.format(name=name)
                            for name in field_names),
         field_defs='\n'.join(_field_template.format(index=index, name=name)
-                             for index, name in enumerate(field_names) if name.isidentifier())
+                             for index, name in enumerate(field_names) if _isidentifier(name))
     )
 
     # Execute the template string in a temporary namespace and support

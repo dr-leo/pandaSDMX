@@ -16,7 +16,6 @@ SOAP interface.
 
 '''
 
-import pandasdmx
 from pandasdmx import remote
 from pandasdmx.utils import str_type
 from pandasdmx.reader.sdmxml import Reader
@@ -51,13 +50,23 @@ class Request(object):
         '': None,  # empty agency for convenience when fromfile is given.
         'ESTAT': {
             'name': 'Eurostat',
-            'url': 'http://ec.europa.eu/eurostat/SDMX/diss-web/rest'},
+            'url': 'http://ec.europa.eu/eurostat/SDMX/diss-web/rest',
+            'resources': {},
+        },
         'ECB': {
             'name': 'European Central Bank',
-            'url': 'http://sdw-wsrest.ecb.int/service'},
+            'url': 'http://sdw-wsrest.ecb.int/service',
+            'resources': {
+                'data': {
+                    'headers': {},
+                },
+            },
+        },
         'SGR': {
             'name': 'SDMX Global Registry',
-            'url': 'https://registry.sdmx.org/ws/rest'},
+            'url': 'https://registry.sdmx.org/ws/rest',
+            'resources': {},
+        },
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
@@ -68,7 +77,7 @@ class Request(object):
         for r in cls._resources:
             setattr(cls, r, ResourceGetter(r))
 
-    def __init__(self, agency='', cache=None, log_level=logging.ERROR,
+    def __init__(self, agency='', cache=None, log_level=None,
                  **http_cfg):
         '''
         Set the SDMX agency, and configure http requests for this instance.
@@ -84,10 +93,9 @@ class Request(object):
 
             cache(dict): args to be passed on to 
                 ``requests_cache.install_cache()``. Default is None (no caching).
-            log_level(int): set log level. For details see the docs on the 
-                logging package from the standard lib. Default: logging.ERROR.
-                As pandasdmx only logs with level ``logging.INFO``, this 
-                suppresses all messages.     
+            log_level(int): set log level for lib-wide logger as set up in pandasdmx.__init__.py. 
+                For details see the docs on the 
+                logging package from the standard lib. Default: None (= do nothing).
             **http_cfg: used to configure http requests. E.g., you can 
             specify proxies, authentication information and more.
             See also the docs of the ``requests`` package at 
@@ -98,7 +106,8 @@ class Request(object):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
         self.agency = agency
-        pandasdmx.logger.setLevel(log_level)
+        if log_level:
+            logging.getLogger('pandasdmx').setLevel(log_level)
 
     def _get_reader(self):
         '''get a Reader instance. Called by :meth:`get`.'''
@@ -128,7 +137,8 @@ class Request(object):
     def timeout(self, value):
         self.client.config['timeout'] = value
 
-    def get(self, resource_type='', resource_id='', agency='', key='', params=None,
+    def get(self, resource_type='', resource_id='', agency='', key='',
+            params=None, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None, writer=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
@@ -166,6 +176,9 @@ class Request(object):
                 are set automatically
                 depending on the values of other args such as `resource_type`.
                 Defaults to {}.
+            headers(dict): http headers. Given headers will overwrite instance-wide headers passed to the
+                constructor. Defaults to None, i.e. use defaults 
+                from agency configuration
             fromfile(str): path to the file to be loaded instead of
                 accessing an SDMX web service. Defaults to None. If `fromfile` is
                 given, args relating to URL construction will be ignored.
@@ -227,6 +240,15 @@ class Request(object):
             if resource_type == 'data' and isinstance(key, dict):
                 key = self._make_key(resource_id, key)
 
+            # Get http headers from agency config if not given by the caller
+            if headers is None:
+                # Check for default headers
+                resource_cfg = self._agencies[agency][
+                    'resources'].get(resource_type)
+                if resource_cfg:
+                    default_headers = resource_cfg.get('headers')
+                    if default_headers:
+                        headers = default_headers
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
             # examples
@@ -256,8 +278,8 @@ class Request(object):
         # Now get the SDMX message either via http or as local file
         logger.info(
             'Requesting resource from URL/file %s', (base_url or fromfile))
-        source, url, headers, status_code = self.client.get(
-            base_url, params=params, fromfile=fromfile)
+        source, url, resp_headers, status_code = self.client.get(
+            base_url, params=params, headers=headers, fromfile=fromfile)
         logger.info(
             'Loaded file into memory from URL/file: %s', (url or fromfile))
         # write msg to file and unzip it as required, then parse it
@@ -293,7 +315,7 @@ class Request(object):
                 for a in range(attempts):
                     sleep(seconds)
                     try:
-                        return self.get(tofile=tofile, url=footer_url)
+                        return self.get(tofile=tofile, url=footer_url, headers=headers)
                     except Exception as e:
                         logger.info(
                             'Attempt #%i raised the following exeption: %s', a, str(e))
@@ -303,7 +325,7 @@ class Request(object):
                 writer = 'pandasdmx.writer.data2pandas'
             else:
                 writer = 'pandasdmx.writer.structure2pd'
-        r = Response(msg, url, headers, status_code, writer=writer)
+        r = Response(msg, url, resp_headers, status_code, writer=writer)
         # store in memory cache if needed
         if memcache and r.status_code == 200:
             self.cache[memcache] = r

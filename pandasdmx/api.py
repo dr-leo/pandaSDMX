@@ -72,7 +72,7 @@ class Request(object):
             'url': 'http://www.bdm.insee.fr/series/sdmx',
             'resources': {
                 'data': {
-                    'headers': {"Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"},
+                    'headers': {'Accept': 'application/vnd.sdmx.genericdata+xml;version=2.1'},
                 },
             }
         }
@@ -294,7 +294,7 @@ class Request(object):
         # write msg to file and unzip it as required, then parse it
         with source:
             if tofile:
-                self.   log.info('Writing to file %s', tofile)
+                logger.info('Writing to file %s', tofile)
                 with open(tofile, 'wb') as dest:
                     source.seek(0)
                     dest.write(source.read())

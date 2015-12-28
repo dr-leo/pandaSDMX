@@ -6,6 +6,7 @@ What's new?
 v0.4.0 (2015-12)
 -----------------------
 
+* add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
 * module-level logging. Used for making requests or loading and saving files.
   ``pandasdmx.api.Request`` constructor accepts a ``log_level`` keyword arg which can be set
   to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)

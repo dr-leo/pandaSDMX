@@ -1,0 +1,1723 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mes:Structure xmlns:mes="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:com="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:str="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+  <mes:Header>
+    <mes:ID>categorisation_1450864290565</mes:ID>
+    <mes:Test>false</mes:Test>
+    <mes:Prepared>2015-12-23T09:51:30.565Z</mes:Prepared>
+    <mes:Sender id="FR1">
+      <com:Name xml:lang="fr">Institut national de la statistique et des études économiques</com:Name>
+    </mes:Sender>
+    <mes:Receiver id="unknown"/>
+    <mes:Source xml:lang="fr">Banque de données macro-économiques</mes:Source>
+  </mes:Header>
+  <mes:Structures>
+    <str:Dataflows>
+      <str:Dataflow id="IPI-2010-A21" urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=FR1:IPI-2010-A21(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Indice de la production industrielle (base 2010) - NAF niveau A21</com:Name>
+        <com:Name xml:lang="en">Industrial production index (base 2010) - NAF level A21</com:Name>
+        <str:Structure>
+          <Ref id="IPI-2010-A21" version="1.0" agencyID="FR1" package="datastructure" class="DataStructure"/>
+        </str:Structure>
+      </str:Dataflow>
+    </str:Dataflows>
+    <str:CategorySchemes>
+      <str:CategoryScheme id="CLASSEMENT_DATAFLOWS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.CategoryScheme=FR1:CLASSEMENT_DATAFLOWS(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Classement des dataflows</com:Name>
+        <com:Name xml:lang="en">DataFlows categorisation</com:Name>
+        <str:Category id="COMPTA-NAT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT">
+          <com:Name xml:lang="fr">Comptabilité nationale (PIB, consommation...)</com:Name>
+          <com:Name xml:lang="en">National accounts (GDP, consumption...)</com:Name>
+          <str:Category id="CNA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA">
+            <com:Name xml:lang="fr">Comptes nationaux annuels</com:Name>
+            <com:Name xml:lang="en">Annual national accounts</com:Name>
+            <str:Category id="CNA-PIB" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PIB">
+              <com:Name xml:lang="fr">Produit intérieur brut (PIB)</com:Name>
+              <com:Name xml:lang="en">Gross Domestic Product (GDP)</com:Name>
+              <str:Category id="CNA-PIB-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PIB.CNA-PIB-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-PIB-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PIB.CNA-PIB-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-RDB" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-RDB">
+              <com:Name xml:lang="fr">Revenu disponible brut et pouvoir d'achat des ménages</com:Name>
+              <com:Name xml:lang="en">Households' gross disposable income and purchasing power</com:Name>
+              <str:Category id="CNA-RDB-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-RDB.CNA-RDB-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-RDB-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-RDB.CNA-RDB-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-ERE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-ERE">
+              <com:Name xml:lang="fr">Équilibre ressources-emplois par produit</com:Name>
+              <com:Name xml:lang="en">Resources-uses balance by product</com:Name>
+              <str:Category id="CNA-ERE-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-ERE.CNA-ERE-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-ERE-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-ERE.CNA-ERE-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-CONSO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CONSO">
+              <com:Name xml:lang="fr">Consommation effective détaillée des ménages</com:Name>
+              <com:Name xml:lang="en">Detailed actual final consumption of households</com:Name>
+              <str:Category id="CNA-CONSO-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CONSO.CNA-CONSO-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-CONSO-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CONSO.CNA-CONSO-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-CPE-FBCF" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CPE-FBCF">
+              <com:Name xml:lang="fr">Compte de production, compte d'exploitation et FBCF par branche</com:Name>
+              <com:Name xml:lang="en">Production and operating accounts by branch, gross fixed capital formation of branches</com:Name>
+              <str:Category id="CNA-CPE-FBCF-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CPE-FBCF.CNA-CPE-FBCF-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-CPE-FBCF-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CPE-FBCF.CNA-CPE-FBCF-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-TEI" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TEI">
+              <com:Name xml:lang="fr">Tableau des entrées intermédiaires (TEI)</com:Name>
+              <com:Name xml:lang="en">Intermediate input table (IIT)</com:Name>
+              <str:Category id="CNA-TEI-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TEI.CNA-TEI-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-TEI-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TEI.CNA-TEI-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-EMP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-EMP">
+              <com:Name xml:lang="fr">Emploi intérieur et heures travaillées</com:Name>
+              <com:Name xml:lang="en">Domestic employment and hours worked</com:Name>
+              <str:Category id="CNA-EMP-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-EMP.CNA-EMP-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-EMP-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-EMP.CNA-EMP-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-CSI" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CSI">
+              <com:Name xml:lang="fr">Comptes de secteurs institutionnels</com:Name>
+              <com:Name xml:lang="en">Institutional sectors accounts</com:Name>
+              <str:Category id="CNA-CSI-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CSI.CNA-CSI-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-CSI-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-CSI.CNA-CSI-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-TOF" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TOF">
+              <com:Name xml:lang="fr">Comptes financiers</com:Name>
+              <com:Name xml:lang="en">Financial accounts</com:Name>
+              <str:Category id="CNA-TOF-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TOF.CNA-TOF-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-TOF-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-TOF.CNA-TOF-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNA-PAT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PAT">
+              <com:Name xml:lang="fr">Comptes de patrimoine</com:Name>
+              <com:Name xml:lang="en">Balance sheet accounts</com:Name>
+              <str:Category id="CNA-PAT-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PAT.CNA-PAT-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNA-PAT-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNA.CNA-PAT.CNA-PAT-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+          </str:Category>
+          <str:Category id="CNT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT">
+            <com:Name xml:lang="fr">Comptes nationaux trimestriels</com:Name>
+            <com:Name xml:lang="en">Quaterly national accounts</com:Name>
+            <str:Category id="CNT-PIB" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-PIB">
+              <com:Name xml:lang="fr">Équilibre du produit intérieur brut</com:Name>
+              <com:Name xml:lang="en">Gross domestic product balance</com:Name>
+              <str:Category id="CNT-PIB-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-PIB.CNT-PIB-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNT-PIB-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-PIB.CNT-PIB-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNT-OPERATIONS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-OPERATIONS">
+              <com:Name xml:lang="fr">Opérations sur biens et services</com:Name>
+              <com:Name xml:lang="en">Operations on goods and services</com:Name>
+              <str:Category id="CNT-OPERATIONS-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-OPERATIONS.CNT-OPERATIONS-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNT-OPERATIONS-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-OPERATIONS.CNT-OPERATIONS-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNT-COMPTES-BRANCHES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-COMPTES-BRANCHES">
+              <com:Name xml:lang="fr">Comptes des branches</com:Name>
+              <com:Name xml:lang="en">Branch accounts</com:Name>
+              <str:Category id="CNT-COMPTES-BRANCHES-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-COMPTES-BRANCHES.CNT-COMPTES-BRANCHES-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNT-COMPTES-BRANCHES-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-COMPTES-BRANCHES.CNT-COMPTES-BRANCHES-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CNT-CSI" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-CSI">
+              <com:Name xml:lang="fr">Comptes des secteurs institutionnels</com:Name>
+              <com:Name xml:lang="en">Institutional sector accounts</com:Name>
+              <str:Category id="CNT-CSI-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-CSI.CNT-CSI-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="CNT-CSI-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CNT-CSI.CNT-CSI-2005">
+                <com:Name xml:lang="fr">Base 2005</com:Name>
+                <com:Name xml:lang="en">Base 2005</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CONSO-MENAGES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CNT.CONSO-MENAGES">
+              <com:Name xml:lang="fr">Consommation des ménages</com:Name>
+              <com:Name xml:lang="en">Household consumption</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="FINANCES-PUBLIQUES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.FINANCES-PUBLIQUES">
+            <com:Name xml:lang="fr">Finances publiques</com:Name>
+            <com:Name xml:lang="en">Government finance</com:Name>
+            <str:Category id="COMPTES-APU-MAASTRICHT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.FINANCES-PUBLIQUES.COMPTES-APU-MAASTRICHT">
+              <com:Name xml:lang="fr">Dette et déficit des administrations publiques au sens de Maastricht</com:Name>
+              <com:Name xml:lang="en">General government debt and deficit as defined by Maastricht</com:Name>
+            </str:Category>
+            <str:Category id="DEPENSES-APU" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.FINANCES-PUBLIQUES.DEPENSES-APU">
+              <com:Name xml:lang="fr">Dépenses des administrations publiques (APU)</com:Name>
+              <com:Name xml:lang="en">General government expenditure</com:Name>
+            </str:Category>
+            <str:Category id="COMPTES-PUBLICS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.FINANCES-PUBLIQUES.COMPTES-PUBLICS">
+              <com:Name xml:lang="fr">Comptes publics</com:Name>
+              <com:Name xml:lang="en">Public Accounts</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="CRA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CRA">
+            <com:Name xml:lang="fr">Comptes régionaux annuels</com:Name>
+            <com:Name xml:lang="en">Annual regional accounts</com:Name>
+            <str:Category id="CRA-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CRA.CRA-2010">
+              <com:Name xml:lang="fr">Base 2010</com:Name>
+              <com:Name xml:lang="en">Base 2010</com:Name>
+            </str:Category>
+            <str:Category id="CRA-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).COMPTA-NAT.CRA.CRA-2005">
+              <com:Name xml:lang="fr">Base 2005</com:Name>
+              <com:Name xml:lang="en">Base year 2005</com:Name>
+            </str:Category>
+          </str:Category>
+        </str:Category>
+        <str:Category id="ENQ-CONJ" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ">
+          <com:Name xml:lang="fr">Enquêtes de conjoncture</com:Name>
+          <com:Name xml:lang="en">Economic outlook surveys</com:Name>
+          <str:Category id="ENQ-CONJ-ENS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-ENS">
+            <com:Name xml:lang="fr">Climat des affaires et retournement conjoncturel</com:Name>
+            <com:Name xml:lang="en">Business climate and turning-point</com:Name>
+          </str:Category>
+          <str:Category id="ENQ-CONJ-MENAGES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-MENAGES">
+            <com:Name xml:lang="fr">Ménages</com:Name>
+            <com:Name xml:lang="en">Households</com:Name>
+          </str:Category>
+          <str:Category id="ENQ-CONJ-INDUSTRIE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-INDUSTRIE">
+            <com:Name xml:lang="fr">Industrie</com:Name>
+            <com:Name xml:lang="en">Industry</com:Name>
+            <str:Category id="ENQ-CONJ-ACTIVITE-IND" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-INDUSTRIE.ENQ-CONJ-ACTIVITE-IND">
+              <com:Name xml:lang="fr">Activité et demande</com:Name>
+              <com:Name xml:lang="en">Activity and demand</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-INVESTISSEMENT-IND" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-INDUSTRIE.ENQ-CONJ-INVESTISSEMENT-IND">
+              <com:Name xml:lang="fr">Investissement</com:Name>
+              <com:Name xml:lang="en">Investment</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-TRESORERIE-IND" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-INDUSTRIE.ENQ-CONJ-TRESORERIE-IND">
+              <com:Name xml:lang="fr">Trésorerie</com:Name>
+              <com:Name xml:lang="en">Cash flow</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="ENQ-CONJ-BTP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-BTP">
+            <com:Name xml:lang="fr">Construction et immobilier</com:Name>
+            <com:Name xml:lang="en">Construction and real estate</com:Name>
+            <str:Category id="ENQ-CONJ-IND-BAT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-BTP.ENQ-CONJ-IND-BAT">
+              <com:Name xml:lang="fr">Industrie du bâtiment</com:Name>
+              <com:Name xml:lang="en">Building industry</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-ART-BAT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-BTP.ENQ-CONJ-ART-BAT">
+              <com:Name xml:lang="fr">Artisanat du bâtiment</com:Name>
+              <com:Name xml:lang="en">Building trades</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-TP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-BTP.ENQ-CONJ-TP">
+              <com:Name xml:lang="fr">Travaux publics</com:Name>
+              <com:Name xml:lang="en">Public works</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-PROMO-IMMO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-BTP.ENQ-CONJ-PROMO-IMMO">
+              <com:Name xml:lang="fr">Promotion immobilière</com:Name>
+              <com:Name xml:lang="en">Real estate development</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="ENQ-CONJ-COMMERCE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-COMMERCE">
+            <com:Name xml:lang="fr">Commerce</com:Name>
+            <com:Name xml:lang="en">Trade</com:Name>
+            <str:Category id="ENQ-CONJ-COMMERCE-GROS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-COMMERCE.ENQ-CONJ-COMMERCE-GROS">
+              <com:Name xml:lang="fr">Commerce de gros</com:Name>
+              <com:Name xml:lang="en">Wholesale trade</com:Name>
+            </str:Category>
+            <str:Category id="ENQ-CONJ-COMMERCE-DETAIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-COMMERCE.ENQ-CONJ-COMMERCE-DETAIL">
+              <com:Name xml:lang="fr">Commerce de détail et commerce et réparation automobiles</com:Name>
+              <com:Name xml:lang="en">Retail trade and trade and repair of motor vehicles</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="ENQ-CONJ-SERVICES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ENQ-CONJ.ENQ-CONJ-SERVICES">
+            <com:Name xml:lang="fr">Services</com:Name>
+            <com:Name xml:lang="en">Services</com:Name>
+          </str:Category>
+        </str:Category>
+        <str:Category id="PRIX" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX">
+          <com:Name xml:lang="fr">Prix et indices de prix</com:Name>
+          <com:Name xml:lang="en">Prices and price indices</com:Name>
+          <str:Category id="PRIX-CONSO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO">
+            <com:Name xml:lang="fr">Prix et indices de prix à la consommation</com:Name>
+            <com:Name xml:lang="en">Retail prices and consumer price indices</com:Name>
+            <str:Category id="IPC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC">
+              <com:Name xml:lang="fr">Indices des prix à la consommation des ménages</com:Name>
+              <com:Name xml:lang="en">Household consumer price indices</com:Name>
+              <str:Category id="IPC-1998" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC.IPC-1998">
+                <com:Name xml:lang="fr">Indices des prix à la consommation - Base 1998</com:Name>
+                <com:Name xml:lang="en">Consumer price indices - Base 1998</com:Name>
+              </str:Category>
+              <str:Category id="IPCH" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC.IPCH">
+                <com:Name xml:lang="fr">Indices des prix à la consommation harmonisés</com:Name>
+                <com:Name xml:lang="en">Harmonised consumer price index</com:Name>
+              </str:Category>
+              <str:Category id="IPC-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC.IPC-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="IPC-1990" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC.IPC-ANC.IPC-1990">
+                  <com:Name xml:lang="fr">Base 1990</com:Name>
+                  <com:Name xml:lang="en">Base year 1990</com:Name>
+                </str:Category>
+                <str:Category id="IPC-1980" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.IPC.IPC-ANC.IPC-1980">
+                  <com:Name xml:lang="fr">Bases 1970 et 1980</com:Name>
+                  <com:Name xml:lang="en">Base years 1970 and 1980</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="PRIX-VENTE-DETAIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.PRIX-VENTE-DETAIL">
+              <com:Name xml:lang="fr">Prix moyens de vente de détail</com:Name>
+              <com:Name xml:lang="en">Average retail prices</com:Name>
+            </str:Category>
+            <str:Category id="COEFF-TRANSFO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-CONSO.COEFF-TRANSFO">
+              <com:Name xml:lang="fr">Coefficient de transformation de la monnaie</com:Name>
+              <com:Name xml:lang="en">Coefficient for the conversion of currency</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="PRIX-PRODUCTION" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION">
+            <com:Name xml:lang="fr">Indices de prix ou de coût de production et indices de prix d'importation</com:Name>
+            <com:Name xml:lang="en">Producer price or cost indices and import price indices</com:Name>
+            <str:Category id="IPPA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA">
+              <com:Name xml:lang="fr">Agriculture</com:Name>
+              <com:Name xml:lang="en">Agriculture</com:Name>
+              <str:Category id="IPPAP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPPAP">
+                <com:Name xml:lang="fr">Prix agricoles à la production (IPPAP)</com:Name>
+                <com:Name xml:lang="en">Agricultural producer prices (IPPAP)</com:Name>
+              </str:Category>
+              <str:Category id="IPGA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPGA">
+                <com:Name xml:lang="fr">Prix de gros alimentaires (indexation de contrats)</com:Name>
+                <com:Name xml:lang="en">Food wholesale price indices (contract escalation)</com:Name>
+              </str:Category>
+              <str:Category id="IPAMPA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPAMPA">
+                <com:Name xml:lang="fr">Prix des moyens de production agricole (IPAMPA)</com:Name>
+                <com:Name xml:lang="en">Agricultural means of production purchasing price (IPAMPA)</com:Name>
+              </str:Category>
+              <str:Category id="IPP-AGR-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPP-AGR-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="IPP-AGR-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPP-AGR-ANC.IPP-AGR-2005">
+                  <com:Name xml:lang="fr">Base 2005</com:Name>
+                  <com:Name xml:lang="en">Base year 2005</com:Name>
+                </str:Category>
+                <str:Category id="IPP-AGR-2000" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPP-AGR-ANC.IPP-AGR-2000">
+                  <com:Name xml:lang="fr">Base 2000</com:Name>
+                  <com:Name xml:lang="en">Base year 2000</com:Name>
+                </str:Category>
+                <str:Category id="IPP-AGR-1995" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPA.IPP-AGR-ANC.IPP-AGR-1995">
+                  <com:Name xml:lang="fr">Base 1995</com:Name>
+                  <com:Name xml:lang="en">Base year 1995</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="IPPI" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI">
+              <com:Name xml:lang="fr">Industrie</com:Name>
+              <com:Name xml:lang="en">Industry</com:Name>
+              <str:Category id="IPPI-ENS-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-ENS-2010">
+                <com:Name xml:lang="fr">Prix de production pour l'ensemble des marchés - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices for all markets - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPPI-FR-PB-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-FR-PB-2010">
+                <com:Name xml:lang="fr">Prix de production pour le marché français - Base 2010 - Prix de base</com:Name>
+                <com:Name xml:lang="en">Producer prices for the French market - Base 2010 - Basic price</com:Name>
+              </str:Category>
+              <str:Category id="IPPI-FR-PM-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-FR-PM-2010">
+                <com:Name xml:lang="fr">Prix de production pour le marché français - Base 2010 - Prix de marché (indexation de contrats)</com:Name>
+                <com:Name xml:lang="en">Producer prices for the French market - Base 2010 - Purchaser's price for contract escalation</com:Name>
+              </str:Category>
+              <str:Category id="IPPI-EXT-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-EXT-2010">
+                <com:Name xml:lang="fr">Prix de production pour les marchés extérieurs - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices for foreign markets - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPPI-IMP-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-IMP-2010">
+                <com:Name xml:lang="fr">Prix d'importation des produits industriels - Base 2010</com:Name>
+                <com:Name xml:lang="en">Import prices of industrial products - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPPI-INT-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.IPPI-INT-2010">
+                <com:Name xml:lang="fr">Prix de l'offre intérieure de produits industriels - Base 2010 (indexation de contrats)</com:Name>
+                <com:Name xml:lang="en">Total supply of industrial products prices - Base 2010 (contract escalation)</com:Name>
+              </str:Category>
+              <str:Category id="PVI-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.PVI-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="IPPI-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.PVI-ANC.IPPI-2005">
+                  <com:Name xml:lang="fr">Base 2005</com:Name>
+                  <com:Name xml:lang="en">Base year 2005</com:Name>
+                </str:Category>
+                <str:Category id="IPPI-2000" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPI.PVI-ANC.IPPI-2000">
+                  <com:Name xml:lang="fr">Base 2000</com:Name>
+                  <com:Name xml:lang="en">Base year 2000</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="IPPCC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPCC">
+              <com:Name xml:lang="fr">Construction</com:Name>
+              <com:Name xml:lang="en">Construction</com:Name>
+              <str:Category id="IPPC-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPCC.IPPC-2010">
+                <com:Name xml:lang="fr">Prix de production - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="ICPC-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPCC.ICPC-2010">
+                <com:Name xml:lang="fr">Coûts de production - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer costs - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPP-CONS-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPCC.IPP-CONS-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+              </str:Category>
+            </str:Category>
+            <str:Category id="IPPS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS">
+              <com:Name xml:lang="fr">Services</com:Name>
+              <com:Name xml:lang="en">Services</com:Name>
+              <str:Category id="IPPS-BtoALL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.IPPS-BtoALL">
+                <com:Name xml:lang="fr">Prix de production pour l'ensemble des marchés (BtoAll) - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices for all markets (BtoAll) - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPPS-BtoB-PB" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.IPPS-BtoB-PB">
+                <com:Name xml:lang="fr">Prix de production pour le marché français - entreprises (BtoB) - Base 2010 - Prix de base</com:Name>
+                <com:Name xml:lang="en">Producer prices for French market - businesses (BtoB) - Base 2010 - Basic price</com:Name>
+              </str:Category>
+              <str:Category id="IPPS-BtoB-PM" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.IPPS-BtoB-PM">
+                <com:Name xml:lang="fr">Prix de production pour le marché français - entreprises (BtoB) - Base 2010 - Prix de marché (indexation de contrats)</com:Name>
+                <com:Name xml:lang="en">Producer prices for French market - businesses (BtoB) - Base 2010 - Purchaser's price for contract escalation</com:Name>
+              </str:Category>
+              <str:Category id="IPPS-BtoC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.IPPS-BtoC">
+                <com:Name xml:lang="fr">Prix de production pour le marché français - ménages (BtoC) - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices for French market - households (BtoC) - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="IPPS-BtoE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.IPPS-BtoE">
+                <com:Name xml:lang="fr">Prix de production pour les marchés extérieurs (BtoE) - Base 2010</com:Name>
+                <com:Name xml:lang="en">Producer prices for foreign markets (BtoE) - Base 2010</com:Name>
+              </str:Category>
+              <str:Category id="PVS-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-PRODUCTION.IPPS.PVS-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+              </str:Category>
+            </str:Category>
+          </str:Category>
+          <str:Category id="PRIX-REV-IMMO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-REV-IMMO">
+            <com:Name xml:lang="fr">Indices des prix et de révision des baux dans le secteur immobilier</com:Name>
+            <com:Name xml:lang="en">Price and revision of leases indices in the real estate sector</com:Name>
+            <str:Category id="IND-PRIX-IMMO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-REV-IMMO.IND-PRIX-IMMO">
+              <com:Name xml:lang="fr">Indices des prix des logements</com:Name>
+              <com:Name xml:lang="en">Housing price indices</com:Name>
+            </str:Category>
+            <str:Category id="IND-REVISION-IMMO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.PRIX-REV-IMMO.IND-REVISION-IMMO">
+              <com:Name xml:lang="fr">Indices de révision des baux (indexation de contrats)</com:Name>
+              <com:Name xml:lang="en">Indices for revision of leases (contract escalation)</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="MAT-PREM" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRIX.MAT-PREM">
+            <com:Name xml:lang="fr">Prix et cours des matières premières</com:Name>
+            <com:Name xml:lang="en">Raw materials prices</com:Name>
+          </str:Category>
+        </str:Category>
+        <str:Category id="PRODUCTION-ENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT">
+          <com:Name xml:lang="fr">Activité productrice des entreprises</com:Name>
+          <com:Name xml:lang="en">Companies output</com:Name>
+          <str:Category id="INDUSTRIE-CONST" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST">
+            <com:Name xml:lang="fr">Industrie et construction</com:Name>
+            <com:Name xml:lang="en">Industry and construction</com:Name>
+            <str:Category id="PRODUCTION-IND" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND">
+              <com:Name xml:lang="fr">Production industrielle</com:Name>
+              <com:Name xml:lang="en">Industrial output</com:Name>
+              <str:Category id="IPI-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-2010">
+                <com:Name xml:lang="fr">Indice de la production industrielle (base 2010)</com:Name>
+                <com:Name xml:lang="en">Industrial production index (base 2010)</com:Name>
+              </str:Category>
+              <str:Category id="EBPI-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.EBPI-2010">
+                <com:Name xml:lang="fr">Enquête de branche de la production industrielle (base 2010)</com:Name>
+                <com:Name xml:lang="en">Branch survey of industrial production (base 2010)</com:Name>
+              </str:Category>
+              <str:Category id="IPI-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="IPI-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-2005">
+                  <com:Name xml:lang="fr">Base 2005</com:Name>
+                  <com:Name xml:lang="en">Base year 2005</com:Name>
+                </str:Category>
+                <str:Category id="IPI-2000" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-2000">
+                  <com:Name xml:lang="fr">Base 2000</com:Name>
+                  <com:Name xml:lang="en">Base year 2000</com:Name>
+                </str:Category>
+                <str:Category id="IPI-1995" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-1995">
+                  <com:Name xml:lang="fr">Base 1995</com:Name>
+                  <com:Name xml:lang="en">Base year 1995</com:Name>
+                </str:Category>
+                <str:Category id="IPI-1990" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-1990">
+                  <com:Name xml:lang="fr">Base 1990</com:Name>
+                  <com:Name xml:lang="en">Base year 1990</com:Name>
+                </str:Category>
+                <str:Category id="IPI-1985" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-1985">
+                  <com:Name xml:lang="fr">Base 1985</com:Name>
+                  <com:Name xml:lang="en">Base year 1985</com:Name>
+                </str:Category>
+                <str:Category id="IPI-1970" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.PRODUCTION-IND.IPI-ANC.IPI-1970">
+                  <com:Name xml:lang="fr">Base 1970</com:Name>
+                  <com:Name xml:lang="en">Base year 1970</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="ICA-IND-CONS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS">
+              <com:Name xml:lang="fr">Indices de chiffre d'affaires</com:Name>
+              <com:Name xml:lang="en">Turnover indices</com:Name>
+              <str:Category id="ICA-IC-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base year 2010</com:Name>
+              </str:Category>
+              <str:Category id="ICA-IC-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="ICA-IC-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-ANC.ICA-IC-2005">
+                  <com:Name xml:lang="fr">Base 2005</com:Name>
+                  <com:Name xml:lang="en">Base year 2005</com:Name>
+                </str:Category>
+                <str:Category id="ICA-IC-2000" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-ANC.ICA-IC-2000">
+                  <com:Name xml:lang="fr">Base 2000</com:Name>
+                  <com:Name xml:lang="en">Base year 2000</com:Name>
+                </str:Category>
+                <str:Category id="ICA-IC-1995" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-ANC.ICA-IC-1995">
+                  <com:Name xml:lang="fr">Base 1995</com:Name>
+                  <com:Name xml:lang="en">Base year 1995</com:Name>
+                </str:Category>
+                <str:Category id="ICA-IC-1990" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.ICA-IND-CONS.ICA-IC-ANC.ICA-IC-1990">
+                  <com:Name xml:lang="fr">Base 1990</com:Name>
+                  <com:Name xml:lang="en">Base year 1990</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CONSTRUCTION" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.INDUSTRIE-CONST.CONSTRUCTION">
+              <com:Name xml:lang="fr">Construction de logements et de locaux</com:Name>
+              <com:Name xml:lang="en">Construction of residential and non-residential buildings</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="COMMERCE-SERV" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV">
+            <com:Name xml:lang="fr">Commerce et services</com:Name>
+            <com:Name xml:lang="en">Trade and services</com:Name>
+            <str:Category id="CA-COM-SER" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER">
+              <com:Name xml:lang="fr">Indices de chiffre d'affaires (source TVA)</com:Name>
+              <com:Name xml:lang="en">Turnover indices (VAT)</com:Name>
+              <str:Category id="ICA-CS-2010" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-2010">
+                <com:Name xml:lang="fr">Base 2010</com:Name>
+                <com:Name xml:lang="en">Base year 2010</com:Name>
+              </str:Category>
+              <str:Category id="ICA-CS-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-ANC">
+                <com:Name xml:lang="fr">Anciennes bases</com:Name>
+                <com:Name xml:lang="en">Old base years</com:Name>
+                <str:Category id="ICA-CS-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-ANC.ICA-CS-2005">
+                  <com:Name xml:lang="fr">Base 2005</com:Name>
+                  <com:Name xml:lang="en">Base year 2005</com:Name>
+                </str:Category>
+                <str:Category id="ICA-CS-2000" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-ANC.ICA-CS-2000">
+                  <com:Name xml:lang="fr">Base 2000</com:Name>
+                  <com:Name xml:lang="en">Base year 2000</com:Name>
+                </str:Category>
+                <str:Category id="ICA-CS-1995" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-ANC.ICA-CS-1995">
+                  <com:Name xml:lang="fr">Base 1995</com:Name>
+                  <com:Name xml:lang="en">Base year 1995</com:Name>
+                </str:Category>
+                <str:Category id="ICA-CS-1990" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-COM-SER.ICA-CS-ANC.ICA-CS-1990">
+                  <com:Name xml:lang="fr">Base 1990</com:Name>
+                  <com:Name xml:lang="en">Base year 1990</com:Name>
+                </str:Category>
+              </str:Category>
+            </str:Category>
+            <str:Category id="CA-EMAGSA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).PRODUCTION-ENT.COMMERCE-SERV.CA-EMAGSA">
+              <com:Name xml:lang="fr">Indices de chiffre d'affaires des grandes surfaces alimentaires (source EMAGSA)</com:Name>
+              <com:Name xml:lang="en">Large food stores turnover indices (EMAGSA)</com:Name>
+            </str:Category>
+          </str:Category>
+        </str:Category>
+        <str:Category id="DEMO-ENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT">
+          <com:Name xml:lang="fr">Démographie des entreprises</com:Name>
+          <com:Name xml:lang="en">Business demography</com:Name>
+          <str:Category id="CREATIONS-ENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.CREATIONS-ENT">
+            <com:Name xml:lang="fr">Créations d'entreprises</com:Name>
+            <com:Name xml:lang="en">Enterprises births</com:Name>
+          </str:Category>
+          <str:Category id="DEFAILLANCES-ENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.DEFAILLANCES-ENT">
+            <com:Name xml:lang="fr">Défaillances d'entreprises</com:Name>
+            <com:Name xml:lang="en">Business failures</com:Name>
+          </str:Category>
+          <str:Category id="DEMO-ENT-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.DEMO-ENT-ANC">
+            <com:Name xml:lang="fr">Anciennes séries</com:Name>
+            <com:Name xml:lang="en">Stopped series</com:Name>
+            <str:Category id="CREATIONS-ENT-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.DEMO-ENT-ANC.CREATIONS-ENT-ANC">
+              <com:Name xml:lang="fr">Créations d'entreprises</com:Name>
+              <com:Name xml:lang="en">Enterprises births</com:Name>
+            </str:Category>
+            <str:Category id="DEFAILLANCES-ENT-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.DEMO-ENT-ANC.DEFAILLANCES-ENT-ANC">
+              <com:Name xml:lang="fr">Défaillances d'entreprises</com:Name>
+              <com:Name xml:lang="en">Business failures</com:Name>
+            </str:Category>
+            <str:Category id="CESSATIONS-ENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).DEMO-ENT.DEMO-ENT-ANC.CESSATIONS-ENT">
+              <com:Name xml:lang="fr">Cessations d'activité des entreprises</com:Name>
+              <com:Name xml:lang="en">Company closure indices</com:Name>
+            </str:Category>
+          </str:Category>
+        </str:Category>
+        <str:Category id="POPULATION" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION">
+          <com:Name xml:lang="fr">Population</com:Name>
+          <com:Name xml:lang="en">Demography</com:Name>
+          <str:Category id="POP-RP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.POP-RP">
+            <com:Name xml:lang="fr">Population aux recensements</com:Name>
+            <com:Name xml:lang="en">Census population</com:Name>
+          </str:Category>
+          <str:Category id="ETAT-CIVIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.ETAT-CIVIL">
+            <com:Name xml:lang="fr">État civil et mouvements démographiques</com:Name>
+            <com:Name xml:lang="en">Registry office and demographic trends</com:Name>
+            <str:Category id="DEMO-NAT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.ETAT-CIVIL.DEMO-NAT">
+              <com:Name xml:lang="fr">Données nationales</com:Name>
+              <com:Name xml:lang="en">National data</com:Name>
+            </str:Category>
+            <str:Category id="DEMO-DEP-REG" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.ETAT-CIVIL.DEMO-DEP-REG">
+              <com:Name xml:lang="fr">Données départementales et régionales</com:Name>
+              <com:Name xml:lang="en">Departmental and regional data</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="COUPLES-FAM-MEN" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.COUPLES-FAM-MEN">
+            <com:Name xml:lang="fr">Couples - Familles - Ménages</com:Name>
+            <com:Name xml:lang="en">Couples - Families - Households</com:Name>
+          </str:Category>
+          <str:Category id="ETRANGERS-IMMIGRES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).POPULATION.ETRANGERS-IMMIGRES">
+            <com:Name xml:lang="fr">Étrangers - Immigrés</com:Name>
+            <com:Name xml:lang="en">Foreigners - Immigrants</com:Name>
+          </str:Category>
+        </str:Category>
+        <str:Category id="MARCHE-TRAVAIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL">
+          <com:Name xml:lang="fr">Marché du travail</com:Name>
+          <com:Name xml:lang="en">Labour market</com:Name>
+          <str:Category id="EMPLOI-POP-ACT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.EMPLOI-POP-ACT">
+            <com:Name xml:lang="fr">Emploi - Population active</com:Name>
+            <com:Name xml:lang="en">Employment - Labour force</com:Name>
+            <str:Category id="EMP-TOT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.EMPLOI-POP-ACT.EMP-TOT">
+              <com:Name xml:lang="fr">Emploi total au 31 décembre</com:Name>
+              <com:Name xml:lang="en">Total employment on December 31</com:Name>
+            </str:Category>
+            <str:Category id="EMP-SAL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.EMPLOI-POP-ACT.EMP-SAL">
+              <com:Name xml:lang="fr">Emploi salarié trimestriel par secteur</com:Name>
+              <com:Name xml:lang="en">Quarterly payroll employment by sector</com:Name>
+            </str:Category>
+            <str:Category id="EMP-MOY-AN" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.EMPLOI-POP-ACT.EMP-MOY-AN">
+              <com:Name xml:lang="fr">Emploi en moyenne annuelle</com:Name>
+              <com:Name xml:lang="en">Annual average employment</com:Name>
+            </str:Category>
+            <str:Category id="EMP-TRIM" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.EMPLOI-POP-ACT.EMP-TRIM">
+              <com:Name xml:lang="fr">Emploi trimestriel</com:Name>
+              <com:Name xml:lang="en">Quarterly employment</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="CHOMAGE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.CHOMAGE">
+            <com:Name xml:lang="fr">Chômage</com:Name>
+            <com:Name xml:lang="en">Unemployment</com:Name>
+            <str:Category id="CHOMAGE-MOY-AN" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.CHOMAGE.CHOMAGE-MOY-AN">
+              <com:Name xml:lang="fr">Chômage en moyenne annuelle</com:Name>
+              <com:Name xml:lang="en">Annual average unemployment</com:Name>
+            </str:Category>
+            <str:Category id="CHOMAGE-TRIM" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.CHOMAGE.CHOMAGE-TRIM">
+              <com:Name xml:lang="fr">Chômage trimestriel</com:Name>
+              <com:Name xml:lang="en">Quarterly unemployment</com:Name>
+            </str:Category>
+            <str:Category id="DEMANDES-EMP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.CHOMAGE.DEMANDES-EMP">
+              <com:Name xml:lang="fr">Demandeurs d'emploi inscrits à Pôle emploi</com:Name>
+              <com:Name xml:lang="en">Job seekers registered at Pôle emploi</com:Name>
+            </str:Category>
+            <str:Category id="OFFRES-EMP" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).MARCHE-TRAVAIL.CHOMAGE.OFFRES-EMP">
+              <com:Name xml:lang="fr">Offres d'emploi collectées à Pôle emploi</com:Name>
+              <com:Name xml:lang="en">Job offers collected at Pôle Emploi</com:Name>
+            </str:Category>
+          </str:Category>
+        </str:Category>
+        <str:Category id="SALAIRES-REVENUS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS">
+          <com:Name xml:lang="fr">Salaires, coût du travail, niveau de vie</com:Name>
+          <com:Name xml:lang="en">Wages, labour cost, living standard</com:Name>
+          <str:Category id="SALAIRES" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.SALAIRES">
+            <com:Name xml:lang="fr">Salaires</com:Name>
+            <com:Name xml:lang="en">Wages</com:Name>
+            <str:Category id="SAL-ANNUELS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.SALAIRES.SAL-ANNUELS">
+              <com:Name xml:lang="fr">Salaires annuels</com:Name>
+              <com:Name xml:lang="en">Annual wages</com:Name>
+            </str:Category>
+            <str:Category id="INDICES-SAL-ACEMO" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.SALAIRES.INDICES-SAL-ACEMO">
+              <com:Name xml:lang="fr">Indices trimestriels de salaire dans le secteur privé</com:Name>
+              <com:Name xml:lang="en">Quarterly wage indices in the private sector</com:Name>
+            </str:Category>
+            <str:Category id="SAL-MIN-FP-COTIS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.SALAIRES.SAL-MIN-FP-COTIS">
+              <com:Name xml:lang="fr">SMIC - Taux de cotisations sociales - Indices Fonction publique</com:Name>
+              <com:Name xml:lang="en">Minimum wages - Social contributions - Indices Civil service</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="COUT-TRAVAIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.COUT-TRAVAIL">
+            <com:Name xml:lang="fr">Coût du travail</com:Name>
+            <com:Name xml:lang="en">Labour cost</com:Name>
+            <str:Category id="COUT-HORAIRE-TRAVAIL" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.COUT-TRAVAIL.COUT-HORAIRE-TRAVAIL">
+              <com:Name xml:lang="fr">Indice du coût horaire du travail</com:Name>
+              <com:Name xml:lang="en">Hourly labour cost index</com:Name>
+            </str:Category>
+            <str:Category id="COUT-TRAVAIL-ICT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.COUT-TRAVAIL.COUT-TRAVAIL-ICT">
+              <com:Name xml:lang="fr">Indice du coût du travail dans l'industrie, la construction et le tertiaire</com:Name>
+              <com:Name xml:lang="en">Labour cost index in industry, construction and services</com:Name>
+            </str:Category>
+          </str:Category>
+          <str:Category id="NIVEAU-VIE-PAUVRETE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SALAIRES-REVENUS.NIVEAU-VIE-PAUVRETE">
+            <com:Name xml:lang="fr">Niveau de vie - Pauvreté</com:Name>
+            <com:Name xml:lang="en">Living standard - Poverty</com:Name>
+          </str:Category>
+        </str:Category>
+        <str:Category id="ECHANGES-EXT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT">
+          <com:Name xml:lang="fr">Échanges extérieurs</com:Name>
+          <com:Name xml:lang="en">Foreign trade</com:Name>
+          <str:Category id="COM-EXT-VA" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.COM-EXT-VA">
+            <com:Name xml:lang="fr">Commerce extérieur en valeur</com:Name>
+            <com:Name xml:lang="en">Foreign trade in value</com:Name>
+          </str:Category>
+          <str:Category id="BALANCE-PAIEMENTS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.BALANCE-PAIEMENTS">
+            <com:Name xml:lang="fr">Balance des paiements</com:Name>
+            <com:Name xml:lang="en">Balance of payments</com:Name>
+          </str:Category>
+          <str:Category id="ICE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.ICE">
+            <com:Name xml:lang="fr">Indices du commerce extérieur</com:Name>
+            <com:Name xml:lang="en">Foreign trade indices</com:Name>
+            <str:Category id="ICE-2005" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.ICE.ICE-2005">
+              <com:Name xml:lang="fr">Base 2005</com:Name>
+              <com:Name xml:lang="en">Base year 2005</com:Name>
+            </str:Category>
+            <str:Category id="ICE-ANC" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.ICE.ICE-ANC">
+              <com:Name xml:lang="fr">Anciennes bases</com:Name>
+              <com:Name xml:lang="en">Old base years</com:Name>
+              <str:Category id="ICE-1995" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.ICE.ICE-ANC.ICE-1995">
+                <com:Name xml:lang="fr">Base 1995 (CPF rév.1)</com:Name>
+                <com:Name xml:lang="en">Base year 1995 (CPA 1993)</com:Name>
+              </str:Category>
+              <str:Category id="ICE-1980" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).ECHANGES-EXT.ICE.ICE-ANC.ICE-1980">
+                <com:Name xml:lang="fr">Base 1980</com:Name>
+                <com:Name xml:lang="en">Base year 1980</com:Name>
+              </str:Category>
+            </str:Category>
+          </str:Category>
+        </str:Category>
+        <str:Category id="CONDITIONS-VIE-SOCIETE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).CONDITIONS-VIE-SOCIETE">
+          <com:Name xml:lang="fr">Conditions de vie - Société</com:Name>
+          <com:Name xml:lang="en">Living standards - Society</com:Name>
+          <str:Category id="VACANCES-LOISIRS-CULTURE" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).CONDITIONS-VIE-SOCIETE.VACANCES-LOISIRS-CULTURE">
+            <com:Name xml:lang="fr">Vacances - Loisirs - Culture</com:Name>
+            <com:Name xml:lang="en">Holidays - Leisure - Culture</com:Name>
+          </str:Category>
+          <str:Category id="LOGEMENT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).CONDITIONS-VIE-SOCIETE.LOGEMENT">
+            <com:Name xml:lang="fr">Logement</com:Name>
+            <com:Name xml:lang="en">Housing</com:Name>
+          </str:Category>
+        </str:Category>
+        <str:Category id="SERVICES-TOURISME-TRANSPORT" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SERVICES-TOURISME-TRANSPORT">
+          <com:Name xml:lang="fr">Services - Tourisme - Transport</com:Name>
+          <com:Name xml:lang="en">Services - Tourism - Transportation</com:Name>
+          <str:Category id="TOURISME" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SERVICES-TOURISME-TRANSPORT.TOURISME">
+            <com:Name xml:lang="fr">Tourisme</com:Name>
+            <com:Name xml:lang="en">Tourism</com:Name>
+          </str:Category>
+          <str:Category id="TRANSPORTS" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=FR1:CLASSEMENT_DATAFLOWS(1.0).SERVICES-TOURISME-TRANSPORT.TRANSPORTS">
+            <com:Name xml:lang="fr">Transports</com:Name>
+            <com:Name xml:lang="en">Transports</com:Name>
+          </str:Category>
+        </str:Category>
+      </str:CategoryScheme>
+    </str:CategorySchemes>
+    <str:Categorisations>
+      <str:Categorisation id="CAT_IPI-2010_IPI-2010-A21" urn="urn:sdmx:org.sdmx.infomodel.categoryscheme.Categorisation=FR1:CAT_IPI-2010_IPI-2010-A21(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Association entre la catégorie IPI-2010 et le dataflow IPI-2010-A21</com:Name>
+        <com:Name xml:lang="en">Association between category IPI-2010 and dataflow IPI-2010-A21</com:Name>
+        <str:Source>
+          <Ref id="IPI-2010-A21" version="1.0" agencyID="FR1" package="datastructure" class="Dataflow"/>
+        </str:Source>
+        <str:Target>
+          <Ref id="IPI-2010" maintainableParentID="CLASSEMENT_DATAFLOWS" maintainableParentVersion="1.0" agencyID="FR1" package="categoryscheme" class="Category"/>
+        </str:Target>
+      </str:Categorisation>
+    </str:Categorisations>
+    <str:Codelists>
+      <str:Codelist id="CL_FREQ" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=FR1:CL_FREQ(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Périodicité</com:Name>
+        <com:Name xml:lang="en">Frequency</com:Name>
+        <str:Code id="A" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).A">
+          <com:Name xml:lang="fr">Annuelle</com:Name>
+          <com:Name xml:lang="en">Annual</com:Name>
+        </str:Code>
+        <str:Code id="T" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).T">
+          <com:Name xml:lang="fr">Trimestrielle</com:Name>
+          <com:Name xml:lang="en">Quarterly</com:Name>
+        </str:Code>
+        <str:Code id="M" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).M">
+          <com:Name xml:lang="fr">Mensuelle</com:Name>
+          <com:Name xml:lang="en">Monthly</com:Name>
+        </str:Code>
+        <str:Code id="B" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).B">
+          <com:Name xml:lang="fr">Bimestrielle</com:Name>
+          <com:Name xml:lang="en">Two-monthly</com:Name>
+        </str:Code>
+        <str:Code id="S" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).S">
+          <com:Name xml:lang="fr">Semestrielle</com:Name>
+          <com:Name xml:lang="en">Semi-annual</com:Name>
+        </str:Code>
+        <str:Code id="Q" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).Q">
+          <com:Name xml:lang="fr">Trimestrielle</com:Name>
+          <com:Name xml:lang="en">Quarterly</com:Name>
+        </str:Code>
+        <str:Code id="I" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_FREQ(1.0).I">
+          <com:Name xml:lang="fr">Irrégulière</com:Name>
+          <com:Name xml:lang="en">Irregular</com:Name>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist id="CL_NAF2_A21" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=FR1:CL_NAF2_A21(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Nomenclature NAF rév. 2 - Niveau A21 (sections)</com:Name>
+        <com:Name xml:lang="en">NAF rev. 2 classification - Level A21 (sections)</com:Name>
+        <str:Code id="BTE" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).BTE">
+          <com:Name xml:lang="fr">B à E - Industrie hors construction</com:Name>
+          <com:Name xml:lang="en">B to E - Industry except construction</com:Name>
+        </str:Code>
+        <str:Code id="BTF" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).BTF">
+          <com:Name xml:lang="fr">B à F - Industrie et construction</com:Name>
+          <com:Name xml:lang="en">B to F - Industry and construction</com:Name>
+        </str:Code>
+        <str:Code id="BTN" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).BTN">
+          <com:Name xml:lang="fr">B à N - Économie marchande</com:Name>
+          <com:Name xml:lang="en">B to N - Business economy</com:Name>
+        </str:Code>
+        <str:Code id="BTS" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).BTS">
+          <com:Name xml:lang="fr">B à S - Industrie, construction et services</com:Name>
+          <com:Name xml:lang="en">B to S - Industry, construction and services (except activities of households as employers and extra-territorial organisations and bodies)</com:Name>
+        </str:Code>
+        <str:Code id="GTJ" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).GTJ">
+          <com:Name xml:lang="fr">G à J - Commerce ; transports ; hébergement et restauration ; information et communication</com:Name>
+          <com:Name xml:lang="en">G to J - Wholesale and retail trade; transport; accommodation and food service activities; information and communication</com:Name>
+        </str:Code>
+        <str:Code id="GTN" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).GTN">
+          <com:Name xml:lang="fr">G à N - Services marchands</com:Name>
+          <com:Name xml:lang="en">G to N - Services of the business economy</com:Name>
+        </str:Code>
+        <str:Code id="KTN" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).KTN">
+          <com:Name xml:lang="fr">K à N - Activités financières et d'assurance ; activités immobilières ; activités spécialisées ; scientifiques et techniques ; activités de services administratifs et de soutien</com:Name>
+          <com:Name xml:lang="en">K to N - Financial and insurance activities; real estate activities; professional, scientific and technical activities; administrative and support service activities</com:Name>
+        </str:Code>
+        <str:Code id="OTS" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).OTS">
+          <com:Name xml:lang="fr">O à S - Administration publique ; enseignement ; santé humaine et action sociale ; arts, spectacles et activités récréatives ; autres activités de services</com:Name>
+          <com:Name xml:lang="en">O to S - Public administration and defence; compulsory social security; education; human health and social work activities; arts, entertainment and recreation; other service activities</com:Name>
+        </str:Code>
+        <str:Code id="H30" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).H30">
+          <com:Name xml:lang="fr">Ensemble de l'industrie hors NAF 30 (matériel de transport n.c. auto.)</com:Name>
+          <com:Name xml:lang="en">Whole industry excluding NAF 30 (transport equipment excluding automobile)</com:Name>
+        </str:Code>
+        <str:Code id="G" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).G">
+          <com:Name xml:lang="fr">G - Commerce ; réparation d'automobiles et de motocycles</com:Name>
+          <com:Name xml:lang="en">G - Wholesale and retail trade; repair of motor vehicles and motorcycles</com:Name>
+        </str:Code>
+        <str:Code id="H" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).H">
+          <com:Name xml:lang="fr">H - Transports et entreposage</com:Name>
+          <com:Name xml:lang="en">H - Transportation and storage</com:Name>
+        </str:Code>
+        <str:Code id="I" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).I">
+          <com:Name xml:lang="fr">I - Hébergement et restauration</com:Name>
+          <com:Name xml:lang="en">I - Accommodation and food service activities</com:Name>
+        </str:Code>
+        <str:Code id="J" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).J">
+          <com:Name xml:lang="fr">J - Information et communication</com:Name>
+          <com:Name xml:lang="en">J - Information and communication</com:Name>
+        </str:Code>
+        <str:Code id="K" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).K">
+          <com:Name xml:lang="fr">K - Activités financières et d'assurance</com:Name>
+          <com:Name xml:lang="en">K - Financial and insurance activities</com:Name>
+        </str:Code>
+        <str:Code id="L" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).L">
+          <com:Name xml:lang="fr">L - Activités immobilières</com:Name>
+          <com:Name xml:lang="en">L - Real estate</com:Name>
+        </str:Code>
+        <str:Code id="M" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).M">
+          <com:Name xml:lang="fr">M - Activités spécialisées, scientifiques et techniques</com:Name>
+          <com:Name xml:lang="en">M - Professional, scientific and technical activities</com:Name>
+        </str:Code>
+        <str:Code id="N" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).N">
+          <com:Name xml:lang="fr">N - Activités de services administratifs et de soutien</com:Name>
+          <com:Name xml:lang="en">N - Administrative and support service activities</com:Name>
+        </str:Code>
+        <str:Code id="O" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).O">
+          <com:Name xml:lang="fr">O - Administration publique</com:Name>
+          <com:Name xml:lang="en">O - Public administration</com:Name>
+        </str:Code>
+        <str:Code id="P" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).P">
+          <com:Name xml:lang="fr">P - Enseignement</com:Name>
+          <com:Name xml:lang="en">P - Education</com:Name>
+        </str:Code>
+        <str:Code id="Q" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).Q">
+          <com:Name xml:lang="fr">Q - Santé humaine et action sociale</com:Name>
+          <com:Name xml:lang="en">Q - Human health and social work activities</com:Name>
+        </str:Code>
+        <str:Code id="R" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).R">
+          <com:Name xml:lang="fr">R - Arts, spectacles et Activités récréatives</com:Name>
+          <com:Name xml:lang="en">R - Arts, entertainment and recreation</com:Name>
+        </str:Code>
+        <str:Code id="S" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).S">
+          <com:Name xml:lang="fr">S - Autres activités de services</com:Name>
+          <com:Name xml:lang="en">S - Other service activities</com:Name>
+        </str:Code>
+        <str:Code id="T" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).T">
+          <com:Name xml:lang="fr">T - Activités des ménages en tant qu'employeurs ; Activités indifférenciées des ménages en tant que producteurs de biens et services pour usage propre</com:Name>
+          <com:Name xml:lang="en">T - Activities of households as employers; Undifferentiated activities of households as producers of goods and services for own use</com:Name>
+        </str:Code>
+        <str:Code id="U" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).U">
+          <com:Name xml:lang="fr">U - Activités extraterritoriales</com:Name>
+          <com:Name xml:lang="en">U - Extra-territorial organisations and bodies activities</com:Name>
+        </str:Code>
+        <str:Code id="B" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).B">
+          <com:Name xml:lang="fr">B - Industries extractives</com:Name>
+          <com:Name xml:lang="en">B - Mining and quarrying</com:Name>
+        </str:Code>
+        <str:Code id="C" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).C">
+          <com:Name xml:lang="fr">C - Industrie manufacturière</com:Name>
+          <com:Name xml:lang="en">C - Manufacturing industry</com:Name>
+        </str:Code>
+        <str:Code id="E" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).E">
+          <com:Name xml:lang="fr">E - Production et distribution d'eau ; assainissement, gestion des déchets et dépollution</com:Name>
+          <com:Name xml:lang="en">E - Water supply; sewerage, waste management and remediation activities</com:Name>
+        </str:Code>
+        <str:Code id="F" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).F">
+          <com:Name xml:lang="fr">F - Construction</com:Name>
+          <com:Name xml:lang="en">F - Construction</com:Name>
+        </str:Code>
+        <str:Code id="A" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).A">
+          <com:Name xml:lang="fr">A - Agriculture, sylviculture et pêche</com:Name>
+          <com:Name xml:lang="en">A - Agriculture, forestry, and fisheries</com:Name>
+        </str:Code>
+        <str:Code id="D" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NAF2_A21(1.0).D">
+          <com:Name xml:lang="fr">D - Production et distribution d'électricité, de gaz, de vapeur et d'air conditionné</com:Name>
+          <com:Name xml:lang="en">D - Electricity, gas, steam and air conditioning supply</com:Name>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist id="CL_NATURE" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=FR1:CL_NATURE(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Nature des séries</com:Name>
+        <com:Name xml:lang="en">Natures of the series</com:Name>
+        <str:Code id="NIVEAU" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).NIVEAU">
+          <com:Name xml:lang="fr">Niveau</com:Name>
+          <com:Name xml:lang="en">Level</com:Name>
+        </str:Code>
+        <str:Code id="IM" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).IM">
+          <com:Name xml:lang="fr">Indice mensuel</com:Name>
+          <com:Name xml:lang="en">Monthly index</com:Name>
+        </str:Code>
+        <str:Code id="IA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).IA">
+          <com:Name xml:lang="fr">Indice annuel</com:Name>
+          <com:Name xml:lang="en">Annual index</com:Name>
+        </str:Code>
+        <str:Code id="IDX" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).IDX">
+          <com:Name xml:lang="fr">Indice (2005=100)</com:Name>
+          <com:Name xml:lang="en">Index (2005=100)</com:Name>
+        </str:Code>
+        <str:Code id="M1" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).M1">
+          <com:Name xml:lang="fr">Variation en pourcentage m/m-1</com:Name>
+          <com:Name xml:lang="en">Percentage change m/m-1</com:Name>
+        </str:Code>
+        <str:Code id="M12" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).M12">
+          <com:Name xml:lang="fr">Variation en pourcentage m/m-12</com:Name>
+          <com:Name xml:lang="en">Percentage change m/m-12</com:Name>
+        </str:Code>
+        <str:Code id="V12" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).V12">
+          <com:Name xml:lang="fr">Variation en pourcentage - Moyenne sur 12 mois</com:Name>
+          <com:Name xml:lang="en">Percentage change - 12 months average</com:Name>
+        </str:Code>
+        <str:Code id="MM4OBS" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).MM4OBS">
+          <com:Name xml:lang="fr">Moyenne des 4 dernières observations</com:Name>
+          <com:Name xml:lang="en">Average of the 4 latest values</com:Name>
+        </str:Code>
+        <str:Code id="ICD-ILC" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).ICD-ILC">
+          <com:Name xml:lang="fr">Indice de calcul de l'ILC</com:Name>
+          <com:Name xml:lang="en">Index use to calculate the CRI</com:Name>
+        </str:Code>
+        <str:Code id="VARANN" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).VARANN">
+          <com:Name xml:lang="fr">Variation annuelle en %</com:Name>
+          <com:Name xml:lang="en">Annual trends in %</com:Name>
+        </str:Code>
+        <str:Code id="ENCOURS" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).ENCOURS">
+          <com:Name xml:lang="fr">Encours</com:Name>
+          <com:Name xml:lang="en">Outstanding amounts</com:Name>
+        </str:Code>
+        <str:Code id="VARDEBANN" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).VARDEBANN">
+          <com:Name xml:lang="fr">Variations depuis le début de l'année</com:Name>
+          <com:Name xml:lang="en">Changes since the beginning of the year</com:Name>
+        </str:Code>
+        <str:Code id="EVO" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).EVO">
+          <com:Name xml:lang="fr">Évolution</com:Name>
+          <com:Name xml:lang="en">Change</com:Name>
+        </str:Code>
+        <str:Code id="INDICE" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).INDICE">
+          <com:Name xml:lang="fr">Indice</com:Name>
+          <com:Name xml:lang="en">Index</com:Name>
+        </str:Code>
+        <str:Code id="MOY" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).MOY">
+          <com:Name xml:lang="fr">Moyenne</com:Name>
+          <com:Name xml:lang="en">Average</com:Name>
+        </str:Code>
+        <str:Code id="VAR" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).VAR">
+          <com:Name xml:lang="fr">Variation de l'indice</com:Name>
+          <com:Name xml:lang="en">Index change</com:Name>
+        </str:Code>
+        <str:Code id="N" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).N">
+          <com:Name xml:lang="fr">Donnée non transformée</com:Name>
+          <com:Name xml:lang="en">Non transformed data</com:Name>
+        </str:Code>
+        <str:Code id="POND" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).POND">
+          <com:Name xml:lang="fr">Pondération</com:Name>
+          <com:Name xml:lang="en">Weighting</com:Name>
+        </str:Code>
+        <str:Code id="CJO" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).CJO">
+          <com:Name xml:lang="fr">Indice CJO</com:Name>
+          <com:Name xml:lang="en">Working-day adjusted index</com:Name>
+        </str:Code>
+        <str:Code id="BRUT" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).BRUT">
+          <com:Name xml:lang="fr">Indice Brut</com:Name>
+          <com:Name xml:lang="en">Raw index</com:Name>
+        </str:Code>
+        <str:Code id="CVS-CJO" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).CVS-CJO">
+          <com:Name xml:lang="fr">Indice CVS-CJO</com:Name>
+          <com:Name xml:lang="en">Seasonal and working-day adjusted index</com:Name>
+        </str:Code>
+        <str:Code id="CVS" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).CVS">
+          <com:Name xml:lang="fr">Indice CVS</com:Name>
+          <com:Name xml:lang="en">Seasonally adjusted index</com:Name>
+        </str:Code>
+        <str:Code id="GTE" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).GTE">
+          <com:Name xml:lang="fr">Glissement trimestriel</com:Name>
+          <com:Name xml:lang="en">Quaterly sliding</com:Name>
+        </str:Code>
+        <str:Code id="GAE" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).GAE">
+          <com:Name xml:lang="fr">Glissement annuel</com:Name>
+          <com:Name xml:lang="en">Year on year</com:Name>
+        </str:Code>
+        <str:Code id="GA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=FR1:CL_NATURE(1.0).GA">
+          <com:Name xml:lang="fr">Glissement annuel de l'indice (variation par rapport au mois correspondant de l'année précédente)</com:Name>
+          <com:Name xml:lang="en">Year-on-year index change (compared to corresponding month of previous year)</com:Name>
+        </str:Code>
+      </str:Codelist>
+    </str:Codelists>
+    <str:Concepts>
+      <str:ConceptScheme id="CONCEPTS_INSEE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=FR1:CONCEPTS_INSEE(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Concepts Insee</com:Name>
+        <com:Name xml:lang="en">Insee concepts</com:Name>
+        <str:Concept id="FREQ" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FREQ">
+          <com:Name xml:lang="fr">Périodicité</com:Name>
+          <com:Name xml:lang="en">Frequency</com:Name>
+        </str:Concept>
+        <str:Concept id="ACTIVITE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ACTIVITE">
+          <com:Name xml:lang="fr">Secteur d'activité</com:Name>
+          <com:Name xml:lang="en">Economic activity</com:Name>
+        </str:Concept>
+        <str:Concept id="FINANCEMENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FINANCEMENT">
+          <com:Name xml:lang="fr">Secteurs de financement</com:Name>
+          <com:Name xml:lang="en">Financing sectors</com:Name>
+        </str:Concept>
+        <str:Concept id="SECT-INST" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).SECT-INST">
+          <com:Name xml:lang="fr">Secteurs institutionnels</com:Name>
+          <com:Name xml:lang="en">Institutional sectors</com:Name>
+        </str:Concept>
+        <str:Concept id="COMPTE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).COMPTE">
+          <com:Name xml:lang="fr">Nature de l'opération</com:Name>
+          <com:Name xml:lang="en">Nature of the transaction</com:Name>
+        </str:Concept>
+        <str:Concept id="OPERATION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).OPERATION">
+          <com:Name xml:lang="fr">Nature d'opération</com:Name>
+          <com:Name xml:lang="en">Nature of the transaction</com:Name>
+        </str:Concept>
+        <str:Concept id="NATURE-FLUX" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).NATURE-FLUX">
+          <com:Name xml:lang="fr">Nature du flux</com:Name>
+          <com:Name xml:lang="en">Nature of flow</com:Name>
+        </str:Concept>
+        <str:Concept id="INDEX" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).INDEX">
+          <com:Name xml:lang="fr">Index</com:Name>
+          <com:Name xml:lang="en">Index</com:Name>
+        </str:Concept>
+        <str:Concept id="FORME-VENTE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FORME-VENTE">
+          <com:Name xml:lang="fr">Formes de vente de la grande distribution</com:Name>
+          <com:Name xml:lang="en">Trading forms of the large retail sector</com:Name>
+        </str:Concept>
+        <str:Concept id="MARCHANDISE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).MARCHANDISE">
+          <com:Name xml:lang="fr">Type de marchandises</com:Name>
+          <com:Name xml:lang="en">Type of goods</com:Name>
+        </str:Concept>
+        <str:Concept id="INSTRUMENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).INSTRUMENT">
+          <com:Name xml:lang="fr">Rubriques ou postes</com:Name>
+          <com:Name xml:lang="en">Headings or items</com:Name>
+        </str:Concept>
+        <str:Concept id="QUESTION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).QUESTION">
+          <com:Name xml:lang="fr">Questions posées à l'enquête</com:Name>
+          <com:Name xml:lang="en">Questions asked in the survey</com:Name>
+        </str:Concept>
+        <str:Concept id="PRODUIT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).PRODUIT">
+          <com:Name xml:lang="fr">Grands groupes de produits</com:Name>
+          <com:Name xml:lang="en">Main product groups</com:Name>
+        </str:Concept>
+        <str:Concept id="BRANCHE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).BRANCHE">
+          <com:Name xml:lang="fr">Grandes branches (produits)</com:Name>
+          <com:Name xml:lang="en">Main branches (products)</com:Name>
+        </str:Concept>
+        <str:Concept id="PRATIQUE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).PRATIQUE">
+          <com:Name xml:lang="fr">Pratique</com:Name>
+          <com:Name xml:lang="en">Activity</com:Name>
+        </str:Concept>
+        <str:Concept id="METIER" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).METIER">
+          <com:Name xml:lang="fr">Qualification</com:Name>
+          <com:Name xml:lang="en">Qualification</com:Name>
+        </str:Concept>
+        <str:Concept id="CAT-DE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CAT-DE">
+          <com:Name xml:lang="fr">Catégorie</com:Name>
+          <com:Name xml:lang="en">Category</com:Name>
+        </str:Concept>
+        <str:Concept id="CAUSE-DECES" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CAUSE-DECES">
+          <com:Name xml:lang="fr">Causes de décès</com:Name>
+          <com:Name xml:lang="en">Causes of death</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-ENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-ENT">
+          <com:Name xml:lang="fr">Type d'entreprise</com:Name>
+          <com:Name xml:lang="en">Type of enterprise</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-ETAB" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-ETAB">
+          <com:Name xml:lang="fr">Établissements hospitaliers</com:Name>
+          <com:Name xml:lang="en">Health institutions</com:Name>
+        </str:Concept>
+        <str:Concept id="FONCTION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FONCTION">
+          <com:Name xml:lang="fr">Fonctions</com:Name>
+          <com:Name xml:lang="en">Functions</com:Name>
+        </str:Concept>
+        <str:Concept id="FACTEUR-INV" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FACTEUR-INV">
+          <com:Name xml:lang="fr">Type d'influence</com:Name>
+          <com:Name xml:lang="en">Type of influence</com:Name>
+        </str:Concept>
+        <str:Concept id="DEST-INV" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DEST-INV">
+          <com:Name xml:lang="fr">Destination</com:Name>
+          <com:Name xml:lang="en">Destination</com:Name>
+        </str:Concept>
+        <str:Concept id="ETAT-CONSTRUCTION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ETAT-CONSTRUCTION">
+          <com:Name xml:lang="fr">État d'avancement de la construction</com:Name>
+          <com:Name xml:lang="en">State of progress of the construction</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-RESEAU" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-RESEAU">
+          <com:Name xml:lang="fr">Nature de réseau</com:Name>
+          <com:Name xml:lang="en">Nature of the network</com:Name>
+        </str:Concept>
+        <str:Concept id="DEMOGRAPHIE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DEMOGRAPHIE">
+          <com:Name xml:lang="fr">Indicateurs démographiques</com:Name>
+          <com:Name xml:lang="en">Demographic indicators</com:Name>
+        </str:Concept>
+        <str:Concept id="INDICATEUR" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).INDICATEUR">
+          <com:Name xml:lang="fr">Indicateurs</com:Name>
+          <com:Name xml:lang="en">Indicators</com:Name>
+        </str:Concept>
+        <str:Concept id="TOURISME-INDIC" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TOURISME-INDIC">
+          <com:Name xml:lang="fr">Type d'indicateur</com:Name>
+          <com:Name xml:lang="en">Type of indicator</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-SAL" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-SAL">
+          <com:Name xml:lang="fr">Type d'indices</com:Name>
+          <com:Name xml:lang="en">Type of index</com:Name>
+        </str:Concept>
+        <str:Concept id="COTISATION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).COTISATION">
+          <com:Name xml:lang="fr">Type de cotisation (patronale ou salariale)</com:Name>
+          <com:Name xml:lang="en">Category of the contribution (payed by the employer or by the employee)</com:Name>
+        </str:Concept>
+        <str:Concept id="CLIENTELE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CLIENTELE">
+          <com:Name xml:lang="fr">Type de clientèle</com:Name>
+          <com:Name xml:lang="en">Type of clientele</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-CREAT-ENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-CREAT-ENT">
+          <com:Name xml:lang="fr">Types de création</com:Name>
+          <com:Name xml:lang="en">Type of business start-ups</com:Name>
+        </str:Concept>
+        <str:Concept id="FORME-EMP" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FORME-EMP">
+          <com:Name xml:lang="fr">Forme d'emploi</com:Name>
+          <com:Name xml:lang="en">Form of employment</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-EMP" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-EMP">
+          <com:Name xml:lang="fr">Nature d'emploi</com:Name>
+          <com:Name xml:lang="en">Nature of the employment</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-OE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-OE">
+          <com:Name xml:lang="fr">Type d'offre</com:Name>
+          <com:Name xml:lang="en">Type of job offers</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-CESS-ENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-CESS-ENT">
+          <com:Name xml:lang="fr">Type de cessation d'entreprise</com:Name>
+          <com:Name xml:lang="en">Type of enterprise death</com:Name>
+        </str:Concept>
+        <str:Concept id="STATUT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).STATUT">
+          <com:Name xml:lang="fr">Statut</com:Name>
+          <com:Name xml:lang="en">Status</com:Name>
+        </str:Concept>
+        <str:Concept id="LOCAL" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).LOCAL">
+          <com:Name xml:lang="fr">Type de local d'activité</com:Name>
+          <com:Name xml:lang="en">Type of premises for professional use</com:Name>
+        </str:Concept>
+        <str:Concept id="CARAC-LOG" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CARAC-LOG">
+          <com:Name xml:lang="fr">Caractéristique du logement</com:Name>
+          <com:Name xml:lang="en">Dwelling characteristic</com:Name>
+        </str:Concept>
+        <str:Concept id="LOGEMENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).LOGEMENT">
+          <com:Name xml:lang="fr">Nature du logement</com:Name>
+          <com:Name xml:lang="en">Nature of the dwelling</com:Name>
+        </str:Concept>
+        <str:Concept id="POPULATION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).POPULATION">
+          <com:Name xml:lang="fr">Population</com:Name>
+          <com:Name xml:lang="en">Population</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-FAMILLE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-FAMILLE">
+          <com:Name xml:lang="fr">Type de famille</com:Name>
+          <com:Name xml:lang="en">Type of family</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-MENAGE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-MENAGE">
+          <com:Name xml:lang="fr">Type de ménage</com:Name>
+          <com:Name xml:lang="en">Type of household</com:Name>
+        </str:Concept>
+        <str:Concept id="CARBURANT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CARBURANT">
+          <com:Name xml:lang="fr">Type de carburant</com:Name>
+          <com:Name xml:lang="en">Type of fuel</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-VEHICULE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-VEHICULE">
+          <com:Name xml:lang="fr">Type de véhicule</com:Name>
+          <com:Name xml:lang="en">Type of vehicle</com:Name>
+        </str:Concept>
+        <str:Concept id="FORMATION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FORMATION">
+          <com:Name xml:lang="fr">Niveau de formation</com:Name>
+          <com:Name xml:lang="en">Level of education</com:Name>
+        </str:Concept>
+        <str:Concept id="UNITE-URBAINE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).UNITE-URBAINE">
+          <com:Name xml:lang="fr">Tranche d'unité urbaine</com:Name>
+          <com:Name xml:lang="en">Type of urban unit</com:Name>
+        </str:Concept>
+        <str:Concept id="SPECIALITE-SANTE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).SPECIALITE-SANTE">
+          <com:Name xml:lang="fr">Spécialités hospitalières</com:Name>
+          <com:Name xml:lang="en">Medical speciality</com:Name>
+        </str:Concept>
+        <str:Concept id="ACCUEIL-PERS-AGEES" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ACCUEIL-PERS-AGEES">
+          <com:Name xml:lang="fr">Type d'accueil des personnes âgées</com:Name>
+          <com:Name xml:lang="en">Type of accomodation for the elderly</com:Name>
+        </str:Concept>
+        <str:Concept id="DIPLOME" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DIPLOME">
+          <com:Name xml:lang="fr">Diplôme</com:Name>
+          <com:Name xml:lang="en">Diploma</com:Name>
+        </str:Concept>
+        <str:Concept id="ETAB-SCOL" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ETAB-SCOL">
+          <com:Name xml:lang="fr">Établissement</com:Name>
+          <com:Name xml:lang="en">Educational establishment</com:Name>
+        </str:Concept>
+        <str:Concept id="RESIDENCE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).RESIDENCE">
+          <com:Name xml:lang="fr">Pays de résidence des touristes</com:Name>
+          <com:Name xml:lang="en">Tourists' country of residence</com:Name>
+        </str:Concept>
+        <str:Concept id="CHAMP-GEO" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CHAMP-GEO">
+          <com:Name xml:lang="fr">Champ géographique</com:Name>
+          <com:Name xml:lang="en">Geographic area</com:Name>
+        </str:Concept>
+        <str:Concept id="DEPARTEMENTS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DEPARTEMENTS">
+          <com:Name xml:lang="fr">Départements</com:Name>
+          <com:Name xml:lang="en">Departments</com:Name>
+        </str:Concept>
+        <str:Concept id="GEOGRAPHIE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).GEOGRAPHIE">
+          <com:Name xml:lang="fr">Régions</com:Name>
+          <com:Name xml:lang="en">Regions</com:Name>
+        </str:Concept>
+        <str:Concept id="HALO" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).HALO">
+          <com:Name xml:lang="fr">Disponibilité</com:Name>
+          <com:Name xml:lang="en">Availability</com:Name>
+        </str:Concept>
+        <str:Concept id="LOCALISATION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).LOCALISATION">
+          <com:Name xml:lang="fr">Localisation</com:Name>
+          <com:Name xml:lang="en">Location</com:Name>
+        </str:Concept>
+        <str:Concept id="REGIONS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).REGIONS">
+          <com:Name xml:lang="fr">Régions</com:Name>
+          <com:Name xml:lang="en">Regions</com:Name>
+        </str:Concept>
+        <str:Concept id="ZONE-GEO" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ZONE-GEO">
+          <com:Name xml:lang="fr">Pays ou zone économique</com:Name>
+          <com:Name xml:lang="en">Country or economic region</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-EVO" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-EVO">
+          <com:Name xml:lang="fr">Type d'évolution</com:Name>
+          <com:Name xml:lang="en">Type of evolution</com:Name>
+        </str:Concept>
+        <str:Concept id="SEXE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).SEXE">
+          <com:Name xml:lang="fr">Sexe</com:Name>
+          <com:Name xml:lang="en">Gender</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-FLUX" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-FLUX">
+          <com:Name xml:lang="fr">Types de flux</com:Name>
+          <com:Name xml:lang="en">Type of flow</com:Name>
+        </str:Concept>
+        <str:Concept id="CAT-FP" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CAT-FP">
+          <com:Name xml:lang="fr">Catégories dans la Fonction Publique</com:Name>
+          <com:Name xml:lang="en">Categories in the civil service</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-COTIS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-COTIS">
+          <com:Name xml:lang="fr">Type de cotisation</com:Name>
+          <com:Name xml:lang="en">Type of contribution</com:Name>
+        </str:Concept>
+        <str:Concept id="PERIODE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).PERIODE">
+          <com:Name xml:lang="fr">Moment d'enquête</com:Name>
+          <com:Name xml:lang="en">Timing of the survey</com:Name>
+        </str:Concept>
+        <str:Concept id="AGE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).AGE">
+          <com:Name xml:lang="fr">Tranche d'âge</com:Name>
+          <com:Name xml:lang="en">Age group</com:Name>
+        </str:Concept>
+        <str:Concept id="TAILLE-MENAGE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TAILLE-MENAGE">
+          <com:Name xml:lang="fr">Taille du ménage</com:Name>
+          <com:Name xml:lang="en">Size of household</com:Name>
+        </str:Concept>
+        <str:Concept id="TAILLE-ENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TAILLE-ENT">
+          <com:Name xml:lang="fr">Tailles de l'entreprise</com:Name>
+          <com:Name xml:lang="en">Size of enterprises</com:Name>
+        </str:Concept>
+        <str:Concept id="ANCIENNETE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).ANCIENNETE">
+          <com:Name xml:lang="fr">Ancienneté sur les listes</com:Name>
+          <com:Name xml:lang="en">Seniority of registration</com:Name>
+        </str:Concept>
+        <str:Concept id="QUOTITE-TRAV" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).QUOTITE-TRAV">
+          <com:Name xml:lang="fr">Quotité de temps de travail</com:Name>
+          <com:Name xml:lang="en">Amount of working time</com:Name>
+        </str:Concept>
+        <str:Concept id="PRIX" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).PRIX">
+          <com:Name xml:lang="fr">Concept de prix</com:Name>
+          <com:Name xml:lang="en">Price concept</com:Name>
+        </str:Concept>
+        <str:Concept id="UNITE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).UNITE">
+          <com:Name xml:lang="fr">Unité</com:Name>
+          <com:Name xml:lang="en">Unit</com:Name>
+        </str:Concept>
+        <str:Concept id="CORRECTION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).CORRECTION">
+          <com:Name xml:lang="fr">Correction temporelle</com:Name>
+          <com:Name xml:lang="en">Time adjustement</com:Name>
+        </str:Concept>
+        <str:Concept id="NATURE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).NATURE">
+          <com:Name xml:lang="fr">Nature d'indice</com:Name>
+          <com:Name xml:lang="en">Nature of the index</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-SURF-ALIM" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-SURF-ALIM">
+          <com:Name xml:lang="fr">Type de surface alimentaire</com:Name>
+          <com:Name xml:lang="en">Type of food store</com:Name>
+        </str:Concept>
+        <str:Concept id="DATE-DEF-ENT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DATE-DEF-ENT">
+          <com:Name xml:lang="fr">Date de prise en compte</com:Name>
+          <com:Name xml:lang="en">Date of consideration</com:Name>
+        </str:Concept>
+        <str:Concept id="DEVISE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DEVISE">
+          <com:Name xml:lang="fr">Devises étrangères</com:Name>
+          <com:Name xml:lang="en">Foreign currencies</com:Name>
+        </str:Concept>
+        <str:Concept id="MONNAIE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).MONNAIE">
+          <com:Name xml:lang="fr">Monnaie de valorisation</com:Name>
+          <com:Name xml:lang="en">Currency of valuation</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-TX-CHANGE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-TX-CHANGE">
+          <com:Name xml:lang="fr">Types de taux de change de l'euro</com:Name>
+          <com:Name xml:lang="en">Types of euro exchange rate</com:Name>
+        </str:Concept>
+        <str:Concept id="TYPE-PRIX" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TYPE-PRIX">
+          <com:Name xml:lang="fr">Type de prix</com:Name>
+          <com:Name xml:lang="en">Type of price</com:Name>
+        </str:Concept>
+        <str:Concept id="BASIND" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).BASIND">
+          <com:Name xml:lang="fr">Période de référence</com:Name>
+          <com:Name xml:lang="en">Reference period</com:Name>
+        </str:Concept>
+        <str:Concept id="FREQUENCE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).FREQUENCE">
+          <com:Name xml:lang="fr">Fréquence</com:Name>
+          <com:Name xml:lang="en">Frequency</com:Name>
+        </str:Concept>
+        <str:Concept id="REPARTITION" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).REPARTITION">
+          <com:Name xml:lang="fr">Distribution</com:Name>
+          <com:Name xml:lang="en">Distribution</com:Name>
+        </str:Concept>
+        <str:Concept id="REVENU" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).REVENU">
+          <com:Name xml:lang="fr">Décomposition du revenu disponible</com:Name>
+          <com:Name xml:lang="en">Breakdown of disposable income</com:Name>
+        </str:Concept>
+        <str:Concept id="IDBANK" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).IDBANK">
+          <com:Name xml:lang="fr">Identifiant numérique utilisé sur le site internet BDM</com:Name>
+          <com:Name xml:lang="en">Numerical identifier used in the BDM website</com:Name>
+        </str:Concept>
+        <str:Concept id="TITLE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TITLE">
+          <com:Name xml:lang="fr">Libellé de la série</com:Name>
+          <com:Name xml:lang="en">Title</com:Name>
+        </str:Concept>
+        <str:Concept id="LAST_UPDATE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).LAST_UPDATE">
+          <com:Name xml:lang="fr">Date de dernière mise à jour</com:Name>
+          <com:Name xml:lang="en">Last update date</com:Name>
+        </str:Concept>
+        <str:Concept id="UNIT_MEASURE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).UNIT_MEASURE">
+          <com:Name xml:lang="fr">Unité</com:Name>
+          <com:Name xml:lang="en">Unit</com:Name>
+        </str:Concept>
+        <str:Concept id="UNIT_MULT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).UNIT_MULT">
+          <com:Name xml:lang="fr">Puissance</com:Name>
+          <com:Name xml:lang="en">Unit multiplier</com:Name>
+        </str:Concept>
+        <str:Concept id="REF_AREA" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).REF_AREA">
+          <com:Name xml:lang="fr">Zone géographique</com:Name>
+          <com:Name xml:lang="en">Reference area</com:Name>
+        </str:Concept>
+        <str:Concept id="DECIMALS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).DECIMALS">
+          <com:Name xml:lang="fr">Nombre de décimales</com:Name>
+          <com:Name xml:lang="en">Decimals</com:Name>
+        </str:Concept>
+        <str:Concept id="BASE_PER" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).BASE_PER">
+          <com:Name xml:lang="fr">Base de l'indice</com:Name>
+          <com:Name xml:lang="en">Base period</com:Name>
+        </str:Concept>
+        <str:Concept id="TIME_PER_COLLECT" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TIME_PER_COLLECT">
+          <com:Name xml:lang="fr">Moment de l'observation</com:Name>
+          <com:Name xml:lang="en">Time period collection</com:Name>
+        </str:Concept>
+        <str:Concept id="TIME_PERIOD" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).TIME_PERIOD">
+          <com:Name xml:lang="fr">Date d'observation</com:Name>
+          <com:Name xml:lang="en">Time period</com:Name>
+        </str:Concept>
+        <str:Concept id="OBS_VALUE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).OBS_VALUE">
+          <com:Name xml:lang="fr">Valeur de l'observation</com:Name>
+          <com:Name xml:lang="en">Observation Value</com:Name>
+        </str:Concept>
+        <str:Concept id="OBS_STATUS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).OBS_STATUS">
+          <com:Name xml:lang="fr">Statut de l'observation</com:Name>
+          <com:Name xml:lang="en">Observation Status</com:Name>
+        </str:Concept>
+        <str:Concept id="EMBARGO_TIME" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=FR1:CONCEPTS_INSEE(1.0).EMBARGO_TIME">
+          <com:Name xml:lang="fr">Date de levée d'embargo</com:Name>
+          <com:Name xml:lang="en">Embargo date</com:Name>
+        </str:Concept>
+      </str:ConceptScheme>
+    </str:Concepts>
+    <str:DataStructures>
+      <str:DataStructure id="IPI-2010-A21" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=FR1:IPI-2010-A21(1.0)" agencyID="FR1" version="1.0">
+        <com:Name xml:lang="fr">Indice de la production industrielle (base 2010) - NAF niveau A21</com:Name>
+        <com:Name xml:lang="en">Industrial production index (base 2010) - NAF level A21</com:Name>
+        <str:DataStructureComponents>
+          <str:DimensionList id="DimensionDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DimensionDescriptor=FR1:IPI-2010-A21(1.0).DimensionDescriptor">
+            <str:Dimension id="FREQ" urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=FR1:IPI-2010-A21(1.0).FREQ" position="1">
+              <str:ConceptIdentity>
+                <Ref id="FREQ" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_FREQ" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension id="PRODUIT" urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=FR1:IPI-2010-A21(1.0).PRODUIT" position="2">
+              <str:ConceptIdentity>
+                <Ref id="PRODUIT" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_NAF2_A21" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension id="NATURE" urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=FR1:IPI-2010-A21(1.0).NATURE" position="3">
+              <str:ConceptIdentity>
+                <Ref id="NATURE" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_NATURE" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:TimeDimension id="TIME_PERIOD" urn="urn:sdmx:org.sdmx.infomodel.datastructure.TimeDimension=FR1:IPI-2010-A21(1.0).TIME_PERIOD" position="4">
+              <str:ConceptIdentity>
+                <Ref id="TIME_PERIOD" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="ObservationalTimePeriod"/>
+              </str:LocalRepresentation>
+            </str:TimeDimension>
+          </str:DimensionList>
+          <str:AttributeList id="AttributeDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.AttributeDescriptor=FR1:IPI-2010-A21(1.0).AttributeDescriptor">
+            <str:Attribute id="IDBANK" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).IDBANK" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="IDBANK" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="String" maxLength="9" pattern="[0-9]{9}"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="TITLE" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).TITLE" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="TITLE" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="String" maxLength="240"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="LAST_UPDATE" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).LAST_UPDATE" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="LAST_UPDATE" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="GregorianTimePeriod"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="UNIT_MEASURE" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).UNIT_MEASURE" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="UNIT_MEASURE" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_UNIT" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="UNIT_MULT" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).UNIT_MULT" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="UNIT_MULT" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="Integer" minValue="0" maxValue="9"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="REF_AREA" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).REF_AREA" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="REF_AREA" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_AREA" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="DECIMALS" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).DECIMALS" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="DECIMALS" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="Integer" minValue="0" maxValue="9"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="BASE_PER" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).BASE_PER" assignmentStatus="Conditional">
+              <str:ConceptIdentity>
+                <Ref id="BASE_PER" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="String" maxLength="30"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="TIME_PER_COLLECT" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).TIME_PER_COLLECT" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="TIME_PER_COLLECT" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_TIME_COLLECT" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="PRODUIT"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="NATURE"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="OBS_STATUS" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).OBS_STATUS" assignmentStatus="Mandatory">
+              <str:ConceptIdentity>
+                <Ref id="OBS_STATUS" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref id="CL_OBS_STATUS" version="1.0" agencyID="FR1" package="codelist" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:PrimaryMeasure>
+                  <Ref id="OBS_VALUE"/>
+                </str:PrimaryMeasure>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute id="EMBARGO_TIME" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=FR1:IPI-2010-A21(1.0).EMBARGO_TIME" assignmentStatus="Conditional">
+              <str:ConceptIdentity>
+                <Ref id="EMBARGO_TIME" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="GregorianTimePeriod"/>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:PrimaryMeasure>
+                  <Ref id="OBS_VALUE"/>
+                </str:PrimaryMeasure>
+              </str:AttributeRelationship>
+            </str:Attribute>
+          </str:AttributeList>
+          <str:MeasureList id="MeasureDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.MeasureDescriptor=FR1:IPI-2010-A21(1.0).MeasureDescriptor">
+            <str:PrimaryMeasure id="OBS_VALUE" urn="urn:sdmx:org.sdmx.infomodel.datastructure.PrimaryMeasure=FR1:IPI-2010-A21(1.0).OBS_VALUE">
+              <str:ConceptIdentity>
+                <Ref id="OBS_VALUE" maintainableParentID="CONCEPTS_INSEE" maintainableParentVersion="1.0" agencyID="FR1" package="conceptscheme" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="Double"/>
+              </str:LocalRepresentation>
+            </str:PrimaryMeasure>
+          </str:MeasureList>
+        </str:DataStructureComponents>
+      </str:DataStructure>
+    </str:DataStructures>
+  </mes:Structures>
+</mes:Structure>

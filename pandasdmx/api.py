@@ -67,6 +67,15 @@ class Request(object):
             'url': 'https://registry.sdmx.org/ws/rest',
             'resources': {},
         },
+        'INSEE': {
+            'name': 'INSEE',
+            'url': 'http://www.bdm.insee.fr/series/sdmx',
+            'resources': {
+                'data': {
+                    'headers': {"Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"},
+                },
+            }
+        }
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',

@@ -29,10 +29,10 @@ setup(name='pandaSDMX',
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
       packages=['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer',
-                'pandasdmx.utils', 'pandasdmx.tests'],
-      package_data={
-          'pandasdmx.tests': ['data/*/*.xml',
-                              'data/EXR/*/*/*.xml', 'data/query/*.xml', 'data/common/*.xml']},
+                'pandasdmx.utils'],
+      # package_data={
+      # 'pandasdmx.tests': ['data/*/*.xml',
+      # 'data/EXR/*/*/*.xml', 'data/query/*.xml', 'data/common/*.xml']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[
           'pandas',

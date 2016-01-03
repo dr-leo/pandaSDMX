@@ -9,9 +9,11 @@ import unittest
 import pandasdmx
 from pandasdmx import model, Request
 from pandasdmx.utils import str_type
-import os.path
+import inspect
+import os
 
-pkg_path = pandasdmx.tests.__path__[0]
+pkg_path = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 class Test_request(unittest.TestCase):

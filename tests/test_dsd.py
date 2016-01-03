@@ -9,8 +9,10 @@ import unittest
 import pandasdmx
 from pandasdmx import model, Request
 import os.path
+import inspect
 
-test_path = pandasdmx.tests.__path__[0]
+test_path = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):

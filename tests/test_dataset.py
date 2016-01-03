@@ -9,9 +9,11 @@ import unittest
 import pandasdmx
 from pandasdmx import model, Request
 import pandas
-import os.path
+import os
+import inspect
 
-pkg_path = pandasdmx.tests.__path__[0]
+pkg_path = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 class TestGenericFlatDataSet(unittest.TestCase):

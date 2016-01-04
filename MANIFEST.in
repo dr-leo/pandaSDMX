@@ -1,3 +1,3 @@
-include *.rst LICENSE.txt pandasdmx/*.py requirements.txt
+include *.rst LICENSE.txt requirements.txt
 include doc/README.txt
-
+graft tests

@@ -9,7 +9,6 @@
 
 from setuptools import setup
 from codecs import open
-# uncomment this once readthedocs swallows it
 # import re
 
 
@@ -30,15 +29,13 @@ setup(name='pandaSDMX',
       author_email='fhaxbox66@gmail.com',
       packages=['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer',
                 'pandasdmx.utils'],
-      # package_data={
-      # 'pandasdmx.tests': ['data/*/*.xml',
-      # 'data/EXR/*/*/*.xml', 'data/query/*.xml', 'data/common/*.xml']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[
           'pandas',
           'lxml',
           'requests'
       ],
+      zip_safe=True,
       provides=['pandasdmx'],
       classifiers=[
           'Intended Audience :: Developers',

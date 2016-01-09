@@ -49,11 +49,15 @@ class Header(SDMXObject):
 
     @property
     def sender(self):
-        return self._reader.header_sender(self)
+        return self._reader.read_as_str('header_sender', self)
+
+    @property
+    def receiver(self):
+        return self._reader.read_as_str('header_receiver', self)
 
     @property
     def error(self):
-        return self._reader.header_error(self)
+        return self._reader.read_as_str('error', self)
 
 
 class Footer(SDMXObject):
@@ -199,7 +203,7 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def is_final(self):
-        return self._reader.is_final(self)
+        return bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def is_external_ref(self):
@@ -308,9 +312,15 @@ class Concept(Item):
 
 class Component(IdentifiableArtefact):
 
+    @property  # not working yet
+    def concept_identity(self):
+        return self._reader.read_instance(Ref, self, offset='concept_identity')
+
     @property
     def concept(self):
-        return self._reader.concept_id(self)
+        concept_id = self.concept_identity.id
+        parent_id = self.concept_identity.maintainable_parent_id
+        return self._reader.message.conceptschemes[parent_id][concept_id]
 
     @property
     def local_repr(self):
@@ -422,6 +432,10 @@ class Ref(SDMXObject):
     @property
     def agency_id(self):
         return self._reader.read_as_str('agencyID', self)
+
+    @property
+    def maintainable_parent_id(self):
+        return self._reader.read_as_str('maintainable_parent_id', self)
 
     def resolve(self):
         pkg = getattr(self._reader.msg, self.package)
@@ -673,7 +687,3 @@ class GenericDataMessage(DataMessage):
     _content_types = DataMessage._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', GenericDataSet, None)])
-
-
-class StructureSpecificDataMessage(DataMessage):
-    pass

@@ -65,11 +65,15 @@ class Reader(BaseReader):
         'url': '@url',
         'uri': '@uri',
         'agencyID': '@agencyID',
+        'maintainable_parent_id': '@maintainableParentID',
         'value': 'com:Value/text()',
         'headerID': 'mes:ID/text()',
         'header_prepared': 'mes:Prepared/text()',
         'header_sender': 'mes:Sender/@*',
+        'header_receiver': 'mes:Receiver/@*',
+        'error': 'mes:error/@*',
         'ref_version': '@version',
+        'concept_id': 'str:ConceptIdentity',
         'position': '@position',
         'isfinal': '@isfinal',
         'ref_package': '@package',
@@ -142,25 +146,11 @@ class Reader(BaseReader):
             elem_attrib = ['en']
         return DictLike(zip(elem_attrib, values))
 
-    def header_sender(self, sdmxobj):
-        return DictLike(sdmxobj._elem.Sender.attrib)
-
     def header_error(self, sdmxobj):
         try:
             return DictLike(sdmxobj._elem.Error.attrib)
         except AttributeError:
             return None
-
-    def isfinal(self, sdmxobj):
-        return bool(sdmxobj._elem.get('isFinal'))
-
-    def concept_id(self, sdmxobj):
-        # called by model.Component.concept
-        c_id = sdmxobj._elem.xpath('str:ConceptIdentity/Ref/@id',
-                                   namespaces=self._nsmap)[0]
-        parent_id = sdmxobj._elem.xpath('str:ConceptIdentity/Ref/@maintainableParentID',
-                                        namespaces=self._nsmap)[0]
-        return self.message.conceptschemes[parent_id][c_id]
 
     def localrepr(self, sdmxobj):
         node = sdmxobj._elem.xpath('str:LocalRepresentation',

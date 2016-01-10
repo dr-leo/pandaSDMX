@@ -71,6 +71,7 @@ class Reader(BaseReader):
         'header_prepared': 'mes:Prepared/text()',
         'header_sender': 'mes:Sender/@*',
         'header_receiver': 'mes:Receiver/@*',
+        'assignment_status': '@assignmentStatus',
         'error': 'mes:error/@*',
         'ref_version': '@version',
         'concept_id': 'str:ConceptIdentity',
@@ -162,9 +163,6 @@ class Reader(BaseReader):
         else:
             enum = None
         return model.Representation(self, node, enum=enum)
-
-    def assignment_status(self, sdmxobj):
-        return sdmxobj._elem.get('assignmentStatus')
 
     def attr_relationship(self, sdmxobj):
         return sdmxobj._elem.xpath('*/Ref/@id')

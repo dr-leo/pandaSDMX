@@ -467,7 +467,7 @@ class DataAttribute(Component):
 
     @property
     def usage_status(self):
-        return self._reader.assignment_status(self)
+        return self._reader.read_as_str('assignment_status', self)
 
 
 class DataStructureDefinition(Structure):

@@ -125,7 +125,11 @@ class Reader(BaseReader):
         model.Series: 'gen:Series',
         model.GenericDataSet: 'mes:DataSet',
         'int_str_names': './*[local-name() = $name]/@xml:lang',
+        model.Representation: 'str:LocalRepresentation',
         'int_str_values': './*[local-name() = $name]/text()',
+        'enumeration': 'str:Enumeration',
+        # need this? It is just a non-offset Ref
+        'attr_relationship': '*/Ref/@id',
     }
 
     @classmethod
@@ -152,20 +156,6 @@ class Reader(BaseReader):
             return DictLike(sdmxobj._elem.Error.attrib)
         except AttributeError:
             return None
-
-    def localrepr(self, sdmxobj):
-        node = sdmxobj._elem.xpath('str:LocalRepresentation',
-                                   namespaces=self._nsmap)[0]
-        enum = node.xpath('str:Enumeration/Ref/@id',
-                          namespaces=self._nsmap)
-        if enum:
-            enum = self.message.codelists[enum[0]]
-        else:
-            enum = None
-        return model.Representation(self, node, enum=enum)
-
-    def attr_relationship(self, sdmxobj):
-        return sdmxobj._elem.xpath('*/Ref/@id')
 
     # Types and xpath expressions for generic observations
     _ObsTuple = namedtuple_factory(

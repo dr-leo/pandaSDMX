@@ -284,7 +284,9 @@ class Representation(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(Representation, self).__init__(*args)
-        self.enum = kwargs.get('enum')
+        codelist_id = self._reader.read_instance(
+            Ref, self, offset='enumeration').id
+        self.enum = self._reader.message.codelists[codelist_id]
 
     # not_enumerated = List # of facets
 
@@ -324,7 +326,7 @@ class Component(IdentifiableArtefact):
 
     @property
     def local_repr(self):
-        return self._reader.localrepr(self)
+        return self._reader.read_instance(Representation, self)
 
 
 class Code(Item):
@@ -460,7 +462,7 @@ class DataAttribute(Component):
 
     @property
     def related_to(self):
-        return self._reader.attr_relationship(self)
+        return self._reader.read_instance(Ref, self).id
 
     # fix this
     # role = Instance(Concept)

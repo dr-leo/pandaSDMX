@@ -569,12 +569,8 @@ class DataSet(SDMXObject):
         '''
         # distinguish between generic and structure-specific observations
         # only generic ones are currently implemented.
-        if isinstance(self, GenericDataSet):
-            return self._reader.iter_generic_obs(
-                self, with_values, with_attributes)
-        else:
-            raise NotImplemented(
-                'StructureSpecificDataSets are not yet supported.')
+        return self._reader.iter_generic_obs(
+            self, with_values, with_attributes)
 
     @property
     def series(self):
@@ -588,14 +584,6 @@ class DataSet(SDMXObject):
     @property
     def iter_groups(self):
         return self._reader.generic_groups(self)
-
-
-class StructureSpecificDataSet(DataSet):
-    pass
-
-
-class GenericDataSet(DataSet):
-    pass
 
 
 class Series(SDMXObject):
@@ -682,10 +670,6 @@ class StructureMessage(Message):
 
 
 class DataMessage(Message):
-    pass
-
-
-class GenericDataMessage(DataMessage):
-    _content_types = DataMessage._content_types[:]
+    _content_types = Message._content_types[:]
     _content_types.extend([
-        ('data', 'read_instance', GenericDataSet, None)])
+        ('data', 'read_instance', DataSet, None)])

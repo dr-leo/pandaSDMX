@@ -25,14 +25,14 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_msg_type(self):
-        self.assertIsInstance(self.resp.msg, model.GenericDataMessage)
+        self.assertIsInstance(self.resp.msg, model.DataMessage)
 
     def test_header_attributes(self):
         self.assertEqual(self.resp.header.structured_by, 'STR1')
         self.assertEqual(self.resp.header.dim_at_obs, 'AllDimensions')
 
     def test_dataset_cls(self):
-        self.assertIsInstance(self.resp.data, model.GenericDataSet)
+        self.assertIsInstance(self.resp.data, model.DataSet)
         self.assertEqual(self.resp.msg.data.dim_at_obs, 'AllDimensions')
 
     def test_generic_obs(self):
@@ -70,7 +70,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_dataset_cls(self):
-        self.assertIsInstance(self.resp.msg.data, model.GenericDataSet)
+        self.assertIsInstance(self.resp.msg.data, model.DataSet)
 
     def test_generic_obs(self):
         data = self.resp.data
@@ -145,7 +145,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_dataset_cls(self):
-        self.assertIsInstance(self.resp.data, model.GenericDataSet)
+        self.assertIsInstance(self.resp.data, model.DataSet)
 
     def test_generic_obs(self):
         data = self.resp.data

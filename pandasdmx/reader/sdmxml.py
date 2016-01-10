@@ -39,12 +39,8 @@ class Reader(BaseReader):
         root = tree.getroot()
         if root.tag.endswith('Structure'):
             cls = model.StructureMessage
-        elif (root.tag.endswith('GenericData')
-              or root.tag.endswith('GenericTimeSeriesData')):
-            cls = model.GenericDataMessage
-        elif (root.tag.endswith('StructureSpecificData')
-              or root.tag.endswith('StructureSpecificTimeSeriesData')):
-            cls = model.StructureSpecificDataMessage
+        elif root.tag.endswith('Data'):
+            cls = model.DataMessage
         else:
             raise ValueError('Unsupported root tag: %s' % root.tag)
         self.message = cls(self, root)
@@ -123,7 +119,7 @@ class Reader(BaseReader):
         model.Annotation: 'com:Annotations/com:Annotation',
         model.Group: 'gen:Group',
         model.Series: 'gen:Series',
-        model.GenericDataSet: 'mes:DataSet',
+        model.DataSet: 'mes:DataSet',
         'int_str_names': './*[local-name() = $name]/@xml:lang',
         model.Representation: 'str:LocalRepresentation',
         'int_str_values': './*[local-name() = $name]/text()',

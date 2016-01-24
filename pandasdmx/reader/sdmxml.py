@@ -153,7 +153,7 @@ class Reader(BaseReader):
         except AttributeError:
             return None
 
-    # Types and xpath expressions for generic observations
+    # Types for generic observations
     _ObsTuple = namedtuple_factory(
         'GenericObservation', ('key', 'value', 'attrib'))
     _SeriesObsTuple = namedtuple_factory(

@@ -255,9 +255,7 @@ class Request(object):
                 resource_cfg = self._agencies[agency][
                     'resources'].get(resource_type)
                 if resource_cfg:
-                    default_headers = resource_cfg.get('headers')
-                    if default_headers:
-                        headers = default_headers
+                    headers = resource_cfg.get('headers')
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
             # examples

@@ -19,7 +19,7 @@ import logging
 
 __all__ = ['Request']
 
-version = '0.3.1'
+__version__ = '0.4a1'
 
 
 def _init_logger():
@@ -33,3 +33,18 @@ def _init_logger():
     return logger
 
 logger = _init_logger()
+
+
+def odo_support():
+    # Register with odo if available
+    try:
+        import odo
+
+        @odo.resource.register('.*\.sdmx')
+        def resource_sdmx(uri, **kwargs):
+            return Request().get(fromfile=uri).write()
+        logger.info("Registered '*.sdmx' with odo.")
+    except:
+        logger.info('Could not register with odo.')
+
+odo_support()

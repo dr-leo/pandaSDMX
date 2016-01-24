@@ -3,16 +3,17 @@
 What's new?
 ==============
 
-v0.4.0 (2015-12)
+v0.4dev (2016-02?)
 -----------------------
 
 * add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
+* register '*.sdmx' files with `Odo <odo.readthedocs.org/>'_ if available
 * module-level logging. Used for making requests or loading and saving files.
   ``pandasdmx.api.Request`` constructor accepts a ``log_level`` keyword arg which can be set
   to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
-*  ``pandasdmx.api.Request`` has a ``timeout`` property to set
+*  ``pandasdmx.api.Request`` now has a ``timeout`` property to set
   the timeout for http requests
-* extend api.Request._agencies configutation to specify agency- and resource-specific 
+* extend api.Request._agencies configuration to specify agency- and resource-specific 
   settings such as headers. Future versions may exploit this to provide 
   reader selection information.
 * api.Request.get: specify http_headers per request. Defaults are set accoring to agency configuration   
@@ -30,7 +31,10 @@ v0.4.0 (2015-12)
 * sdmxml reader: return strings or unicode strings instead of LXML smart strings
 * use patched version of namedtuple that accepts non-identifier strings 
   as field names and makes all fields accessible through dict syntax.
-* lots of bug fixes and code clean-ups
+* improve packaging. Include tests in sdist only
+* remove GenericDataSet and GenericDataMessage. Use DataMessage and DataSet instead
+* sdmxml reader: remove most of the specialized read methods. 
+  Adapt model to use generalized methods. This makes code more maintainable.  
 
 v0.3.1 (2015-10-04)
 -----------------------

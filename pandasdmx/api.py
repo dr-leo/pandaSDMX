@@ -250,12 +250,12 @@ class Request(object):
                 key = self._make_key(resource_id, key)
 
             # Get http headers from agency config if not given by the caller
-            if headers is None:
+            if not headers:
                 # Check for default headers
                 resource_cfg = self._agencies[agency][
                     'resources'].get(resource_type)
                 if resource_cfg:
-                    headers = resource_cfg.get('headers')
+                    headers = resource_cfg.get('headers') or {}
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
             # examples

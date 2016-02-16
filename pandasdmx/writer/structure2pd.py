@@ -83,7 +83,8 @@ class Writer(BaseWriter):
                 raw = [getattr(item, s)
                        for s in columns]
             # Select language for international strings represented as dict
-            translated = tuple(s[lang] if lang in s else s['en'] for s in raw)
+            translated = tuple(s[lang] if lang in s
+                               else s.get('en') or s.any() for s in raw)
             if len(translated) > 1:
                 return translated
             else:
@@ -109,9 +110,30 @@ class Writer(BaseWriter):
                 raw = content.values()
             return sorted(raw, key=attrgetter('id'))
 
+        def prefix_scheme_id(scheme, item):
+            # add prefix '__a_' or '__d_' to
+            # container_id depending on whether the codelist
+            # is referenced by a dimension or attribute.
+            scheme_id = scheme.id
+            if scheme is item:
+                if scheme.id in cl2dim:
+                    prefix = '__d_'
+                elif scheme_id in cl2attr:
+                    prefix = '__a_'
+            else:
+                prefix = ''
+            item_id = prefix + item.id
+            return scheme_id, item_id
+
         if rows == 'codelists':
-            dsd = source.datastructures.any()
-            # Dimensions represented by the code lists
+            dsd = source.datastructures.any()  # in fact this is the only DSD
+            # Relate DSD attributes to corresponding codelists to
+            # show this relation in the resulting dataframe
+            # as prefix to the string in 2nd index level
+            # Codelists for data attributes
+            attributes = [d for d in dsd.attributes.aslist()]
+            cl2attr = {d.local_repr.enum.id: d.id for d in attributes}
+            # And dimensions represented by the code lists
             dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
                           ['TIME', 'TIME_PERIOD']]
             # map codelist ID's to dimension names of the DSD.
@@ -122,9 +144,8 @@ class Writer(BaseWriter):
                     # use any user-provided constraint
                     constraint = constraint.constraints.any()
                 except AttributeError:
-                    # So the Message must containe one
+                    # So the Message must containe a constraint
                     constraint = source.constraints.any()
-                # We assume that where there's a code list, a DSD is not far.
 
         # allow `columns` arg to be a str
         if not isinstance(columns, (list, tuple)):
@@ -132,20 +153,25 @@ class Writer(BaseWriter):
 
         content = getattr(source, rows)
         # Distinguish hierarchical content consisting of a dict of dicts, and
-        # flat content consisting of a dict of atomic values. In the former case,
+        # flat content consisting of a dict of atomic model instances. In the former case,
         # the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
-            # generate index
-            raw_tuples = chain(*(zip(
+            # generate pairs of model instances, e.g. codelist
+            # and code. Their structure resembles the multi-index
+            # tuples. The model instances will be replaced
+            # by their id-attributes later. For now
+            # we need the model instances as we want to gleen
+            # from them other attributes for the dataframe columns.
+            raw_tuples = chain.from_iterable(zip(
                 # 1st index level eg codelist ID
                 repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
-                # dimension name. The following rows are code ID's. Hence the chain.
-                # Need to access cl2dim and make cl2attr.
+                # dimension name. The following rows are code ID's. Hence the
+                # chain.
                 chain((container,), iter_keys(container)))
-                for container in iter_schemes()))
-            # Now actually generate the index
-            raw_idx, data = zip(*(((i.id, '__' + j.id) if i is j else (i.id, j.id),
+                for container in iter_schemes())
+            # Now actually generate the index and related data for the columns
+            raw_idx, data = zip(*((prefix_scheme_id(i, j),
                                    get_data(i, j))
                                   for i, j in raw_tuples))
             idx = PD.MultiIndex.from_tuples(raw_idx)  # set names?
@@ -153,6 +179,6 @@ class Writer(BaseWriter):
             # flatt structure, e.g., dataflow definitions
             raw_tuples = sorted(content.values(), key=attrgetter('id'))
             raw_idx, data = zip(*((t.id, get_data(t, None))
-                                  for t in raw_tuples))  # pass '_' to get_data?
+                                  for t in raw_tuples))
             idx = PD.Index(raw_idx, name=rows)
         return PD.DataFrame(NP.array(data), index=idx, columns=columns)

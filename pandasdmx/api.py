@@ -250,7 +250,7 @@ class Request(object):
                 key = self._make_key(resource_id, key)
 
             # Get http headers from agency config if not given by the caller
-            if not headers:
+            if not (fromfile or headers):
                 # Check for default headers
                 resource_cfg = self._agencies[agency][
                     'resources'].get(resource_type)
@@ -474,3 +474,17 @@ class Response(object):
         if not source:
             source = self.msg
         return self._writer.write(source=source, **kwargs)
+
+    def tofile(self, filename):
+        '''
+        write xml file by calling the 'write' method of lxml root element.
+        Useful to save the xml source file for offline use.
+        Similar to passing `tofile` arg to :meth:`Request.get`
+
+        Args:
+            filename(str): name/path of target file
+
+        Returns:
+            whatever the LXML deserializer returns.
+        '''
+        return self.msg._elem.write(filename, encoding='utf8')

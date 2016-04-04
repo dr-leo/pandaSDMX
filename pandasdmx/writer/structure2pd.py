@@ -2,7 +2,7 @@
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
 # this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014, 2015, 2016 Dr. Leo <fhaxbox66qgmail.com>
 
 
 '''
@@ -27,8 +27,8 @@ class Writer(BaseWriter):
 
     def write(self, source=None, rows=None, **kwargs):
         '''
-        Transfform a collection of nameable SDMX objects 
-        from a :class:`pandasdmx.model.StructureMessage` instance to a pandas DataFrame.
+        Transfform a collection of nameableArtefacts  
+        from a :class:`pandasdmx.model.StructureMessage` instance into a pandas DataFrame.
 
         Args:
             source(pandasdmx.model.StructureMessage): a :class:`pandasdmx.model.StructureMessage` 
@@ -38,11 +38,12 @@ class Writer(BaseWriter):
                 Must be a name of an attribute of the StructureMessage. The attribute must
                 be an instance of `dict` whose keys are strings. These will be
                 interpreted as ID's and used for the MultiIndex of the DataFrame
-                to be returned. Values can be either instances of `dict` such as for codelists, or simple nameable objects
+                to be returned. Values can be either instances of `dict` such as for codelists and categoryschemes, 
+                or simple nameable objects
                 such as for dataflows. In the latter case, the DataFrame will have a flat index.  
                 (default: depends on content found in Message. 
                 Common is 'codelists')
-            columns(str, list): if str, it denotes the only attribute of the
+            columns(str, list): if str, it denotes the attribute of attributes of the
                 values (nameable SDMX objects such as Code or ConceptScheme) that will be stored in the
                 DataFrame. If a list, it must contain strings
                 that are valid attibute values. Defaults to: ['name', 'description']
@@ -70,9 +71,13 @@ class Writer(BaseWriter):
             return frames
 
     def _make_dataframe(self, source, rows, constraint=None,
-                        dimensions_only=False, columns=['name'], lang='en'):
+                        columns=['name'], lang='en'):
 
-        def get_data(scheme, item):
+        def make_column(scheme, item):
+            if rows == 'codelists':
+                if scheme is item:
+                    item = scheme[1]
+                scheme = scheme[1]
             if scheme is item:
                 raw = [getattr(scheme, s) for s in columns]
             else:
@@ -83,62 +88,64 @@ class Writer(BaseWriter):
                 raw = [getattr(item, s)
                        for s in columns]
             # Select language for international strings represented as dict
-            translated = tuple(s[lang] if lang in s
-                               else s.get('en') or s.any() for s in raw)
+            translated = [s[lang] if lang in s
+                          else s.get('en') or s.any() for s in raw]
+            # for codelists, prepend dim_or_attr flag
+            if rows == 'codelists':
+                if scheme in dim2cl.values():
+                    translated.insert(0, 'D')
+                else:
+                    translated.insert(0, 'A')
             if len(translated) > 1:
-                return translated
+                return tuple(translated)
             else:
                 return translated[0]
 
         def iter_keys(container):
-            if rows == 'codelists' and constraint:
-                try:
-                    dim_id = cl2dim[container.id]
-                    result = (
-                        v for v in container.values() if (dim_id, v.id) in constraint)
-                except KeyError:
-                    pass
-            result = container.values()
+            if rows == 'codelists':
+                if (constraint
+                        and container[1] in dim2cl.values()):
+                    result = (v for v in container[1].values()
+                              if (v.id, container[0].id) in constraint)
+                else:
+                    result = container[1].values()
+            else:
+                result = container.values()
             return sorted(result, key=attrgetter('id'))
 
         def iter_schemes():
-            # iterate only over codelists representing dimensions?
-            # check tis condition. is rows correct?
-            if rows == 'codelists' and dimensions_only:
-                raw = (i for i in content.values() if i.id in cl2dim)
+            if rows == 'codelists':
+                return chain(dim2cl.items(), attr2cl.items())
             else:
-                raw = content.values()
-            return sorted(raw, key=attrgetter('id'))
+                return content.values()
 
-        def prefix_scheme_id(scheme, item):
-            # add prefix '__a_' or '__d_' to
-            # container_id depending on whether the codelist
-            # is referenced by a dimension or attribute.
-            scheme_id = scheme.id
-            if scheme is item:
-                if scheme.id in cl2dim:
-                    prefix = '__d_'
-                elif scheme_id in cl2attr:
-                    prefix = '__a_'
+        def container2id(container, item):
+            if rows == 'codelists':
+                # For first index level, get dimension or attribute ID instead of
+                # codelist ID
+                container_id = container[0].id
+                if container is item:
+                    item_id = container_id
+                else:
+                    item_id = item.id
             else:
-                prefix = ''
-            item_id = prefix + item.id
-            return scheme_id, item_id
+                container_id = container.id
+                if container is item:
+                    item_id = container.id
+                else:
+                    item_id = item.id
+            return container_id, item_id
 
         if rows == 'codelists':
-            dsd = source.datastructures.any()  # in fact this is the only DSD
-            # Relate DSD attributes to corresponding codelists to
+            # Assuming a msg contains only one DSD
+            dsd = source.datastructures.any()
+            # Relate dimensions and attributes to corresponding codelists to
             # show this relation in the resulting dataframe
-            # as prefix to the string in 2nd index level
-            # Codelists for data attributes
-            attributes = [d for d in dsd.attributes.aslist()]
-            cl2attr = {d.local_repr.enum.id: d.id for d in attributes}
-            # And dimensions represented by the code lists
             dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
-                          ['TIME', 'TIME_PERIOD']]
-            # map codelist ID's to dimension names of the DSD.
-            # This is needed to efficiently check for any constraint
-            cl2dim = {d.local_repr.enum.id: d.id for d in dimensions}
+                          ['TIME', 'TIME_PERIOD']]  # these do not have codelists
+            dim2cl = {d: d.local_repr.enum for d in dimensions}
+            attr2cl = {
+                a: a.local_repr.enum for a in dsd.attributes.values()}
             if constraint:
                 try:
                     # use any user-provided constraint
@@ -163,22 +170,28 @@ class Writer(BaseWriter):
             # we need the model instances as we want to gleen
             # from them other attributes for the dataframe columns.
             raw_tuples = chain.from_iterable(zip(
-                # 1st index level eg codelist ID
+                # 1st index level eg name of dimension
+                # represented by codelist
                 repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
-                # dimension name. The following rows are code ID's. Hence the
-                # chain.
+                # container id. The following rows are item ID's. .
                 chain((container,), iter_keys(container)))
                 for container in iter_schemes())
             # Now actually generate the index and related data for the columns
-            raw_idx, data = zip(*((prefix_scheme_id(i, j),
-                                   get_data(i, j))
-                                  for i, j in raw_tuples))
+            raw_idx, data = zip(*[(container2id(i, j),
+                                   make_column(i, j))
+                                  for i, j in raw_tuples])
             idx = PD.MultiIndex.from_tuples(raw_idx)  # set names?
         else:
             # flatt structure, e.g., dataflow definitions
             raw_tuples = sorted(content.values(), key=attrgetter('id'))
-            raw_idx, data = zip(*((t.id, get_data(t, None))
+            raw_idx, data = zip(*((t.id, make_column(t, None))
                                   for t in raw_tuples))
             idx = PD.Index(raw_idx, name=rows)
+        # For codelists, prepend 'dim_or_attr' as synthetic column
+        # See corresponding insert in the make_columns function above
+        if rows == 'codelists':
+            # make local copy to avoid side effect
+            columns = columns[:]
+            columns.insert(0, 'dim_or_attr')
         return PD.DataFrame(NP.array(data), index=idx, columns=columns)

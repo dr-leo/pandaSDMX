@@ -363,7 +363,7 @@ class Request(object):
                             if c.constraint_attachment.id == flow_id]
             if constraint_l:
                 constraint = constraint_l[0]
-        except Exception:
+        except:
             constraint = None
         # Validate the key dict
         # First, check correctness of dimension names

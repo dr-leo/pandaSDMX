@@ -37,7 +37,7 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
 
     def test_writer(self):
         df = self.resp.write(rows='codelists')
-        self.assertEqual(df.shape, (79, 1))
+        self.assertEqual(df.shape, (79, 2))
 
     def tearDown(self):
         pass

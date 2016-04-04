@@ -125,18 +125,10 @@ class IdentifiableArtefact(AnnotableArtefact):
             self.id = self._reader.read_as_str('id', self)
 
     def __eq__(self, value):
-        if isinstance(value, str_type):
-            return (self.id == value)
-        else:
-            raise TypeError(
-                '{} not supported for comparison with IdentifiableArtefact'.format(type(value)))
+        return self.urn == value.urn
 
     def __ne__(self, value):
-        if isinstance(value, str_type):
-            return (self.id != value)
-        else:
-            raise TypeError(
-                '{} not supported for comparison with IdentifiableArtefact'.format(type(value)))
+        return self.urn != value.urn
 
     def __hash__(self):
         return super(IdentifiableArtefact, self).__hash__()
@@ -386,11 +378,7 @@ class CubeRegion(SDMXObject):
         if key not in kv.keys():
             raise KeyError(
                 'Unknown key: {0}. Allowed keys are: {1}'.format(key, list(kv.keys())))
-        if ((value in kv[key] and self.include) or
-                (value not in kv[key] and not self.include)):
-            return True
-        else:
-            return False
+        return (value in kv[key]) == self.include
 
 
 class Category(Item):
@@ -497,7 +485,7 @@ class TimeDimension(Dimension):
 class MeasureDimension(Dimension):
     pass
     # representation: must be concept scheme and local, i.e. no
-   # inheritance from concept
+    # inheritance from concept
 
 
 class DimensionDescriptor(ComponentList):

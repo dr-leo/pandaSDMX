@@ -23,20 +23,20 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_codelists_keys(self):
-        self.assertEqual(len(self.resp.codelists), 6)
-        self.assertIsInstance(self.resp.codelists.CL_GEO, model.Codelist)
+        self.assertEqual(len(self.resp.codelist), 6)
+        self.assertIsInstance(self.resp.codelist.CL_GEO, model.Codelist)
 
     def test_codelist_name(self):
         self.assertEqual(
-            self.resp.msg.codelists.CL_GEO.UK.name.en, 'United Kingdom')
-        assert self.resp.codelists.CL_FREQ.name.en == 'FREQ'
+            self.resp.msg.codelist.CL_GEO.UK.name.en, 'United Kingdom')
+        assert self.resp.codelist.CL_FREQ.name.en == 'FREQ'
 
         def test_code_cls(self):
             self.assertIsInstance(
-                self.resp.codelists.CL_FREQ.D, model.Code)
+                self.resp.codelist.CL_FREQ.D, model.Code)
 
     def test_writer(self):
-        df = self.resp.write(rows='codelists')
+        df = self.resp.write(rows='codelist')
         self.assertEqual(df.shape, (79, 2))
 
     def tearDown(self):
@@ -51,17 +51,17 @@ class test_dsd_common(unittest.TestCase):
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_codelists_keys(self):
-        self.assertEqual(len(self.resp.msg.codelists), 5)
-        self.assertIsInstance(self.resp.msg.codelists.CL_FREQ, model.Codelist)
+        self.assertEqual(len(self.resp.msg.codelist), 5)
+        self.assertIsInstance(self.resp.msg.codelist.CL_FREQ, model.Codelist)
 
     def test_codelist_name(self):
-        self.assertEqual(self.resp.msg.codelists.CL_FREQ.D.name.en, 'Daily')
+        self.assertEqual(self.resp.msg.codelist.CL_FREQ.D.name.en, 'Daily')
 
     def test_code_cls(self):
-        self.assertIsInstance(self.resp.msg.codelists.CL_FREQ.D, model.Code)
+        self.assertIsInstance(self.resp.msg.codelist.CL_FREQ.D, model.Code)
 
     def test_annotations(self):
-        code = self.resp.codelists.CL_FREQ.A
+        code = self.resp.codelist.CL_FREQ.A
         anno_list = list(code.annotations)
         self.assertEqual(len(anno_list), 1)
         a = anno_list[0]

@@ -278,7 +278,7 @@ class Representation(SDMXObject):
         super(Representation, self).__init__(*args)
         codelist_id = self._reader.read_instance(
             Ref, self, offset='enumeration').id
-        self.enum = self._reader.message.codelists[codelist_id]
+        self.enum = self._reader.message.codelist[codelist_id]
 
     # not_enumerated = List # of facets
 
@@ -314,7 +314,7 @@ class Component(IdentifiableArtefact):
     def concept(self):
         concept_id = self.concept_identity.id
         parent_id = self.concept_identity.maintainable_parent_id
-        return self._reader.message.conceptschemes[parent_id][concept_id]
+        return self._reader.message.conceptscheme[parent_id][concept_id]
 
     @property
     def local_repr(self):
@@ -646,15 +646,34 @@ class Message(SDMXObject):
 class StructureMessage(Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
-        ('codelists', 'read_identifiables', Codelist, None),
-        ('conceptschemes', 'read_identifiables', ConceptScheme, None),
-        ('dataflows', 'read_identifiables', DataflowDefinition,
+        ('codelist', 'read_identifiables', Codelist, None),
+        ('conceptscheme', 'read_identifiables', ConceptScheme, None),
+        ('dataflow', 'read_identifiables', DataflowDefinition,
          'dataflow_from_msg'),
-        ('datastructures', 'read_identifiables',
+        ('datastructure', 'read_identifiables',
          DataStructureDefinition, None),
-        ('constraints', 'read_identifiables', ContentConstraint, None),
-        ('categoryschemes', 'read_identifiables', CategoryScheme, None),
-        ('categorisations', 'read_instance', Categorisations, None)])
+        ('constraint', 'read_identifiables', ContentConstraint, None),
+        ('categoryscheme', 'read_identifiables', CategoryScheme, None),
+        ('categorisation', 'read_instance', Categorisations, None)])
+
+    def __getattr__(self, name):
+        '''
+        Some attributes have been renamed in v0.4.
+        Old names are deprecated.
+        This method ensures backward compatibility. It will be
+        removed in a future version.
+        '''
+        old2new = {
+            'codelists': 'codelist',
+            'dataflows': 'dataflow',
+            'categoryschemes': 'categoryscheme',
+            'categorisations': 'categorisation',
+            'conceptschemes': 'conceptscheme',
+            'datastructures': 'datastructure'}
+        if name in old2new:
+            return getattr(self, old2new[name])
+        else:
+            raise AttributeError
 
 
 class DataMessage(Message):

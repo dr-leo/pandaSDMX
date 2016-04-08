@@ -351,7 +351,7 @@ class Request(object):
         dsd_id = dataflow.msg.dataflows[flow_id].structure.id
         dsd_resp = self.get('datastructure', dsd_id,
                             memcache='datastructure' + dsd_id)
-        dsd = dsd_resp.msg.datastructures[dsd_id]
+        dsd = dsd_resp.msg.datastructure[dsd_id]
         # Extract dimensions excluding the dimension at observation (time, time-period)
         # as we are only interested in dimensions for columns, not rows.
         dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
@@ -359,7 +359,7 @@ class Request(object):
         dim_names = [d.id for d in dimensions]
         # Retrieve any ContentConstraint
         try:
-            constraint_l = [c for c in dataflow.msg.constraints.aslist()
+            constraint_l = [c for c in dataflow.msg.constraint.aslist()
                             if c.constraint_attachment.id == flow_id]
             if constraint_l:
                 constraint = constraint_l[0]

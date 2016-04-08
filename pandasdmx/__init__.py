@@ -56,17 +56,15 @@ def odo_register():
             self.uri = uri
 
     @odo.resource.register(r'.*\.sdmx')
-    def _(uri, **kwargs):
+    def resource_sdmx(uri, **kwargs):
         return PandaSDMX(uri)
 
     @odo.discover.register(PandaSDMX)
     def _(sdmx):
-        # is there some metadata for the dtype?
-        # if not just load the first couple of lines like a csv
-        raise NotImplementedError('Discover of SDMX resources.')
+        return odo.discover(Request().get(fromfile=sdmx.uri).write())
 
     @odo.convert.register(PD.DataFrame, PandaSDMX)
-    def _(sdmx, **kwargs):
+    def convert_sdmx(sdmx, **kwargs):
         write = Request().get(fromfile=sdmx.uri).write
         return write(**keyfilter(op.contains(keywords(write)), kwargs))
     logger.info('odo registration complete.')

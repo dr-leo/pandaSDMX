@@ -22,8 +22,8 @@ from operator import attrgetter
 
 class Writer(BaseWriter):
 
-    _row_content = {'codelists', 'conceptschemes', 'dataflows',
-                    'categoryschemes', 'dimensions', 'attributes'}
+    _row_content = {'codelist', 'conceptscheme', 'dataflow',
+                    'categoryscheme', 'dimensions', 'attributes'}
 
     def write(self, source=None, rows=None, **kwargs):
         '''
@@ -38,11 +38,11 @@ class Writer(BaseWriter):
                 Must be a name of an attribute of the StructureMessage. The attribute must
                 be an instance of `dict` whose keys are strings. These will be
                 interpreted as ID's and used for the MultiIndex of the DataFrame
-                to be returned. Values can be either instances of `dict` such as for codelists and categoryschemes, 
+                to be returned. Values can be either instances of `dict` such as for codelists and categoryscheme, 
                 or simple nameable objects
                 such as for dataflows. In the latter case, the DataFrame will have a flat index.  
                 (default: depends on content found in Message. 
-                Common is 'codelists')
+                Common is 'codelist')
             columns(str, list): if str, it denotes the attribute of attributes of the
                 values (nameable SDMX objects such as Code or ConceptScheme) that will be stored in the
                 DataFrame. If a list, it must contain strings
@@ -74,7 +74,7 @@ class Writer(BaseWriter):
                         columns=['name'], lang='en'):
 
         def make_column(scheme, item):
-            if rows == 'codelists':
+            if rows == 'codelist':
                 if scheme is item:
                     item = scheme[1]
                 scheme = scheme[1]
@@ -91,7 +91,7 @@ class Writer(BaseWriter):
             translated = [s[lang] if lang in s
                           else s.get('en') or s.any() for s in raw]
             # for codelists, prepend dim_or_attr flag
-            if rows == 'codelists':
+            if rows == 'codelist':
                 if scheme in dim2cl.values():
                     translated.insert(0, 'D')
                 else:
@@ -102,7 +102,7 @@ class Writer(BaseWriter):
                 return translated[0]
 
         def iter_keys(container):
-            if rows == 'codelists':
+            if rows == 'codelist':
                 if (constraint
                         and container[1] in dim2cl.values()):
                     result = (v for v in container[1].values()
@@ -114,13 +114,13 @@ class Writer(BaseWriter):
             return sorted(result, key=attrgetter('id'))
 
         def iter_schemes():
-            if rows == 'codelists':
+            if rows == 'codelist':
                 return chain(dim2cl.items(), attr2cl.items())
             else:
                 return content.values()
 
         def container2id(container, item):
-            if rows == 'codelists':
+            if rows == 'codelist':
                 # For first index level, get dimension or attribute ID instead of
                 # codelist ID
                 container_id = container[0].id
@@ -136,9 +136,9 @@ class Writer(BaseWriter):
                     item_id = item.id
             return container_id, item_id
 
-        if rows == 'codelists':
+        if rows == 'codelist':
             # Assuming a msg contains only one DSD
-            dsd = source.datastructures.any()
+            dsd = source.datastructure.any()
             # Relate dimensions and attributes to corresponding codelists to
             # show this relation in the resulting dataframe
             dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
@@ -190,7 +190,7 @@ class Writer(BaseWriter):
             idx = PD.Index(raw_idx, name=rows)
         # For codelists, prepend 'dim_or_attr' as synthetic column
         # See corresponding insert in the make_columns function above
-        if rows == 'codelists':
+        if rows == 'codelist':
             # make local copy to avoid side effect
             columns = columns[:]
             columns.insert(0, 'dim_or_attr')

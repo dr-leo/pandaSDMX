@@ -19,7 +19,7 @@ from codecs import open
 ver = '0.4'
 
 # Publish README on PYPI when uploading.
-long_descr = open('description.rst', 'r').read()
+long_descr = open('description.rst', 'r', encoding='utf8').read()
 
 setup(name='pandaSDMX',
       version=ver,

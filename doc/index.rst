@@ -6,10 +6,15 @@ pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_
 package aimed at becoming the 
 most intuitive and versatile tool to retrieve and acquire statistical data and metadata
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It works well with the SDMX services of the European statistics office (Eurostat), the French National Institute for statistics (INSEE), 
-and the European Central Bank (ECB). While pandaSDMX is extensible to 
-cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
-of data analysis in Python. But from pandas you can export your data to Excel and friends. 
+It supports out of the box 
+the SDMX services of the European statistics office (Eurostat), 
+the European Central Bank (ECB), and the French National Institute for statistics (INSEE). 
+pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
+the gold-standard 
+of data analysis in Python. 
+From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
+pandaSDMX can export data to many other file formats and
+database backends via `Odo <odo.readthedocs.org/>`_. 
 
 Main features
 ---------------------
@@ -25,9 +30,8 @@ Main features
 * pythonic representation of the SDMX information model  
 * When requesting datasets, validate column selections against code lists 
   and content-constraints if available
-* export generic data sets as multi-indexed pandas DataFrames or Series of observations and attributes
-* export structural metadata such as code lists and dataflow definitions 
-  as multi-indexed pandas DataFrames   
+* export data and metadata as multi-indexed pandas DataFrames or Series, and
+  many other formats and database backends via `Odo <odo.readthedocs.org/>`_ 
 * read and write SDMX messages to and from local files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 

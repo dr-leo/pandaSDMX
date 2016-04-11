@@ -4,12 +4,15 @@ FAQ
 ======
 
 
-Can pandaSDMX connect to SDMX providers other than ECB and Eurostat? 
------------------------------------------------------------------------
+Can pandaSDMX connect to SDMX providers other than INSEE, ECB and Eurostat? 
+------------------------------------------------------------------------------------
 
 Any SDMX provider can be supported that generates SDMX 2.1-compliant 
-messages. The only agencies I know of that deliver data in this format 
-are ECB and Eurostat.
+messages. INSEE, ECB and Eurostat are hard-coded.
+Others may be added in a few lines. Alternatively,
+a custom base URL can be provided to the 
+:meth:`pandasdmx.api.Request.get` method. See the
+docstring.  
 Support for SDMX 2.0 messages could be added as a new reader module. Perhaps the model would have to be tweaked a bit as well.
 
 Writing large datasets to pandas DataFrames is slow. What can I do?

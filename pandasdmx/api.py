@@ -348,7 +348,7 @@ class Request(object):
         # get the dataflow to thus the DSD ID
         dataflow = self.get('dataflow', flow_id,
                             memcache='dataflow' + flow_id)
-        dsd_id = dataflow.msg.dataflows[flow_id].structure.id
+        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
         dsd_resp = self.get('datastructure', dsd_id,
                             memcache='datastructure' + dsd_id)
         dsd = dsd_resp.msg.datastructure[dsd_id]
@@ -439,7 +439,7 @@ class Response(object):
         self.url = url
         self.http_headers = headers
         self.status_code = status_code
-        self.init_writer(writer)
+        self._init_writer(writer)
 
     def __getattr__(self, name):
         '''
@@ -447,7 +447,7 @@ class Response(object):
         '''
         return getattr(self.msg, name)
 
-    def init_writer(self, writer):
+    def _init_writer(self, writer):
         # Initialize the writer if given
         if writer:
             writer_module = import_module(writer)
@@ -475,7 +475,7 @@ class Response(object):
             source = self.msg
         return self._writer.write(source=source, **kwargs)
 
-    def tofile(self, filename):
+    def write_source(self, filename):
         '''
         write xml file by calling the 'write' method of lxml root element.
         Useful to save the xml source file for offline use.
@@ -487,4 +487,4 @@ class Response(object):
         Returns:
             whatever the LXML deserializer returns.
         '''
-        return self.msg._elem.write(filename, encoding='utf8')
+        return self.msg._reader.write_source(filename)

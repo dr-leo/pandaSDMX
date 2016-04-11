@@ -23,15 +23,19 @@ from operator import attrgetter
 class Writer(BaseWriter):
 
     _row_content = {'codelist', 'conceptscheme', 'dataflow',
-                    'categoryscheme', 'dimensions', 'attributes'}
+                    'categoryscheme'}
 
     def write(self, source=None, rows=None, **kwargs):
         '''
-        Transfform a collection of nameableArtefacts  
+        Transfform structural metadata, i.e. codelists, concept-schemes,
+        lists of dataflow definitions or category-schemes  
         from a :class:`pandasdmx.model.StructureMessage` instance into a pandas DataFrame.
+        This method is called by :meth:`pandasdmx.api.Response.write` . It is not
+        part of the public-facing API. Yet, certain kwargs are 
+        propagated from there.
 
         Args:
-            source(pandasdmx.model.StructureMessage): a :class:`pandasdmx.model.StructureMessage` 
+            source(pandasdmx.model.StructureMessage): a :class:`pandasdmx.model.StructureMessage` instance.
 
             rows(str): sets the desired content 
                 to be extracted from the StructureMessage.
@@ -47,6 +51,9 @@ class Writer(BaseWriter):
                 values (nameable SDMX objects such as Code or ConceptScheme) that will be stored in the
                 DataFrame. If a list, it must contain strings
                 that are valid attibute values. Defaults to: ['name', 'description']
+            lang(str): locale identifier. Specifies the preferred 
+                language for international strings such as names.
+                Default is 'en'.
         '''
 
         # Set convenient default values for args
@@ -74,7 +81,7 @@ class Writer(BaseWriter):
                         columns=['name'], lang='en'):
 
         def make_column(scheme, item):
-            if rows == 'codelist':
+            if rows == 'codelist' and dsd:
                 if scheme is item:
                     item = scheme[1]
                 scheme = scheme[1]
@@ -91,7 +98,7 @@ class Writer(BaseWriter):
             translated = [s[lang] if lang in s
                           else s.get('en') or s.any() for s in raw]
             # for codelists, prepend dim_or_attr flag
-            if rows == 'codelist':
+            if rows == 'codelist' and dsd:
                 if scheme in dim2cl.values():
                     translated.insert(0, 'D')
                 else:
@@ -102,7 +109,7 @@ class Writer(BaseWriter):
                 return translated[0]
 
         def iter_keys(container):
-            if rows == 'codelist':
+            if rows == 'codelist' and dsd:
                 if (constraint
                         and container[1] in dim2cl.values()):
                     result = (v for v in container[1].values()
@@ -114,13 +121,13 @@ class Writer(BaseWriter):
             return sorted(result, key=attrgetter('id'))
 
         def iter_schemes():
-            if rows == 'codelist':
+            if rows == 'codelist' and dsd:
                 return chain(dim2cl.items(), attr2cl.items())
             else:
                 return content.values()
 
         def container2id(container, item):
-            if rows == 'codelist':
+            if rows == 'codelist' and dsd:
                 # For first index level, get dimension or attribute ID instead of
                 # codelist ID
                 container_id = container[0].id
@@ -138,14 +145,17 @@ class Writer(BaseWriter):
 
         if rows == 'codelist':
             # Assuming a msg contains only one DSD
-            dsd = source.datastructure.any()
-            # Relate dimensions and attributes to corresponding codelists to
-            # show this relation in the resulting dataframe
-            dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
-                          ['TIME', 'TIME_PERIOD']]  # these do not have codelists
-            dim2cl = {d: d.local_repr.enum for d in dimensions}
-            attr2cl = {
-                a: a.local_repr.enum for a in dsd.attributes.values()}
+            try:
+                dsd = source.datastructure.any()
+                # Relate dimensions and attributes to corresponding codelists to
+                # show this relation in the resulting dataframe
+                dim2cl = {d: d.local_repr.enum for d in dsd.dimensions.values()
+                          if d.local_repr.enum}
+                attr2cl = {a: a.local_repr.enum for a in dsd.attributes.values()
+                           if a.local_repr.enum}
+            except:
+                dsd = None
+
             if constraint:
                 try:
                     # use any user-provided constraint
@@ -188,9 +198,9 @@ class Writer(BaseWriter):
             raw_idx, data = zip(*((t.id, make_column(t, None))
                                   for t in raw_tuples))
             idx = PD.Index(raw_idx, name=rows)
-        # For codelists, prepend 'dim_or_attr' as synthetic column
+        # For codelists, if there is a dsd, prepend 'dim_or_attr' as synthetic column
         # See corresponding insert in the make_columns function above
-        if rows == 'codelist':
+        if rows == 'codelist' and dsd:
             # make local copy to avoid side effect
             columns = columns[:]
             columns.insert(0, 'dim_or_attr')

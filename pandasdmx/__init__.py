@@ -5,7 +5,7 @@
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
 # this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014-2016 Dr. Leo <fhaxbox66qgmail.com>
 
 
 '''
@@ -19,7 +19,7 @@ import logging
 
 __all__ = ['Request']
 
-__version__ = '0.4a1'
+__version__ = '0.4'
 
 
 def _init_logger():

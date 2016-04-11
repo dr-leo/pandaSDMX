@@ -5,7 +5,7 @@
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
 # this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014-2016 Dr. Leo <fhaxbox66qgmail.com>
 
 
 '''
@@ -48,6 +48,12 @@ class Reader(BaseReader):
 
     # flag to prevent multiple compiling. See BaseReader.__init__
     _compiled = False
+
+    def write_source(self, filename):
+        '''
+        Save XML source to file by calling `write` on the root element.
+        '''
+        return self.message._elem.write(filename, encoding='utf8')
 
     _paths = {
         'footer_text': 'com:Text/text()',
@@ -124,6 +130,8 @@ class Reader(BaseReader):
         model.Representation: 'str:LocalRepresentation',
         'int_str_values': './*[local-name() = $name]/text()',
         'enumeration': 'str:Enumeration',
+        'texttype': 'str:TextFormat/@textType',
+        'maxlength': 'str:TextFormat/@maxLength',
         # need this? It is just a non-offset Ref
         'attr_relationship': '*/Ref/@id',
     }

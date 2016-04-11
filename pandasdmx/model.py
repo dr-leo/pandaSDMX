@@ -117,6 +117,7 @@ class IdentifiableArtefact(AnnotableArtefact):
     def __init__(self, *args, **kwargs):
         super(IdentifiableArtefact, self).__init__(*args, **kwargs)
         ref = self._reader.read_instance(Ref, self)
+        self.urn = self._reader.read_as_str('urn', self)
         if ref:
             self.ref = ref
         try:
@@ -134,12 +135,13 @@ class IdentifiableArtefact(AnnotableArtefact):
         return super(IdentifiableArtefact, self).__hash__()
 
     @property
-    def urn(self):
-        return self._reader.read_as_str('urn', self)
-
-    @property
     def uri(self):
         return self._reader.read_as_str('uri', self)
+
+    def __str__(self):
+        result = ' | '.join(
+            (self.__class__.__name__, self.id))
+        return result
 
 
 class NameableArtefact(IdentifiableArtefact):
@@ -276,14 +278,24 @@ class Representation(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(Representation, self).__init__(*args)
-        codelist_id = self._reader.read_instance(
-            Ref, self, offset='enumeration').id
-        self.enum = self._reader.message.codelist[codelist_id]
-
-    # not_enumerated = List # of facets
+        enum = self._reader.read_instance(
+            Ref, self, offset='enumeration')
+        if enum:
+            self.text_type = self.max_length = None
+            self.enum = self._reader.message.codelist[enum.id]
+        else:
+            self.enum = None
+            self.text_type = self._reader.read_as_str('texttype', self)
+            max_length = self._reader.read_as_str('maxlength', self)
+            if max_length:
+                self.max_length = int(max_length)
+            else:
+                self.max_length = None
 
 
 class Facet:
+    # This is not yet working. not used so far.
+
     facet_type = {}  # for attributes such as isSequence, interval
     facet_value_type = ('String', 'Big Integer', 'Integer', 'Long',
                         'Short', 'Double', 'Boolean', 'URI', 'DateTime',

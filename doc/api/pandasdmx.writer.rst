@@ -12,6 +12,14 @@ pandasdmx.writer.data2pandas module
     :undoc-members:
     :show-inheritance:
 
+pandasdmx.writer.structure2pd module
+------------------------------------
+
+.. automodule:: pandasdmx.writer.structure2pd
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

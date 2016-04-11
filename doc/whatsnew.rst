@@ -3,38 +3,54 @@
 What's new?
 ==============
 
-v0.4dev (2016-02?)
+v0.4 (2016-04-11)
 -----------------------
 
+New features
+::::::::::::::
+
 * add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
-* register '*.sdmx' files with `Odo <odo.readthedocs.org/>'_ if available
+* register '.sdmx' files with `Odo <odo.readthedocs.org/>`_ if available
 * module-level logging. Used for making requests or loading and saving files.
-  ``pandasdmx.api.Request`` constructor accepts a ``log_level`` keyword arg which can be set
+* new structure2pd writer to export codelists, dataflow-definitions and other
+  structural metadata from structure messages 
+  as multi-indexed DataFrames. Desired attributes can be specified and are
+  represented by columns.
+  
+API changes
+:::::::::::::
+
+* :class:`pandasdmx.api.Request` constructor accepts a ``log_level`` keyword argument which can be set
   to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
-*  ``pandasdmx.api.Request`` now has a ``timeout`` property to set
+* :class:`pandasdmx.api.Request` now has a ``timeout`` property to set
   the timeout for http requests
 * extend api.Request._agencies configuration to specify agency- and resource-specific 
   settings such as headers. Future versions may exploit this to provide 
   reader selection information.
-* api.Request.get: specify http_headers per request. Defaults are set accoring to agency configuration   
+* api.Request.get: specify http_headers per request. Defaults are set according to agency configuration   
 * Responses expose Message attributes to save typing
-* Requests expose resource names such as data, datastructure, dataflow etc. 
+* :class:`pandasdmx.api.Request` exposes resource names such as data, datastructure, dataflow etc. 
   as descriptors calling 'get' without specifying the resource type as string. 
   In interactive environments, this
   saves typing and enables code completion. 
-* add structure2pd writer to export codelists, dataflow-definitions and other
-  nameable SDMX artefacts from structure messages 
-  as multi-indexed DataFrames. Desired attributes can be specified and are
-  represented by columns. 
 * data2pd writer: return attributes as namedtuples rather than dict
-* testing: switch from nose to py.test
-* sdmxml reader: return strings or unicode strings instead of LXML smart strings
 * use patched version of namedtuple that accepts non-identifier strings 
   as field names and makes all fields accessible through dict syntax.
-* improve packaging. Include tests in sdist only
-* remove GenericDataSet and GenericDataMessage. Use DataMessage and DataSet instead
+* remove GenericDataSet and GenericDataMessage. Use DataSet and DataMessage instead
+* sdmxml reader: return strings or unicode strings instead of LXML smart strings
 * sdmxml reader: remove most of the specialized read methods. 
   Adapt model to use generalized methods. This makes code more maintainable.  
+* rename :class:`pandasdmx.api.Message` attributes to singular form
+  Old names are deprecated and will be removed in the future..
+* :class:`pandasdmx.model.Representation` for DSD attributes and dimensions now supports text
+  not just codelists.
+
+Other changes and enhancements
+::::::::::::::::::::::::::::::::::
+
+* testing: switch from nose to py.test
+* improve packaging. Include tests in sdist only
+* numerous bug fixes
 
 v0.3.1 (2015-10-04)
 -----------------------

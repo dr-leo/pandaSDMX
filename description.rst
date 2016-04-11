@@ -4,20 +4,19 @@ pandaSDMX
 
 
 
-
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
 package aimed at becoming the 
 most intuitive and versatile tool to retrieve and acquire statistical data and metadata
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It should work with all
-SDMX data providers supporting SDMX 2.1. Currently,
-this is tested for the European statistics office (Eurostat),
-and the European Central Bank (ECB) each providing hundreds of
-thousands of time series. 
-
-While pandaSDMX is extensible to 
-cater any output format, it currently supports only `pandas <http://pandas.pydata.org>`_, the gold-standard 
-of data analysis in Python. But from pandas you can export your data to Excel and friends. 
+It supports out of the box 
+the SDMX services of the European statistics office (Eurostat), 
+the European Central Bank (ECB), and the French National Institute for statistics (INSEE). 
+pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
+the gold-standard 
+of data analysis in Python. 
+From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
+pandaSDMX can export data to many other file formats and
+database backends via `Odo <odo.readthedocs.org/>`_. 
 
 Main features
 ---------------------
@@ -31,15 +30,16 @@ Main features
   - categorisations and category schemes
 
 * pythonic representation of the SDMX information model  
-* find dataflows by name or description in multiple languages if available
 * When requesting datasets, validate column selections against code lists 
-  and content-constraints if available 
+  and content-constraints if available
+* export data and metadata as multi-indexed pandas DataFrames or Series, and
+  many other formats and database backends via `Odo <odo.readthedocs.org/>`_ 
 * read and write SDMX messages to and from local files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite  
-* writer transforming SDMX generic datasets into multi-indexed pandas DataFrames or Series of observations and attributes 
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
+* growing test suite
 
 For further details including extensive code examples
 see the 
@@ -57,6 +57,57 @@ pandaSDMX Links
   
 Recent changes 
 ========================
+
+
+v0.4 (2016-04-11)
+-----------------------
+
+New features
+::::::::::::::
+
+* add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
+* register '.sdmx' files with `Odo <odo.readthedocs.org/>`_ if available
+* module-level logging. Used for making requests or loading and saving files.
+* new structure2pd writer to export codelists, dataflow-definitions and other
+  structural metadata from structure messages 
+  as multi-indexed DataFrames. Desired attributes can be specified and are
+  represented by columns.
+  
+API changes
+:::::::::::::
+
+* :class:`pandasdmx.api.Request` constructor accepts a ``log_level`` keyword argument which can be set
+  to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
+* :class:`pandasdmx.api.Request` now has a ``timeout`` property to set
+  the timeout for http requests
+* extend api.Request._agencies configuration to specify agency- and resource-specific 
+  settings such as headers. Future versions may exploit this to provide 
+  reader selection information.
+* api.Request.get: specify http_headers per request. Defaults are set according to agency configuration   
+* Responses expose Message attributes to save typing
+* :class:`pandasdmx.api.Request` exposes resource names such as data, datastructure, dataflow etc. 
+  as descriptors calling 'get' without specifying the resource type as string. 
+  In interactive environments, this
+  saves typing and enables code completion. 
+* data2pd writer: return attributes as namedtuples rather than dict
+* use patched version of namedtuple that accepts non-identifier strings 
+  as field names and makes all fields accessible through dict syntax.
+* remove GenericDataSet and GenericDataMessage. Use DataSet and DataMessage instead
+* sdmxml reader: return strings or unicode strings instead of LXML smart strings
+* sdmxml reader: remove most of the specialized read methods. 
+  Adapt model to use generalized methods. This makes code more maintainable.  
+* rename :class:`pandasdmx.api.Message` attributes to singular form
+  Old names are deprecated and will be removed in the future..
+* :class:`pandasdmx.model.Representation` for DSD attributes and dimensions now supports text
+  not just codelists.
+
+Other changes and enhancements
+::::::::::::::::::::::::::::::::::
+
+* testing: switch from nose to py.test
+* improve packaging. Include tests in sdist only
+* numerous bug fixes
+
 
 v0.3.1 (2015-10-04)
 -----------------------

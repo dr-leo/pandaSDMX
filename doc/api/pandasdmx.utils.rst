@@ -12,6 +12,14 @@ pandasdmx.utils.aadict module
     :undoc-members:
     :show-inheritance:
 
+pandasdmx.utils.anynamedtuple module
+------------------------------------
+
+.. automodule:: pandasdmx.utils.anynamedtuple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

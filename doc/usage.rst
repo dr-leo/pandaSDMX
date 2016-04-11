@@ -3,32 +3,34 @@
 Basic usage
 ===============
 
-Introductory remarks
+Overview
 ----------------------------------
 
 This chapter illustrates the main steps of a typical workflow, namely:
 
 1. retrieving relevant
    dataflows by category or from a complete list of dataflows,  
-#. exploring the data structure definition of the selected dataflow
+#. exploring the data structure, related code lists, and other metadata by exporting
+   them as pandas DataFrames
 #. selecting relevant series (columns) and a time-range (rows) from a dataset provided under the chosen dataflow 
-   and requesting the data via http   
+   and requesting data sets via http   
 #. exploring the received data using the information model
 #. writing a dataset or selected series thereof to a pandas DataFrame or Series 
 #. Reading and writing SDMX files
+#. odo support
 #. Handling errors
 
 These steps share common tasks which flow from the architecture of pandaSDMX:
 
-1. Call :meth:`pandasdmx.api.Request.get` on a new or existing :class:`pandasdmx.api.Request` instance
-   to obtain an SDMX message from a web service or a file and load it into memory
-#. Explore the :class:`pandasdmx.api.Response`instance returned by :meth:`pandasdmx.api.Request.get`
+1. Use a new or existing :class:`pandasdmx.api.Request` instance
+   to get an SDMX message from a web service or file 
+   and load it into memory. Since version 0.4 this can be conveniently done by descriptors named after the web resources defined by the SDMX standard (``dataflow``, ``categoryscheme``, ``data`` etc.). In older versions, these operations required to call :meth:`pandasdmx.api.Request.get` 
+#. Explore the returned :class:`pandasdmx.api.Response` instance 
 
    * check for errors 
-   * Access the SDMX message's content through its ``msg``  attribute.
-   * write data to a pandas DataFrame or Series by Calling 
-     :meth:`pandasdmx.api.Response.write`. This
-     works only for generic data messages.       
+   * explore the SDMX message's content .
+   * write data or metadata to a pandas DataFrame or Series by Calling 
+     :meth:`pandasdmx.api.Response.write`.      
      
      
 Importing pandaSDMX
@@ -46,14 +48,14 @@ Connecting to an SDMX web service, caching
 
 We instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
 agency ID as string. The list of supported agencies
-is shown in the error message if an invalid agency ID is passed:
+(as of version 0.4: ECB, ESTAT, INSEE) is shown in the error message if an invalid agency ID is passed:
             
 .. ipython:: python
 
     ecb = Request('ECB')
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to
-send requests to other agencies, simply instantiate dedicated ``Request`` objects. 
+send requests to other agencies, you can instantiate multiple ``Request`` objects. 
 
 Configuring the http connection
 :::::::::::::::::::::::::::::::::::::
@@ -85,7 +87,7 @@ Since version 0.3.0, `requests-cache <https://readthedocs.org/projects/requests-
 pass an optional ``cache`` keyword argument to ``Request()`` constructor.
 If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function. Use it if you
 want to cache SDMX messages in databases such as MongoDB, Redis or SQLite. 
-Read through the `requests-cache`` docs for further information.
+See the `requests-cache`` docs for further information.
      
 Loading a file instead of requesting it via http
 ::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -96,133 +98,113 @@ Issuing ``r = Request()`` without passing any agency ID
 instantiates a ``Request`` object not tied to any agency. It may only be used to
 load SDMX messages from files, unless a pre-fabricated URL is passed to :meth:`pandasdmx.api.Request.get`.
 
-Finding dataflows
--------------------
+Obtaining and exploring metadata about datasets
+------------------------------------------------
+
+This section illustrates by a typical use case how to download and explore metadata.
+Assume we are looking for time-series on exchange rates. Our best guess is
+that the European Central Bank provides a relevant dataflow. We could
+google for the dataflow ID or browse through the ECB's website. However,
+we choose to use SDMX metadata, namely category-schemes to get a complete overview of
+the dataflows the ECB provides. 
 
 .. note::
-    Unlike the ECB, Eurostat, and probably other data providers
-    do not support categories to
-    facilitate data retrieval. Yet, it is recommended
-    to read the following section as it explains 
-    some key concepts of the information model.
+    Some data providers such as the ECB and INSEE,
+    but not Eurostat,
+    support category-schemes to
+    facilitate dataflow retrieval. If you already know, e.g., from
+    the data provider's website or other publications, what
+    dataflows you are looking for, you won't need this step.
+    Yet this section should still be useful as
+    it demonstrates how metadata can be explored
+    using pandas DataFrames.
     
-      
+               
 Getting the categorisation scheme
 :::::::::::::::::::::::::::::::::::::::
 
-We can search the list of dataflows by
-category:. To do this, we request the category scheme from the 
+SDMX allows to download a list of dataflow definitions for all
+dataflows provided by a given data provider. As these lists may be very long,
+SDMX supports category-schemes to categorize dataflow definitions and other objects. Note that
+the terms 'dataflow' and 'dataflow definition' are used synonymously.
+
+To search the list of dataflows by category, we request the category scheme from the 
 ECB's SDMX service and explore the response like so:
 
 .. ipython:: python
 
-    cat_resp = ecb.get(resource_type = 'categoryscheme')
-    type(cat_resp)
-    type(cat_resp.msg)
-    cat_header = cat_resp.header
-    type(cat_header)
-    categorisations = cat_resp.categorisations
-    type(categorisations)
-   
+    cat_response = ecb.categoryscheme()
     
 The content of the SDMX message, its header and its payload are exposed as attributes. These are also accessible directly from the containing
-:class:`pandasdmx.api.Response` instance (new in v0.3.2). We will use this
+:class:`pandasdmx.api.Response` instance (new in version 0.4). We will use this
 shortcut throughout this document. But keep in mind
-that all payload is attached to a 
-:class:`pandasdmx.model.Message` instance, rather than the Response object.
+that all payload such as data or metadata 
+is stored as attributes of a 
+:class:`pandasdmx.model.Message` instance which can be
+accessed from a ``Response`` instance via its ``msg`` attribute.
   
-Try ``dir(cat_resp.msg)`` to see what we have received: 
+Try ``dir(cat_response.msg)`` to see what we have received: 
 There is not only the category scheme, but also the dataflows and categorisations.
-This is because the ``get`` method has set the ``references`` parameter
-to the appropriate default value. We can see this from the URL:
+This is because the ``get`` method has conveniently set the ``references`` parameter
+to a default value. We can see this from the URL:
 
 .. ipython:: python
 
-    cat_resp.url
+    cat_response.url
 
 The HTTP headers returned by the SDMX server are availble as well (new in version 0.2.2):
 
 .. ipython:: python
 
-    cat_resp.http_headers
+    cat_response.http_headers
     
-Note that categorisations, categoryschemes, and many other 
-artefacts from the SDMX information model are represented by
-subclasses of ``dict``.     
-    
-.. ipython:: python
-
-    categorisations.__class__.__mro__
-    
-If dict keys are valid attribute names, you can use attribute syntax. This is thanks to
-:class:`pandasdmx.utils.DictLike`, a thin wrapper around ``dict`` that internally uses a patched third-party tool.
-
-Likewise, ``cat_resp.categoryschemes`` is an instance of ``DictLike``. This is
-because by calling `` ecb.get``  without specifying a resource_id,
-we instructed the SDMX service to return all available categorisation schemes. The ``DictLike `` 
-container for the received category schemes uses the ``ID`` attribute of :class:`pandasdmx.model.CategoryScheme` as keys.
-This level of generality is required to cater for situations in which more than one category scheme is 
-returned. In our example, however, there is but one:
+Now let's export our
+category scheme to a pandas DataFrame and see what's in there:  
 
 .. ipython:: python
 
-    cs = cat_resp.categoryschemes
-    type(cs)
-    list(cs.keys())
-    
-:class:`pandasdmx.model.CategoryScheme` inherits from :class:`pandasdmx.utils.DictLike` as well. Its values are 
-:class:`pandasdmx.model.Category` instances, its keys are their ``id``  attributes. Note that 
-:class:`pandasdmx.model.DictLike` has a `` aslist``  method. It returns its values as a new
-list sorted by ``id``. The sorting criterion may be overridden in subclasses. We shall see this
-when dealing with dimensions in a :class:`pandasdmx.model.DataStructureDefinition` where the dimensions are
-ordered by position. 
+    cat_response.write().categoryscheme
 
-We can explore our
-category scheme like so:  
+The :meth:`pandasdmx.api.Response.write` returns a mapping
+from the metadata contained in the :class:`pandasdmx.model.StructureMessage` instance to pandas DataFrames.
+E.g., there is a key and corresponding DataFrame for the resource ``categoryscheme``. The mapping object is a thin wrapper around :class:`dict`
+which essentially enables attribute syntax for read access.   
 
-.. ipython:: python
+The ``write``-method accepts a number of
+keyword arguments to choose the resources to be exported, the attributes to be included
+in the DataFrame columns, and the desired language. See the doc string for
+details.
 
-    cs0 = cs.any()
-    type(cs0)
+As we are interested in exchange rate data, we will have a closer look
+into category '07'.  
 
-    # Print the number of categories    
-    len(cs0)
-    # Print ID's of categories 
-    list(cs0.keys())
-    # English name of category '07' 
-    cs0['07'].name.en 
-    
 Extracting the dataflows in a particular category
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-As we saw from the attributes of ``cat_resp.msg``, the SDMX message, we have
-already the categorisations at hand. While in the SDMXML file categories are represented as a
-flat list, pandaSDMX groups them by category and exposes them as a :class:`pandasdmx.utils.DictLike` -mapping
-each category ID to a list of :class:`pandasdmx.model.Categorisations` instances each of which
-links its category to a :class:`pandasdmx.model.DataFlowDefinition` instance. Technically, these links
-are represented by :class:`pandasdmx.model.Ref` instances whose ``id`` attribute enables us to access the
-dataflow definitions in the selected category '07'. We can print the 
-string representations of the
-dataflows in this category like so:
+A :class:`pandasdmx.model.Categorisation` maps a category to a set of
+categorised objects, in our case dataflow definitions. The Category class 
+makes use of the :class:`pandasdmx.model.Ref` to refer to the categorised object.
+
+To display the dataflow definitions contained in our favorite category
+on exchange rates, we issue: 
  
 .. ipython:: python
 
-    cat07_l = cat_resp.categorisations['07']
-    list(cat_resp.dataflows[i.artefact.id] for i in cat07_l)
+    [cat_response.dataflow[i.artefact.id] for i in cat_response.categorisation['07']]
      
-These are all dataflows offered by the ECB in the category on exchange rates. 
-
-Finding dataflows without using categories
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+Retrieving dataflows without using categories
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 In the previous section we have used categories to find relevant dataflows. However,
-in many situations there are no categories to narrow down the result set. 
-Here, :meth:`pandasdmx.utils.DictLike.find` comes in handy:
-
+in many situations there are no categories to narrow down the result set.
+We can export the dataflow definitions to a 
+pandas DataFrame and use pandas' text search capabilities to find dataflows of interest:
 
 .. ipython:: python
 
-    cat_resp.dataflows.find('rates')
+    cat_response.write().dataflow.head()
+ 
+Moreover, the old :meth:`pandasdmx.utils.DictLike.find` is still available.
     
 Extracting the data structure and data from a dataflow
 -----------------------------------------------------------
@@ -233,7 +215,7 @@ the categoryschemes with the appropriate references. But this works only if the 
 category schemes. If not (and many agencies don't), we need to download the dataflow definitions
 explicitly by issuing:
 
-    >>> flows = ecb.get(resource_type = 'dataflow')
+    >>> flows = ecb.dataflow()
 
 Dataflow definitions at a glance
 :::::::::::::::::::::::::::::::::::
@@ -255,22 +237,22 @@ Getting the data structure definition (DSD)
 We can extract the DSD's ID from the dataflow definition 
 and download the DSD together with all artefacts
 that it refers to and that refer to it. We set the ``params`` keyword argument 
-explicitly to show how it works.
+explicitly to the default value to show how it works.
 
 .. ipython:: python
 
-    dsd_id = cat_resp.dataflows.EXR.structure.id
+    dsd_id = cat_response.dataflow.EXR.structure.id
     dsd_id
     refs = dict(references = 'all')
-    dsd_resp = ecb.get(resource_type = 'datastructure', resource_id = dsd_id, params = refs)
-    dsd = dsd_resp.datastructures[dsd_id]
+    dsd_response = ecb.datastructure(resource_id = dsd_id, params = refs)
+    dsd = dsd_response.datastructure[dsd_id]
  
-A DSD essentially defines two things:
+A DSD essentially defines three things:
 
 * the dimensions of the datasets of this dataflow,
-  i.e. the order and names of the dimensions and the permissible
+  i.e. the order and names of the dimensions and the allowed
   values or the data type for each dimension, and
-* the attributes, i.e. their names, permissible values and where each may be
+* the attributes, i.e. their names, allowed values and where each may be
   attached. There are four possible attachment points:
   
   - at the individual observation
@@ -278,39 +260,34 @@ A DSD essentially defines two things:
   - at group level (i.e. a subset of series defined by dimension values)
   - at dataset level.   
 
+* the measures
+
 Let's look at the dimensions and for the 'CURRENCY' dimension 
 also at the allowed values
 as enumerated in the referenced code list:
 
- 
 .. ipython:: python
 
-    list(d.id for d in dsd.dimensions.aslist())
-    currency_codelist = dsd.dimensions.CURRENCY.local_repr.enum
-    len(currency_codelist)
-    currency_codelist.USD, currency_codelist.JPY
+    dsd.dimensions.aslist()
+    dsd_response.write().codelist.loc['CURRENCY'].head()    
     
-
-So there are six dimensions. Because we can only filter out sets of columns, 
-we disregard 'TIME_PERIOD' as this is the dimension at observation.
-The 'CURRENCY' dimension stands at position 2.
-Moreover, we are now sure that 'USD' and 'JPY' are valid dimension values. 
+The DataFrame representation of the code list for the
+CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values. 
 We need this information to construct a filter
 for our dataset query which should be limited to
 the currencies we are interested in.
 
 Note that :meth:`pandasdmx.model.Scheme.aslist` sorts the dimension objects by their position attribute. 
-The order matters when constructing filters for dataset queries (see below). 
+The order matters when constructing filters for dataset queries (see below). But pandaSDMX sorts filter values behind the scenes, so we need not care. 
 
 Attribute names and allowed values can be obtained 
 in a similar fashion. 
 
 .. note::
 
-    Groups are not yet implemented in the DSD. But this is not a major problem    
+    Groups are not yet implemented in the DSD. But this is not a problem    
     as they are implemented for generic datasets. Thus, datasets should be rendered properly including all attributes and their 
     attachment levels.
-
     
 Working with datasets
 ------------------------------
@@ -319,7 +296,8 @@ Selecting and requesting data from a dataflow
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 Requesting a dataset is as easy as requesting a dataflow definition or any other
-SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id.  
+SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id. Alternatively, you can use the
+``data`` descriptor which calls the ``get`` method implicitly.  
 
 However, we only want to download those parts of the data we are 
 interested in. Not only does this increase
@@ -331,7 +309,7 @@ The REST API of SDMX offers two ways to narrow down a data request:
   
 From the ECB's dataflow on exchange rates, 
 we specify the CURRENCY dimension to be either 'USD' or 'JPY'.
-This can be done by passing a ``key``  keyword argument to the ``get``  method. 
+This can be done by passing a ``key``  keyword argument to the ``get``  method or the ``data`` descriptor. 
 It may either be a string (low-level API) or a dict. The dict form 
 introduced in v0.3.0 is more convenient and pythonic
 as it allows pandaSDMX to infer the string form from the dict. 
@@ -358,21 +336,24 @@ exclude any prior data from the request.
 
 .. ipython:: python
 
-    data_resp = ecb.get(resource_type = 'data', resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2014'})
-    type(data_resp.msg)
-    data = data_resp.data
+    data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2014'})
+    data = data_response.data
     type(data)
     
-Generic datasets 
+Datasets 
 ::::::::::::::::::::
 
-At present, pandaSDMX can only process generic datasets, i.e. datasets that encompass sufficient
-structural information to be interpreted without consulting the related DSD. However, as we saw,
-we need the DSD anyway to understand the data structure, the meaning of dimension
-and attribute values, and to select series
+This section explains the key elements and structure of data sets. You can skip
+it on first read when you just want to be able to download data and
+export it to pandas. More advanced operations, e.g., exporting only a subset of series to pandas, requires some understanding of
+the anatomy of a data set including observations and attributes. 
+
+As we saw in the previous section,
+the datastructure definition (DSD) is crucial to understanding the data structure, the meaning of dimension
+and attribute values, and to select series of interest from the entire data set
 by specifying a valid key.
 
-The :class:`pandasdmx.model.GenericDataSet` class has the following features:
+The :class:`pandasdmx.model.DataSet` class has the following features:
 
 ``dim_at_obs``  
     attribute showing which dimension is at
@@ -431,7 +412,7 @@ generate our pandas DataFrame from daily exchange rate data only:
 .. ipython:: python
 
     daily = (s for s in data.series if s.key.FREQ == 'D')
-    cur_df = data_resp.write(daily)
+    cur_df = data_response.write(daily)
     cur_df.shape
     cur_df.tail()
 
@@ -449,7 +430,7 @@ Controlling index generation
 The ``write``  method provides the following parameters to control index generation. 
 This is useful to increase performance for
 large datasets with regular indexes (e.g. monthly data, and to avoid crashes caused
-by exotic datetime formats:
+by exotic datetime formats not parsed by pandas:
 
 * ``fromfreq``: if True, the index will be extrapolated from the first date or period and the frequency. 
   This is only robust if the dataset has a uniform index, 
@@ -501,6 +482,30 @@ be overwritten.
     Activate the cache by instantiating :class:`pandasdmx.api.Request` passing a keyword
     argument ``cache``. It must be a dict mapping config and other values.      
 
+Using odo to export data sets to other data formats and database backends
+---------------------------------------------------------------------------
+
+Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.org>`_, a great tool to convert data sets
+to a variety of data formats and database backends. To use this feature, you have to
+call :func:`pandasdmx.odo_register` to register .sdmx files with odo. Then you can
+convert an .sdmx file containing a data set to, say, a CSV file or an SQLite or PostgreSQL database in
+a few lines::
+
+    >>> import pandasdmx
+    >>> from odo import odo
+    ___ pandasdmx.odo_register()
+    >>> odo('mydata.sdmx', 'sqlite:///mydata.sqlite')
+    
+Behind the scenes, odo uses pandaSDMX to convert the .sdmx file
+to a pandas DataFrame and performs any further conversions from there based on odo's
+conversion graph. Any keyword arguments passed to odo will
+be passed on to :meth:`pandasdmx.api.Response.write`.
+
+There is a limitation though: In the exchange rate example from the previous chapter, we
+needed to select same-frequency series from the data set before converting the
+data set to pandas. This will likely cause crashes as odo's discover method is unaware of this selection. Hence, .sdmx files can only be exported using odo if they
+can be exported to pandas without passing any arguments to :meth:`pandasdmx.api.Response.write`.
+      
 Handling errors
 ----------------
 
@@ -516,4 +521,14 @@ a footer via a ``text`` attribute which is a list of strings.
     pandaSDMX raises only http errors with status code between 400 and 499.
     Codes >= 500 do not raise an error as the SDMX web services guidelines
     define special meanings to those codes. The caller must therefore raise an error if needed. 
+       
+Logging
+-----------
+
+Since version 0.4, pandaSDMX can log certain events such as when a connection 
+to a web service is made or a file has been successfully downloaded. It uses the logging package from the Python stdlib. . To activate logging, you must
+set the parent logger's level to the desired value as described in the logging docs. Example::
+       
+    >>> pandasdmx.logger.setLevel(10)
+                     
        

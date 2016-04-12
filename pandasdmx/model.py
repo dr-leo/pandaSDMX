@@ -138,7 +138,7 @@ class IdentifiableArtefact(AnnotableArtefact):
     def uri(self):
         return self._reader.read_as_str('uri', self)
 
-    def __str__(self):
+    def __repr__(self):
         result = ' | '.join(
             (self.__class__.__name__, self.id))
         return result

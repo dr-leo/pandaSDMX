@@ -78,7 +78,8 @@ modified between requests.
     ecb_via_proxy.client.config
 
 The ``Request.client`` attribute acts a bit like a ``requests.Session`` in that it
-conveniently stores the configuration for subsequent HTTP requests. 
+conveniently stores the configuration for subsequent HTTP requests. Modify it to change the configuration. For convenience, :class:`pandasdmx.api.Request` has
+a ``timeout`` property to set the timeout in seconds for http requests.    
 
 Caching received files
 ::::::::::::::::::::::::::
@@ -271,6 +272,8 @@ as enumerated in the referenced code list:
     dsd.dimensions.aslist()
     dsd_response.write().codelist.loc['CURRENCY'].head()    
     
+    The order of dimensions will determine the order of column index levels of the
+    pandas DataFrame (see below).
 The DataFrame representation of the code list for the
 CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values. 
 We need this information to construct a filter
@@ -467,6 +470,9 @@ get the zipped data message.
 Since version 0.2.1, this second request can be performed automatically through the
 ``get_footer_url`` parameter. It defaults to ``(30, 3)`` which means that three attempts will be made in 30 seconds intervals. 
 This behavior is useful when requesting large datasets from Eurostat. Deactivate it by setting ``get_footer_url`` to None.   
+
+In addition, since version 0.4 you can use :meth:`pandasdmx.api.Response.write_source` to save the
+serialized XML tree to a file.    
 
 Caching Response instances in memory
 -----------------------------------------------

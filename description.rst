@@ -59,6 +59,7 @@ Recent changes
 ========================
 
 
+
 v0.4 (2016-04-11)
 -----------------------
 
@@ -67,10 +68,10 @@ New features
 
 * add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
 * register '.sdmx' files with `Odo <odo.readthedocs.org/>`_ if available
-* module-level logging. Used for making requests or loading and saving files.
+* logging of http requests and file operations.
 * new structure2pd writer to export codelists, dataflow-definitions and other
   structural metadata from structure messages 
-  as multi-indexed DataFrames. Desired attributes can be specified and are
+  as multi-indexed pandas DataFrames. Desired attributes can be specified and are
   represented by columns.
   
 API changes
@@ -84,7 +85,9 @@ API changes
   settings such as headers. Future versions may exploit this to provide 
   reader selection information.
 * api.Request.get: specify http_headers per request. Defaults are set according to agency configuration   
-* Responses expose Message attributes to save typing
+* Response instances expose Message attributes to make application code more succinct
+* rename :class:`pandasdmx.api.Message` attributes to singular form
+  Old names are deprecated and will be removed in the future.
 * :class:`pandasdmx.api.Request` exposes resource names such as data, datastructure, dataflow etc. 
   as descriptors calling 'get' without specifying the resource type as string. 
   In interactive environments, this
@@ -96,18 +99,17 @@ API changes
 * sdmxml reader: return strings or unicode strings instead of LXML smart strings
 * sdmxml reader: remove most of the specialized read methods. 
   Adapt model to use generalized methods. This makes code more maintainable.  
-* rename :class:`pandasdmx.api.Message` attributes to singular form
-  Old names are deprecated and will be removed in the future..
 * :class:`pandasdmx.model.Representation` for DSD attributes and dimensions now supports text
   not just codelists.
 
 Other changes and enhancements
 ::::::::::::::::::::::::::::::::::
 
+* documentation has been overhauled. Code examples are now much simpler thanks to
+  the new structure2pd writer
 * testing: switch from nose to py.test
 * improve packaging. Include tests in sdist only
 * numerous bug fixes
-
 
 v0.3.1 (2015-10-04)
 -----------------------

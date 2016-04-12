@@ -19,7 +19,7 @@ pandaSDMX can export data to many other file formats and
 database backends via `Odo <odo.readthedocs.org/>`_. 
 
 Main features
----------------------
+==================
 
 * intuitive API inspired by `requests <https://pypi.python.org/pypi/requests/>`_  
 * support for many SDMX features including
@@ -64,7 +64,7 @@ v0.4 (2016-04-11)
 -----------------------
 
 New features
-::::::::::::::
+~~~~~~~~~~~~~~
 
 * add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
 * register '.sdmx' files with `Odo <odo.readthedocs.org/>`_ if available
@@ -75,20 +75,20 @@ New features
   represented by columns.
   
 API changes
-:::::::::::::
+~~~~~~~~~~~~~
 
-* :class:`pandasdmx.api.Request` constructor accepts a ``log_level`` keyword argument which can be set
+* `pandasdmx.api.Request` constructor accepts a ``log_level`` keyword argument which can be set
   to a log-level for the pandasdmx logger and its children (currently only pandasdmx.api)
-* :class:`pandasdmx.api.Request` now has a ``timeout`` property to set
+* `pandasdmx.api.Request` now has a ``timeout`` property to set
   the timeout for http requests
 * extend api.Request._agencies configuration to specify agency- and resource-specific 
   settings such as headers. Future versions may exploit this to provide 
   reader selection information.
 * api.Request.get: specify http_headers per request. Defaults are set according to agency configuration   
 * Response instances expose Message attributes to make application code more succinct
-* rename :class:`pandasdmx.api.Message` attributes to singular form
+* rename `pandasdmx.api.Message` attributes to singular form
   Old names are deprecated and will be removed in the future.
-* :class:`pandasdmx.api.Request` exposes resource names such as data, datastructure, dataflow etc. 
+* `pandasdmx.api.Request` exposes resource names such as data, datastructure, dataflow etc. 
   as descriptors calling 'get' without specifying the resource type as string. 
   In interactive environments, this
   saves typing and enables code completion. 
@@ -99,11 +99,11 @@ API changes
 * sdmxml reader: return strings or unicode strings instead of LXML smart strings
 * sdmxml reader: remove most of the specialized read methods. 
   Adapt model to use generalized methods. This makes code more maintainable.  
-* :class:`pandasdmx.model.Representation` for DSD attributes and dimensions now supports text
+* `pandasdmx.model.Representation` for DSD attributes and dimensions now supports text
   not just codelists.
 
 Other changes and enhancements
-::::::::::::::::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * documentation has been overhauled. Code examples are now much simpler thanks to
   the new structure2pd writer

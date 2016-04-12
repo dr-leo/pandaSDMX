@@ -16,14 +16,14 @@ from codecs import open
 # s = open('pandasdmx/__init__.py', 'rt').read()
 # m = re.search(r"version = '([a-z0-9.]+)'", s)
 # ver = m.groups(0)[0]
-ver = '0.4'
+ver = '0.4.1'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r', encoding='utf8').read()
 
 setup(name='pandaSDMX',
       version=ver,
-      description='A Python- and pandas-powered client for Statistical Data and Metadata eXchange',
+      description='A client for SDMX - Statistical Data and Metadata eXchange',
       long_description=long_descr,
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',

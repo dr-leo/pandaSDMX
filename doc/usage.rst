@@ -272,8 +272,9 @@ as enumerated in the referenced code list:
     dsd.dimensions.aslist()
     dsd_response.write().codelist.loc['CURRENCY'].head()    
     
-    The order of dimensions will determine the order of column index levels of the
-    pandas DataFrame (see below).
+The order of dimensions will determine the order of column index levels of the
+pandas DataFrame (see below).
+
 The DataFrame representation of the code list for the
 CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values. 
 We need this information to construct a filter

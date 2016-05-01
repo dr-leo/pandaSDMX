@@ -138,7 +138,7 @@ ECB's SDMX service and explore the response like so:
     
 The content of the SDMX message, its header and its payload are exposed as attributes. These are also accessible directly from the containing
 :class:`pandasdmx.api.Response` instance (new in version 0.4). We will use this
-shortcut throughout this document. But keep in mind
+shortcut throughout this documentation. But keep in mind
 that all payload such as data or metadata 
 is stored as attributes of a 
 :class:`pandasdmx.model.Message` instance which can be
@@ -176,12 +176,15 @@ keyword arguments to choose the resources to be exported, the attributes to be i
 in the DataFrame columns, and the desired language. See the doc string for
 details.
 
+There are three category-schemes.
 As we are interested in exchange rate data, we will have a closer look
-into category '07'.  
+at category '07' of category-scheme 'MOBILE_NAVI'.  
 
 Extracting the dataflows in a particular category
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
+Alongside ``categoryscheme``, our response contains a resource called
+``categorisation`` containing multiple categorisations.
 A :class:`pandasdmx.model.Categorisation` maps a category to a set of
 categorised objects, in our case dataflow definitions. The Category class 
 makes use of the :class:`pandasdmx.model.Ref` to refer to the categorised object.

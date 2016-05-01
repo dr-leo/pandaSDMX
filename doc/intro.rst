@@ -37,10 +37,10 @@ pandaSDMX has the following dependencies:
 Optional dependencies
 ::::::::::::::::::::::::::::::::::::::::::
 
-* `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ 
+* `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ 
   allowing to cache SDMX messages in 
   memory, MongoDB, Redis and more.
-* `odo <odo.readthedocs.org>`_ for fancy data conversion and database export
+* `odo <odo.readthedocs.io>`_ for fancy data conversion and database export
 * `IPython <http://ipython.org/>`_ is required to build the Sphinx documentation To do this,
   check out the pandaSDMX repository on github.  
 * `py.test <http://pytest.org/latest/>`_ to run the test suite.

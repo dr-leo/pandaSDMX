@@ -10,7 +10,7 @@ New features
 ::::::::::::::
 
 * add new provider INSEE, the French statistics office (thanks to Stéphan Rault)
-* register '.sdmx' files with `Odo <odo.readthedocs.org/>`_ if available
+* register '.sdmx' files with `Odo <odo.readthedocs.io/>`_ if available
 * logging of http requests and file operations.
 * new structure2pd writer to export codelists, dataflow-definitions and other
   structural metadata from structure messages 
@@ -62,7 +62,7 @@ This release fixes a few bugs which caused crashes in some situations.
 v0.3.0 (2015-09-22)
 -----------------------
 
-* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+* support for `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite 
 * pythonic selection of series when requesting a dataset:
   Request.get allows the ``key`` keyword argument in a data request to be a dict mapping dimension names 

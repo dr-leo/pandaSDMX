@@ -84,7 +84,7 @@ a ``timeout`` property to set the timeout in seconds for http requests.
 Caching received files
 ::::::::::::::::::::::::::
 
-Since version 0.3.0, `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ is supported. To use it, 
+Since version 0.3.0, `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ is supported. To use it, 
 pass an optional ``cache`` keyword argument to ``Request()`` constructor.
 If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function. Use it if you
 want to cache SDMX messages in databases such as MongoDB, Redis or SQLite. 
@@ -495,7 +495,7 @@ be overwritten.
 Using odo to export data sets to other data formats and database backends
 ---------------------------------------------------------------------------
 
-Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.org>`_, a great tool to convert data sets
+Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.io>`_, a great tool to convert data sets
 to a variety of data formats and database backends. To use this feature, you have to
 call :func:`pandasdmx.odo_register` to register .sdmx files with odo. Then you can
 convert an .sdmx file containing a data set to, say, a CSV file or an SQLite or PostgreSQL database in

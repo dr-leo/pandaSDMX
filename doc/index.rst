@@ -14,7 +14,7 @@ the gold-standard
 of data analysis in Python. 
 From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
 pandaSDMX can export data to many other file formats and
-database backends via `Odo <odo.readthedocs.org/>`_. 
+database backends via `Odo <odo.readthedocs.io/>`_. 
 
 Main features
 ---------------------
@@ -31,10 +31,10 @@ Main features
 * When requesting datasets, validate column selections against code lists 
   and content-constraints if available
 * export data and metadata as multi-indexed pandas DataFrames or Series, and
-  many other formats and database backends via `Odo <odo.readthedocs.org/>`_ 
+  many other formats and database backends via `Odo <odo.readthedocs.io/>`_ 
 * read and write SDMX messages to and from local files 
 * configurable HTTP connections
-* support for `requests-cache <https://readthedocs.org/projects/requests-cache/>`_ allowing to cache SDMX messages in 
+* support for `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite  
 * extensible through custom readers and writers for alternative input and output formats of data and metadata
 * growing test suite

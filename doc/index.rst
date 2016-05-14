@@ -14,7 +14,7 @@ the gold-standard
 of data analysis in Python. 
 From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
 pandaSDMX can export data to many other file formats and
-database backends via `Odo <odo.readthedocs.io/>`_. 
+database backends via `Odo <http://odo.readthedocs.io/>`_. 
 
 Main features
 ---------------------

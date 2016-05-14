@@ -1,0 +1,136 @@
+{
+    "header": {
+        "id": "62b5f19d-f1c9-495d-8446-a3661ed24753",
+        "prepared": "2012-11-29T08:40:26Z",
+        "sender": {
+            "id": "ECB",
+            "name": "European Central Bank"
+        }
+    },
+    "structure": {
+        "links": [
+          {
+            "href": "https://sdw-wsrest.ecb.europa.eu/service/dataflow/ECB/EXR/1.0",
+            "rel": "dataflow"
+          }
+        ],
+        "dimensions": {
+            "dataSet": [
+                {
+                    "id": "FREQ",
+                    "name": "Frequency",
+                    "keyPosition": 0,
+                    "role": "FREQ",
+                    "values": [
+                        {
+                            "id": "D",
+                            "name": "Daily"
+                        }
+                    ]
+                }, {
+                    "id": "CURRENCY_DENOM",
+                    "name": "Currency denominator",
+                    "keyPosition": 2,
+                    "values": [
+                        {
+                            "id": "EUR",
+                            "name": "Euro"
+                        }
+                    ]
+                }, {
+                    "id": "EXR_TYPE",
+                    "name": "Exchange rate type",
+                    "keyPosition": 3,
+                    "values": [
+                        {
+                            "id": "SP00",
+                            "name": "Spot rate"
+                        }
+                    ]
+                }, {
+                    "id": "EXR_SUFFIX",
+                    "name": "Series variation - EXR context",
+                    "keyPosition": 4,
+                    "values": [
+                        {
+                            "id": "A",
+                            "name": "Average or standardised measure for given frequency"
+                        }
+                    ]
+                }
+            ],
+            "series": [],
+            "observation": [
+                {
+                    "id": "CURRENCY",
+                    "name": "Currency",
+                    "keyPosition": 1,
+                    "values": [
+                        {
+                            "id": "NZD",
+                            "name": "New Zealand dollar"
+                        }, {
+                            "id": "RUB",
+                            "name": "Russian rouble"
+                        }
+                    ]
+                }, {
+                    "id": "TIME_PERIOD",
+                    "name": "Time period or range",
+                    "role": "TIME_PERIOD",
+                    "values": [
+                        {
+                            "id": "2013-01-18",
+                            "name": "2013-01-18",
+                            "start": "2013-01-18T00:00:00.000Z",
+                            "end": "2013-01-18T23:59:59.999Z"
+                        }, {
+                            "id": "2013-01-21",
+                            "name": "2013-01-21",
+                            "start": "2013-01-21T00:00:00.000Z",
+                            "end": "2013-01-21T23:59:59.999Z"
+                        }
+                    ]
+                }
+            ]
+        },
+        "attributes": {
+            "dataSet": [],
+            "series": [],
+            "observation": [
+                {
+                    "id": "TITLE",
+                    "name": "Series title",
+                    "role": "TITLE",
+                    "values": [
+                        {
+                            "name": "New Zealand dollar (NZD)"
+                        }, {
+                            "name": "Russian rouble (RUB)"
+                        }
+                    ]
+                }, {
+                    "id": "OBS_STATUS",
+                    "name": "Observation status",
+                    "values": [
+                        {
+                            "id": "A",
+                            "name": "Normal value"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "dataSets": [
+        {
+            "action": "Information",
+            "observations": {
+                "0:0": [1.5931, 0, 0],
+                "0:1": [1.5925, 0, 0],
+                "1:0": [40.3426, 1, 0],
+                "1:1": [40.3000, 1, 0]
+            }
+        }
+    ]
+}

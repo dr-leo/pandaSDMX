@@ -82,7 +82,13 @@ class REST:
         if fromfile:
             try:
                 # Load data from local file
-                source = open(fromfile, 'rb')
+                # json files must be opened in text mode, all others in binary as
+                # they may be zip files or xml.
+                if fromfile.endswith('.json'):
+                    mode_str = 'r'
+                else:
+                    mode_str = 'rb'
+                source = open(fromfile, mode_str)
             except TypeError:
                 # so fromfile must be file-like
                 source = fromfile

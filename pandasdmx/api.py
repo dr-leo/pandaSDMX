@@ -18,7 +18,6 @@ SOAP interface.
 
 from pandasdmx import remote
 from pandasdmx.utils import str_type
-from pandasdmx.reader.sdmxml import Reader
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
@@ -117,10 +116,6 @@ class Request(object):
         self.agency = agency
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)
-
-    def _get_reader(self):
-        '''get a Reader instance. Called by :meth:`get`.'''
-        return Reader(self)
 
     @property
     def agency(self):
@@ -306,7 +301,15 @@ class Request(object):
             else:
                 # undo side effect of is_zipfile
                 source.seek(0)
-            msg = self._get_reader().initialize(source)
+            # select reader class
+            # expand this. For now, json reader is only
+            # imported when loading file, not via http.
+            if fromfile and fromfile.endswith('.json'):
+                reader_module = import_module('pandasdmx.reader.sdmxjson')
+            else:
+                reader_module = import_module('pandasdmx.reader.sdmxml')
+            reader_cls = reader_module.Reader
+            msg = reader_cls(self).initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             logger.info('Footer found in SDMX message.')

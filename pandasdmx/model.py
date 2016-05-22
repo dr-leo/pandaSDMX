@@ -545,7 +545,7 @@ class DataSet(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(DataSet, self).__init__(*args, **kwargs)
-        self.attrib = self._reader.series_attrib(self)
+        self.attrib = self._reader.dataset_attrib(self)
         self.groups = tuple(self.iter_groups)
 
     @property

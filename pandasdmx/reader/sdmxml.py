@@ -220,6 +220,7 @@ class Reader(BaseReader):
         attr_id = self._paths['attr_id_path'](sdmxobj._elem)
         attr_values = self._paths['attr_values_path'](sdmxobj._elem)
         return namedtuple_factory('Attrib', attr_id)(*attr_values)
+    dataset_attrib = series_attrib
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):

@@ -1,4 +1,4 @@
-# encoding: utf-8
+#! encoding: utf-8
 
 
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
@@ -16,34 +16,38 @@ This module contains a reader for SDMXML v2.1.
 from pandasdmx.utils import DictLike, namedtuple_factory
 from pandasdmx import model
 from pandasdmx.reader import BaseReader
-from lxml import etree
-from lxml.etree import XPath
+import json
+from jsonpath_rw import parse
+from operator import itemgetter
+
+
+class XPath:
+
+    def __init__(self, path):
+        self.path = parse(path)
+
+    def __call__(self, elem):
+        return self.path.find(elem)
 
 
 class Reader(BaseReader):
 
     """
-    Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
+    Read SDMXJSON 2.1 and expose it as instances from pandasdmx.model
     """
 
-    _nsmap = {
-        'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
-        'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-        'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-        'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
-        'footer': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer'
-    }
+    def read_as_str(self, name, sdmxobj, first_only=True):
+        result = self._paths[name](sdmxobj._elem)
+        if result:
+            if first_only:
+                return result[0].value
+            else:
+                return [r.value for r in result]
 
     def initialize(self, source):
-        tree = etree.parse(source)
-        root = tree.getroot()
-        if root.tag.endswith('Structure'):
-            cls = model.StructureMessage
-        elif root.tag.endswith('Data'):
-            cls = model.DataMessage
-        else:
-            raise ValueError('Unsupported root tag: %s' % root.tag)
-        self.message = cls(self, root)
+        tree = json.load(source)
+        cls = model.DataMessage
+        self.message = cls(self, tree)
         return self.message
 
     # flag to prevent multiple compiling. See BaseReader.__init__
@@ -51,96 +55,95 @@ class Reader(BaseReader):
 
     def write_source(self, filename):
         '''
-        Save XML source to file by calling `write` on the root element.
+        Save source to file by calling `write` on the root element.
         '''
-        return self.message._elem.write(filename, encoding='utf8')
+        return json.dumps(self.message._elem, filename)
 
     _paths = {
-        'footer_text': 'com:Text/text()',
-        'footer_code': '@code',
-        'footer_severity': '@severity',
-        'dataflow_from_msg': 'mes:Structures/str:Dataflows',
-        'constraint_attachment': 'str:ConstraintAttachment',
-        'include': '@include',
-        'id': '@id',
-        'urn': '@urn',
-        'url': '@url',
-        'uri': '@uri',
-        'agencyID': '@agencyID',
-        'maintainable_parent_id': '@maintainableParentID',
-        'value': 'com:Value/text()',
-        'headerID': 'mes:ID/text()',
-        'header_prepared': 'mes:Prepared/text()',
-        'header_sender': 'mes:Sender/@*',
-        'header_receiver': 'mes:Receiver/@*',
-        'assignment_status': '@assignmentStatus',
-        'error': 'mes:error/@*',
-        'ref_version': '@version',
-        'concept_id': 'str:ConceptIdentity',
-        'position': '@position',
-        'isfinal': '@isfinal',
-        'ref_package': '@package',
-        'ref_class': '@class',
-        'ref_target': 'str:Target',
-        'ref_source': 'str:Source',
-        'ref_structure': 'str:Structure',
-        'annotationtype': 'com:AnnotationType/text()',
-        'structured_by': 'mes:Structure/@structureID',
-        'dim_at_obs': '//mes:Header/mes:Structure/@dimensionAtObservation',
-        'generic_obs_path': 'gen:Obs',
-        'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
-        'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
-        'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
-        'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
-        'generic_series_dim_path': 'gen:ObsDimension/@value',
-        'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
-        'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
-        'obs_value_path': 'gen:ObsValue/@value',
-        'attr_id_path': 'gen:Attributes/gen:Value/@id',
-        'attr_values_path': 'gen:Attributes/gen:Value/@value',
-        model.Code: 'str:Code',
-        model.Categorisation: 'str:Categorisation',
-        model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
-        model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
-        model.DataflowDefinition: 'str:Dataflow',
-        model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
-        model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
-        model.Concept: 'str:Concept',
-        model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
-        model.Categorisations: 'mes:Structures/str:Categorisations',
-        model.Footer: 'footer:Footer/footer:Message',
-        model.Category: 'str:Category',
-        model.DimensionDescriptor: 'str:DataStructureComponents/str:DimensionList',
-        model.Dimension: 'str:Dimension',
-        model.TimeDimension: 'str:TimeDimension',
-        model.MeasureDimension: 'str:MeasureDimension',
-        model.MeasureDescriptor: 'str:DataStructureComponents/str:MeasureList',
-        model.PrimaryMeasure: 'str:PrimaryMeasure',
-        model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
-        model.DataAttribute: 'str:Attribute',
-        model.CubeRegion: 'str:CubeRegion',
-        model.KeyValue: 'com:KeyValue',
-        model.Ref: 'Ref',
-        model.Header: 'mes:Header',
-        model.Annotation: 'com:Annotations/com:Annotation',
-        model.Group: 'gen:Group',
-        model.Series: 'gen:Series',
-        model.DataSet: 'mes:DataSet',
-        'int_str_names': './*[local-name() = $name]/@xml:lang',
-        model.Representation: 'str:LocalRepresentation',
-        'int_str_values': './*[local-name() = $name]/text()',
-        'enumeration': 'str:Enumeration',
-        'texttype': 'str:TextFormat/@textType',
-        'maxlength': 'str:TextFormat/@maxLength',
-        # need this? It is just a non-offset Ref
-        'attr_relationship': '*/Ref/@id',
+        #         'footer_text': 'com:Text/text()',
+        #         'footer_code': '@code',
+        #         'footer_severity': '@severity',
+        #         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
+        #         'constraint_attachment': 'str:ConstraintAttachment',
+        #         'include': '@include',
+        #         'id': '@id',
+        #         'urn': '@urn',
+        #         'url': '@url',
+        #         'uri': '@uri',
+        #         'agencyID': '@agencyID',
+        #         'maintainable_parent_id': '@maintainableParentID',
+        #         'value': 'com:Value/text()',
+        'headerID': 'id',
+        #         'header_prepared': 'mes:Prepared/text()',
+        #         'header_sender': 'mes:Sender/@*',
+        #         'header_receiver': 'mes:Receiver/@*',
+        #         'assignment_status': '@assignmentStatus',
+        #         'error': 'mes:error/@*',
+        #         'ref_version': '@version',
+        #         'concept_id': 'str:ConceptIdentity',
+        #         'position': '@position',
+        #         'isfinal': '@isfinal',
+        #         'ref_package': '@package',
+        #         'ref_class': '@class',
+        #         'ref_target': 'str:Target',
+        #         'ref_source': 'str:Source',
+        #         'ref_structure': 'str:Structure',
+        #         'annotationtype': 'com:AnnotationType/text()',
+        'structured_by': '$.structure.links',
+        'dim_at_obs': '$.structure.dimensions.observations',
+        #         'generic_obs_path': 'gen:Obs',
+        #         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
+        #         'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
+        #         'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
+        #         'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
+        #         'generic_series_dim_path': 'gen:ObsDimension/@value',
+        #         'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
+        #         'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
+        #         'obs_value_path': 'gen:ObsValue/@value',
+        #         'attr_id_path': 'gen:Attributes/gen:Value/@id',
+        #         'attr_values_path': 'gen:Attributes/gen:Value/@value',
+        #         model.Code: 'str:Code',
+        #         model.Categorisation: 'str:Categorisation',
+        #         model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
+        #         model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
+        #         model.DataflowDefinition: 'str:Dataflow',
+        #         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
+        #         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
+        #         model.Concept: 'str:Concept',
+        #         model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
+        #         model.Categorisations: 'mes:Structures/str:Categorisations',
+        model.Footer: 'footer.message',
+        #         model.Category: 'str:Category',
+        #         model.DimensionDescriptor: 'str:DataStructureComponents/str:DimensionList',
+        #         model.Dimension: 'str:Dimension',
+        #         model.TimeDimension: 'str:TimeDimension',
+        #         model.MeasureDimension: 'str:MeasureDimension',
+        #         model.MeasureDescriptor: 'str:DataStructureComponents/str:MeasureList',
+        #         model.PrimaryMeasure: 'str:PrimaryMeasure',
+        #         model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
+        #         model.DataAttribute: 'str:Attribute',
+        #         model.CubeRegion: 'str:CubeRegion',
+        #         model.KeyValue: 'com:KeyValue',
+        #         model.Ref: 'Ref',
+        model.Header: 'header',
+        #         model.Annotation: 'com:Annotations/com:Annotation',
+        #         model.Group: 'gen:Group',
+        #         model.Series: 'gen:Series',
+        model.DataSet: 'dataSets[0]',
+        #         'int_str_names': './*[local-name() = $name]/@xml:lang',
+        #         model.Representation: 'str:LocalRepresentation',
+        #         'int_str_values': './*[local-name() = $name]/text()',
+        #         'enumeration': 'str:Enumeration',
+        #         'texttype': 'str:TextFormat/@textType',
+        #         'maxlength': 'str:TextFormat/@maxLength',
+        #         # need this? It is just a non-offset Ref
+        #         'attr_relationship': '*/Ref/@id',
     }
 
     @classmethod
     def _compile_paths(cls):
         for key, path in cls._paths.items():
-            cls._paths[key] = XPath(
-                path, namespaces=cls._nsmap, smart_strings=False)
+            cls._paths[key] = XPath(path)
 
     def international_str(self, name, sdmxobj):
         '''
@@ -192,20 +195,26 @@ class Reader(BaseReader):
                 obs_attr = None
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
+    @staticmethod
+    def getitem_key(obj):
+        return obj.value['_key']
+
     def generic_series(self, sdmxobj):
-        path = self._paths[model.Series]
-        for series in path(sdmxobj._elem):
+        for key, series in sdmxobj._elem.value['series'].items():
+            series['_key'] = key
+        for series in sorted(parse('series.*').find(sdmxobj._elem), key=self.getitem_key):
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):
-        path = self._paths[model.Group]
-        for series in path(sdmxobj._elem):
-            yield model.Group(self, series)
+        return []
 
     def series_key(self, sdmxobj):
-        series_key_id = self._paths['series_key_id_path'](sdmxobj._elem)
-        series_key_values = self._paths[
-            'series_key_values_path'](sdmxobj._elem)
+        key_idx = [int(i) for i in sdmxobj._elem.value['_key'].split(':')]
+        struct_dim = parse('$.structure.dimensions.series').find(
+            sdmxobj._elem)[0].value
+        series_key_id = [d['id'] for d in struct_dim]
+        series_key_values = [d['values'][i]['id'] for i, d in
+                             zip(key_idx, struct_dim)]
         SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
         return SeriesKeyTuple._make(series_key_values)
 
@@ -216,10 +225,23 @@ class Reader(BaseReader):
         GroupKeyTuple = namedtuple_factory('GroupKey', group_key_id)
         return GroupKeyTuple._make(group_key_values)
 
+    def dataset_attrib(self, sdmxobj):
+        value_idx = sdmxobj._elem.value.get('attributes')
+        if value_idx:
+            struct_attrib = parse('$.structure.attributes.dataset').find(
+                sdmxobj._elem)[0].value
+            return [(a['id'],
+                     a['values'][i].get('id', a['values'][i]['name']))
+                    for i, a in zip(value_idx, struct_attrib)]
+
     def series_attrib(self, sdmxobj):
-        attr_id = self._paths['attr_id_path'](sdmxobj._elem)
-        attr_values = self._paths['attr_values_path'](sdmxobj._elem)
-        return namedtuple_factory('Attrib', attr_id)(*attr_values)
+        value_idx = sdmxobj._elem.value.get('attributes')
+        if value_idx:
+            struct_attrib = parse('$.structure.attributes.series').find(
+                sdmxobj._elem)[0].value
+            return [(a['id'],
+                     a['values'][i].get('id', a['values'][i]['name']))
+                    for i, a in zip(value_idx, struct_attrib)]
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):

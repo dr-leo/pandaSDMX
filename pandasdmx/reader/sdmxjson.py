@@ -209,14 +209,21 @@ class Reader(BaseReader):
         return []
 
     def series_key(self, sdmxobj):
+        # pull down dataset key
+        dataset_dim = parse(
+            '$.structure.dimensions.dataSet[*]').find(sdmxobj._elem)
+        full_key_ids = [d.value['id'] for d in dataset_dim]
+        full_key_values = [d.value['values'][0]['id'] for d in dataset_dim]
         key_idx = [int(i) for i in sdmxobj._elem.value['_key'].split(':')]
         struct_dim = parse('$.structure.dimensions.series').find(
             sdmxobj._elem)[0].value
-        series_key_id = [d['id'] for d in struct_dim]
+        series_key_ids = [d['id'] for d in struct_dim]
         series_key_values = [d['values'][i]['id'] for i, d in
                              zip(key_idx, struct_dim)]
-        SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
-        return SeriesKeyTuple._make(series_key_values)
+        full_key_ids.extend(series_key_ids)
+        full_key_values.extend(series_key_values)
+        SeriesKeyTuple = namedtuple_factory('SeriesKey', full_key_ids)
+        return SeriesKeyTuple._make(full_key_values)
 
     def group_key(self, sdmxobj):
         group_key_id = self._paths['group_key_id_path'](sdmxobj._elem)
@@ -242,15 +249,18 @@ class Reader(BaseReader):
             return [(a['id'],
                      a['values'][i].get('id', a['values'][i]['name']))
                     for i, a in zip(value_idx, struct_attrib)]
+    getitem0 = itemgetter(0)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):
-        for obs in sdmxobj._elem.iterchildren(
-                '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
-                reversed=reverse_obs):
-            obs_dim = self._paths['generic_series_dim_path'](obs)[0]
+        obs_l = sorted(sdmxobj._elem.value[
+                       'observations'].items(), key=self.getitem0, reverse=reverse_obs)
+        obs_dim_l = parse(
+            '$.structure.dimensions.observation[*]').find(sdmxobj._elem)
+        for obs in obs_l:
+            obs_dim = obs_dim_l[0].value['values'][int(obs[0])]['id']
             if with_value:
-                obs_value = self._paths['obs_value_path'](obs)[0]
+                obs_value = obs[1][0]
             else:
                 obs_value = None
             if with_attributes:

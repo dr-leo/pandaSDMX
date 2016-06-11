@@ -35,7 +35,7 @@ class Header(SDMXObject):
         super(Header, self).__init__(*args, **kwargs)
         # Set additional attributes present in DataSet messages
         for name in ['structured_by', 'dim_at_obs']:
-            value = self._reader.read_as_str(name, self)
+            value = getattr(self._reader, name)(self)
             if value:
                 setattr(self, name, value)
 
@@ -550,7 +550,7 @@ class DataSet(SDMXObject):
 
     @property
     def dim_at_obs(self):
-        return self._reader.read_as_str('dim_at_obs', self)
+        return self._reader.dim_at_obs(self)
 
     def obs(self, with_values=True, with_attributes=True):
         '''

@@ -313,7 +313,7 @@ class Request(object):
                 source.seek(0)
             # select reader class
             if ((fromfile and fromfile.endswith('.json'))
-                    or self._agencies[self.agency][resource_type].get('json')):
+                    or (self.agency and self._agencies.get(resource_type) and self._agencies[self.agency][resource_type].get('json'))):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')

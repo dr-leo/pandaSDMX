@@ -46,18 +46,19 @@ class Reader(BaseReader):
 
     def initialize(self, source):
         tree = json.load(source)
-        cls = model.DataMessage
-        self.message = cls(self, tree)
         # pre-fetch some structures for efficient use in series and obs
-        a = self.message._elem['structure']['attributes']
+        a = tree['structure']['attributes']
         self._dataset_attrib = a['dataSet']
         self._series_attrib = a['series']
         self._obs_attrib = a['observation']
-        d = self.message._elem['structure']['dimensions']
+        d = tree['structure']['dimensions']
         self._dataset_dim = d.get('dataSet', [])
         self._series_dim = d['series']
         self._obs_dim = d['observation']
         self.obs_attr_id = [d['id'] for d in self._obs_attrib]
+        # init message instance
+        cls = model.DataMessage
+        self.message = cls(self, tree)
         return self.message
 
     # flag to prevent multiple compiling. See BaseReader.__init__
@@ -99,8 +100,6 @@ class Reader(BaseReader):
         #         'ref_source': 'str:Source',
         #         'ref_structure': 'str:Structure',
         #         'annotationtype': 'com:AnnotationType/text()',
-        'structured_by': '$.structure.links',
-        'dim_at_obs': '$.structure.dimensions.observations[*]',
         #         'generic_obs_path': 'gen:Obs',
         #         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
         #         'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
@@ -174,11 +173,14 @@ class Reader(BaseReader):
         except AttributeError:
             return None
 
-    def dim_at_obs(self):
+    def dim_at_obs(self, sdmxobj):
         if len(self._obs_dim) > 1:
             return 'AllDimensions'
         else:
             return self._obs_dim[0]['id']
+
+    def structured_by(self, sdmxobj):
+        return None  # complete this
 
     # Types for generic observations
     _ObsTuple = namedtuple_factory(

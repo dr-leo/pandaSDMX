@@ -158,8 +158,13 @@ class Writer(BaseWriter):
                 # Constructing the index from the first value and FREQ should only
                 # occur if 'fromfreq' is True
                 # and there is a FREQ dimension at all.
-                if fromfreq and 'FREQ' in series.key._fields:
-                    f = series.key.FREQ
+                # Check for common frequency field names
+                if 'FREQ' in series.key._fields:
+                    freq_key = 'FREQ'
+                elif 'FREQUENCY' in series.key._fields:
+                    freq_key = 'FREQUENCY'
+                if fromfreq and freq_key in series.key._fields:
+                    f = series.key[freq_key]
                     od0 = obs_dim[0]
                     year, subdiv = map(int, (od0[:4], od0[-1]))
                     if f == 'Q':
@@ -176,10 +181,10 @@ class Writer(BaseWriter):
                     else:
                         series_index = PD.period_range(start=od0, periods=l,
                                                        freq=f, name=dim_at_obs)
-                elif 'FREQ' in series.key._fields:
+                elif freq_key in series.key._fields:
                     # fromfreq is False. So generate the index from all the
                     # strings
-                    f = series.key.FREQ
+                    f = series.key[freq_key]
                     # Generate arrays for years and subdivisions (quarters or
                     # semesters
                     if f == 'Q':
@@ -194,8 +199,8 @@ class Writer(BaseWriter):
                         series_index = PD.PeriodIndex(obs_dim,
                                                       freq=f, name=dim_at_obs)
             elif parse_time and dim_at_obs == 'TIME':
-                if fromfreq and 'FREQ' in series.key._fields:
-                    f = series.key.FREQ
+                if fromfreq and freq_key in series.key._fields:
+                    f = series.key[freq_key]
                     series_index = PD.date_range(
                         start=obs_dim[0], periods=l, freq=f, name=dim_at_obs)
                 else:

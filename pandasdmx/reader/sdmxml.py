@@ -161,6 +161,12 @@ class Reader(BaseReader):
         except AttributeError:
             return None
 
+    def dim_at_obs(self, sdmxobj):
+        return self.read_as_str('dim_at_obs', sdmxobj)
+
+    def structured_by(self, sdmxobj):
+        return self.read_as_str('structured_by', sdmxobj)
+
     # Types for generic observations
     _ObsTuple = namedtuple_factory(
         'GenericObservation', ('key', 'value', 'attrib'))

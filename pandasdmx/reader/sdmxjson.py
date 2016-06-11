@@ -48,6 +48,16 @@ class Reader(BaseReader):
         tree = json.load(source)
         cls = model.DataMessage
         self.message = cls(self, tree)
+        # pre-fetch some structures for efficient use in series and obs
+        a = self.message._elem['structure']['attributes']
+        self._dataset_attrib = a['dataSet']
+        self._series_attrib = a['series']
+        self._obs_attrib = a['observation']
+        d = self.message._elem['structure']['dimensions']
+        self._dataset_dim = d.get('dataSet', [])
+        self._series_dim = d['series']
+        self._obs_dim = d['observation']
+        self.obs_attr_id = [d['id'] for d in self._obs_attrib]
         return self.message
 
     # flag to prevent multiple compiling. See BaseReader.__init__
@@ -164,6 +174,12 @@ class Reader(BaseReader):
         except AttributeError:
             return None
 
+    def dim_at_obs(self):
+        if len(self._obs_dim) > 1:
+            return 'AllDimensions'
+        else:
+            return self._obs_dim[0]['id']
+
     # Types for generic observations
     _ObsTuple = namedtuple_factory(
         'GenericObservation', ('key', 'value', 'attrib'))
@@ -195,14 +211,12 @@ class Reader(BaseReader):
                 obs_attr = None
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
-    @staticmethod
-    def getitem_key(obj):
-        return obj.value['_key']
+    getitem_key = itemgetter('_key')
 
     def generic_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
             series['_key'] = key
-        for series in sorted(parse('series.*').find(sdmxobj._elem), key=self.getitem_key):
+        for series in sorted(sdmxobj._elem.value['series'].values(), key=self.getitem_key):
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):
@@ -210,16 +224,12 @@ class Reader(BaseReader):
 
     def series_key(self, sdmxobj):
         # pull down dataset key
-        dataset_dim = parse(
-            '$.structure.dimensions.dataSet[*]').find(sdmxobj._elem)
-        full_key_ids = [d.value['id'] for d in dataset_dim]
-        full_key_values = [d.value['values'][0]['id'] for d in dataset_dim]
-        key_idx = [int(i) for i in sdmxobj._elem.value['_key'].split(':')]
-        struct_dim = parse('$.structure.dimensions.series').find(
-            sdmxobj._elem)[0].value
-        series_key_ids = [d['id'] for d in struct_dim]
+        full_key_ids = [d['id'] for d in self._dataset_dim]
+        full_key_values = [d['values'][0]['id'] for d in self._dataset_dim]
+        key_idx = [int(i) for i in sdmxobj._elem['_key'].split(':')]
+        series_key_ids = [d['id'] for d in self._series_dim]
         series_key_values = [d['values'][i]['id'] for i, d in
-                             zip(key_idx, struct_dim)]
+                             zip(key_idx, self._series_dim)]
         full_key_ids.extend(series_key_ids)
         full_key_values.extend(series_key_values)
         SeriesKeyTuple = namedtuple_factory('SeriesKey', full_key_ids)
@@ -235,46 +245,41 @@ class Reader(BaseReader):
     def dataset_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.value.get('attributes')
         if value_idx:
-            struct_attrib = parse('$.structure.attributes.dataset').find(
-                sdmxobj._elem)[0].value
             return [(a['id'],
                      a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, struct_attrib) if i is not None]
+                    for i, a in zip(value_idx, self._dataset_attrib) if i is not None]
 
     def series_attrib(self, sdmxobj):
-        value_idx = sdmxobj._elem.value.get('attributes')
+        value_idx = sdmxobj._elem.get('attributes')
         if value_idx:
-            struct_attrib = parse('$.structure.attributes.series').find(
-                sdmxobj._elem)[0].value
             return [(a['id'],
                      a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, struct_attrib) if i is not None]
+                    for i, a in zip(value_idx, self._series_attrib) if i is not None]
+
     getitem0 = itemgetter(0)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):
-        obs_l = sorted(sdmxobj._elem.value[
-                       'observations'].items(), key=self.getitem0, reverse=reverse_obs)
-        obs_dim_l = parse(
-            '$.structure.dimensions.observation[*]').find(sdmxobj._elem)
-        # prepare attrib generation
-        if with_attributes:
-            struct_attrib = [d.value for d in parse(
-                '$.structure.attributes.observation[*]').find(sdmxobj._elem)]
-            attrib_id = [d['id'] for d in struct_attrib]
+        obs_l = sorted(sdmxobj._elem['observations'].items(),
+                       key=self.getitem0, reverse=reverse_obs)
         for obs in obs_l:
-            obs_dim = obs_dim_l[0].value['values'][int(obs[0])]['id']
-            if with_value:
-                obs_value = obs[1][0]
-            else:
-                obs_value = None
-            if with_attributes and len(obs[1]):
-                obs_attr_index = obs[1][1:]
-                obs_attr_id, obs_attr_values = zip(*[(d['id'], d['values'][i].get('id'))
-                                                     for i, d in zip(obs_attr_index, struct_attrib)])
-                obs_attr_type = namedtuple_factory(
-                    'ObsAttributes', obs_attr_id)
-                obs_attr = obs_attr_type(*obs_attr_values)
+            # value for dim at obs, e.g. '2014' for time series.
+            # As this method is called only when each obs has but one dimension, we
+            # it is at index 0.
+            obs_dim_value = self._obs_dim[0]['values'][int(obs[0])]['id']
+            obs_value = obs[1][0] if with_value else None
+            if with_attributes and len(obs[1]) > 1:
+                obs_attr_idx = obs[1][1:]
+                obs_attr_raw = [(d['id'],
+                                 d['values'][i].get('id', d['values'][i]['name']))
+                                for i, d in zip(obs_attr_idx, self._obs_attrib) if i is not None]
+                if obs_attr_raw:
+                    obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
+                    obs_attr_type = namedtuple_factory(
+                        'ObsAttributes', obs_attr_id)
+                    obs_attr = obs_attr_type(*obs_attr_values)
+                else:
+                    obs_attr = None
             else:
                 obs_attr = None
-            yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+            yield self._SeriesObsTuple(obs_dim_value, obs_value, obs_attr)

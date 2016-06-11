@@ -164,7 +164,7 @@ class Writer(BaseWriter):
                 elif 'FREQUENCY' in series.key._fields:
                     freq_key = 'FREQUENCY'
                 if fromfreq and freq_key in series.key._fields:
-                    f = series.key[freq_key]
+                    f = getattr(series.key, freq_key)
                     od0 = obs_dim[0]
                     year, subdiv = map(int, (od0[:4], od0[-1]))
                     if f == 'Q':
@@ -184,7 +184,7 @@ class Writer(BaseWriter):
                 elif freq_key in series.key._fields:
                     # fromfreq is False. So generate the index from all the
                     # strings
-                    f = series.key[freq_key]
+                    f = getattr(series.key, freq_key)
                     # Generate arrays for years and subdivisions (quarters or
                     # semesters
                     if f == 'Q':
@@ -200,7 +200,7 @@ class Writer(BaseWriter):
                                                       freq=f, name=dim_at_obs)
             elif parse_time and dim_at_obs == 'TIME':
                 if fromfreq and freq_key in series.key._fields:
-                    f = series.key[freq_key]
+                    f = getattr(series.key, freq_key)
                     series_index = PD.date_range(
                         start=obs_dim[0], periods=l, freq=f, name=dim_at_obs)
                 else:

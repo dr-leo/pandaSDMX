@@ -90,7 +90,7 @@ class Reader(BaseReader):
         #         'ref_structure': 'str:Structure',
         #         'annotationtype': 'com:AnnotationType/text()',
         'structured_by': '$.structure.links',
-        'dim_at_obs': '$.structure.dimensions.observations',
+        'dim_at_obs': '$.structure.dimensions.observations[*]',
         #         'generic_obs_path': 'gen:Obs',
         #         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
         #         'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
@@ -239,7 +239,7 @@ class Reader(BaseReader):
                 sdmxobj._elem)[0].value
             return [(a['id'],
                      a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, struct_attrib)]
+                    for i, a in zip(value_idx, struct_attrib) if i is not None]
 
     def series_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.value.get('attributes')
@@ -248,7 +248,7 @@ class Reader(BaseReader):
                 sdmxobj._elem)[0].value
             return [(a['id'],
                      a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, struct_attrib)]
+                    for i, a in zip(value_idx, struct_attrib) if i is not None]
     getitem0 = itemgetter(0)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
@@ -257,15 +257,21 @@ class Reader(BaseReader):
                        'observations'].items(), key=self.getitem0, reverse=reverse_obs)
         obs_dim_l = parse(
             '$.structure.dimensions.observation[*]').find(sdmxobj._elem)
+        # prepare attrib generation
+        if with_attributes:
+            struct_attrib = [d.value for d in parse(
+                '$.structure.attributes.observation[*]').find(sdmxobj._elem)]
+            attrib_id = [d['id'] for d in struct_attrib]
         for obs in obs_l:
             obs_dim = obs_dim_l[0].value['values'][int(obs[0])]['id']
             if with_value:
                 obs_value = obs[1][0]
             else:
                 obs_value = None
-            if with_attributes:
-                obs_attr_values = self._paths['attr_values_path'](obs)
-                obs_attr_id = self._paths['attr_id_path'](obs)
+            if with_attributes and len(obs[1]):
+                obs_attr_index = obs[1][1:]
+                obs_attr_id, obs_attr_values = zip(*[(d['id'], d['values'][i].get('id'))
+                                                     for i, d in zip(obs_attr_index, struct_attrib)])
                 obs_attr_type = namedtuple_factory(
                     'ObsAttributes', obs_attr_id)
                 obs_attr = obs_attr_type(*obs_attr_values)

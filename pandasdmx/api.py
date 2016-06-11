@@ -74,6 +74,16 @@ class Request(object):
                     'headers': {'Accept': 'application/vnd.sdmx.genericdata+xml;version=2.1'},
                 },
             }
+        },
+        'OECD': {
+            'name': 'OECD',
+            'url': 'http://stats.oecd.org/SDMX-JSON',
+            'resources': {
+                'data': {
+                    'headers': {},
+                    'json': True
+                },
+            }
         }
     }
 
@@ -302,9 +312,8 @@ class Request(object):
                 # undo side effect of is_zipfile
                 source.seek(0)
             # select reader class
-            # expand this. For now, json reader is only
-            # imported when loading file, not via http.
-            if fromfile and fromfile.endswith('.json'):
+            if ((fromfile and fromfile.endswith('.json'))
+                    or self._agencies[self.agency][resource_type].get('json')):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')

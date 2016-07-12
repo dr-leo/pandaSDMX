@@ -121,7 +121,7 @@ the dataflows the ECB provides.
     using pandas DataFrames.
     
                
-Getting the categorisation scheme
+Getting the category scheme
 :::::::::::::::::::::::::::::::::::::::
 
 SDMX allows to download a list of dataflow definitions for all

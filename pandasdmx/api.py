@@ -85,6 +85,9 @@ class Request(object):
                 },
             }
         }
+        # OECD get datastructure:
+        # http://stats.oecd.org/r    estsdmx/sdmx.ashx/GetDataStructure/<dataset
+        # identifier>
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
@@ -123,7 +126,7 @@ class Request(object):
         if not hasattr(self, 'data'):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
-        self.agency = agency
+        self.agency = agency.upper()
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)
 

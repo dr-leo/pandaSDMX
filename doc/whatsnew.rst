@@ -3,6 +3,27 @@
 What's new?
 ==============
 
+
+v0.5dev (2016-07-11)
+-----------------------
+
+New features
+:::::::::::::::::
+
+* new reader module for SDMX JSON data messages
+* add OECD as data provider (data messages only)
+
+
+API changes
+:::::::::::::::
+
+* Request constructor: make agency ID case-insensitive
+ 
+Bug fixes
+:::::::::::::::
+ 
+* sdmxml reader: fix AttributeError in write_source method, thanks to Topas
+
 v0.4 (2016-04-11)
 -----------------------
 

@@ -53,7 +53,7 @@ class Reader(BaseReader):
         '''
         Save XML source to file by calling `write` on the root element.
         '''
-        return self.message._elem.write(filename, encoding='utf8')
+        return self.message._elem.getroottree().write(filename, encoding='utf8')
 
     _paths = {
         'footer_text': 'com:Text/text()',

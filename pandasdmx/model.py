@@ -241,6 +241,12 @@ class Scheme(DictLike):
 
 class ItemScheme(MaintainableArtefact, Scheme):
 
+    def __init__(self, *args, **kwargs):
+        super(ItemScheme, self).__init__(*args, **kwargs)
+        # set baklinks on items to the scheme as required by SDMX info model
+        for item in self.values():
+            item.parent = self
+
     @property
     def is_partial(self):
         return self._reader.is_partial(self)
@@ -249,12 +255,8 @@ class ItemScheme(MaintainableArtefact, Scheme):
 class Item(NameableArtefact):
 
     @property
-    def parent(self):
-        return self._reader._item_parent(self)
-
-    @property
     def children(self):
-        return self._reader._iterm_children(self)
+        return self._reader._item_children(self)
 
 
 class Structure(MaintainableArtefact):

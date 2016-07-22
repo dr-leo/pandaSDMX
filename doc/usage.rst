@@ -142,7 +142,7 @@ shortcut throughout this documentation. But keep in mind
 that all payload such as data or metadata 
 is stored as attributes of a 
 :class:`pandasdmx.model.Message` instance which can be
-accessed from a ``Response`` instance via its ``msg`` attribute.
+explicitly accessed from a ``Response`` instance via its ``msg`` attribute.
   
 Try ``dir(cat_response.msg)`` to see what we have received: 
 There is not only the category scheme, but also the dataflows and categorisations.
@@ -183,19 +183,18 @@ at category '07' of category-scheme 'MOBILE_NAVI'.
 Extracting the dataflows in a particular category
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-Alongside ``categoryscheme``, our response contains a resource called
-``categorisation`` containing multiple categorisations.
-A :class:`pandasdmx.model.Categorisation` maps a category to a set of
-categorised objects, in our case dataflow definitions. The Category class 
-makes use of the :class:`pandasdmx.model.Ref` to refer to the categorised object.
-
-To display the dataflow definitions contained in our favorite category
-on exchange rates, we issue: 
+To display the categorised items, in our case the dataflow definitions contained in our favorite category
+on exchange rates, we simply iterate over the `Category` instance (new in version 0.5): 
  
 .. ipython:: python
 
-    [cat_response.dataflow[i.artefact.id] for i in cat_response.categorisation['07']]
-     
+    list(cat_response.categoryscheme.MOBILE_NAVI['07'])
+
+Behind the scenes, the iterator is constructed by accessing a sorted list of :class:`pandasdmx.model.Categorisation` instances.
+These maps a category to a categorised item both of which are represented by :class:`pandasdmx.model.Ref`. For simplicity, as from version 0.5, categorisations
+are no longer considered part of the user-facing API.  
+
+
 Retrieving dataflows without using categories
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

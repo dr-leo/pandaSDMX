@@ -14,10 +14,9 @@ This module is part of the pandaSDMX package
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils import DictLike, concat_namedtuples, str_type
+from pandasdmx.utils import DictLike, concat_namedtuples
 from operator import attrgetter
-from collections import OrderedDict
-from itertools import groupby
+from bisect import bisect_left, bisect_right
 
 
 class SDMXObject(object):
@@ -131,8 +130,20 @@ class IdentifiableArtefact(AnnotableArtefact):
     def __ne__(self, value):
         return self.urn != value.urn
 
+    def __lt__(self, value):
+        return self.urn < value.urn
+
+    def __gt__(self, value):
+        return self.urn > value.urn
+
+    def __le__(self, value):
+        return self.urn <= value.urn
+
+    def __ge__(self, value):
+        return self.urn >= value.urn
+
     def __hash__(self):
-        return super(IdentifiableArtefact, self).__hash__()
+        return hash(self.urn)
 
     @property
     def uri(self):
@@ -201,27 +212,26 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def is_external_ref(self):
-        return self._reader.is_external_ref(self)
+        return self._reader.is_external_ref(self)  # fix this
 
     @property
     def structure_url(self):
-        return self._reader.structure_url(self)
+        return self._reader.structure_url(self)  # fix this
 
     @property
     def service_url(self):
-        return self._reader.service_url(self)
+        return self._reader.service_url(self)  # fix this
 
     @property
     def maintainer(self):
-        return self._reader.maintainer(self)
+        return self._reader.maintainer(self)  # fix this
+
 
 # Helper class for ItemScheme and ComponentList.
 # This is not specifically mentioned in the SDMX info-model.
 # ItemSchemes and ComponentList differ only in that ItemScheme is Nameable, whereas
 # ComponentList is only identifiable. Therefore, ComponentList cannot
 # inherit from ItemScheme.
-
-
 class Scheme(DictLike):
     # will be passed to _reader.read_identifiables. overwrite in subclasses
     _get_items = None
@@ -240,12 +250,6 @@ class Scheme(DictLike):
 
 
 class ItemScheme(MaintainableArtefact, Scheme):
-
-    def __init__(self, *args, **kwargs):
-        super(ItemScheme, self).__init__(*args, **kwargs)
-        # set baklinks on items to the scheme as required by SDMX info model
-        for item in self.values():
-            item.parent = self
 
     @property
     def is_partial(self):
@@ -396,23 +400,32 @@ class CubeRegion(SDMXObject):
 
 
 class Category(Item):
-    pass
+
+    def __iter__(self):
+        m = self._reader.message
+        cat = m._categorisation
+        idx = (self._reader.read_as_str('cat_scheme_id', self), self.id)
+        left = bisect_left(cat.keys, idx)
+        right = bisect_right(cat.keys, idx)
+        return (m.dataflow[c.artefact.id] for c in cat[left:right])
+
+        return (m.dataflow[c.artefact.id] for c in categorisations)
 
 
 class CategoryScheme(ItemScheme):
     _get_items = Category
 
 
-class Categorisations(SDMXObject, DictLike):
+class Categorisations(SDMXObject, list):
 
     def __init__(self, *args, **kwargs):
         super(Categorisations, self).__init__(*args, **kwargs)
-        raw = list(self._reader.read_instance(
+        self.extend(self._reader.read_instance(
             Categorisation, self, first_only=False))
-        key_func = attrgetter('categorised_by.id')
-        sorted_l = sorted(raw, key=key_func)
-        result = {k: set(g) for k, g in groupby(sorted_l, key_func)}
-        self.update(result)
+        key_func = lambda c: (c.categorised_by.maintainable_parent_id,
+                              c.categorised_by.id)
+        self.sort(key=key_func)
+        self.keys = [key_func(c) for c in self]
 
 
 class Ref(SDMXObject):
@@ -651,10 +664,10 @@ class Message(SDMXObject):
         super(Message, self).__init__(*args, **kwargs)
         # Initialize data attributes for which the response contains payload
         for name, method, cls, offset in self._content_types:
-            value = getattr(
+            payload = getattr(
                 self._reader, method)(cls, self, offset=offset)
-            if value:
-                setattr(self, name, value)
+            if payload:
+                setattr(self, name, payload)
 
 
 class StructureMessage(Message):
@@ -668,7 +681,7 @@ class StructureMessage(Message):
          DataStructureDefinition, None),
         ('constraint', 'read_identifiables', ContentConstraint, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
-        ('categorisation', 'read_instance', Categorisations, None)])
+        ('_categorisation', 'read_instance', Categorisations, None)])
 
     def __getattr__(self, name):
         '''

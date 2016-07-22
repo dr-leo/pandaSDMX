@@ -134,6 +134,7 @@ class Reader(BaseReader):
         'maxlength': 'str:TextFormat/@maxLength',
         # need this? It is just a non-offset Ref
         'attr_relationship': '*/Ref/@id',
+        'cat_scheme_id': '../@id'
     }
 
     @classmethod

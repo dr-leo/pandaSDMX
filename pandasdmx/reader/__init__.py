@@ -55,7 +55,7 @@ class BaseReader:
         '''
         If cls in _paths and matches,
         return an instance of cls with the first XML element,
-        or, if fest_only is False, a list of cls instances 
+        or, if first_only is False, a list of cls instances 
         for all elements found,
         If no matches were found, return None.  
         '''

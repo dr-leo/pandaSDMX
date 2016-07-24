@@ -91,7 +91,7 @@ class Request(object):
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'categorisation', 'codelist', 'conceptscheme']
+                  'codelist', 'conceptscheme']
 
     @classmethod
     def _make_get_wrappers(cls):

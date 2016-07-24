@@ -16,7 +16,7 @@ This module is part of the pandaSDMX package
 
 from pandasdmx.utils import DictLike, concat_namedtuples
 from operator import attrgetter
-from bisect import bisect_left, bisect_right
+from collections import defaultdict
 
 
 class SDMXObject(object):
@@ -403,29 +403,27 @@ class Category(Item):
 
     def __iter__(self):
         m = self._reader.message
-        cat = m._categorisation
+        # We assume that only dataflow definitions are categorised.
+        dataflow = m.dataflow
         idx = (self._reader.read_as_str('cat_scheme_id', self), self.id)
-        left = bisect_left(cat.keys, idx)
-        right = bisect_right(cat.keys, idx)
-        return (m.dataflow[c.artefact.id] for c in cat[left:right])
-
-        return (m.dataflow[c.artefact.id] for c in categorisations)
+        return (dataflow[c.artefact.id] for c in m._categorisation[idx])
 
 
 class CategoryScheme(ItemScheme):
     _get_items = Category
 
 
-class Categorisations(SDMXObject, list):
+class Categorisations(SDMXObject, DictLike):
 
     def __init__(self, *args, **kwargs):
         super(Categorisations, self).__init__(*args, **kwargs)
-        self.extend(self._reader.read_instance(
-            Categorisation, self, first_only=False))
-        key_func = lambda c: (c.categorised_by.maintainable_parent_id,
-                              c.categorised_by.id)
-        self.sort(key=key_func)
-        self.keys = [key_func(c) for c in self]
+        result = defaultdict(list)
+        for c in self._reader.read_instance(
+                Categorisation, self, first_only=False):
+            key = (c.categorised_by.maintainable_parent_id,
+                   c.categorised_by.id)
+            result[key].append(c)
+        self.update(result)
 
 
 class Ref(SDMXObject):

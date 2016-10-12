@@ -4,7 +4,7 @@ pandaSDMX
 Description: A Python- and pandas-powered client for statistical data and metadata exchange
 Author: Dr. Leo <fhaxbox66@gmail.com>
 License: Apache 2.0
-Documentation: http://pandasdmx.readthedocs.org
+Documentation: https://pandasdmx.readthedocs.io
 Development website: https://github.com/dr-leo/pandasdmx/
 
 

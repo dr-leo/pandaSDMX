@@ -37,7 +37,7 @@ logger = _init_logger()
 
 def odo_register():
     '''
-    Enable conversion of .sdmx files with odo (http://odo.readthedocs.org).
+    Enable conversion of .sdmx files with odo (https://odo.readthedocs.io).
     Adds conversion from sdmx to PD.DataFrame to odo graph.
     Note that native discovery of sdmx files is not yet supported. odo will thus 
     convert to PD.DataFrame

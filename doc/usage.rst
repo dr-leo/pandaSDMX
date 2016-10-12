@@ -494,7 +494,7 @@ be overwritten.
 Using odo to export data sets to other data formats and database backends
 ---------------------------------------------------------------------------
 
-Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.io>`_, a great tool to convert data sets
+Since version 0.4, pandaSDMX supports `odo <https://odo.readthedocs.io>`_, a great tool to convert data sets
 to a variety of data formats and database backends. To use this feature, you have to
 call :func:`pandasdmx.odo_register` to register .sdmx files with odo. Then you can
 convert an .sdmx file containing a data set to, say, a CSV file or an SQLite or PostgreSQL database in

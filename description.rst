@@ -43,13 +43,13 @@ Main features
 
 For further details including extensive code examples
 see the 
-`documentation <http://pandasdmx.readthedocs.io>`_ . 
+`documentation <https://pandasdmx.readthedocs.io>`_ . 
 
 
 pandaSDMX Links
 -------------------------------
 
-* `Documentation <http://pandasdmx.readthedocs.io>`_
+* `Documentation <https://pandasdmx.readthedocs.io>`_
 * `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
  

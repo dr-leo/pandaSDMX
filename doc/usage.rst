@@ -183,16 +183,12 @@ at category '07' of category-scheme 'MOBILE_NAVI'.
 Extracting the dataflows in a particular category
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-To display the categorised items, in our case the dataflow definitions contained in our favorite category
-on exchange rates, we simply iterate over the `Category` instance (new in version 0.5): 
+To display the categorised items, in our case the dataflow definitions contained in the category
+on exchange rates, we iterate over the `Category` instance (new in version 0.5): 
  
 .. ipython:: python
 
     list(cat_response.categoryscheme.MOBILE_NAVI['07'])
-
-Behind the scenes, the iterator is constructed by accessing a sorted list of :class:`pandasdmx.model.Categorisation` instances.
-These maps a category to a categorised item both of which are represented by :class:`pandasdmx.model.Ref`. For simplicity, as from version 0.5, categorisations
-are no longer considered part of the user-facing API.  
 
 
 Retrieving dataflows without using categories

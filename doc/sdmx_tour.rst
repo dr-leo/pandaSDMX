@@ -24,7 +24,8 @@ At its core, SDMX defines an :index:`information model` consisting of a set of :
 There are classes defining things like datasets, metadatasets, data and metadata structures, 
 processes, organisations and their specific roles to name but a few. The information model is agnostic as to its
 implementation. Luckily, the SDMX standard provides an XML-based implementation (see below). And
-a JSON-variant is in the works.
+a more efficient JSON-variant is being standardised by the 
+`SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_. 
  
 The following sections briefly introduces some key elements of the information model.
 
@@ -128,8 +129,24 @@ agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, 
 ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes advantage from
 this class hierarchy.
     
-XML-implementation of the information model
+Implementations of the information model
 ---------------------------------------------------------------      
+      
+Background
+:::::::::::
+      
+There are two implementations of the information model:
+
+* SDMXML is XML-based. It is fully standardised and covers the
+  complete information model. However, it is a bit heavy-weight and data providers
+  are gradually shifting to the JSON flavor currently in the works. 
+* `SDMXJSON <https://github.com/sdmx-twg/sdmx-json>`_: 
+  This recent JSON-based implementation is more lightweight and efficient.
+  While standardisation is in an advanced stage, structure-messages are not yet covered. Data messages work well
+  hough, and pandaSDMX supports them as from v0.5.
+          
+SDMXML
+:::::::::
       
 The SDMX standard defines an XML-based implementation of the information model called :index:`SDMXML`. 
 An SDMXML document contains exactly one SDMX :index:`Message`. There are several types of Message such as
@@ -154,11 +171,20 @@ XML editor to get a deeper understanding of the structure and content of various
 SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX does not 
 yet support validation.
         
+SDMXJSON
+::::::::::
+        
+`SDMXJSON <https://github.com/sdmx-twg/sdmx-json>`_ represents SDMX datasets and related metadata as
+JSON files provided by RESTful web services. Early adopters of this format are OECD, ECB and IMF. As of v0.5, pandaSDMX
+supports the OECD's REST interface for SDMXJSON. However, note that
+structural metadata is not yet fully standardised. Hence, it is impossible at
+this stage to download dataflow definitions, codelists etc. from OECD. 
+ 
         
 SDMX web services
 --------------------------------
         
-The SDMX standard defines both a REST and a SOAP web service API. pandaSDMX only supports the REST API.        
+The SDMX standard defines both a REST and a SOAP web service API. As of v0.5, pandaSDMX only supports the REST API.        
 
 The URL specifies the type, providing agency, and ID of the requested SDMX resource (dataflow, categoryscheme, data etc.).
 The query part of the URL (after the '?') may be used to give optional query parameters. For instance, when

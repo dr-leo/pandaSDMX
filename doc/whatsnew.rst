@@ -12,17 +12,24 @@ New features
 
 * new reader module for SDMX JSON data messages
 * add OECD as data provider (data messages only)
+* :class:`pandasdmx.model.Category` is now an iterator over categorised objects. This greatly simplifies category usage.
+  Besides, categories with the same ID while belonging to
+  multiple category schemes are no longer conflated.  
 
 
 API changes
 :::::::::::::::
 
 * Request constructor: make agency ID case-insensitive
+* As :class:`Category` is now an iterator over categorised objects, :class:`Categorisations`
+  is no longer considered part of the public API. 
  
 Bug fixes
 :::::::::::::::
  
 * sdmxml reader: fix AttributeError in write_source method, thanks to Topas
+* correctly distinguish between categories with same ID while belonging to different category schemes  
+
 
 v0.4 (2016-04-11)
 -----------------------

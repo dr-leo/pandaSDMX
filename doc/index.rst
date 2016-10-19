@@ -8,7 +8,7 @@ most intuitive and versatile tool to retrieve and acquire statistical data and m
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
 It supports out of the box 
 the SDMX services of the European statistics office (Eurostat), 
-the European Central Bank (ECB), and the French National Institute for statistics (INSEE). 
+the European Central Bank (ECB), the French National Institute for statistics (INSEE), and the OECD (JSON only). 
 pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
 the gold-standard 
 of data analysis in Python. 
@@ -19,10 +19,10 @@ database backends via `Odo <http://odo.readthedocs.io/>`_.
 Main features
 ---------------------
 
-* intuitive API inspired by `requests <https://pypi.python.org/pypi/requests/>`_  
 * support for many SDMX features including
 
-  - generic datasets
+  - generic data sets in SDMXML format
+  - compact data sets in SDMXJSON format (OECD only) 
   - data structure definitions, code lists and concept schemes
   - dataflow definitions and content-constraints
   - categorisations and category schemes
@@ -30,8 +30,8 @@ Main features
 * pythonic representation of the SDMX information model  
 * When requesting datasets, validate column selections against code lists 
   and content-constraints if available
-* export data and metadata as multi-indexed pandas DataFrames or Series, and
-  many other formats and database backends via `Odo <odo.readthedocs.io/>`_ 
+* export data and structural metadata such as code lists as multi-indexed pandas DataFrames or Series, and
+  many other formats and database backends via `Odo`_ 
 * read and write SDMX messages to and from local files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ allowing to cache SDMX messages in 
@@ -42,20 +42,43 @@ Main features
 Example
 ---------
 
-
+Suppose we want to analyze annual unemployment data for some European countries. All we need to know
+in advance is the data provider, eurostat. pandaSDMX makes it super easy to
+search the directory of dataflows, and the complete structural metadata about the datasets
+available through the selected dataflow. We won't go into the nitty-gritty here.
+The impatient reader may directly jump to the tutorial. 
+The dataflow with the ID 'une_rt_a' contains the data we want. The dataflow definition references a 
+datastructure definition with the ID 'DSD_une_rt_a'. 
+It tells us everything about the data sets available through this dataflow: the dimensions, 
+concept schemes, and corresponding code lists. 
+ 
 .. ipython:: python
 
     from pandasdmx import Request
-    # Get recent annual unemployment data on Greece, Ireland and Spain from Eurostat
-    resp = Request('ESTAT').data('une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2006'})
-    # Select data across age groups and write them to pandas DataFrames
+    estat = Request('ESTAT')
+    # Download the metadata and expose it as a dict of pandas DataFrames
+    metadata = estat.datastructure('DSD_une_rt_a').write()
+    # Show some code lists
+    metadata.codelist.loc['AGE']
+    metadata.codelist.loc['UNIT']
+    
+Next we download a data set. Codes from the code lists
+are used to select columns, in this example 
+we will get unemployment data on three countries (Greece, Ireland and Spain)
+
+.. ipython:: python
+
+    resp = Request('ESTAT').data('une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2007'})
+    # We use a generator expression to narrow down the column selection 
+    # and write these columns to a pandas DataFrame
     data = resp.write((s for s in resp.data.series if s.key.AGE == 'TOTAL'))
     # Explore the data set. First, show dimension names
     data.columns.names
-    # corresponding dimension values
+    # and corresponding dimension values
     data.columns.levels
-    # Print aggregate unemployment rates across ages and sexes 
-    data.loc[:, ('TOTAL', 'T')]
+    # Show aggregate unemployment rates across ages and sexes as
+    # percentage of active population 
+    data.loc[:, ('PC_ACT', 'TOTAL', 'T')]
 
 
 pandaSDMX Links

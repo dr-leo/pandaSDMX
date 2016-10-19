@@ -402,11 +402,14 @@ class CubeRegion(SDMXObject):
 class Category(Item):
 
     def __iter__(self):
+        '''
+        Return an iterator over the categorised objects
+        '''
         m = self._reader.message
         # We assume that only dataflow definitions are categorised.
-        dataflow = m.dataflow
+        resource = m.dataflow
         idx = (self._reader.read_as_str('cat_scheme_id', self), self.id)
-        return (dataflow[c.artefact.id] for c in m._categorisation[idx])
+        return (resource[c.artefact.id] for c in m._categorisation[idx])
 
 
 class CategoryScheme(ItemScheme):
@@ -417,6 +420,8 @@ class Categorisations(SDMXObject, DictLike):
 
     def __init__(self, *args, **kwargs):
         super(Categorisations, self).__init__(*args, **kwargs)
+        # Group categorisations by categoryscheme id and category id
+        # Each group is represented by a list.
         result = defaultdict(list)
         for c in self._reader.read_instance(
                 Categorisation, self, first_only=False):

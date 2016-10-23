@@ -45,11 +45,11 @@ Example
 Suppose we want to analyze annual unemployment data for some European countries. All we need to know
 in advance is the data provider, eurostat. pandaSDMX makes it super easy to
 search the directory of dataflows, and the complete structural metadata about the datasets
-available through the selected dataflow. We won't go into the nitty-gritty here.
-The impatient reader may directly jump to the tutorial. 
+available through the selected dataflow. We will skip this step here.
+The impatient reader may directly jump to :ref:`basic-usage`. 
 The dataflow with the ID 'une_rt_a' contains the data we want. The dataflow definition references a 
 datastructure definition with the ID 'DSD_une_rt_a'. 
-It tells us everything about the data sets available through this dataflow: the dimensions, 
+It contains or references all the metadata describing data sets available through this dataflow: the dimensions, 
 concept schemes, and corresponding code lists. 
  
 .. ipython:: python
@@ -59,12 +59,10 @@ concept schemes, and corresponding code lists.
     # Download the metadata and expose it as a dict of pandas DataFrames
     metadata = estat.datastructure('DSD_une_rt_a').write()
     # Show some code lists
-    metadata.codelist.loc['AGE']
-    metadata.codelist.loc['UNIT']
+    metadata.codelist.loc[('AGE', 'UNIT')]
     
-Next we download a data set. Codes from the code lists
-are used to select columns, in this example 
-we will get unemployment data on three countries (Greece, Ireland and Spain)
+Next we download a data set. We use codes from the code list 'GEO'
+to obtain data on Greece, Ireland and Spain only.
 
 .. ipython:: python
 

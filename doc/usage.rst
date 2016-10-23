@@ -319,7 +319,7 @@ Its keys (= dimension names) and
 values (= dimension values) will be validated against the 
 datastructure definition as well as the content-constraint if available. 
 
-As of v0.3.0, content-constraints are
+Content-constraints are
 implemented only in their CubeRegion flavor. KeyValueSets are not yet supported. In this
 case, the provided demension values will be validated only against the code-list. It is thus not
 always guaranteed that the dataset actually contains the desired data, e.g., 
@@ -338,7 +338,7 @@ exclude any prior data from the request.
 
 .. ipython:: python
 
-    data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2014'})
+    data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2016'})
     data = data_response.data
     type(data)
     

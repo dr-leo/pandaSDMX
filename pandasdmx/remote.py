@@ -117,8 +117,15 @@ class REST:
 
         with closing(requests.get(url, params=params, **cur_config)) as response:
             if response.status_code == requests.codes.OK:
-                source = STF(max_size=self.max_size)
-                for c in response.iter_content(chunk_size=1000000):
+                # Prepare the temp file. xml content will be
+                # stored in a binary file, json in a textfile.
+                if 'json' in response.headers['Content-Type']:
+                    enc, fmode = response.encoding, 'w+t'
+                else:
+                    enc, fmode = None, 'w+b'
+                source = STF(max_size=self.max_size, mode=fmode, encoding=enc)
+                for c in response.iter_content(chunk_size=1000000,
+                                               decode_unicode=bool(enc)):
                     source.write(c)
 
             else:

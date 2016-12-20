@@ -66,10 +66,10 @@ to obtain data on Greece, Ireland and Spain only.
 
 .. ipython:: python
 
-    resp = Request('ESTAT').data('une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2007'})
+    resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'}, params={'startPeriod': '2007'})
     # We use a generator expression to narrow down the column selection 
     # and write these columns to a pandas DataFrame
-    data = resp.write((s for s in resp.data.series if s.key.AGE == 'TOTAL'))
+    data = resp.write(s for s in resp.data.series if s.key.AGE == 'TOTAL')
     # Explore the data set. First, show dimension names
     data.columns.names
     # and corresponding dimension values

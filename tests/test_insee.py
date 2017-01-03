@@ -27,6 +27,11 @@ DATASETS = {
     },
 }
 
+SERIES = {
+    'UNEMPLOYMENT_CAT_A_B_C': {
+        'data-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-bug-series-freq-data.xml")),
+    }
+}
 
 class InseeTestCase(unittest.TestCase):
 
@@ -115,3 +120,10 @@ class InseeTestCase(unittest.TestCase):
 
         self.assertEqual(list(series.attrib._asdict().keys()),
                          ['FREQ', 'IDBANK', 'TITLE', 'LAST_UPDATE', 'UNIT_MEASURE', 'UNIT_MULT', 'REF_AREA', 'DECIMALS', 'BASE_PER', 'TIME_PER_COLLECT'])
+
+    def test_freq_in_series_attribute(self):
+        # Test that we don't have regression on Issues #39 and #41
+        # INSEE time series provide the FREQ value as attribute on the series instead of a dimension. This caused
+        # a runtime error when writing as pandas dataframe.
+        data_response = self.sdmx.data(fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
+        data_response.write()

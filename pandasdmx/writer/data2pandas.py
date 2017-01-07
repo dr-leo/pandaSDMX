@@ -159,10 +159,11 @@ class Writer(BaseWriter):
                 # occur if 'fromfreq' is True
                 # and there is a FREQ dimension at all.
                 # Check for common frequency field names
-                if 'FREQ' in series.key._fields:
+                if 'FREQ' in series.key._fields or 'FREQ' in series.attrib._fields:
                     freq_key = 'FREQ'
-                elif 'FREQUENCY' in series.key._fields:
+                elif 'FREQUENCY' in series.key._fields or 'FREQUENCY' in series.attrib._fields:
                     freq_key = 'FREQUENCY'
+
                 if fromfreq and freq_key in series.key._fields:
                     f = getattr(series.key, freq_key)
                     od0 = obs_dim[0]
@@ -181,10 +182,13 @@ class Writer(BaseWriter):
                     else:
                         series_index = PD.period_range(start=od0, periods=l,
                                                        freq=f, name=dim_at_obs)
-                elif freq_key in series.key._fields:
+                elif freq_key in series.key._fields or freq_key in series.attrib._fields:
                     # fromfreq is False. So generate the index from all the
                     # strings
-                    f = getattr(series.key, freq_key)
+                    if freq_key in series.key._fields:
+                        f = getattr(series.key, freq_key)
+                    else:
+                        f = getattr(series.attrib, freq_key)
                     # Generate arrays for years and subdivisions (quarters or
                     # semesters
                     if f == 'Q':

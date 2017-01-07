@@ -159,6 +159,8 @@ class Writer(BaseWriter):
                 # occur if 'fromfreq' is True
                 # and there is a FREQ dimension at all.
                 # Check for common frequency field names
+                # Initialize with dummy value first to avoid UnboundLocalError
+                freq_key = ''
                 if 'FREQ' in series.key._fields or 'FREQ' in series.attrib._fields:
                     freq_key = 'FREQ'
                 elif 'FREQUENCY' in series.key._fields or 'FREQUENCY' in series.attrib._fields:
@@ -187,8 +189,16 @@ class Writer(BaseWriter):
                     # strings
                     if freq_key in series.key._fields:
                         f = getattr(series.key, freq_key)
-                    else:
+                    elif freq_key in series.attrib._fields:
                         f = getattr(series.attrib, freq_key)
+                    else:
+                        # Data set has neither a frequency dimension nor a frequency attribute.
+                        # At this point, no DateTimeIndex or PeriodIndex can be generated.
+                        # This should be improved in future versions. For now, a
+                        # a gentle error is raised to inform the user of a
+                        # work-around.
+                        raise ValueError("Cannot generate DateTimeIndex from this data set.\
+                        Try again with `parse_time=False`")
                     # Generate arrays for years and subdivisions (quarters or
                     # semesters
                     if f == 'Q':

@@ -247,16 +247,20 @@ class Reader(BaseReader):
     def dataset_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.value.get('attributes')
         if value_idx:
-            return [(a['id'],
-                     a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, self._dataset_attrib) if i is not None]
+            attrib_list = [(a['id'],
+                            a['values'][i].get('id', a['values'][i]['name']))
+                           for i, a in zip(value_idx, self._dataset_attrib) if i is not None]
+            attrib_ids, attrib_values = zip(*attrib_list)
+            return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
 
     def series_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.get('attributes')
         if value_idx:
-            return [(a['id'],
-                     a['values'][i].get('id', a['values'][i]['name']))
-                    for i, a in zip(value_idx, self._series_attrib) if i is not None]
+            attrib_list = [(a['id'],
+                            a['values'][i].get('id', a['values'][i]['name']))
+                           for i, a in zip(value_idx, self._series_attrib) if i is not None]
+            attrib_ids, attrib_values = zip(*attrib_list)
+            return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
 
     getitem0 = itemgetter(0)
 

@@ -3,8 +3,29 @@
 What's new?
 ==============
 
+v0.6 (2017-01-07)
+-----------------------
 
-v0.5dev (2016-07-11)
+This release contains some important stability improvements.
+
+Bug fixes
+:::::::::::::::
+  
+* JSON data from OECD
+  is now properly downloaded 
+* The data writer tries to gleen a frequency value for a time series from its attributes.
+  This is helpful when exporting data sets, e.g., from INSEE 
+  ('Issue 41 <https://github.com/dr-leo/pandaSDMX/issues/41>`_).
+ 
+Known issues
+:::::::::::::::
+  
+A data set which lacks a FREQ dimension or attribute can be
+exported as pandas DataFrame only when `parse_time=False?`, i.e. no DateTime index
+is generated. The resulting DataFrame has a string index. Use pandas magic to
+create a DateTimeIndex from there.   
+
+v0.5 (2016-10-30)
 -----------------------
 
 New features

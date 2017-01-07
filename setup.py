@@ -13,10 +13,7 @@ from codecs import open
 
 
 # Get version
-# s = open('pandasdmx/__init__.py', 'rt').read()
-# m = re.search(r"version = '([a-z0-9.]+)'", s)
-# ver = m.groups(0)[0]
-ver = '0.5.2'
+ver = '0.6'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r', encoding='utf8').read()

@@ -13,7 +13,7 @@ a classes for http access.
 
 
 import requests
-from pandasdmx.utils import DictLike
+from pandasdmx.utils import DictLike, str_type
 from tempfile import SpooledTemporaryFile as STF
 from contextlib import closing
 try:
@@ -123,7 +123,13 @@ class REST:
                     enc, fmode = response.encoding, 'w+t'
                 else:
                     enc, fmode = None, 'w+b'
-                source = STF(max_size=self.max_size, mode=fmode, encoding=enc)
+                # Create temp file ensuring 2to3 compatibility
+                if str_type == str:  # we are on py3
+                    source = STF(
+                        max_size=self.max_size, mode=fmode, encoding=enc)
+                else:
+                    # On py27 we must omit the 'encoding' kwarg
+                    source = STF(max_size=self.max_size, mode=fmode)
                 for c in response.iter_content(chunk_size=1000000,
                                                decode_unicode=bool(enc)):
                     source.write(c)

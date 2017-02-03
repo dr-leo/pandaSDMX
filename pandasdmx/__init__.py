@@ -19,7 +19,7 @@ import logging
 
 __all__ = ['Request']
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 
 
 def _init_logger():

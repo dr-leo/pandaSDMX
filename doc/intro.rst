@@ -12,8 +12,7 @@ Prerequisites
 
 pandaSDMX is a pure `Python <http://www.python.org>`_ package. 
 As such it should run on any platform. 
-It requires Python 2.7, 3.4 or 3.5. Python 3.3 should work as well, 
-but this is untested. 
+It requires Python 2.7, 3.4 or higher.  
 
 It is recommended to use one of the common Python distributions
 for scientific data analysis such as
@@ -22,8 +21,8 @@ for scientific data analysis such as
 * `Canopy <https://www.enthought.com/products/canopy/>`_. 
 
 Along with a current Python interpreter these Python distributions include 
-the dependencies as well as lots of
-other useful packages for data analysis.   
+lots of
+useful packages for data analysis.   
 For other Python distributions (not only scientific) see
 `here <https://wiki.python.org/moin/PythonDistributions>`_.  
 
@@ -33,6 +32,7 @@ pandaSDMX has the following dependencies:
   `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages
 * the HTTP library `requests <https://pypi.python.org/pypi/requests/>`_
 * `LXML <http://www.lxml.de>`_ for XML processing. 
+* `JSONPATH-RW <https://pypi.python.org/pypi/jsonpath-rw>`_ for JSON processing. 
 
 Optional dependencies
 ::::::::::::::::::::::::::::::::::::::::::
@@ -48,11 +48,13 @@ Optional dependencies
 Download
 :::::::::::::::::::::::::::
 
-You can download and install pandaSDMX like any other Python package, e.g.
+From the command line of your OS, issue
 
-* from the command line with ``pip install pandasdmx``, or 
-* manually by `downloading <https://pypi.python.org/pypi/pandaSDMX/>`_ and unzipping the latest source distribution.
-  From the package directory you should then issue the command ``python setup.py install``. 
+* ``conda install -c alcibiade pandasdmx`` if you are using Anaconda,
+* ``pip install pandasdmx`` otherwise. 
+
+Of course, you can also download the tarball from the PyPI and issue 
+``python setup.py install`` from the package dir.
 
 Running the test suite
 ---------------------------------------------------------

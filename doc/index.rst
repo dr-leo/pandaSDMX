@@ -78,6 +78,12 @@ to obtain data on Greece, Ireland and Spain only.
     # percentage of active population 
     data.loc[:, ('PC_ACT', 'TOTAL', 'T')]
 
+Quick install
+-----------------
+
+* ``conda install -c alcibiade pandasdmx # for Anaconda users``
+* ``pip install pandasdmx # for all others``
+
 
 pandaSDMX Links
 -------------------------------

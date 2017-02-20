@@ -67,7 +67,7 @@ class Request(object):
             'resources': {},
         },
         'INSEE': {
-            'name': 'INSEE',
+            'name': 'Institut national de la statistique et des études économiques',
             'url': 'http://www.bdm.insee.fr/series/sdmx',
             'resources': {
                 'data': {
@@ -76,7 +76,7 @@ class Request(object):
             }
         },
         'OECD': {
-            'name': 'OECD',
+            'name': 'Organisation for Economic Co-operation and Development',
             'url': 'http://stats.oecd.org/SDMX-JSON',
             'resources': {
                 'data': {
@@ -84,10 +84,17 @@ class Request(object):
                     'json': True,
                 }
             }
+        },
+        'ABS': {
+            'name': 'Australian Bureau of Statistics',
+            'url': 'http://stat.data.abs.gov.au/sdmx-json',
+            'resources': {
+                'data': {
+                    'headers': {},
+                    'json': True,
+                }
+            }
         }
-        # OECD get datastructure:
-        # http://stats.oecd.org/r    estsdmx/sdmx.ashx/GetDataStructure/<dataset
-        # identifier>
     }
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
@@ -361,7 +368,7 @@ class Request(object):
 
         Return: key(str)
         '''
-        # get the dataflow to thus the DSD ID
+        # get the dataflow and the DSD ID
         dataflow = self.get('dataflow', flow_id,
                             memcache='dataflow' + flow_id)
         dsd_id = dataflow.msg.dataflow[flow_id].structure.id

@@ -8,7 +8,8 @@ most intuitive and versatile tool to retrieve and acquire statistical data and m
 disseminated in `SDMX <http://www.sdmx.org>`_ format. 
 It supports out of the box 
 the SDMX services of the European statistics office (Eurostat), 
-the European Central Bank (ECB), the French National Institute for statistics (INSEE), and the OECD (JSON only). 
+the European Central Bank (ECB), the French National Institute for statistics (INSEE), 
+the Australian Bureau of Statistics, and the OECD (JSON only). 
 pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
 the gold-standard 
 of data analysis in Python. 

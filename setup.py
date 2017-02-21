@@ -26,12 +26,15 @@ setup(name='pandaSDMX',
       author_email='fhaxbox66@gmail.com',
       packages=['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer',
                 'pandasdmx.utils'],
+      package_data={'pandasdmx': ['agencies.json']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[
           'pandas',
           'lxml',
-          'requests'
+          'requests',
+          'jsonpath-rw'
       ],
+      keywords='statistics SDMX pandas data economics science',
       zip_safe=True,
       provides=['pandasdmx'],
       classifiers=[

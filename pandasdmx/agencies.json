@@ -1,0 +1,53 @@
+{
+    "": null,
+    "ESTAT": {
+        "resources": {},
+        "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+        "name": "Eurostat"
+    },
+    "SGR": {
+        "resources": {},
+        "url": "https://registry.sdmx.org/ws/rest",
+        "name": "SDMX Global Registry"
+    },
+    "INSEE": {
+        "resources": {
+            "data": {
+                "headers": {
+                    "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+                }
+            }
+        },
+        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques"
+    },
+    "OECD": {
+        "resources": {
+            "data": {
+                "headers": {},
+                "json": true
+            }
+        },
+        "url": "http://stats.oecd.org/SDMX-JSON",
+        "name": "Organisation for Economic Co-operation and Development"
+    },
+    "ECB": {
+        "resources": {
+            "data": {
+                "headers": {}
+            }
+        },
+        "url": "http://sdw-wsrest.ecb.int/service",
+        "name": "European Central Bank"
+    },
+    "ABS": {
+        "resources": {
+            "data": {
+                "headers": {},
+                "json": true
+            }
+        },
+        "url": "http://stat.data.abs.gov.au/sdmx-json",
+        "name": "Australian Bureau of Statistics"
+    }
+}

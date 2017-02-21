@@ -4,7 +4,7 @@
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
+# (c) 2014-2017 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
 '''
@@ -16,6 +16,7 @@ SOAP interface.
 
 '''
 
+import pandasdmx
 from pandasdmx import remote
 from pandasdmx.utils import str_type
 from importlib import import_module
@@ -23,6 +24,9 @@ from zipfile import ZipFile, is_zipfile
 from time import sleep
 from functools import partial
 import logging
+import json
+import os
+
 
 logger = logging.getLogger('pandasdmx.api')
 
@@ -34,6 +38,10 @@ class ResourceGetter(object):
     '''
 
     def __init__(self, resource_type):
+        # init _agencies config on first instantiation
+        if not Request._agencies:
+            Request.load_agency_profile()
+
         self.resource_type = resource_type
 
     def __get__(self, inst, cls):
@@ -45,57 +53,33 @@ class Request(object):
     """Get SDMX data and metadata from remote servers or local files.
     """
 
-    _agencies = {
-        '': None,  # empty agency for convenience when fromfile is given.
-        'ESTAT': {
-            'name': 'Eurostat',
-            'url': 'http://ec.europa.eu/eurostat/SDMX/diss-web/rest',
-            'resources': {},
-        },
-        'ECB': {
-            'name': 'European Central Bank',
-            'url': 'http://sdw-wsrest.ecb.int/service',
-            'resources': {
-                'data': {
-                    'headers': {},
-                },
-            },
-        },
-        'SGR': {
-            'name': 'SDMX Global Registry',
-            'url': 'https://registry.sdmx.org/ws/rest',
-            'resources': {},
-        },
-        'INSEE': {
-            'name': 'Institut national de la statistique et des études économiques',
-            'url': 'http://www.bdm.insee.fr/series/sdmx',
-            'resources': {
-                'data': {
-                    'headers': {'Accept': 'application/vnd.sdmx.genericdata+xml;version=2.1'},
-                },
-            }
-        },
-        'OECD': {
-            'name': 'Organisation for Economic Co-operation and Development',
-            'url': 'http://stats.oecd.org/SDMX-JSON',
-            'resources': {
-                'data': {
-                    'headers': {},
-                    'json': True,
-                }
-            }
-        },
-        'ABS': {
-            'name': 'Australian Bureau of Statistics',
-            'url': 'http://stat.data.abs.gov.au/sdmx-json',
-            'resources': {
-                'data': {
-                    'headers': {},
-                    'json': True,
-                }
-            }
-        }
-    }
+    _agencies = {}
+
+    @classmethod
+    def load_agency_profile(cls, filepath=None):
+        '''
+        Classmethod loading metadata on a data provider. ``filepath`` must
+        be a path to a json file describing one or more data providers
+        (URL of the SDMX web API, resource types etc.
+        The dict ``Request._agencies`` is updated with the metadata from the
+        specified file.
+
+        Returns None
+        '''
+        if not filepath:
+            filepath = pandasdmx.__path__[0] + os.path.sep + 'agencies.json'
+        with open(filepath, 'rt') as f:
+            new_agencies = json.load(f)
+        cls._agencies.update(new_agencies)
+
+    @classmethod
+    def list_agencies(cls):
+        '''
+        Return a list of valid agency IDs. These can be used to create ``Request`` instances.  
+        '''
+        if not cls._agencies:
+            cls.load_agency_profile()
+        return list(cls._agencies)
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
                   'codelist', 'conceptscheme']

@@ -4,10 +4,21 @@ What's new?
 ==============
 
 
+
 v0.6.1 (2017-02-03)
 ----------------------------
 
 * fix 2to3 issue which caused crashes on Python 2.7
+
+
+
+v0.7 (2017-03.xx)
+----------------------------
+
+* add Australian Bureau of Statistics as new data provider
+* load metadata on data providers from json file; allow the user to
+  add new agencies on the fly by specifying an appropriate
+  JSON file using the :meth:`pandasdmx.api.Request.load_agency_profile`.
 
 v0.6 (2017-01-07)
 -----------------------

@@ -32,7 +32,8 @@ setup(name='pandaSDMX',
           'pandas',
           'lxml',
           'requests',
-          'jsonpath-rw'
+          'jsonpath-rw',
+          'setuptools'
       ],
       keywords='statistics SDMX pandas data economics science',
       zip_safe=True,

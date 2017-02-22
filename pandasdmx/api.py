@@ -25,7 +25,7 @@ from time import sleep
 from functools import partial
 import logging
 import json
-import os
+from pkg_resources import resource_string
 
 
 logger = logging.getLogger('pandasdmx.api')
@@ -56,20 +56,23 @@ class Request(object):
     _agencies = {}
 
     @classmethod
-    def load_agency_profile(cls, filepath=None):
+    def load_agency_profile(cls, source=None):
         '''
-        Classmethod loading metadata on a data provider. ``filepath`` must
-        be a path to a json file describing one or more data providers
+        Classmethod loading metadata on a data provider. ``source`` must
+        be a json-formated string or file-like object describing one or more data providers
         (URL of the SDMX web API, resource types etc.
         The dict ``Request._agencies`` is updated with the metadata from the
-        specified file.
+        source.
 
         Returns None
         '''
-        if not filepath:
-            filepath = pandasdmx.__path__[0] + os.path.sep + 'agencies.json'
-        with open(filepath, 'rt') as f:
-            new_agencies = json.load(f)
+        if not source:
+            source = resource_string(
+                'pandasdmx', 'agencies.json').decode('ascii')
+        if not isinstance(source, str_type):
+            # so it must be a text file
+            source = source.read()
+        new_agencies = json.loads(source)
         cls._agencies.update(new_agencies)
 
     @classmethod

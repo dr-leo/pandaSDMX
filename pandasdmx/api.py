@@ -38,10 +38,6 @@ class ResourceGetter(object):
     '''
 
     def __init__(self, resource_type):
-        # init _agencies config on first instantiation
-        if not Request._agencies:
-            Request.load_agency_profile()
-
         self.resource_type = resource_type
 
     def __get__(self, inst, cls):
@@ -52,11 +48,13 @@ class Request(object):
 
     """Get SDMX data and metadata from remote servers or local files.
     """
-
-    _agencies = {}
+    # Load built-in agency metadata
+    s = resource_string('pandasdmx', 'agencies.json').decode('utf8')
+    _agencies = json.loads(s)
+    del s
 
     @classmethod
-    def load_agency_profile(cls, source=None):
+    def load_agency_profile(cls, source):
         '''
         Classmethod loading metadata on a data provider. ``source`` must
         be a json-formated string or file-like object describing one or more data providers
@@ -66,9 +64,6 @@ class Request(object):
 
         Returns None
         '''
-        if not source:
-            source = resource_string(
-                'pandasdmx', 'agencies.json').decode('ascii')
         if not isinstance(source, str_type):
             # so it must be a text file
             source = source.read()
@@ -78,11 +73,9 @@ class Request(object):
     @classmethod
     def list_agencies(cls):
         '''
-        Return a list of valid agency IDs. These can be used to create ``Request`` instances.  
+        Return a sorted list of valid agency IDs. These can be used to create ``Request`` instances.  
         '''
-        if not cls._agencies:
-            cls.load_agency_profile()
-        return list(cls._agencies)
+        return sorted(list(cls._agencies))
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
                   'codelist', 'conceptscheme']
@@ -120,6 +113,8 @@ class Request(object):
         if not hasattr(self, 'data'):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
+        if not agency:
+            agency = 'NO_AGENCY'
         self.agency = agency.upper()
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)

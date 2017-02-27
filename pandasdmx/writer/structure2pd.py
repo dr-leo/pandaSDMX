@@ -96,7 +96,7 @@ class Writer(BaseWriter):
                        for s in columns]
             # Select language for international strings represented as dict
             translated = [s[lang] if lang in s
-                          else s.get('en') or s.any() for s in raw]
+                          else s.get('en') or ((s or None) and s.any()) for s in raw]
             # for codelists, prepend dim_or_attr flag
             if rows == 'codelist' and dsd:
                 if scheme in dim2cl.values():

@@ -113,8 +113,6 @@ class Request(object):
         if not hasattr(self, 'data'):
             self._make_get_wrappers()
         self.client = remote.REST(cache, http_cfg)
-        if not agency:
-            agency = 'NO_AGENCY'
         self.agency = agency.upper()
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)

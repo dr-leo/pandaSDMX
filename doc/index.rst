@@ -107,6 +107,7 @@ Table of contents
     intro
     sdmx_tour
     usage
+    agencies
     advanced
     API documentation <api/modules>
     contributing

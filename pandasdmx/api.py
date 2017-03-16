@@ -362,7 +362,7 @@ class Request(object):
         dim_names = [d.id for d in dimensions]
         # Retrieve any ContentConstraint
         try:
-            constraint_l = [c for c in dataflow.msg.constraint.aslist()
+            constraint_l = [c for c in dataflow.constraint.aslist()
                             if c.constraint_attachment.id == flow_id]
             if constraint_l:
                 constraint = constraint_l[0]

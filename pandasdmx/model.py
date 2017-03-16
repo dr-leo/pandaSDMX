@@ -363,11 +363,20 @@ class ContentConstraint(Constraint):
 
     def __init__(self, *args, **kwargs):
         super(ContentConstraint, self).__init__(*args, **kwargs)
-        self.cube_region = self._reader.read_instance(CubeRegion, self)
+        self.cube_region = self._reader.read_instance(
+            CubeRegion, self, first_only=False)
 
     def __contains__(self, v):
         if self.cube_region:
-            return v in self.cube_region
+            result = [v in c for c in self.cube_region]
+            # Remove all cubes where v passed. The remaining ones indicate
+            # fails.
+            if True in result:
+                result.remove(True)
+            if result == []:
+                return True
+            else:
+                raise ValueError('Key outside cube region(s).', v, result)
         else:
             raise NotImplementedError(
                 'ContentConstraint does not contain any CubeRegion.')
@@ -388,7 +397,10 @@ class CubeRegion(SDMXObject):
         self.include = bool(self._reader.read_as_str('include', self))
         keyvalues = self._reader.read_instance(KeyValue, self,
                                                first_only=False)
-        self.key_values = {kv.id: kv.values for kv in keyvalues}
+        if keyvalues:
+            self.key_values = {kv.id: kv.values for kv in keyvalues}
+        else:
+            self.key_values = {}
 
     def __contains__(self, v):
         key, value = v

@@ -119,7 +119,8 @@ class REST:
             if response.status_code == requests.codes.OK:
                 # Prepare the temp file. xml content will be
                 # stored in a binary file, json in a textfile.
-                if 'json' in response.headers['Content-Type']:
+                if (response.headers.get('Content-Type')
+                        and ('json' in response.headers['Content-Type'])):
                     enc, fmode = response.encoding, 'w+t'
                 else:
                     enc, fmode = None, 'w+b'

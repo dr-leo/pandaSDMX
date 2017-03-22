@@ -128,7 +128,7 @@ class Request(object):
         else:
             raise ValueError('If given, agency must be one of {0}'.format(
                 list(self._agencies)))
-        self.cache = {}  # for SDMX messages
+        self.cache = {}  # for SDMX messages and other stuff.
 
     def clear_cache(self):
         self.cache.clear()
@@ -140,6 +140,27 @@ class Request(object):
     @timeout.setter
     def timeout(self, value):
         self.client.config['timeout'] = value
+
+    def series_keys(self, flow_id, cache=True):
+        '''
+        Get an empty dataset with all possible series keys.
+
+        Return a list of namedtuple instances. They have all the same key
+        representing dimension IDs. Values represent
+        all possible series keys for datasets
+        of the given dataflow.
+        '''
+        # Check if requested series keys are already cached
+        cache_id = 'series_keys_' + flow_id
+        if cache_id in self.cache:
+            return self.cache[cache_id]
+        else:
+            # download an empty dataset with all available series keys
+            resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
+            result = list(s.key for s in resp.data.series)
+            if cache:
+                self.cache[cache_id] = result
+            return result
 
     def get(self, resource_type='', resource_id='', agency='', key='',
             params=None, headers={},

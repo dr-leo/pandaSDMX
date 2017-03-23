@@ -19,13 +19,14 @@ SOAP interface.
 import pandasdmx
 from pandasdmx import remote
 from pandasdmx.utils import str_type
+import pandas as PD
+from pkg_resources import resource_string
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
 from functools import partial
 import logging
 import json
-from pkg_resources import resource_string
 
 
 logger = logging.getLogger('pandasdmx.api')
@@ -145,10 +146,10 @@ class Request(object):
         '''
         Get an empty dataset with all possible series keys.
 
-        Return a list of namedtuple instances. They have all the same key
-        representing dimension IDs. Values represent
-        all possible series keys for datasets
-        of the given dataflow.
+        Return a pandas DataFrame. Each
+        column represents a dimension, each row
+        a series key of datasets of 
+        the given dataflow.
         '''
         # Check if requested series keys are already cached
         cache_id = 'series_keys_' + flow_id
@@ -157,10 +158,11 @@ class Request(object):
         else:
             # download an empty dataset with all available series keys
             resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
-            result = list(s.key for s in resp.data.series)
+            l = list(s.key for s in resp.data.series)
+            df = PD.DataFrame(l, columns=l[0]._fields, dtype='category')
             if cache:
-                self.cache[cache_id] = result
-            return result
+                self.cache[cache_id] = df
+            return df
 
     def get(self, resource_type='', resource_id='', agency='', key='',
             params=None, headers={},

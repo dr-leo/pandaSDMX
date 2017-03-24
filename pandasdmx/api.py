@@ -371,64 +371,27 @@ class Request(object):
 
         Return: key(str)
         '''
-        # get the dataflow and the DSD ID
-        dataflow = self.get('dataflow', flow_id,
-                            memcache='dataflow' + flow_id)
-        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
-        dsd_resp = self.get('datastructure', dsd_id,
-                            memcache='datastructure' + dsd_id)
-        dsd = dsd_resp.msg.datastructure[dsd_id]
-        # Extract dimensions excluding the dimension at observation (time, time-period)
-        # as we are only interested in dimensions for columns, not rows.
-        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
-                      ['TIME', 'TIME_PERIOD']]
-        dim_names = [d.id for d in dimensions]
-        # Retrieve any ContentConstraint
-        try:
-            constraint_l = [c for c in dataflow.constraint.aslist()
-                            if c.constraint_attachment.id == flow_id]
-            if constraint_l:
-                constraint = constraint_l[0]
-        except:
-            constraint = None
+        # get all series keys
+        all_keys = self.series_keys(flow_id)
+        dim_names = all_keys.columns.tolist()
         # Validate the key dict
         # First, check correctness of dimension names
-        invalid = [d for d in key.keys()
+        invalid = [d for d in key
                    if d not in dim_names]
         if invalid:
             raise ValueError(
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
-        parts = []
         # Iterate over the dimensions. If the key dict
         # contains a value for the dimension, append it to the 'parts' list. Otherwise
         # append ''. Then join the parts to form the dotted str.
-        for d in dimensions:
-            try:
-                values = key[d.id]
-                values_l = values.split('+')
-                codelist = d.local_repr.enum
-                codes = codelist.keys()
-                invalid = [v for v in values_l if v not in codes]
-                if invalid:
-                    # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
-                                     format(invalid, d.id, codes))
-                # Check if values are in Contentconstraint if present
-                if constraint:
-                    try:
-                        invalid = [
-                            v for v in values_l if (d.id, v) not in constraint]
-                        if invalid:
-                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
-                                             format(invalid, d.id))
-                    except NotImplementedError:
-                        pass
-                part = values
-            except KeyError:
-                part = ''
-            parts.append(part)
+        invalid = [(k, v)
+                   for k, v in key.items() if v not in all_keys[k].values]
+        if invalid:
+            raise ValueError("The following dimension values are invalid: {0}".
+                             format(invalid))
+        parts = [key.get(name, '') for name in dim_names]
         return '.'.join(parts)
 
 

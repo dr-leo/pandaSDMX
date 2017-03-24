@@ -25,6 +25,7 @@ from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
 from functools import partial
+from itertools import chain, product
 import logging
 import json
 
@@ -383,15 +384,30 @@ class Request(object):
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
+        # First, wrap each single dim value in a list to allow
+        # uniform treatment of single and multiple dim values.
+        # To avoid side effects, we copy the dict first:
+        key_l = key.copy()
+        for k in key_l:
+            v = key_l[k]
+            if isinstance(v, str_type):
+                key_l[k] = [v]
         # Iterate over the dimensions. If the key dict
         # contains a value for the dimension, append it to the 'parts' list. Otherwise
         # append ''. Then join the parts to form the dotted str.
-        invalid = [(k, v)
-                   for k, v in key.items() if v not in all_keys[k].values]
+        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
+                                            for k, vl in key_l.items())))
         if invalid:
             raise ValueError("The following dimension values are invalid: {0}".
                              format(invalid))
-        parts = [key.get(name, '') for name in dim_names]
+        # Restore the 'UK+DE' notation for multiple dim values and remove the
+        # lists
+        for k, v in key_l.items():
+            if len(v) > 1:
+                key_l[k] = '+'.join(v)
+            else:
+                key_l[k] = v[0]
+        parts = [key_l.get(name, '') for name in dim_names]
         return '.'.join(parts)
 
 

@@ -24,8 +24,9 @@ from pkg_resources import resource_string
 from importlib import import_module
 from zipfile import ZipFile, is_zipfile
 from time import sleep
-from functools import partial
+from functools import partial, reduce
 from itertools import chain, product
+from operator import and_
 import logging
 import json
 
@@ -367,14 +368,18 @@ class Request(object):
 
     def _make_key(self, flow_id, key):
         '''
-        Download the dataflow def. and DSD and validate 
-        key(dict) against it. 
+        Get all series keys by calling
+        self.series_keys, and validate 
+        the key(dict) against it. Raises ValueError if
+        a value does not occur in the respective
+        set of dimension values. Multiple values per
+        dimension can be provided as a list.
 
-        Return: key(str)
+        Return: key(str) 
         '''
         # get all series keys
         all_keys = self.series_keys(flow_id)
-        dim_names = all_keys.columns.tolist()
+        dim_names = list(all_keys)
         # Validate the key dict
         # First, check correctness of dimension names
         invalid = [d for d in key
@@ -386,29 +391,70 @@ class Request(object):
         # string of the form 'value1.value2.value3+value4' etc.
         # First, wrap each single dim value in a list to allow
         # uniform treatment of single and multiple dim values.
-        # To avoid side effects, we copy the dict first:
-        key_l = key.copy()
-        for k in key_l:
-            v = key_l[k]
-            if isinstance(v, str_type):
-                key_l[k] = [v]
+        key_l = {k: [v] if isinstance(v, str_type) else v
+                 for k, v in key.items()}
         # Iterate over the dimensions. If the key dict
-        # contains a value for the dimension, append it to the 'parts' list. Otherwise
-        # append ''. Then join the parts to form the dotted str.
+        # contains an allowed value for the dimension,
+        # it will become part of the string.
         invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
                                             for k, vl in key_l.items())))
         if invalid:
             raise ValueError("The following dimension values are invalid: {0}".
                              format(invalid))
-        # Restore the 'UK+DE' notation for multiple dim values and remove the
+        # Generate the 'Val1+Val2' notation for multiple dim values and remove the
         # lists
         for k, v in key_l.items():
-            if len(v) > 1:
-                key_l[k] = '+'.join(v)
-            else:
-                key_l[k] = v[0]
+            key_l[k] = '+'.join(v)
+        # assemble the key string which goes into the URL
         parts = [key_l.get(name, '') for name in dim_names]
         return '.'.join(parts)
+
+    def data_size(self, flow_id, key=None, detail=0):
+        '''
+        Calculates number of series for a prospective data query allowing for
+        keys with multiple dimension values.
+        It uses the complete list of series keys for a dataflow rather than constraints and DSD.
+
+        Args:
+
+        flow_id(str): dataflow id
+        key(dict): key mapping dimension names to values or lists of values.
+            Must have been validated before. It is not checked if key values
+            are actually valid dimension names and values.
+
+            detail(int): determins the return type and amount of information 
+                0: returns number of series per key combination
+                1: returns boolean series as indexers per key combination
+                2: returns single DataFrame with all matching series keys
+        '''
+        all_keys = self.series_keys(flow_id)
+        # Wrap single values in 1-elem list for uniform treatment
+        key_l = {k: [v] if isinstance(v, str_type) else v
+                 for k, v in key.items()}
+        # order dim_names that are present in the key
+        dim_names = [k for k in all_keys if k in key]
+        # Drop columns that are not in the key
+        key_df = all_keys.loc[:, dim_names]
+        if detail == 2:
+            # DataFrame with matching series keys
+            bool_series = reduce(
+                and_, (key_df.isin(key_l)[col] for col in dim_names))
+            return all_keys[bool_series]
+        elif detail in [0, 1]:
+            # Dict of value combinations as dict keys
+            key_product = product(*(key_l[k] for k in dim_names))
+            matches = {k: reduce(and_, (key_df.isin({k1: [v1]
+                                                     for k1, v1 in zip(dim_names, k)})[col]
+                                        for col in dim_names))
+                       for k in key_product}
+            if detail == 1:
+                # dict with boolean series as values for each combination
+                return matches
+            else:
+                # Number of series per key
+                return {k: v.value_counts()[True] for k, v in matches.items()}
+        else:
+            raise ValueError('`detail`must be 0, 1 or 2')
 
 
 class Response(object):
@@ -430,7 +476,8 @@ class Response(object):
     '''
 
     def __init__(self, msg, url, headers, status_code, writer=None):
-        '''Set the main attributes and instantiate the writer if given.
+        '''
+        Set the main attributes and instantiate the writer if given.
 
         Args:
             msg(pandasdmx.model.Message): the SDMX message

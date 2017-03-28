@@ -42,6 +42,7 @@
         "name": "Organisation for Economic Co-operation and Development"
     },
     "ECB": {
+        "supports_series_keys_only": true,
         "resources": {
             "data": {
                 "headers": {}

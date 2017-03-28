@@ -267,7 +267,11 @@ class Request(object):
             # Otherwise, do nothing as key must be a str confirming to the REST
             # API spec.
             if resource_type == 'data' and isinstance(key, dict):
-                key = self._make_key(resource_id, key)
+                # select validation method based on agency capabilities
+                if self._agencies[self.agency].get('supports_series_keys_only'):
+                    key = self._make_key_from_series(resource_id, key)
+                else:
+                    key = self._make_key_from_dsd(resource_id, key)
 
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
@@ -366,7 +370,74 @@ class Request(object):
             self.cache[memcache] = r
         return r
 
-    def _make_key(self, flow_id, key):
+    def _make_key_from_dsd(self, flow_id, key):
+        '''
+        Download the dataflow def. and DSD and validate 
+        key(dict) against it. 
+
+        Return: key(str)
+        '''
+        # get the dataflow and the DSD ID
+        dataflow = self.get('dataflow', flow_id,
+                            memcache='dataflow' + flow_id)
+        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
+        dsd_resp = self.get('datastructure', dsd_id,
+                            memcache='datastructure' + dsd_id)
+        dsd = dsd_resp.msg.datastructure[dsd_id]
+        # Extract dimensions excluding the dimension at observation (time, time-period)
+        # as we are only interested in dimensions for columns, not rows.
+        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
+                      ['TIME', 'TIME_PERIOD']]
+        dim_names = [d.id for d in dimensions]
+        # Retrieve any ContentConstraint
+        try:
+            constraint_l = [c for c in dataflow.constraint.aslist()
+                            if c.constraint_attachment.id == flow_id]
+            if constraint_l:
+                constraint = constraint_l[0]
+        except:
+            constraint = None
+        # Validate the key dict
+        # First, check correctness of dimension names
+        invalid = [d for d in key.keys()
+                   if d not in dim_names]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+        # Check for each dimension name if values are correct and construct
+        # string of the form 'value1.value2.value3+value4' etc.
+        parts = []
+        # Iterate over the dimensions. If the key dict
+        # contains a value for the dimension, append it to the 'parts' list. Otherwise
+        # append ''. Then join the parts to form the dotted str.
+        for d in dimensions:
+            try:
+                values = key[d.id]
+                values_l = values.split('+')
+                codelist = d.local_repr.enum
+                codes = codelist.keys()
+                invalid = [v for v in values_l if v not in codes]
+                if invalid:
+                    # ToDo: attach codelist to exception.
+                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
+                                     format(invalid, d.id, codes))
+                # Check if values are in Contentconstraint if present
+                if constraint:
+                    try:
+                        invalid = [
+                            v for v in values_l if (d.id, v) not in constraint]
+                        if invalid:
+                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
+                                             format(invalid, d.id))
+                    except NotImplementedError:
+                        pass
+                part = values
+            except KeyError:
+                part = ''
+            parts.append(part)
+        return '.'.join(parts)
+
+    def _make_key_from_series(self, flow_id, key):
         '''
         Get all series keys by calling
         self.series_keys, and validate 

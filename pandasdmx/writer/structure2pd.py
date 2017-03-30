@@ -162,6 +162,8 @@ class Writer(BaseWriter):
                     constraint = constraint.constraints.any()
                 except AttributeError:
                     # So the Message must containe a constraint
+                    # the following is buggy: Should be linked to a dataflor,
+                    # DSD or provision-agreement
                     constraint = source.constraints.any()
 
         # allow `columns` arg to be a str

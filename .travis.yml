@@ -12,9 +12,9 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install coverage codecov
+  - pip install coverage codecov pytest-cov
 
-script: pytest
+script: pytest --cov=./
 
 after_success:
   - coverage combine

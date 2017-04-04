@@ -1,9 +1,9 @@
 pandaSDMX
 =========
-.. image:: https://travis-ci.org/khaeru/pandaSDMX.svg?branch=ci
-   :target: https://travis-ci.org/khaeru/pandaSDMX
-.. image:: https://codecov.io/gh/khaeru/pandaSDMX/branch/ci/graph/badge.svg
-   :target: https://codecov.io/gh/khaeru/pandaSDMX
+.. image:: https://travis-ci.org/dr-leo/pandaSDMX.svg?branch=master
+   :target: https://travis-ci.org/dr-leo/pandaSDMX
+.. image:: https://codecov.io/gh/dr-leo/pandaSDMX/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/dr-leo/pandaSDMX
 
 | Description: A Python- and pandas-powered client for statistical data and metadata exchange
 | Author: Dr. Leo <fhaxbox66@gmail.com>

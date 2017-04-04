@@ -6,7 +6,7 @@ v0.2.0
 
 * New architecture, rewrite of the entire package
 * Many new functions, new API
-* Sphinx documentation at http://pandasdmx.readthedocs.org
+* Sphinx documentation at https://pandasdmx.readthedocs.io
 
 
 v0.1.2 (2014-09-17)

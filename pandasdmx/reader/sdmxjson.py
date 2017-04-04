@@ -68,7 +68,8 @@ class Reader(BaseReader):
         '''
         Save source to file by calling `write` on the root element.
         '''
-        return json.dumps(self.message._elem, filename)
+        with open(filename, 'w') as fp:
+            return json.dump(self.message._elem, fp, indent=4, sort_keys=True)
 
     _paths = {
         #         'footer_text': 'com:Text/text()',
@@ -188,32 +189,44 @@ class Reader(BaseReader):
     _SeriesObsTuple = namedtuple_factory(
         'SeriesObservation', ('dim', 'value', 'attrib'))
 
+    # Operators
+    getitem0 = itemgetter(0)
+    getitem_key = itemgetter('_key')
+
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
-        for obs in self._paths['generic_obs_path'](sdmxobj._elem):
-            # Construct the namedtuple for the ObsKey.
-            # The namedtuple class is created on first iteration.
-            obs_key_values = self._paths['obs_key_values_path'](obs)
-            try:
-                obs_key = ObsKeyTuple._make(obs_key_values)
-            except NameError:
-                obs_key_id = self._paths['obs_key_id_path'](obs)
-                ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
-                obs_key = ObsKeyTuple._make(obs_key_values)
-            if with_value:
-                obs_value = self._paths['obs_value_path'](obs)[0]
-            else:
-                obs_value = None
-            if with_attributes:
-                obs_attr_values = self._paths['attr_values_path'](obs)
-                obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr_type = namedtuple_factory(
-                    'ObsAttributes', obs_attr_id)
-                obs_attr = obs_attr_type(*obs_attr_values)
+        # Keys for generic observations are namedtuples
+        _GenericObsKey = namedtuple_factory('GenericObservationKey',
+                                            [d['id'] for d in self._obs_dim])
+        obs_l = sorted(sdmxobj._elem.value['observations'].items(),
+                       key=self.getitem0)
+        for dim, value in obs_l:
+            # Construct the key for this observation
+            obs_dim_values = []
+            for i, d in enumerate(dim.split(':')):
+                obs_dim_values.append(self._obs_dim[i]['values'][int(d)]['id'])
+            obs_dim_value = _GenericObsKey(*obs_dim_values)
+
+            # Read the value
+            obs_value = value[0] if with_value else None
+
+            # Read any attributes
+            if with_attributes and len(value) > 1:
+                obs_attr_idx = value[1:]
+                obs_attr_raw = [(d['id'],
+                                 d['values'][i].get('id',
+                                                    d['values'][i]['name']))
+                                for i, d in zip(obs_attr_idx, self._obs_attrib)
+                                if i is not None]
+                if obs_attr_raw:
+                    obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
+                    obs_attr_type = namedtuple_factory(
+                        'ObsAttributes', obs_attr_id)
+                    obs_attr = obs_attr_type(*obs_attr_values)
+                else:
+                    obs_attr = None
             else:
                 obs_attr = None
-            yield self._ObsTuple(obs_key, obs_value, obs_attr)
-
-    getitem_key = itemgetter('_key')
+            yield self._SeriesObsTuple(obs_dim_value, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
@@ -261,8 +274,6 @@ class Reader(BaseReader):
                            for i, a in zip(value_idx, self._series_attrib) if i is not None]
             attrib_ids, attrib_values = zip(*attrib_list)
             return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
-
-    getitem0 = itemgetter(0)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):

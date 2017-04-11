@@ -324,7 +324,7 @@ class Concept(Item):
 
 class Component(IdentifiableArtefact):
 
-    @property  # not working yet
+    @property
     def concept_identity(self):
         return self._reader.read_instance(Ref, self, offset='concept_identity')
 

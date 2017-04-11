@@ -76,7 +76,7 @@ class Reader(BaseReader):
         'assignment_status': '@assignmentStatus',
         'error': 'mes:error/@*',
         'ref_version': '@version',
-        'concept_id': 'str:ConceptIdentity',
+        'concept_identity': 'str:ConceptIdentity',
         'position': '@position',
         'isfinal': '@isfinal',
         'ref_package': '@package',

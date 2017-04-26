@@ -84,14 +84,14 @@ class Writer(BaseWriter):
             if codelist_and_dsd:
                 # scheme is a (dimension or attribute, codelist) pair
                 dim_attr, scheme = scheme
-            # first row of a scheme, DSD-less codelist etc.?
+            # first row of a scheme, DSD-less codelist, conceptscheme etc.
             if item is None:
                 # take the column attributes from the scheme itself
                 item = scheme
             raw = [getattr(item, s) for s in columns]
             # Select language for international strings represented as dict
             translated = [s[lang] if lang in s
-                          else s.get('en') or ((s or None) and s.any()) for s in raw]
+                          else (s.get('en') or ((s or None) and s.any())) for s in raw]
             # for codelists, prepend dim_or_attr flag
             if codelist_and_dsd:
                 if dim_attr in dim2cl:

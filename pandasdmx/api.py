@@ -16,9 +16,8 @@ SOAP interface.
 
 '''
 
-import pandasdmx
 from pandasdmx import remote
-from pandasdmx.utils import str_type
+from pandasdmx.utils import str_type, namedtuple_factory
 import pandas as PD
 from pkg_resources import resource_string
 from importlib import import_module
@@ -289,7 +288,10 @@ class Request(object):
             # Any parameters are appended by remote module.
             if self.agency:
                 parts = [self._agencies[self.agency]['url'],
-                         resource_type, agency, resource_id, key]
+                         resource_type,
+                         self._agencies[self.agency].get(
+                             'id', agency),  # agency ID
+                         resource_id, key]
                 base_url = '/'.join(filter(None, parts))
 
                 # Set references to sensible defaults
@@ -480,25 +482,42 @@ class Request(object):
         parts = [key_l.get(name, '') for name in dim_names]
         return '.'.join(parts)
 
-    def data_size(self, flow_id, key=None, detail=0):
+    def preview_data(self, flow_id, key=None, count=True, total=True):
         '''
-        Calculates number of series for a prospective data query allowing for
-        keys with multiple dimension values.
-        It uses the complete list of series keys for a dataflow rather than constraints and DSD.
+        Get keys or number of series for a prospective dataset query allowing for
+        keys with multiple values per dimension.
+        It downloads the complete list of series keys for a dataflow rather than using constraints and DSD.
 
         Args:
 
         flow_id(str): dataflow id
-        key(dict): key mapping dimension names to values or lists of values.
-            Must have been validated before. It is not checked if key values
-            are actually valid dimension names and values.
 
-            detail(int): determins the return type and amount of information 
-                0: returns number of series per key combination
-                1: returns boolean series as indexers per key combination
-                2: returns single DataFrame with all matching series keys
+        key(dict): optional key mapping dimension names to values or lists of values.
+            Must have been validated before. It is not checked if key values
+            are actually valid dimension names and values. Default: {}
+
+        count(bool): if True (default), return the number of series
+            of the dataset designated by flow_id and key. If False,
+            the actual keys are returned as a pandas DataFrame or dict of dataframes, depending on
+the value of 'total'.
+
+        total(bool): if True (default), return the aggregate number
+            of series or a single dataframe (depending on the value of 'count'). If False,
+            return a dict mapping keys to dataframes of series keys.
+            E.g., if key={'COUNTRY':'IT+CA+AU'}, the dict will
+            have 3 items describing the series keys for each country
+            respectively. If 'count' is True, dict values will be int rather than
+            PD.DataFrame.
         '''
         all_keys = self.series_keys(flow_id)
+        # Handle the special case that no key is provided
+        if not key:
+            if count:
+                return all_keys.shape[0]
+            else:
+                return {tuple(): all_keys}
+
+        # So there is a key specifying at least one dimension value.
         # Wrap single values in 1-elem list for uniform treatment
         key_l = {k: [v] if isinstance(v, str_type) else v
                  for k, v in key.items()}
@@ -506,26 +525,31 @@ class Request(object):
         dim_names = [k for k in all_keys if k in key]
         # Drop columns that are not in the key
         key_df = all_keys.loc[:, dim_names]
-        if detail == 2:
+        if total:
             # DataFrame with matching series keys
             bool_series = reduce(
                 and_, (key_df.isin(key_l)[col] for col in dim_names))
-            return all_keys[bool_series]
-        elif detail in [0, 1]:
+            if count:
+                return bool_series.value_counts()[True]
+            else:
+                return all_keys[bool_series]
+        else:
             # Dict of value combinations as dict keys
             key_product = product(*(key_l[k] for k in dim_names))
-            matches = {k: reduce(and_, (key_df.isin({k1: [v1]
-                                                     for k1, v1 in zip(dim_names, k)})[col]
-                                        for col in dim_names))
+            # Replace key tuples by namedtuples
+            PartialKey = namedtuple_factory('PartialKey', dim_names)
+
+            matches = {PartialKey(k): reduce(and_, (key_df.isin({k1: [v1]
+                                                                 for k1, v1 in zip(dim_names, k)})[col]
+                                                    for col in dim_names))
                        for k in key_product}
-            if detail == 1:
-                # dict with boolean series as values for each combination
-                return matches
+
+            if not count:
+                # dict mapping each key to DataFrame with selected key-set
+                return {k: all_keys[v] for k, v in matches.items()}
             else:
                 # Number of series per key
                 return {k: v.value_counts()[True] for k, v in matches.items()}
-        else:
-            raise ValueError('`detail`must be 0, 1 or 2')
 
 
 class Response(object):

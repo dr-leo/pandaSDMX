@@ -59,10 +59,10 @@ concept schemes, and corresponding code lists.
     estat = Request('ESTAT')
     # Download the metadata and expose it as a dict mapping resource names to pandas DataFrames
     metadata = estat.datastructure('DSD_une_rt_a').write()
-    # Show some code lists
-    metadata.codelist.ix[['AGE', 'UNIT']]
+    # Sort the codelist DataFrame by index and show some code lists
+    metadata.codelist.sort_index().loc[['AGE', 'UNIT']]
     
-Next we download a data set. We use codes from the code list 'GEO'
+Next we download a dataset. We use codes from the code list 'GEO'
 to obtain data on Greece, Ireland and Spain only.
 
 .. ipython:: python

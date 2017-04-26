@@ -502,7 +502,7 @@ class DataAttribute(Component):
         return self._reader.read_as_str('assignment_status', self)
 
 
-class DataStructureDefinition(Structure):
+class DataStructureDefinition(Structure, Constrainable):
 
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)

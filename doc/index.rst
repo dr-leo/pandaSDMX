@@ -3,13 +3,30 @@ pandaSDMX: Statistical Data and Metadata eXchange in Python
 
 
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
-package aimed at becoming the 
-most intuitive and versatile tool to retrieve and acquire statistical data and metadata
-disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It supports out of the box 
-the SDMX services of the European statistics office (Eurostat), 
-the European Central Bank (ECB), the French National Institute for statistics (INSEE), 
-the Australian Bureau of Statistics, and the OECD (JSON only). 
+library to retrieve and acquire statistical data
+and metadata disseminated in
+`SDMX <http://www.sdmx.org>`_ 2.1, an ISO-standard
+widely used by institutions
+such as statistics offices, central banks, and international organisations.
+pandaSDMX exposes datasets and related structural metadata 
+including dataflows, code-lists, 
+and datastructure definitions as pandas Series 
+or multi-indexed DataFrames. 
+
+As of May 2017, pandaSDMX has built-in support for the following agencies (others may be  
+configured by the user): 
+
+* `Australian Bureau of Statistics (ABS) <http://www.abs.gov.au/>`_ 
+* `European Central Bank (ECB) <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`_
+* `Eurostat <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`_
+* `French National Institute for Statistics (INSEE) 
+  <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`_
+* `International Monetary Fund (IMF) - SDMX Central only 
+  <https://sdmxcentral.imf.org/>`_   
+* `Organisation for Economic Cooperation and Development (OECD)
+  <http://stats.oecd.org/SDMX-JSON/>`_  
+* `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
+ 
 pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
 the gold-standard 
 of data analysis in Python. 

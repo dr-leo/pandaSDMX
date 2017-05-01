@@ -10,7 +10,13 @@
         "resources": {},
         "url": "http://data.un.org/WS/rest",
         "name": "United Nations Statistics Division"
-    },    
+    },
+    "UNESCO": {
+        "supports_series_keys_only": true,
+        "resources": {},
+        "url": "http://api.uis.unesco.org/sdmx",
+        "name": "UNESCO (subscription key required)"
+    },
     "IMF_SDMXCENTRAL": {
         "id": "IMF",
         "resources": {},

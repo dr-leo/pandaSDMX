@@ -55,6 +55,25 @@ class Reader(BaseReader):
         self._dataset_dim = d.get('dataSet', [])
         self._series_dim = d['series']
         self._obs_dim = d['observation']
+        self._dataset_dim_key = {dim['keyPosition']: dim['id']
+                                 for dim in self._dataset_dim}
+        self._dataset_dim_values = {dim['keyPosition']: dim['values'][0]['id']
+                                    for dim in self._dataset_dim}
+        if self._series_dim:
+            self._key_len = len(self._dataset_dim) + len(self._series_dim)
+            # Map keyPositions of dimensions at series level to dimension IDs, like with dataset-level dims above.
+            # In case of cross-sectional dataset, the only dimension at series level has no
+            # keyPosition, eg. TIME_PERIOD. Instead, the keyPosition of the dim at observation
+            # is used to fill the gap.
+            self._series_dim_key = {dim.get('keyPosition',
+                                            self._obs_dim[0].get('keyPosition')):
+                                    dim['id'] for dim in self._series_dim}
+            self.SeriesKeyTuple = namedtuple_factory('SeriesKeyTuple',
+                                                     (self._dataset_dim_key.get(i) or self._series_dim_key.get(i)
+                                                      for i in range(self._key_len)))
+        else:
+            # Dataset must be flat
+            self._key_len = len(self._dataset_dim) + len(self._obs_dim)
         self.obs_attr_id = [d['id'] for d in self._obs_attrib]
         # init message instance
         cls = model.DataMessage
@@ -68,7 +87,8 @@ class Reader(BaseReader):
         '''
         Save source to file by calling `write` on the root element.
         '''
-        return json.dumps(self.message._elem, filename)
+        with open(filename, 'w') as fp:
+            return json.dump(self.message._elem, fp, indent=4, sort_keys=True)
 
     _paths = {
         #         'footer_text': 'com:Text/text()',
@@ -84,9 +104,9 @@ class Reader(BaseReader):
         #         'agencyID': '@agencyID',
         #         'maintainable_parent_id': '@maintainableParentID',
         #         'value': 'com:Value/text()',
-        'headerID': 'id',
-        #         'header_prepared': 'mes:Prepared/text()',
-        #         'header_sender': 'mes:Sender/@*',
+        'headerID': '$.header.id',
+        'header_prepared': '$.header.prepared',
+        'header_sender': '$.header.sender.*',
         #         'header_receiver': 'mes:Receiver/@*',
         #         'assignment_status': '@assignmentStatus',
         #         'error': 'mes:error/@*',
@@ -134,11 +154,11 @@ class Reader(BaseReader):
         #         model.CubeRegion: 'str:CubeRegion',
         #         model.KeyValue: 'com:KeyValue',
         #         model.Ref: 'Ref',
-        model.Header: 'header',
+        model.Header: '$.header',
         #         model.Annotation: 'com:Annotations/com:Annotation',
         #         model.Group: 'gen:Group',
         #         model.Series: 'gen:Series',
-        model.DataSet: 'dataSets[0]',
+        model.DataSet: '$.dataSets[0]',
         #         'int_str_names': './*[local-name() = $name]/@xml:lang',
         #         model.Representation: 'str:LocalRepresentation',
         #         'int_str_values': './*[local-name() = $name]/text()',
@@ -188,32 +208,53 @@ class Reader(BaseReader):
     _SeriesObsTuple = namedtuple_factory(
         'SeriesObservation', ('dim', 'value', 'attrib'))
 
+    # Operators
+    getitem0 = itemgetter(0)
+    getitem_key = itemgetter('_key')
+
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
-        for obs in self._paths['generic_obs_path'](sdmxobj._elem):
-            # Construct the namedtuple for the ObsKey.
-            # The namedtuple class is created on first iteration.
-            obs_key_values = self._paths['obs_key_values_path'](obs)
-            try:
-                obs_key = ObsKeyTuple._make(obs_key_values)
-            except NameError:
-                obs_key_id = self._paths['obs_key_id_path'](obs)
-                ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
-                obs_key = ObsKeyTuple._make(obs_key_values)
-            if with_value:
-                obs_value = self._paths['obs_value_path'](obs)[0]
-            else:
-                obs_value = None
-            if with_attributes:
-                obs_attr_values = self._paths['attr_values_path'](obs)
-                obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr_type = namedtuple_factory(
-                    'ObsAttributes', obs_attr_id)
-                obs_attr = obs_attr_type(*obs_attr_values)
+        # Make type namedtuple for obs_key. It must be
+        # merged with any dimension values at dataset level maintaining the
+        # key position order.
+        # Note that the measure dimension (such as TIME_PERIOD) has no key position.
+        # We fill this gap by injecting the highest key position.
+        _obs_dim_key = {dim.get('keyPosition', self._key_len - 1): dim['id']
+                        for dim in self._obs_dim}
+        _GenericObsKey = namedtuple_factory('GenericObservationKey',
+                                            (self._dataset_dim_key.get(d)
+                                             or _obs_dim_key.get(d)
+                                             for d in range(self._key_len)))
+        obs_l = sorted(sdmxobj._elem.value['observations'].items(),
+                       key=self.getitem0)
+        for dim, value in obs_l:
+            # Construct the key for this observation
+            key_idx = [int(i) for i in dim.split(':')]
+            obs_key_values = [d['values'][i]['id'] for i, d in
+                              zip(key_idx, self._obs_dim)]
+            obs_key = _GenericObsKey._make(self._dataset_dim_values.get(d)
+                                           or obs_key_values.pop(0)
+                                           for d in range(self._key_len))
+
+            # Read the value
+            obs_value = value[0] if with_value else None
+
+            # Read any attributes
+            if with_attributes and len(value) > 1:
+                obs_attr_idx = value[1:]
+                obs_attr_raw = [(d['id'],
+                                 d['values'][i].get('id',
+                                                    d['values'][i]['name']))
+                                for i, d in zip(obs_attr_idx, self._obs_attrib)]
+                if obs_attr_raw:
+                    obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
+                    obs_attr_type = namedtuple_factory(
+                        'ObsAttributes', obs_attr_id)
+                    obs_attr = obs_attr_type(*obs_attr_values)
+                else:
+                    obs_attr = None
             else:
                 obs_attr = None
-            yield self._ObsTuple(obs_key, obs_value, obs_attr)
-
-    getitem_key = itemgetter('_key')
+            yield self._SeriesObsTuple(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
@@ -225,17 +266,13 @@ class Reader(BaseReader):
         return []
 
     def series_key(self, sdmxobj):
-        # pull down dataset key
-        full_key_ids = [d['id'] for d in self._dataset_dim]
-        full_key_values = [d['values'][0]['id'] for d in self._dataset_dim]
         key_idx = [int(i) for i in sdmxobj._elem['_key'].split(':')]
-        series_key_ids = [d['id'] for d in self._series_dim]
         series_key_values = [d['values'][i]['id'] for i, d in
                              zip(key_idx, self._series_dim)]
-        full_key_ids.extend(series_key_ids)
-        full_key_values.extend(series_key_values)
-        SeriesKeyTuple = namedtuple_factory('SeriesKey', full_key_ids)
-        return SeriesKeyTuple._make(full_key_values)
+        full_key_values = [self._dataset_dim_values.get(d)
+                           or series_key_values.pop(0)
+                           for d in range(self._key_len)]
+        return self.SeriesKeyTuple._make(full_key_values)
 
     def group_key(self, sdmxobj):
         group_key_id = self._paths['group_key_id_path'](sdmxobj._elem)
@@ -261,8 +298,6 @@ class Reader(BaseReader):
                            for i, a in zip(value_idx, self._series_attrib) if i is not None]
             attrib_ids, attrib_values = zip(*attrib_list)
             return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
-
-    getitem0 = itemgetter(0)
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):

@@ -486,7 +486,9 @@ class Request(object):
         '''
         Get keys or number of series for a prospective dataset query allowing for
         keys with multiple values per dimension.
-        It downloads the complete list of series keys for a dataflow rather than using constraints and DSD.
+        It downloads the complete list of series keys for a dataflow rather than using constraints and DSD. This feature is,
+        however, not supported by all data providers.
+        ECB and UNSD are known to work.
 
         Args:
 
@@ -515,7 +517,7 @@ the value of 'total'.
             if count:
                 return all_keys.shape[0]
             else:
-                return {tuple(): all_keys}
+                return all_keys
 
         # So there is a key specifying at least one dimension value.
         # Wrap single values in 1-elem list for uniform treatment

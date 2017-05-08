@@ -515,7 +515,7 @@ class Dimension(Component):
     # role = Instance(Concept)
 
     def __init__(self, *args, **kwargs):
-        super(Dimension, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._position = int(self._reader.read_as_str('position', self))
 
 

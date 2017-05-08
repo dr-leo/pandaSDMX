@@ -165,7 +165,8 @@ class Request(object):
                 self.cache[cache_id] = df
             return df
 
-    def get(self, resource_type='', resource_id='', agency='', key='',
+    def get(self, resource_type='', resource_id='', agency='',
+            version='latest', key='',
             params=None, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None, writer=None):
@@ -247,16 +248,14 @@ class Request(object):
         else:
             # Construct URL from args unless ``tofile`` is given
             # Validate args
-            if params is None:
-                params = {}
-            if not agency:
-                agency = self.agency
+            params = params or {}
+            agency = agency or self.agency
             # Validate resource if no filename is specified
             if not fromfile and resource_type not in self._resources:
                 raise ValueError(
                     'resource must be one of {0}'.format(self._resources))
             # resource_id: if it is not a str or unicode type,
-            # but, e.g., a invalid DataflowDefinition,
+            # but, e.g., an invalid Dataflow Definition,
             # extract its ID
             if resource_id and not isinstance(resource_id, (str_type, str)):
                 resource_id = resource_id.id
@@ -279,6 +278,7 @@ class Request(object):
                     'resources'].get(resource_type)
                 if resource_cfg:
                     headers = resource_cfg.get('headers') or {}
+
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
             # examples
@@ -291,7 +291,7 @@ class Request(object):
                          resource_type,
                          self._agencies[self.agency].get(
                              'id', agency),  # agency ID
-                         resource_id, key]
+                         resource_id, version, key]
                 base_url = '/'.join(filter(None, parts))
 
                 # Set references to sensible defaults

@@ -1,18 +1,24 @@
 {
     "": null,
     "ESTAT": {
+        "id": "ESTAT",
         "resources": {},
         "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
         "name": "Eurostat"
     },
     "UNSD": {
+        "id": "UNSD",
         "supports_series_keys_only": true,
         "resources": {},
         "url": "http://data.un.org/WS/rest",
         "name": "United Nations Statistics Division"
     },
     "UNESCO": {
+        "id": "UNESCO",
         "supports_series_keys_only": true,
+        "headers": {
+            "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+        },
         "resources": {},
         "url": "http://api.uis.unesco.org/sdmx",
         "name": "UNESCO (subscription key required)"
@@ -24,11 +30,13 @@
         "name": "International Monetary Fund - SDMXCentral"
     },    
     "SGR": {
+        "id": "SGR",
         "resources": {},
         "url": "https://registry.sdmx.org/ws/rest",
         "name": "SDMX Global Registry"
     },
     "INSEE": {
+        "id": "INSEE",
         "resources": {
             "data": {
                 "headers": {
@@ -40,6 +48,7 @@
         "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques"
     },
     "OECD": {
+        "id": "OECD",
         "resources": {
             "data": {
                 "headers": {},
@@ -50,6 +59,7 @@
         "name": "Organisation for Economic Co-operation and Development"
     },
     "ECB": {
+        "id": "ECB",
         "supports_series_keys_only": true,
         "resources": {
             "data": {
@@ -60,6 +70,7 @@
         "name": "European Central Bank"
     },
     "ABS": {
+        "id": "ABS",
         "resources": {
             "data": {
                 "headers": {},

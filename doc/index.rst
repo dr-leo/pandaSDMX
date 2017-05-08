@@ -26,6 +26,7 @@ configured by the user):
 * `Organisation for Economic Cooperation and Development (OECD)
   <http://stats.oecd.org/SDMX-JSON/>`_  
 * `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
+* `UNESCO (free registration required) <https://apiportal.uis.unesco.org/getting-started>`_ 
  
 pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
 the gold-standard 

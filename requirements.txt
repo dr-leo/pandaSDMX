@@ -1,8 +1,7 @@
-ipython>=4.0.0
-lxml>=3.3.0
 jsonpath-rw>=1.4.0
-    pytest>=2.8.0
+lxml>=3.3.0
 pandas>=0.18.0
+pytest>=2.8.0
 requests>=2.7
+setuptools>19.0
 Sphinx>=1.4.1
-setuptools > 19.0

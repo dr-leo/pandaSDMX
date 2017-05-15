@@ -242,8 +242,7 @@ class Reader(BaseReader):
             if with_attributes and len(value) > 1:
                 obs_attr_idx = value[1:]
                 obs_attr_raw = [(d['id'],
-                                 d['values'][i].get('id',
-                                                    d['values'][i]['name']))
+                                 d['values'][i].get('id'))
                                 for i, d in zip(obs_attr_idx, self._obs_attrib)]
                 if obs_attr_raw:
                     obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
@@ -312,7 +311,7 @@ class Reader(BaseReader):
             if with_attributes and len(obs[1]) > 1:
                 obs_attr_idx = obs[1][1:]
                 obs_attr_raw = [(d['id'],
-                                 d['values'][i].get('id', d['values'][i]['name']))
+                                 d['values'][i].get('id'))
                                 for i, d in zip(obs_attr_idx, self._obs_attrib) if i is not None]
                 if obs_attr_raw:
                     obs_attr_id, obs_attr_values = zip(*obs_attr_raw)

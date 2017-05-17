@@ -283,7 +283,9 @@ class Request(object):
             # if data is requested, omit the agency part. See the query
             # examples
             if resource_type in ['data', 'categoryscheme']:
-                agency = ''
+                agency_id = None
+            else:
+                agency_id = self._agencies[agency]['id']
             if (version is None) and (resource_type != 'data'):
                 version = 'latest'
             # Remove None's and '' first. Then join them to form the base URL.
@@ -291,8 +293,7 @@ class Request(object):
             if self.agency:
                 parts = [self._agencies[self.agency]['url'],
                          resource_type,
-                         self._agencies[self.agency].get(
-                             'id', agency),  # agency ID
+                         agency_id,
                          resource_id, version, key]
                 base_url = '/'.join(filter(None, parts))
 
@@ -448,7 +449,7 @@ class Request(object):
         the key(dict) against it. Raises ValueError if
         a value does not occur in the respective
         set of dimension values. Multiple values per
-        dimension can be provided as a list.
+        dimension can be provided as a list or in 'V1+V2' notation.
 
         Return: key(str) 
         '''
@@ -462,6 +463,8 @@ class Request(object):
         if invalid:
             raise ValueError(
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+        # Pre-process key by expanding multiple values as list
+        key = {k: v.split('+') if '+' in v else v for k, v in key.items()}
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
         # First, wrap each single dim value in a list to allow

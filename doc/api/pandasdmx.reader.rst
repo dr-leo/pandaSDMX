@@ -1,19 +1,19 @@
-pandasdmx.reader package
-========================
+pandasdmx\.reader package
+=========================
 
 Submodules
 ----------
 
-pandasdmx.reader.sdmxjson module
---------------------------------
+pandasdmx\.reader\.sdmxjson module
+----------------------------------
 
 .. automodule:: pandasdmx.reader.sdmxjson
     :members:
     :undoc-members:
     :show-inheritance:
 
-pandasdmx.reader.sdmxml module
-------------------------------
+pandasdmx\.reader\.sdmxml module
+--------------------------------
 
 .. automodule:: pandasdmx.reader.sdmxml
     :members:

@@ -1,19 +1,19 @@
-pandasdmx.utils package
-=======================
+pandasdmx\.utils package
+========================
 
 Submodules
 ----------
 
-pandasdmx.utils.aadict module
------------------------------
+pandasdmx\.utils\.aadict module
+-------------------------------
 
 .. automodule:: pandasdmx.utils.aadict
     :members:
     :undoc-members:
     :show-inheritance:
 
-pandasdmx.utils.anynamedtuple module
-------------------------------------
+pandasdmx\.utils\.anynamedtuple module
+--------------------------------------
 
 .. automodule:: pandasdmx.utils.anynamedtuple
     :members:

@@ -6,8 +6,6 @@ Data providers
 
 Overview
 -----------
-Overview
-----------------------------------
 
 pandaSDMX supports a number of data providers out of the box. Each data provider
 is configured by an item in ``agencies.json`` in the package root. Data providers are
@@ -25,11 +23,12 @@ Pre-configured data providers
 This section describes the data providers supported
 out of the box.
 
-European Central Bank (ECB)
+European Central Bank
 ::::::::::::::::::::::::::::::::
 
 tbc
-European Central Bank (ECB)
+
+Eurostat
 ::::::::::::::::::::::::::::
 
   

@@ -10,10 +10,11 @@ widely used by institutions
 such as statistics offices, central banks, and international organisations.
 pandaSDMX exposes datasets and related structural metadata 
 including dataflows, code-lists, 
-and datastructure definitions as pandas Series 
-or multi-indexed DataFrames. 
+and datastructure definitions as `pandas <http://pandas.pydata.org>`_ Series 
+or multi-indexed DataFrames. `Odo <http://odo.readthedocs.io/>`_ is 
+supported as well.  
 
-As of May 2017, pandaSDMX has built-in support for the following agencies (others may be  
+As of May 2017, pandaSDMX ships with built-in support for the following agencies (others may be  
 configured by the user): 
 
 * `Australian Bureau of Statistics (ABS) <http://www.abs.gov.au/>`_ 
@@ -28,12 +29,6 @@ configured by the user):
 * `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
 * `UNESCO (free registration required) <https://apiportal.uis.unesco.org/getting-started>`_ 
  
-pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
-the gold-standard 
-of data analysis in Python. 
-From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
-pandaSDMX can export data to many other file formats and
-database backends via `Odo <http://odo.readthedocs.io/>`_. 
 
 Main features
 ---------------------

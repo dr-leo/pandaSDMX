@@ -166,7 +166,7 @@ class Request(object):
             return df
 
     def get(self, resource_type='', resource_id='', agency='',
-            version='latest', key='',
+            version=None, key='',
             params=None, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None, writer=None):
@@ -284,6 +284,8 @@ class Request(object):
             # examples
             if resource_type in ['data', 'categoryscheme']:
                 agency = ''
+            if (version is None) and (resource_type != 'data'):
+                version = 'latest'
             # Remove None's and '' first. Then join them to form the base URL.
             # Any parameters are appended by remote module.
             if self.agency:
@@ -501,7 +503,7 @@ class Request(object):
         count(bool): if True (default), return the number of series
             of the dataset designated by flow_id and key. If False,
             the actual keys are returned as a pandas DataFrame or dict of dataframes, depending on
-the value of 'total'.
+            the value of 'total'.
 
         total(bool): if True (default), return the aggregate number
             of series or a single dataframe (depending on the value of 'count'). If False,

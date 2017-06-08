@@ -13,7 +13,7 @@ This chapter illustrates the main steps of a typical workflow, namely:
 #. exploring the data structure, related code lists, and other metadata by exporting
    them as pandas DataFrames
 #. selecting relevant series (columns) and a time-range (rows) from a dataset provided under the chosen dataflow 
-   and requesting data sets via http   
+   and requesting datasets via http   
 #. exploring the received data using the information model
 #. writing a dataset or selected series thereof to a pandas DataFrame or Series 
 #. Reading and writing SDMX files
@@ -345,14 +345,14 @@ exclude any prior data from the request.
 Datasets 
 ::::::::::::::::::::
 
-This section explains the key elements and structure of data sets. You can skip
+This section explains the key elements and structure of datasets. You can skip
 it on first read when you just want to be able to download data and
 export it to pandas. More advanced operations, e.g., exporting only a subset of series to pandas, requires some understanding of
-the anatomy of a data set including observations and attributes. 
+the anatomy of a dataset including observations and attributes. 
 
 As we saw in the previous section,
 the datastructure definition (DSD) is crucial to understanding the data structure, the meaning of dimension
-and attribute values, and to select series of interest from the entire data set
+and attribute values, and to select series of interest from the entire dataset
 by specifying a valid key.
 
 The :class:`pandasdmx.model.DataSet` class has the following features:
@@ -397,8 +397,8 @@ in the first place by providing the value ``D`` for the ``FREQ`` dimension. In t
 we will show how columns from a dataset can be selected through the 
 information model when writing to a pandas DataFrame.
 
-Writing to pandas
-::::::::::::::::::::::
+Writing data to pandas
+::::::::::::::::::::::::::
 
 Selecting columns using the model API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -487,13 +487,13 @@ be overwritten.
     Activate the cache by instantiating :class:`pandasdmx.api.Request` passing a keyword
     argument ``cache``. It must be a dict mapping config and other values.      
 
-Using odo to export data sets to other data formats and database backends
+Using odo to export datasets to other data formats and database backends
 ---------------------------------------------------------------------------
 
-Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.io>`_, a great tool to convert data sets
+Since version 0.4, pandaSDMX supports `odo <http://odo.readthedocs.io>`_, a great tool to convert datasets
 to a variety of data formats and database backends. To use this feature, you have to
 call :func:`pandasdmx.odo_register` to register .sdmx files with odo. Then you can
-convert an .sdmx file containing a data set to, say, a CSV file or an SQLite or PostgreSQL database in
+convert an .sdmx file containing a dataset to, say, a CSV file or an SQLite or PostgreSQL database in
 a few lines::
 
     >>> import pandasdmx
@@ -507,7 +507,7 @@ conversion graph. Any keyword arguments passed to odo will
 be passed on to :meth:`pandasdmx.api.Response.write`.
 
 There is a limitation though: In the exchange rate example from the previous chapter, we
-needed to select same-frequency series from the data set before converting the
+needed to select same-frequency series from the dataset before converting the
 data set to pandas. This will likely cause crashes as odo's discover method is unaware of this selection. Hence, .sdmx files can only be exported using odo if they
 can be exported to pandas without passing any arguments to :meth:`pandasdmx.api.Response.write`.
       

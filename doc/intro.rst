@@ -70,7 +70,7 @@ Package overview
 .. rubric:: Modules
 
 api 
-    module containing the API to make queries to SDMX web services. 
+    module containing the API to make queries to SDMX web services, validate keys (filters) etc. 
     See :class:`pandasdmx.api.Request` in particular its `get` method.
     :meth:`pandasdmx.api.Request.get`  return :class:`pandasdmx.api.Response` instances.
 model 
@@ -84,11 +84,18 @@ remote
 
 reader 
     read SDMX files and instantiate the appropriate classes from :mod:`pandasdmx.model` 
-    There is only one reader for XML-based SDMXML v2.1. Future versions may add reader modules for other formats.
+    There are currently two readers:  one for XML-based SDMXML 2.1 
+    and one for SDMX-JSON 2.1. 
 writer 
     contains writer classes transforming SDMX artefacts into other formats or
-    writing them to arbitrary destinations such as databases. The only available 
-    writer for now writes generic datasets to pandas DataFrame or Series.
+    writing them to arbitrary destinations such as databases. 
+    As of v0.6.0, two writers are available:
+     
+    * 'data2pandas' exports a dataset or portions thereof to a pandas DataFrame or Series.
+    * 'structure2pd' exports structural metadata such as lists of data-flow definitions, code-lists, concept-schemes etc.
+      which are contained in a structural SDMX message as
+      as a dict mapping resource names (e.g. 'dataflow', 'codelist') to pandas DataFrames. 
+    
 utils: 
     utility functions and classes. Contains a wrapper around :class:`dict` allowing attribute access to dict items.
 tests 
@@ -98,7 +105,7 @@ tests
 What next?
 --------------
 
-The remaining chapters explain the key characteristics of SDMX, 
+The following chapters explain the key characteristics of SDMX, 
 demonstrate the basic usage of pandaSDMX and provide additional information 
 on some advanced topics. While users that are new to SDMX 
 are likely to benefit a lot from reading the next chapter on SDMX,
@@ -107,7 +114,7 @@ The :ref:`Basic usage <basic-usage>` chapter should enable you to retrieve datas
 DataFrames. But if you want to exploit the full richness of the
 information model, or simply feel more comfortable if you know what happens behind the scenes, 
 the :ref:`SDMX introduction <sdmx-tour>` is for you. It also
-contains links to authoratative SDMX resources. 
+contains links to reference materials on SDMX. . 
 
 
 

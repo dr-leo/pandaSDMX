@@ -5,20 +5,36 @@ What's new?
 
 
 
+v0.7 (2017-03.xx)
+----------------------------
+
+* add four new data providers:
+ 
+  - Australian Bureau of Statistics
+  - International Monetary Fund - SDMXCentral only
+  - United Nations Division of Statistics
+  - UNESCO (free registration required)  
+  
+* new feature: load metadata on data providers from json file; allow the user to
+  add new agencies on the fly by specifying an appropriate
+  JSON file using the :meth:`pandasdmx.api.Request.load_agency_profile`.
+* new :method:`pandasdmx.api.Request.preview_data` providing a 
+  powerful fine-grain key validation algorithm by downloading all series-keys of a dataset and 
+  exposing them as a pandas DataFrame which is then mapped to the cartesian product 
+  of the given dimension values. Works only with
+  data providers such as ECB and UNSD which support "series-keys-only" requests. This
+  feature could be wrapped by a browser-based UI for building queries.   
+* sdjxjson reader: add support for flat and
+  cross-sectional datasets, preserve dimension order where possible
+* structure2pd writer: in codelists, output Concept rather than Code attributes in the first
+  line of each code-list. This may provide more
+  information.  
+
 v0.6.1 (2017-02-03)
 ----------------------------
 
 * fix 2to3 issue which caused crashes on Python 2.7
 
-
-
-v0.7 (2017-03.xx)
-----------------------------
-
-* add Australian Bureau of Statistics as new data provider
-* load metadata on data providers from json file; allow the user to
-  add new agencies on the fly by specifying an appropriate
-  JSON file using the :meth:`pandasdmx.api.Request.load_agency_profile`.
 
 v0.6 (2017-01-07)
 -----------------------

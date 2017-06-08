@@ -33,6 +33,10 @@ import json
 logger = logging.getLogger('pandasdmx.api')
 
 
+class SDMXException(Exception):
+    pass
+
+
 class ResourceGetter(object):
     '''
     Descriptor to wrap Request.get vor convenient calls 
@@ -316,6 +320,8 @@ class Request(object):
             'Requesting resource from URL/file %s', (base_url or fromfile))
         source, url, resp_headers, status_code = self.client.get(
             base_url, params=params, headers=headers, fromfile=fromfile)
+        if source is None:
+            raise SDMXException('Server error:', status_code, url)
         logger.info(
             'Loaded file into memory from URL/file: %s', (url or fromfile))
         # write msg to file and unzip it as required, then parse it

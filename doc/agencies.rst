@@ -88,3 +88,9 @@ can be performed as structural metadata is unavailable.
 * subscription key must be provided either as parameter or HTTP-header with each request   
 * SDMXML-based API
  
+ 
+`World Bank - World Integrated Trade Solution (WBG_WITS) <wits.worldbank.org>`_
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+* SDMX-ML-based API.
+

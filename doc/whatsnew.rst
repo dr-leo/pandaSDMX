@@ -5,15 +5,16 @@ What's new?
 
 
 
-v0.7 (2017-03.xx)
+v0.7.0 (2017-06-10)
 ----------------------------
 
-* add four new data providers:
+* add new data providers:
  
   - Australian Bureau of Statistics
   - International Monetary Fund - SDMXCentral only
   - United Nations Division of Statistics
-  - UNESCO (free registration required)  
+  - UNESCO (free registration required)
+  - World Bank - World Integrated Trade Solution (WITS)  
   
 * new feature: load metadata on data providers from json file; allow the user to
   add new agencies on the fly by specifying an appropriate

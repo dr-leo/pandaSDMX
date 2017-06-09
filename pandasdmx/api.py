@@ -171,7 +171,7 @@ class Request(object):
 
     def get(self, resource_type='', resource_id='', agency='',
             version=None, key='',
-            params=None, headers={},
+            params={}, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None, writer=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
@@ -252,8 +252,7 @@ class Request(object):
         else:
             # Construct URL from args unless ``tofile`` is given
             # Validate args
-            params = params or {}
-            agency = agency or self.agency
+            agency = agency or self._agencies[self.agency]['id']
             # Validate resource if no filename is specified
             if not fromfile and resource_type not in self._resources:
                 raise ValueError(
@@ -278,7 +277,7 @@ class Request(object):
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
                 # Check for default headers
-                resource_cfg = self._agencies[agency][
+                resource_cfg = self._agencies[self.agency][
                     'resources'].get(resource_type)
                 if resource_cfg:
                     headers = resource_cfg.get('headers') or {}
@@ -289,7 +288,7 @@ class Request(object):
             if resource_type in ['data', 'categoryscheme']:
                 agency_id = None
             else:
-                agency_id = self._agencies[agency]['id']
+                agency_id = agency
             if (version is None) and (resource_type != 'data'):
                 version = 'latest'
             # Remove None's and '' first. Then join them to form the base URL.

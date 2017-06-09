@@ -29,7 +29,8 @@ configured by the user):
 * `Organisation for Economic Cooperation and Development (OECD)
   <http://stats.oecd.org/SDMX-JSON/>`_  
 * `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
-* `UNESCO (free registration required) <https://apiportal.uis.unesco.org/getting-started>`_ 
+* `UNESCO (free registration required) <https://apiportal.uis.unesco.org/getting-started>`_
+* `World Bank - World Integrated Trade Solution (WITS) <wits.worldbank.org>`_ 
  
 
 Main features
@@ -97,7 +98,7 @@ to obtain data on Greece, Ireland and Spain only.
 Quick install
 -----------------
 
-* ``conda install -c alcibiade pandasdmx # for Anaconda users``
+* ``conda install -c alcibiade pandasdmx # Latest release should be available soon. Check the version!``
 * ``pip install pandasdmx # for all others``
 
 

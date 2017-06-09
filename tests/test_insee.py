@@ -33,6 +33,7 @@ SERIES = {
     }
 }
 
+
 class InseeTestCase(unittest.TestCase):
 
     # nosetests -s -v pandasdmx.tests.test_insee:InseeTestCase
@@ -125,5 +126,6 @@ class InseeTestCase(unittest.TestCase):
         # Test that we don't have regression on Issues #39 and #41
         # INSEE time series provide the FREQ value as attribute on the series instead of a dimension. This caused
         # a runtime error when writing as pandas dataframe.
-        data_response = self.sdmx.data(fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
+        data_response = self.sdmx.data(
+            fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
         data_response.write()

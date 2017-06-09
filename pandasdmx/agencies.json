@@ -1,5 +1,7 @@
 {
-    "": null,
+    "": {
+    "id": "NO_AGENCY"
+    },
     "ESTAT": {
         "id": "ESTAT",
         "resources": {},
@@ -80,9 +82,9 @@
         "url": "http://stat.data.abs.gov.au/sdmx-json",
         "name": "Australian Bureau of Statistics"
     },
-    "WB_WITS": { 
+    "WBG_WITS": { 
         "name": "World Bank Integrated Trade Solution",
-        "id": "WB_WITS", 
+        "id": "WBG_WITS", 
         "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest", 
         "resources": { 
             "data": { 

@@ -2,29 +2,44 @@
 pandaSDMX
 =============
 
+pandaSDMX is an Apache 2.0-licensed  
+client to retrieve and acquire statistical data
+and metadata disseminated in
+`SDMX <http://www.sdmx.org>`_ 2.1, an ISO-standard
+widely used by institutions
+such as statistics offices, central banks, and international organisations.
+pandaSDMX exposes datasets and related structural metadata 
+including dataflows, code-lists, 
+and datastructure definitions as `pandas <http://pandas.pydata.org>`_ Series 
+or multi-indexed DataFrames. Many other 
+output formats and storage backends are available thanks to `Odo <http://odo.readthedocs.io/>`_.  
 
+Supported data providers
+----------------------------
+pandaSDMX ships with built-in support for the following agencies (others may be  
+configured by the user): 
 
-pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
-package aimed at becoming the 
-most intuitive and versatile tool to retrieve and acquire statistical data and metadata
-disseminated in `SDMX <http://www.sdmx.org>`_ format. 
-It supports out of the box 
-the SDMX services of the European statistics office (Eurostat), 
-the European Central Bank (ECB), and the French National Institute for statistics (INSEE). 
-pandaSDMX can export data and metadata as `pandas <http://pandas.pydata.org>`_ DataFrames, 
-the gold-standard 
-of data analysis in Python. 
-From pandas you can export data and metadata to Excel, R and friends. As from version 0.4, 
-pandaSDMX can export data to many other file formats and
-database backends via `Odo <odo.readthedocs.io/>`_. 
+* `Australian Bureau of Statistics (ABS) <http://www.abs.gov.au/>`_ 
+* `European Central Bank (ECB) <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`_
+* `Eurostat <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`_
+* `French National Institute for Statistics (INSEE) 
+  <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`_
+* `International Monetary Fund (IMF) - SDMX Central only 
+  <https://sdmxcentral.imf.org/>`_   
+* `Organisation for Economic Cooperation and Development (OECD)
+  <http://stats.oecd.org/SDMX-JSON/>`_  
+* `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
+* `UNESCO (free registration required) <https://apiportal.uis.unesco.org/getting-started>`_
+* `World Bank - World Integrated Trade Solution (WITS) <wits.worldbank.org>`_ 
+ 
 
 Main features
-==================
+---------------------
 
-* intuitive API inspired by `requests <https://pypi.python.org/pypi/requests/>`_  
 * support for many SDMX features including
 
-  - generic datasets
+  - generic data sets in SDMXML format
+  - data sets in SDMXJSON format  
   - data structure definitions, code lists and concept schemes
   - dataflow definitions and content-constraints
   - categorisations and category schemes
@@ -32,16 +47,16 @@ Main features
 * pythonic representation of the SDMX information model  
 * When requesting datasets, validate column selections against code lists 
   and content-constraints if available
-* export data and metadata as multi-indexed pandas DataFrames or Series, and
-  many other formats and database backends via `Odo <odo.readthedocs.io/>`_ 
-* read and write SDMX messages to and from local files 
+* export data and structural metadata such as code lists as multi-indexed pandas DataFrames or Series, and
+  many other formats as well as database backends via `Odo`_ 
+* read and write SDMX messages to and from files 
 * configurable HTTP connections
 * support for `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ allowing to cache SDMX messages in 
   memory, MongoDB, Redis or SQLite  
-* extensible through custom readers and writers for alternative input and output formats of data and metadata
+* extensible through custom readers and writers for alternative input and output formats 
 * growing test suite
 
-For further details including extensive code examples
+For further details including release notes and extensive code examples
 see the 
 `documentation <http://pandasdmx.readthedocs.io>`_ . 
 
@@ -50,7 +65,7 @@ pandaSDMX Links
 -------------------------------
 
 * `Documentation <http://pandasdmx.readthedocs.io>`_
-* `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
+* `Google group <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
 * `github <https://github.com/dr-leo/pandaSDMX>`_
  
   

@@ -3,7 +3,7 @@ pandaSDMX: Statistical Data and Metadata eXchange in Python
 
 
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
-library to retrieve and acquire statistical data
+client to retrieve and acquire statistical data
 and metadata disseminated in
 `SDMX <http://www.sdmx.org>`_ 2.1, an ISO-standard
 widely used by institutions

@@ -49,7 +49,7 @@ Bug fixes
   is now properly downloaded 
 * The data writer tries to gleen a frequency value for a time series from its attributes.
   This is helpful when exporting data sets, e.g., from INSEE 
-  ('Issue 41 <https://github.com/dr-leo/pandaSDMX/issues/41>`_).
+  (`Issue 41 <https://github.com/dr-leo/pandaSDMX/issues/41>`_).
  
 Known issues
 :::::::::::::::

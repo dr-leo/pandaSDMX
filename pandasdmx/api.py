@@ -173,7 +173,7 @@ class Request(object):
             version=None, key='',
             params={}, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None, writer=None):
+            memcache=None, writer=None, dsd=None):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -236,7 +236,9 @@ class Request(object):
             otherwise download resource and cache Response instance.             
         writer(str): optional custom writer class. 
             Should inherit from pandasdmx.writer.BaseWriter. Defaults to None, 
-            i.e. one of the included writers is selected as appropriate. 
+            i.e. one of the included writers is selected as appropriate.
+        dsd(model.DataStructure): DSD to be passed on to the sdmxml reader
+            to process a structure-specific dataset without an incidental http request. 
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -348,7 +350,7 @@ class Request(object):
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
-            msg = reader_cls(self).initialize(source)
+            msg = reader_cls(self, dsd).initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             logger.info('Footer found in SDMX message.')

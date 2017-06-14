@@ -31,6 +31,7 @@ class Reader(BaseReader):
         'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
         'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
         'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
+        'data': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific',
         'footer': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer'
     }
 
@@ -38,13 +39,19 @@ class Reader(BaseReader):
         tree = etree.parse(source)
         root = tree.getroot()
         if root.tag.endswith('Structure'):
-            cls = model.StructureMessage
+            msg = model.StructureMessage(self, root)
         elif root.tag.endswith('Data'):
-            cls = model.DataMessage
+            msg = model.DataMessage(self, root)
+            # if we have a structure-specific dataset, download the DSD if not already
+            # provided by the caller at instantiation.
+            if 'Specific' in root.tag and not self.dsd:
+                dsd_id = msg.header.structured_by
+                self.dsd = self.request.datastructure(
+                    dsd_id, params={'references': None}).msg.datastructure[dsd_id]
         else:
             raise ValueError('Unsupported root tag: %s' % root.tag)
-        self.message = cls(self, root)
-        return self.message
+        self.message = msg
+        return msg
 
     # flag to prevent multiple compiling. See BaseReader.__init__
     _compiled = False

@@ -75,8 +75,8 @@ concept schemes, and corresponding code lists.
     estat = Request('ESTAT')
     # Download the metadata and expose it as a dict mapping resource names to pandas DataFrames
     metadata = estat.datastructure('DSD_une_rt_a').write()
-    # Show some code lists; the performance warning is just an oddity of pandas.
-    metadata.codelist.loc[['AGE', 'UNIT']]
+    # Show some code lists.
+    metadata.codelist.iloc[8:18]
     
 Next we download a dataset. We use codes from the code list 'GEO'
 to obtain data on Greece, Ireland and Spain only.

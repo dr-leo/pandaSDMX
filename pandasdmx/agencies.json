@@ -1,6 +1,7 @@
 {
     "": {
-    "id": "NO_AGENCY"
+    "id": "NO_AGENCY",
+    "resources": {}
     },
     "ESTAT": {
         "id": "ESTAT",

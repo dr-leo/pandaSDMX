@@ -18,8 +18,9 @@ from pandasdmx.utils import DictLike
 
 class BaseReader:
 
-    def __init__(self, request, **kwargs):
+    def __init__(self, request, dsd, **kwargs):
         self.request = request
+        self.dsd = dsd
         # subclasses must declare '_compiled' flag and '_paths' dict
         # and '_compile_paths' function
         # Check if we need to compile path expressions

@@ -22,7 +22,7 @@ class TestStructSpecFlatDataSet(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_flat.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=pkg_path + 'data/exr/common/ecb_exr1.xml')
+            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
         dsd = dsd_resp.datastructure.ECB_EXR1
         self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
@@ -65,7 +65,10 @@ class TestStructSpecSeriesDataSet(unittest.TestCase):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts_gf.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
+        dsd = dsd_resp.datastructure.ECB_EXR1
+        self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
         self.assertEqual(self.resp.header.structured_by, 'STR1')
@@ -140,7 +143,10 @@ class TestStructSpecSeriesDataSet2(unittest.TestCase):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
+        dsd = dsd_resp.datastructure.ECB_EXR1
+        self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
         self.assertEqual(self.resp.header.structured_by, 'STR1')
@@ -184,7 +190,10 @@ class TestStructSpecSeriesData_SiblingGroup_TS(unittest.TestCase):
         self.estat = Request()
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_sg/structured/ecb_exr_sg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
+        dsd = dsd_resp.datastructure.ECB_EXR1
+        self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):
         data = self.resp.data
@@ -208,7 +217,10 @@ class TestStructSpecSeriesData_RateGroup_TS(unittest.TestCase):
         self.estat = Request()
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_rg/structured/ecb_exr_rg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
+        dsd = dsd_resp.datastructure.ECB_EXR1
+        self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):
         data = self.resp.data

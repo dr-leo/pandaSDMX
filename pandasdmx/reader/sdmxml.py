@@ -44,10 +44,15 @@ class Reader(BaseReader):
             msg = model.DataMessage(self, root)
             # if we have a structure-specific dataset, download the DSD if not already
             # provided by the caller at instantiation.
-            if 'Specific' in root.tag and not self.dsd:
-                dsd_id = msg.header.structured_by
-                self.dsd = self.request.datastructure(
-                    dsd_id, params={'references': None}).msg.datastructure[dsd_id]
+            if 'SpecificData' in root.tag:
+                if not self.dsd:
+                    dsd_id = msg.header.structured_by
+                    self.dsd = self.request.datastructure(
+                        dsd_id, params={'references': None}).datastructure[dsd_id]
+                # extract dimension and attribute IDs from the DSD for later
+                # use
+                self.dim_ids = [d.id for d in self.dsd.dimensions.aslist()]
+                self.attrib_ids = sorted(self.dsd.attributes.keys())
         else:
             raise ValueError('Unsupported root tag: %s' % root.tag)
         self.message = msg
@@ -182,28 +187,52 @@ class Reader(BaseReader):
         'SeriesObservation', ('dim', 'value', 'attrib'))
 
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
-        for obs in self._paths['generic_obs_path'](sdmxobj._elem):
-            # Construct the namedtuple for the ObsKey.
-            # The namedtuple class is created on first iteration.
-            obs_key_values = self._paths['obs_key_values_path'](obs)
-            try:
+        ObsKeyTuple = ObsAttrTuple = None
+        if self.dsd:
+            # this is a structure-specific dataset
+            for obs in sdmxobj._elem.getchildren():
+                # dimensions:
+                obs_attrib = obs.attrib
+                if not ObsKeyTuple:
+                    obs_key_id = [k for k in self.dim_ids if k in obs_attrib]
+                    ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
+                obs_key_values = [obs_attrib[k]
+                                  for k in self.dim_ids if k in obs_attrib]
                 obs_key = ObsKeyTuple._make(obs_key_values)
-            except NameError:
-                obs_key_id = self._paths['obs_key_id_path'](obs)
-                ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
+                obs_value = obs_attrib['OBS_VALUE'] if with_value else None
+                if with_attributes:
+                    if not ObsAttrTuple:
+                        obs_attr_id = [
+                            k for k in self.attrib_ids if k in obs_attrib]
+                        ObsAttrTuple = namedtuple_factory(
+                            'ObsAttributes', obs_attr_id)
+                    obs_attr_values = [obs_attrib[k] for k in obs_attr_id]
+                    obs_attr = ObsAttrTuple(*obs_attr_values)
+                else:
+                    obs_attr = None
+                yield self._ObsTuple(obs_key, obs_value, obs_attr)
+        else:
+            # we have a generic dataset
+            for obs in self._paths['generic_obs_path'](sdmxobj._elem):
+                # Construct the namedtuple for the ObsKey.
+                # The namedtuple class is created on first iteration.
+                obs_key_values = self._paths['obs_key_values_path'](obs)
+                if not ObsKeyTuple:
+                    obs_key_id = self._paths['obs_key_id_path'](obs)
+                    ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
                 obs_key = ObsKeyTuple._make(obs_key_values)
-            if with_value:
-                obs_value = self._paths['obs_value_path'](obs)[0]
-            else:
-                obs_value = None
-            if with_attributes:
-                obs_attr_values = self._paths['attr_values_path'](obs)
-                obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr_type = namedtuple_factory(
-                    'ObsAttributes', obs_attr_id)
-                obs_attr = obs_attr_type(*obs_attr_values)
-            else:
-                obs_attr = None
+                if with_value:
+                    obs_value = self._paths['obs_value_path'](obs)[0]
+                else:
+                    obs_value = None
+                if with_attributes:
+                    obs_attr_values = self._paths['attr_values_path'](obs)
+                    obs_attr_id = self._paths['attr_id_path'](obs)
+                    obs_attr_type = namedtuple_factory(
+                        'ObsAttributes', obs_attr_id)
+                    obs_attr = obs_attr_type(*obs_attr_values)
+                else:
+                    obs_attr = None
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):

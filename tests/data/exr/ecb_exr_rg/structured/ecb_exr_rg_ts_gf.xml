@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message:StructureSpecificData xmlns:exr="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_RG(1.0):ObsLevelDim:TIME_PERIOD" xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:data="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../../../schemas/SDMXMessage.xsd urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_RG(1.0):ObsLevelDim:TIME_PERIOD ecb_exr_rg_ts.xsd">
+	<message:Header>
+		<message:ID>Generic</message:ID>
+		<message:Test>false</message:Test>
+		<message:Prepared>2010-01-04T16:21:49+01:00</message:Prepared>
+		<message:Sender id="ECB"/>
+		<message:Structure structureID="STR1" dimensionAtObservation="TIME_PERIOD" namespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_RG(1.0):ObsLevelDim:TIME_PERIOD">
+			<common:Structure>
+				<Ref agencyID="ECB" id="ECB_EXR_RG" version="1.0"/>
+			</common:Structure>
+		</message:Structure>
+	</message:Header>
+	<message:DataSet data:structureRef="STR1" xsi:type="exr:DataSetType" data:dataScope="DataStructure">
+		<Group xsi:type="exr:RateGroup" EXR_TYPE="SP00" EXR_VAR="E" COLL_METHOD="Average of observations through period"/>
+		<Group xsi:type="exr:SiblingGroup" CURRENCY="CHF" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E" DECIMALS="4" UNIT_MEASURE="CHF" UNIT_MULT="0" TITLE="ECB reference exchange rate, Swiss franc/Euro"/>
+		<Group xsi:type="exr:SiblingGroup" CURRENCY="GBP" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E" DECIMALS="5" UNIT_MEASURE="GBP" UNIT_MULT="0" TITLE="ECB reference exchange rate, U.K. Pound sterling /Euro"/>
+		<Group xsi:type="exr:SiblingGroup" CURRENCY="JPY" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E" DECIMALS="2" UNIT_MEASURE="JPY" UNIT_MULT="0" TITLE="ECB reference exchange rate, Japanese yen/Euro"/>
+		<Group xsi:type="exr:SiblingGroup" CURRENCY="USD" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E" DECIMALS="4" UNIT_MEASURE="USD" UNIT_MULT="0" TITLE="ECB reference exchange rate, U.S. dollar/Euro"/>
+		<Series FREQ="M" CURRENCY="CHF" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E">
+			<Obs TIME_PERIOD="2010-08" OBS_VALUE="1.3413" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-09" OBS_VALUE="1.3089" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-10" OBS_VALUE="1.3452" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+		</Series>
+		<Series FREQ="M" CURRENCY="GBP" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E">
+			<Obs TIME_PERIOD="2010-08" OBS_VALUE="0.82363" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-09" OBS_VALUE="0.83987" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-10" OBS_VALUE="0.87637" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+		</Series>
+		<Series FREQ="M" CURRENCY="JPY" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E">
+			<Obs TIME_PERIOD="2010-08" OBS_VALUE="110.04" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-09" OBS_VALUE="110.26" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-10" OBS_VALUE="113.67" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+		</Series>
+		<Series FREQ="M" CURRENCY="USD" CURRENCY_DENOM="EUR" EXR_TYPE="SP00" EXR_VAR="E">
+			<Obs TIME_PERIOD="2010-08" OBS_VALUE="1.2894" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-09" OBS_VALUE="1.3067" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+			<Obs TIME_PERIOD="2010-10" OBS_VALUE="1.3898" OBS_STATUS="A" CONF_STATUS_OBS="F"/>
+		</Series>
+	</message:DataSet>
+</message:StructureSpecificData>

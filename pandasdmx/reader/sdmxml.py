@@ -41,10 +41,9 @@ class Reader(BaseReader):
         if root.tag.endswith('Structure'):
             msg = model.StructureMessage(self, root)
         elif root.tag.endswith('Data'):
-            msg = model.DataMessage(self, root)
             # if we have a structure-specific dataset, download the DSD if not already
             # provided by the caller at instantiation.
-            if 'SpecificData' in root.tag:
+            if 'StructureSpecific' in root.tag:
                 if not self.dsd:
                     dsd_id = msg.header.structured_by
                     self.dsd = self.request.datastructure(
@@ -53,6 +52,7 @@ class Reader(BaseReader):
                 # use
                 self.dim_ids = [d.id for d in self.dsd.dimensions.aslist()]
                 self.attrib_ids = sorted(self.dsd.attributes.keys())
+            msg = model.DataMessage(self, root)
         else:
             raise ValueError('Unsupported root tag: %s' % root.tag)
         self.message = msg
@@ -192,7 +192,7 @@ class Reader(BaseReader):
             # this is a structure-specific dataset
             for obs in sdmxobj._elem.getchildren():
                 # dimensions:
-                obs_attrib = obs.attrib
+                obs_attrib = obs.attrib  # XML attrib
                 if not ObsKeyTuple:
                     obs_key_id = [k for k in self.dim_ids if k in obs_attrib]
                     ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
@@ -236,8 +236,12 @@ class Reader(BaseReader):
             yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
-        path = self._paths[model.Series]
-        for series in path(sdmxobj._elem):
+        if self.dsd:
+            iter_series = sdmxobj._elem.iterchildren('Series')
+        else:
+            path = self._paths[model.Series]
+            iter_series = path(sdmxobj._elem)
+        for series in iter_series:
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):
@@ -246,9 +250,16 @@ class Reader(BaseReader):
             yield model.Group(self, series)
 
     def series_key(self, sdmxobj):
-        series_key_id = self._paths['series_key_id_path'](sdmxobj._elem)
-        series_key_values = self._paths[
-            'series_key_values_path'](sdmxobj._elem)
+        if self.dsd:
+            # we have a structured-specific dataset
+            series_attrib = sdmxobj._elem.attrib
+            series_key_id, series_key_values = zip(*((k, series_attrib[k])
+                                                     for k in self.dim_ids if k in series_attrib))
+        else:
+            # we have a generic dataset
+            series_key_id = self._paths['series_key_id_path'](sdmxobj._elem)
+            series_key_values = self._paths[
+                'series_key_values_path'](sdmxobj._elem)
         SeriesKeyTuple = namedtuple_factory('SeriesKey', series_key_id)
         return SeriesKeyTuple._make(series_key_values)
 
@@ -260,27 +271,59 @@ class Reader(BaseReader):
         return GroupKeyTuple._make(group_key_values)
 
     def series_attrib(self, sdmxobj):
-        attr_id = self._paths['attr_id_path'](sdmxobj._elem)
-        attr_values = self._paths['attr_values_path'](sdmxobj._elem)
+        if self.dsd:
+            # we have a structured-specific dataset
+            series_attrib = sdmxobj._elem.attrib
+            attrib_l = [(k, series_attrib[k])
+                        for k in self.attrib_ids if k in series_attrib]
+            if attrib_l:
+                attr_id, attr_values = zip(*attrib_l)
+            else:
+                return tuple()
+        else:
+            # generic dataset
+            attr_id = self._paths['attr_id_path'](sdmxobj._elem)
+            attr_values = self._paths['attr_values_path'](sdmxobj._elem)
         return namedtuple_factory('Attrib', attr_id)(*attr_values)
     dataset_attrib = series_attrib
 
     def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
                                 reverse_obs=False):
-        for obs in sdmxobj._elem.iterchildren(
-                '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
-                reversed=reverse_obs):
-            obs_dim = self._paths['generic_series_dim_path'](obs)[0]
-            if with_value:
-                obs_value = self._paths['obs_value_path'](obs)[0]
-            else:
-                obs_value = None
-            if with_attributes:
-                obs_attr_values = self._paths['attr_values_path'](obs)
-                obs_attr_id = self._paths['attr_id_path'](obs)
-                obs_attr_type = namedtuple_factory(
-                    'ObsAttributes', obs_attr_id)
-                obs_attr = obs_attr_type(*obs_attr_values)
-            else:
-                obs_attr = None
-            yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+        ObsKeyTuple = ObsAttrTuple = None
+        if self.dsd:
+            # this is a structure-specific dataset
+            for obs in sdmxobj._elem.iterchildren(reversed=reverse_obs):
+                obs_attrib = obs.attrib  # XML attributes
+                # dim at obs
+                obs_dim = obs_attrib[self.message.data.dim_at_obs]
+                obs_value = obs_attrib['OBS_VALUE'] if with_value else None
+                if with_attributes:
+                    if not ObsAttrTuple:
+                        obs_attr_id = [
+                            k for k in self.attrib_ids if k in obs_attrib]
+                        ObsAttrTuple = namedtuple_factory(
+                            'ObsAttributes', obs_attr_id)
+                    obs_attr_values = [obs_attrib[k] for k in obs_attr_id]
+                    obs_attr = ObsAttrTuple(*obs_attr_values)
+                else:
+                    obs_attr = None
+                yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+        else:
+            # we have a generic dataset
+            for obs in sdmxobj._elem.iterchildren(
+                    '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
+                    reversed=reverse_obs):
+                obs_dim = self._paths['generic_series_dim_path'](obs)[0]
+                if with_value:
+                    obs_value = self._paths['obs_value_path'](obs)[0]
+                else:
+                    obs_value = None
+                if with_attributes:
+                    obs_attr_values = self._paths['attr_values_path'](obs)
+                    obs_attr_id = self._paths['attr_id_path'](obs)
+                    obs_attr_type = namedtuple_factory(
+                        'ObsAttributes', obs_attr_id)
+                    obs_attr = obs_attr_type(*obs_attr_values)
+                else:
+                    obs_attr = None
+                yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright SDMX 2010  -   www.sdmx.org -->
+<message:Structure xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:structure="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../../schemas/SDMXMessage.xsd">
+   <message:Header>
+      <message:ID>Sample_DSD1_With_Sibling_And_Rate_Groups</message:ID>
+      <message:Test>false</message:Test>
+      <message:Prepared>2010-11-13T08:00:33+08:00</message:Prepared>
+      <message:Sender id="SDMX"/>
+   </message:Header>
+   <message:Structures>
+      <structure:Codelists>
+         <structure:Codelist id="CL_DECIMALS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_DECIMALS(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>Code list for Decimals (DECIMALS)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_FREQ" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_FREQ(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>Code list for Frequency (FREQ)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_CONF_STATUS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_CONF_STATUS(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>code list for Confidentiality Status (CONF_STATUS)
+				</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_OBS_STATUS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_OBS_STATUS(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>Observation status</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_UNIT_MULT" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_UNIT_MULT(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>code list for the Unit Multiplier (UNIT_MULT)
+				</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_EXR_TYPE" agencyID="ECB" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_TYPE(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>code list for the exchange rates types</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_EXR_VAR" agencyID="ECB" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_VAR(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>code list for the exchange rate series variation</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_CURRENCY" agencyID="ISO" version="1.0" isPartial="true" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ISO:CL_CURRENCY(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>code list for the exchange rate series variation</common:Name>
+         </structure:Codelist>
+      </structure:Codelists>
+      <structure:Concepts>
+         <structure:ConceptScheme id="CROSS_DOMAIN_CONCEPTS" agencyID="SDMX" version="1.0" isPartial="true" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=SDMX:CROSS_DOMAIN_CONCEPTS(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>SDMX Cross Domain Concept Scheme</common:Name>
+         </structure:ConceptScheme>
+         <structure:ConceptScheme id="ECB_CONCEPTS" agencyID="ECB" version="1.0" isPartial="true" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=ECB:ECB_CONCEPTS(1.0)" isExternalReference="true" structureURL="../common/exr_common.xml">
+            <common:Name>Concepts maintained by the ECB</common:Name>
+         </structure:ConceptScheme>
+      </structure:Concepts>
+      <structure:DataStructures>
+         <structure:DataStructure id="ECB_EXR_CG" agencyID="ECB" version="1.0">
+            <common:Name>Sample Data Structure Definition for exchange rates, with 
+					sibling and rate groups defined.
+				</common:Name>
+            <structure:DataStructureComponents>
+               <structure:DimensionList>
+                  <structure:Dimension id="FREQ">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).FREQ</URN>
+                     </structure:ConceptIdentity>
+                  </structure:Dimension>
+                  <structure:Dimension id="CURRENCY">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CURRENCY</URN>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <URN>urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ISO:CL_CURRENCY(1.0)</URN>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                  </structure:Dimension>
+                  <structure:Dimension id="CURRENCY_DENOM">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).CURRENCY_DENOM</URN>
+                     </structure:ConceptIdentity>
+                  </structure:Dimension>
+                  <structure:Dimension id="EXR_TYPE">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).EXR_TYPE</URN>
+                     </structure:ConceptIdentity>
+                  </structure:Dimension>
+                  <structure:Dimension id="EXR_VAR">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).EXR_VAR</URN>
+                     </structure:ConceptIdentity>
+                  </structure:Dimension>
+                  <structure:TimeDimension id="TIME_PERIOD">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_PERIOD</URN>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:TextFormat textType="ObservationalTimePeriod"/>
+                     </structure:LocalRepresentation>
+                  </structure:TimeDimension>
+               </structure:DimensionList>
+               <structure:Group id="SiblingGroup">
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="CURRENCY"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="CURRENCY_DENOM"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="EXR_TYPE"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="EXR_VAR"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+               </structure:Group>
+               <structure:Group id="RateGroup">
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="EXR_TYPE"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+                  <structure:GroupDimension>
+                     <structure:DimensionReference>
+                        <Ref id="EXR_VAR"/>
+                     </structure:DimensionReference>
+                  </structure:GroupDimension>
+               </structure:Group>
+               <structure:AttributeList>
+                  <structure:Attribute assignmentStatus="Conditional" id="COLL_METHOD">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COLL_METHOD</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:Group>
+                           <Ref id="RateGroup"/>
+                        </structure:Group>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="DECIMALS">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DECIMALS</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY_DENOM"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="EXR_TYPE"/>
+                        </structure:Dimension>
+                        <structure:AttachmentGroup>
+                           <Ref id="SiblingGroup"/>
+                        </structure:AttachmentGroup>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="UNIT_MEASURE">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).UNIT_MEASURE</URN>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <URN>urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ISO:CL_CURRENCY(1.0)
+									</URN>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY_DENOM"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="EXR_TYPE"/>
+                        </structure:Dimension>
+                        <structure:AttachmentGroup>
+                           <Ref id="SiblingGroup"/>
+                        </structure:AttachmentGroup>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="UNIT_MULT">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).UNIT_MULT</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="CURRENCY_DENOM"/>
+                        </structure:Dimension>
+                        <structure:Dimension>
+                           <Ref id="EXR_TYPE"/>
+                        </structure:Dimension>
+                        <structure:AttachmentGroup>
+                           <Ref id="SiblingGroup"/>
+                        </structure:AttachmentGroup>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Conditional" id="CONF_STATUS_OBS">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONF_STATUS</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:PrimaryMeasure>
+                           <Ref id="OBS_VALUE"/>
+                        </structure:PrimaryMeasure>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="OBS_STATUS">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).OBS_STATUS</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:PrimaryMeasure>
+                           <Ref id="OBS_VALUE"/>
+                        </structure:PrimaryMeasure>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="TITLE">
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TITLE</URN>
+                     </structure:ConceptIdentity>
+                     <structure:AttributeRelationship>
+                        <structure:Group>
+                           <Ref id="SiblingGroup"/>
+                        </structure:Group>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+               </structure:AttributeList>
+               <structure:MeasureList>
+                  <structure:PrimaryMeasure>
+                     <structure:ConceptIdentity>
+                        <URN>urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).OBS_VALUE</URN>
+                     </structure:ConceptIdentity>
+                  </structure:PrimaryMeasure>
+               </structure:MeasureList>
+            </structure:DataStructureComponents>
+         </structure:DataStructure>
+      </structure:DataStructures>
+   </message:Structures>
+</message:Structure>

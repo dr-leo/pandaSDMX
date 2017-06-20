@@ -22,8 +22,8 @@ class TestStructSpecFlatDataSet(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_flat.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
-        dsd = dsd_resp.datastructure.ECB_EXR1
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
         self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_msg_type(self):
@@ -66,8 +66,8 @@ class TestStructSpecSeriesDataSet(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts_gf.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
-        dsd = dsd_resp.datastructure.ECB_EXR1
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
         self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
@@ -86,7 +86,7 @@ class TestStructSpecSeriesDataSet(unittest.TestCase):
         s3 = series_list[3]
         self.assertIsInstance(s3, model.Series)
         self.assertIsInstance(s3.key, tuple)
-        self.assertEqual(len(s3.key), 5)
+        self.assertEqual(len(s3.key), 4)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs(reverse_obs=True))
@@ -108,7 +108,7 @@ class TestStructSpecSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(s3, pandas.core.series.Series)
         self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(s3.name), 4)
         # now with attributes
         pd_series = [s for s in resp.write(
             data, attributes='osgd', reverse_obs=True, asframe=False)]
@@ -120,7 +120,7 @@ class TestStructSpecSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(a3, pandas.core.series.Series)
         self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(s3.name), 4)
         self.assertEqual(len(a3), 3)
         # access an attribute of the first value
         self.assertEqual(a3[0].OBS_STATUS, 'A')
@@ -144,8 +144,8 @@ class TestStructSpecSeriesDataSet2(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
-        dsd = dsd_resp.datastructure.ECB_EXR1
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
         self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
@@ -164,7 +164,7 @@ class TestStructSpecSeriesDataSet2(unittest.TestCase):
         s3 = series_list[3]
         self.assertIsInstance(s3, model.Series)
         self.assertIsInstance(s3.key, tuple)
-        self.assertEqual(len(s3.key), 5)
+        self.assertEqual(len(s3.key), 4)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs(reverse_obs=True))
@@ -191,8 +191,8 @@ class TestStructSpecSeriesData_SiblingGroup_TS(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_sg/structured/ecb_exr_sg_ts.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
-        dsd = dsd_resp.datastructure.ECB_EXR1
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_sg/ecb_exr_sg.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
         self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):
@@ -218,8 +218,8 @@ class TestStructSpecSeriesData_RateGroup_TS(unittest.TestCase):
         filepath = os.path.join(
             pkg_path, 'data/exr/ecb_exr_rg/structured/ecb_exr_rg_ts.xml')
         dsd_resp = self.estat.datastructure(
-            fromfile=os.path.join(pkg_path, 'data/exr/common/ecb_exr1.xml'))
-        dsd = dsd_resp.datastructure.ECB_EXR1
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_rg/ecb_exr_rg.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
         self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):

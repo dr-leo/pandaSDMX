@@ -38,7 +38,7 @@
         "name": "SDMX Global Registry"
     },
     "INSEE": {
-        "id": "INSEE",
+        "id": "FR1",
         "resources": {
             "data": {
                 "headers": {

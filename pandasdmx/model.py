@@ -575,8 +575,19 @@ class DataSet(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(DataSet, self).__init__(*args, **kwargs)
-        self.attrib = self._reader.dataset_attrib(self)
-        self.groups = tuple(self.iter_groups)
+        self._attrib = self._groups = None
+
+    @property
+    def groups(self):
+        if not self._groups:
+            self._groups = tuple(self.iter_groups)
+        return self._groups
+
+    @property
+    def attrib(self):
+        if not self._attrib:
+            self._attrib = self._reader.dataset_attrib(self)
+        return self._attrib
 
     @property
     def dim_at_obs(self):

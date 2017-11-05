@@ -40,10 +40,20 @@ class Reader(BaseReader):
         root = tree.getroot()
         if root.tag.endswith('Structure'):
             msg = model.StructureMessage(self, root)
-        elif root.tag.endswith('Data'):
-            # if we have a structure-specific dataset, download the DSD if not already
-            # provided by the caller at instantiation.
-            if 'StructureSpecific' in root.tag:
+        elif root.tag.endswith('GenericData'):
+            msg = model.DataMessage(self, root)
+            # remove any DSD so as not to misguide parsing methods
+            self.dsd = None
+        elif root.tag.endswith('StructureSpecificData'):
+            msg = model.DataMessage(self, root)
+            # Exclude the rare case that the msg header does not contain a structure ID.
+            # A known case is ESTAT returning a message indicating
+            # that a large dataset is bing made available as downloadable zi file.
+            # The caller must handle this, e.g., by analyzing any provided
+            # footer.
+            if hasattr(msg.header, 'structured_by'):
+                # download the DSD if not already
+                # provided by the caller at instantiation.
                 if not self.dsd:
                     dsd_id = msg.header.structured_by
                     self.dsd = self.request.datastructure(
@@ -52,7 +62,6 @@ class Reader(BaseReader):
                 # use
                 self.dim_ids = [d.id for d in self.dsd.dimensions.aslist()]
                 self.attrib_ids = sorted(self.dsd.attributes.keys())
-            msg = model.DataMessage(self, root)
         else:
             raise ValueError('Unsupported root tag: %s' % root.tag)
         self.message = msg

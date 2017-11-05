@@ -4,6 +4,14 @@ What's new?
 ==============
 
 
+v0.7.1 (2017-11-10)
+----------------------------
+
+* raise ValueError when user attempts to request a resource other than data
+  from an agency delivering data in SCMX-JSON format only (OECD and ABS).
+
+
+
 
 v0.7.0 (2017-06-10)
 ----------------------------

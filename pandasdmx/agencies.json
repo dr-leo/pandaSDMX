@@ -3,12 +3,25 @@
     "id": "NO_AGENCY",
     "resources": {}
     },
+    "ESTAT_S": {
+        "id": "ESTAT",
+        "resources": {
+        "data": {
+                "headers": {
+                "Accept": "application/vnd.sdmx.structurespecificdata+xml"
+                }
+            }
+            },
+        "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+        "name": "Eurostat - structure-specific data format"
+    },
     "ESTAT": {
         "id": "ESTAT",
-        "resources": {},
+        "resources": {
+            },
         "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
-        "name": "Eurostat"
-    },
+        "name": "Eurostat - generic data format"
+    },    
     "UNSD": {
         "id": "UNSD",
         "supports_series_keys_only": true,
@@ -39,7 +52,7 @@
         "name": "SDMX Global Registry"
     },
     "INSEE": {
-        "id": "INSEE",
+        "id": "FR1",
         "resources": {
             "data": {
                 "headers": {
@@ -65,13 +78,23 @@
         "id": "ECB",
         "supports_series_keys_only": true,
         "resources": {
+        },
+        "url": "http://sdw-wsrest.ecb.int/service",
+        "name": "European Central Bank - generic data format"
+    },
+    "ECB_S": {
+        "id": "ECB_S",
+        "supports_series_keys_only": true,
+        "resources": {
             "data": {
-                "headers": {}
+                "headers": {
+                "Accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+                }
             }
         },
         "url": "http://sdw-wsrest.ecb.int/service",
-        "name": "European Central Bank"
-    },
+        "name": "European Central Bank - structure-specific data format"
+    },    
     "ABS": {
         "id": "ABS",
         "resources": {

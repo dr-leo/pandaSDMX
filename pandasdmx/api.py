@@ -264,6 +264,13 @@ class Request(object):
             # extract its ID
             if resource_id and not isinstance(resource_id, (str_type, str)):
                 resource_id = resource_id.id
+            # Raise error if agency is JSON-based and resource is not supported by the agency.
+            # Note that SDMX-JSON currently only supports data messags.
+            if (self._agencies[self.agency]['resources'].get('data')
+                    and self._agencies[self.agency]['resources']['data'].get('json')
+                    and resource_id != 'data'):
+                raise ValueError(
+                    'This agency only supports requests for data, not {0}.'.format(resource_type))
 
             # If key is a dict, validate items against the DSD
             # and construct the key string which becomes part of the URL
@@ -303,6 +310,7 @@ class Request(object):
                 base_url = '/'.join(filter(None, parts))
 
                 # Set references to sensible defaults
+                params = params.copy()  # to avoid side effects
                 if 'references' not in params:
                     if resource_type in [
                             'dataflow', 'datastructure'] and resource_id:

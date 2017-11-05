@@ -40,11 +40,13 @@ class Reader(BaseReader):
         root = tree.getroot()
         if root.tag.endswith('Structure'):
             msg = model.StructureMessage(self, root)
-        elif root.tag.endswith('GenericData'):
+        elif (root.tag.endswith('GenericTimeSeriesData')
+              or root.tag.endswith('GenericData')):
             msg = model.DataMessage(self, root)
             # remove any DSD so as not to misguide parsing methods
             self.dsd = None
-        elif root.tag.endswith('StructureSpecificData'):
+        elif (root.tag.endswith('StructureSpecificTimeSeriesData')
+              or root.tag.endswith('StructureSpecificData')):
             msg = model.DataMessage(self, root)
             # Exclude the rare case that the msg header does not contain a structure ID.
             # A known case is ESTAT returning a message indicating

@@ -9,6 +9,11 @@ v0.7.1 (2017-11-10)
 
 * raise ValueError when user attempts to request a resource other than data
   from an agency delivering data in SCMX-JSON format only (OECD and ABS).
+* Fix INSEE URL
+* add experimental support for structure-specific data sets
+  Data sets are much smaller, in typical use cases about 60% smaller.
+  Currently only implemented for ECB and ESTAT.
+  Use 'ECB_S' or 'ESTAT_S' as agency IDs instead of 'ESTAT' and 'ECB.
 
 
 

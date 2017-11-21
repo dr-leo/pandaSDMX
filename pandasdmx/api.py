@@ -266,9 +266,8 @@ class Request(object):
                 resource_id = resource_id.id
             # Raise error if agency is JSON-based and resource is not supported by the agency.
             # Note that SDMX-JSON currently only supports data messags.
-            if (self._agencies[self.agency]['resources'].get('data')
-                    and self._agencies[self.agency]['resources']['data'].get('json')
-                    and resource_id != 'data'):
+            if (self._agencies[self.agency]['resources'].get('data', {}).get('json')
+                    and resource_type != 'data'):
                 raise ValueError(
                     'This agency only supports requests for data, not {0}.'.format(resource_type))
 
@@ -289,7 +288,7 @@ class Request(object):
                 resource_cfg = self._agencies[self.agency][
                     'resources'].get(resource_type)
                 if resource_cfg:
-                    headers = resource_cfg.get('headers') or {}
+                    headers = resource_cfg.get('headers', {})
 
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
@@ -352,8 +351,7 @@ class Request(object):
                 source.seek(0)
             # select reader class
             if ((fromfile and fromfile.endswith('.json'))
-                    or (self.agency and self._agencies[self.agency]['resources'].get(resource_type)
-                        and self._agencies[self.agency]['resources'][resource_type].get('json'))):
+                    or self._agencies[self.agency]['resources'].get(resource_type, {}).get('json')):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')

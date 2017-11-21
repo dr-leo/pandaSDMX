@@ -42,7 +42,7 @@ class Writer(BaseWriter):
             attributes(str, None): string determining which attributes, if any,
                 should be returned in separate series or a separate DataFrame.
                 Allowed values: '', 'o', 's', 'g', 'd'
-                or any combination thereof such as 'os', 'go'. Defaults to 'osgd'.
+                or any combination thereof such as 'os', 'go'. Defaults to ''.
                 Where 'o', 's', 'g', and 'd' mean that attributes at observation,
                 series, group and dataset level will be returned as members of
                 per-observation namedtuples.
@@ -71,6 +71,7 @@ class Writer(BaseWriter):
             if set(attributes) - {'o', 's', 'g', 'd'}:
                 raise ValueError(
                     "'attributes' must only contain 'o', 's', 'd' or 'g'.")
+        with_obs_attr = 'o' in attributes
 
         # Allow source to be either an iterable or a model.DataSet instance
         if hasattr(source, '__iter__'):
@@ -82,7 +83,8 @@ class Writer(BaseWriter):
 
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = iter(zip(*source.data.obs()))
+            obs_zip = iter(
+                zip(*source.data.obs(with_attributes=with_obs_attr)))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(
                 dimensions, names=dimensions[0]._fields)
@@ -142,14 +144,15 @@ class Writer(BaseWriter):
 
     def iter_pd_series(self, iter_series, dim_at_obs, dtype,
                        attributes, reverse_obs, fromfreq, parse_time):
-
+        with_obs_attr = 'o' in attributes
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_zip = iter(zip(*series.obs(dtype, attributes, reverse_obs)))
+            obs_zip = iter(zip(*series.obs(with_values=dtype,
+                                           with_attributes=with_obs_attr, reverse_obs=reverse_obs)))
             obs_dim = next(obs_zip)
             l = len(obs_dim)
             obs_values = NP.array(next(obs_zip), dtype=dtype)
-            if attributes:
+            if with_obs_attr:
                 obs_attrib = next(obs_zip)
 
             # Generate the index

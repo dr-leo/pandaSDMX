@@ -47,14 +47,14 @@ class Reader(BaseReader):
     def initialize(self, source):
         tree = json.load(source)
         # pre-fetch some structures for efficient use in series and obs
-        a = tree['structure']['attributes']
-        self._dataset_attrib = a['dataSet']
-        self._series_attrib = a['series']
-        self._obs_attrib = a['observation']
-        d = tree['structure']['dimensions']
+        a = tree['structure'].get('attributes', {})
+        self._dataset_attrib = a.get('dataSet', [])
+        self._series_attrib = a.get('series', [])
+        self._obs_attrib = a.get('observation', [])
+        d = tree['structure'].get('dimensions', {})
         self._dataset_dim = d.get('dataSet', [])
-        self._series_dim = d['series']
-        self._obs_dim = d['observation']
+        self._series_dim = d.get('series', [])
+        self._obs_dim = d.get('observation', [])
         self._dataset_dim_key = {dim['keyPosition']: dim['id']
                                  for dim in self._dataset_dim}
         self._dataset_dim_values = {dim['keyPosition']: dim['values'][0]['id']
@@ -221,18 +221,18 @@ class Reader(BaseReader):
         _obs_dim_key = {dim.get('keyPosition', self._key_len - 1): dim['id']
                         for dim in self._obs_dim}
         _GenericObsKey = namedtuple_factory('GenericObservationKey',
-                                            (self._dataset_dim_key.get(d)
-                                             or _obs_dim_key.get(d)
+                                            (self._dataset_dim_key.get(d,
+                                                                       _obs_dim_key.get(d))
                                              for d in range(self._key_len)))
         obs_l = sorted(sdmxobj._elem.value['observations'].items(),
                        key=self.getitem0)
         for dim, value in obs_l:
             # Construct the key for this observation
             key_idx = [int(i) for i in dim.split(':')]
-            obs_key_values = [d['values'][i]['id'] for i, d in
-                              zip(key_idx, self._obs_dim)]
+            obs_key_values = (d['values'][i]['id'] for i, d in
+                              zip(key_idx, self._obs_dim))
             obs_key = _GenericObsKey._make(self._dataset_dim_values.get(d)
-                                           or obs_key_values.pop(0)
+                                           or next(obs_key_values)
                                            for d in range(self._key_len))
 
             # Read the value
@@ -242,7 +242,7 @@ class Reader(BaseReader):
             if with_attributes and len(value) > 1:
                 obs_attr_idx = value[1:]
                 obs_attr_raw = [(d['id'],
-                                 d['values'][i].get('id'))
+                                 d['values'][i].get('id') if i is not None else None)
                                 for i, d in zip(obs_attr_idx, self._obs_attrib)]
                 if obs_attr_raw:
                     obs_attr_id, obs_attr_values = zip(*obs_attr_raw)

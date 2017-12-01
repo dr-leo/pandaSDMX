@@ -32,7 +32,7 @@ The following sections briefly introduces some key elements of the information m
 Datasets
 ::::::::::::::::::::::::::::::::::::::::::::
 
-a :index:`dataset` can broadly be described as a
+A :index:`dataset` can broadly be described as a
 container of ordered :index:`observations` and :index:`attributes` attached to them. Observations (e.g. the annual unemployment rate) are classified 
 by :index:`dimensions` such as country, age, sex, and time period. Attributes may further describe an individual observation or
 a set of observations. Typical uses for attributes are the level of confidentiality, or data quality. 
@@ -96,7 +96,7 @@ A :index:`content-constraint` is a mechanism to express the fact
 that datasets of a given dataflow only comprise columns for a subset of values from
 the code-lists representing dimension values. For example,
 the datastructure definition for a dataflow on exchange rates
-references tha codelist of all country codes in the world, whereas
+references the codelist of all country codes in the world, whereas
 the datasets provided under this dataflow only covers the ten largest currencies. These can be 
 enumerated by a content-constraint attached to the dataflow definition.
 Content-constraints can be used to validate dimension names and values (a.k.a. keys)

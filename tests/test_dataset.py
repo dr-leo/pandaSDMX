@@ -120,6 +120,33 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         # access an attribute of the first value
         self.assertEqual(a3[0].OBS_STATUS, 'A')
 
+    def test_pandas_with_freq(self):
+        resp = self.resp
+        data = resp.data
+        pd_series = [s for s in resp.write(
+            data, attributes='', reverse_obs=True, asframe=False, fromfreq=True)]
+        self.assertEqual(len(pd_series), 4)
+        s3 = pd_series[3]
+        self.assertIsInstance(s3, pandas.core.series.Series)
+        self.assertEqual(s3[2], 1.2894)
+        self.assertIsInstance(s3.name, tuple)
+        self.assertEqual(len(s3.name), 5)
+        # now with attributes
+        pd_series = [s for s in resp.write(
+            data, attributes='osgd', reverse_obs=True, asframe=False, fromfreq=True)]
+        self.assertEqual(len(pd_series), 4)
+        self.assertIsInstance(pd_series[0], tuple)  # contains 2 series
+        self.assertEqual(len(pd_series[0]), 2)
+        s3, a3 = pd_series[3]
+        self.assertIsInstance(s3, pandas.core.series.Series)
+        self.assertIsInstance(a3, pandas.core.series.Series)
+        self.assertEqual(s3[2], 1.2894)
+        self.assertIsInstance(s3.name, tuple)
+        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(a3), 3)
+        # access an attribute of the first value
+        self.assertEqual(a3[0].OBS_STATUS, 'A')
+
     def test_write2pandas(self):
         df = self.resp.write(attributes='',
                              reverse_obs=False)
@@ -128,6 +155,17 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         # with metadata
         df, mdf = self.resp.write(attributes='osgd',
                                   reverse_obs=False)
+        assert mdf.shape == (3, 4)
+        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
+
+    def test_write2pandas_with_freq(self):
+        df = self.resp.write(attributes='',
+                             reverse_obs=False, fromfreq=True)
+        self.assertIsInstance(df, pandas.DataFrame)
+        assert df.shape == (3, 4)
+        # with metadata
+        df, mdf = self.resp.write(attributes='osgd',
+                                  reverse_obs=False, fromfreq=True)
         assert mdf.shape == (3, 4)
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 

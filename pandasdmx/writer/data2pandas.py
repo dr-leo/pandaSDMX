@@ -156,61 +156,41 @@ class Writer(BaseWriter):
                 obs_attrib = next(obs_zip)
 
             # Generate the index
-            f = None
-            if fromfreq:
-                sk, sa = series.key, series.attrib
-                if 'FREQ' in sk:
-                    f = sk.FREQ
-                elif 'FREQUENCY' in sa:
-                    f = sa.FREQUENCY
-                elif 'FREQUENCY' in sk:
-                    f = sk.FREQUENCY
-                elif 'FREQ' in sa:
-                    f = sa.FREQ
-            od0 = obs_dim[0]
+            # Get frequency if present
+            sk, sa, f = series.key, series.attrib, None
+            if sk and 'FREQ' in sk:
+                f = sk.FREQ
+            elif sa and 'FREQUENCY' in sa:
+                f = sa.FREQUENCY
+            elif sk and 'FREQUENCY' in sk:
+                f = sk.FREQUENCY
+            elif sa and 'FREQ' in sa:
+                f = sa.FREQ
+
             if parse_time and dim_at_obs == 'TIME_PERIOD':
                 # Check if we can build the index based on start and freq
                 # Constructing the index from the first value and FREQ should only
                 # occur if 'fromfreq' and hence f is True
-                if f:  # So there is a freq and we must use it
-
-                    if od0[-2] == 'S':
-                        # pandas cannot represent semesters as periods. So we
-                        # substitute them by quarters with freq 2Q.
-                        start_period = PD.Period(
-                            od0[:-2] + ('Q1' if od0[-1] == '1' else 'Q3'), freq='2Q')
-                        series_index = PD.period_range(
-                            start=start_period, periods=l, freq='2Q', name=dim_at_obs)
-                    else:
-                        # Some other freq. It is treated straightforward
-                        series_index = PD.period_range(start=PD.Period(od0, freq=f), periods=l,
-                                                       freq=f, name=dim_at_obs)
+                if fromfreq and f:  # So there is a freq and we must use it
+                    series_index = PD.period_range(start=PD.Period(obs_dim[0], freq=f), periods=l,
+                                                   freq=f, name=dim_at_obs)
                 else:
                     # There is no ffreq or we must not use it.
-                    # So generate the index from all the obs dim values of the series
-                    # First, handle the special case of semesters. pandas
-                    # cannot parse these.
-                    if od0[-2] == 'S':
-                        # Replace semesters with 2 quarters
-                        obs_dim_ = [d[:-2] + ('Q1' if d[-1] == '1' else 'Q3')
-                                    for d in obs_dim]
-                        series_index = PD.PeriodIndex(
-                            obs_dim_, name=dim_at_obs)
-                    else:
-                        # any other frequency
-                        series_index = PD.PeriodIndex(
-                            (PD.Period(d) for d in obs_dim), name=dim_at_obs)
+                    # So generate the index from all the obs dim values of the
+                    # series
+                    series_index = PD.PeriodIndex(
+                        (PD.Period(d) for d in obs_dim), freq=f, name=dim_at_obs)
             elif parse_time and dim_at_obs == 'TIME':
-                if f:
+                if fromfreq and f:
                     series_index = PD.date_range(
-                        start=PD.Timestamp(PD.datetime(od0)), periods=l, freq=f, name=dim_at_obs)
+                        start=PD.Timestamp(PD.datetime(obs_dim[0])), periods=l, freq=f, name=dim_at_obs)
                 else:
                     series_index = PD.DatetimeIndex(
                         (PD.Timestamp(PD.datetime(d)) for d in obs_dim),
-                        name=dim_at_obs)
-            # Not a datetime or period index or don't parse it
+                        freq=f, name=dim_at_obs)
             else:
-                series_index = PD.Index(obs_dim, name=dim_at_obs)
+                # Not a datetime or period index or don't parse it
+                series_index = PD.Index(obs_dim, freq=f, name=dim_at_obs)
 
             if dtype:
                 value_series = PD.Series(

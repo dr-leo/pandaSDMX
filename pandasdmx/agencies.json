@@ -63,6 +63,12 @@
         "url": "http://www.bdm.insee.fr/series/sdmx",
         "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques"
     },
+        "INSEE_S": {
+        "id": "FR1",
+        "resources": {},
+        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques - structure-specific data format"
+    },
     "OECD": {
         "id": "OECD",
         "resources": {

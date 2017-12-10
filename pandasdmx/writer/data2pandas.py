@@ -1,5 +1,3 @@
-
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
@@ -147,25 +145,29 @@ class Writer(BaseWriter):
         with_obs_attr = 'o' in attributes
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_zip = iter(zip(*series.obs(with_values=dtype,
+            obs_zip = list(zip(*series.obs(with_values=dtype,
                                            with_attributes=with_obs_attr, reverse_obs=reverse_obs)))
-            obs_dim = next(obs_zip)
+            # Are there observations at all?
+            if obs_zip:
+                obs_dim = obs_zip[0]
+                obs_values = NP.array(obs_zip[1], dtype=dtype)
+                obs_attrib = obs_zip[2]
+            else:
+                obs_dim, obs_values, obs_attrib = [], [], []
             l = len(obs_dim)
-            obs_values = NP.array(next(obs_zip), dtype=dtype)
-            if with_obs_attr:
-                obs_attrib = next(obs_zip)
 
             # Generate the index
             # Get frequency if present
-            sk, sa, f = series.key, series.attrib, None
-            if sk and 'FREQ' in sk:
-                f = sk.FREQ
-            elif sa and 'FREQUENCY' in sa:
-                f = sa.FREQUENCY
-            elif sk and 'FREQUENCY' in sk:
-                f = sk.FREQUENCY
-            elif sa and 'FREQ' in sa:
-                f = sa.FREQ
+            if 'FREQ' in series.key:
+                f = series.key.FREQ
+            elif series.attrib and 'FREQUENCY' in series.attrib:
+                f = series.attrib.FREQUENCY
+            elif 'FREQUENCY' in series.key:
+                f = series.key.FREQUENCY
+            elif series.attrib and 'FREQ' in series.attrib:
+                f = series.attrib.FREQ
+            else:
+                f = None
 
             if parse_time and dim_at_obs == 'TIME_PERIOD':
                 # Check if we can build the index based on start and freq
@@ -176,21 +178,20 @@ class Writer(BaseWriter):
                                                    freq=f, name=dim_at_obs)
                 else:
                     # There is no ffreq or we must not use it.
-                    # So generate the index from all the obs dim values of the
-                    # series
+                    # So generate the index from all the obs dim values
                     series_index = PD.PeriodIndex(
-                        (PD.Period(d) for d in obs_dim), freq=f, name=dim_at_obs)
+                        (PD.Period(d, freq=f) for d in obs_dim), name=dim_at_obs)
             elif parse_time and dim_at_obs == 'TIME':
                 if fromfreq and f:
                     series_index = PD.date_range(
-                        start=PD.Timestamp(PD.datetime(obs_dim[0])), periods=l, freq=f, name=dim_at_obs)
+                        start=PD.datetime(obs_dim[0]), periods=l, freq=f, name=dim_at_obs)
                 else:
                     series_index = PD.DatetimeIndex(
-                        (PD.Timestamp(PD.datetime(d)) for d in obs_dim),
-                        freq=f, name=dim_at_obs)
+                        (PD.datetime(d) for d in obs_dim),
+                        name=dim_at_obs)
             else:
                 # Not a datetime or period index or don't parse it
-                series_index = PD.Index(obs_dim, freq=f, name=dim_at_obs)
+                series_index = PD.Index(obs_dim, name=dim_at_obs)
 
             if dtype:
                 value_series = PD.Series(

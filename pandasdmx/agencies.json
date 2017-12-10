@@ -89,7 +89,7 @@
         "name": "European Central Bank - generic data format"
     },
     "ECB_S": {
-        "id": "ECB_S",
+        "id": "ECB",
         "supports_series_keys_only": true,
         "resources": {
             "data": {

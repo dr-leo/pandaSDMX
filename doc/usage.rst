@@ -301,13 +301,35 @@ Requesting a dataset is as easy as requesting a dataflow definition or any other
 SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id. Alternatively, you can use the
 ``data`` descriptor which calls the ``get`` method implicitly.  
 
-However, we only want to download those parts of the data we are 
-interested in. Not only does this increase
+Generic or structure-specific data format?
+::::::::::::::::::::::::::::::::::::::::::::
+
+Data providers which support SDMXML offer data sets in two distinct formats:
+
+* generic data sets: These are self-explanatory but tend to be not so memory efficient.
+  They are less suitable when requesting large data sets.
+* Structure-specific data sets: This format is rather small but requires
+  the datastructure definition (DSD) to be present. The DSD must be downloaded prior to
+  parsing the data set. However, as we shall see in the next section, the DSD
+  can be provided by the caller to save an additional
+  request. Structure-specific are recommended for large data sets.  
+  
+The intended data format is chosen by selecting the agency. For example, 'ECB' provides generic data sets, whereas
+'ECB_S' provides structure-specific data sets. Hence, there are actually two agency IDs for ECB, ESTAT etc. 
+Note that data providers supporting SDMXJSON only work with a single format
+for data sets. Hence, there is merely one agency ID for OECD. 
+ 
+Filtering
+::::::::::::
+
+In most cases we want to filter the data by columns or rows in order to
+request only the data we are interested in. 
+Not only does this increase
 performance. Rather, some dataflows are really huge, and would exceed the server or client limits.
 The REST API of SDMX offers two ways to narrow down a data request:
  
-* specifying dimension values which the series to be returned must match ("horizontal filter") or
-* limiting the time range or number of observations per series ("vertical filter") 
+* specifying dimension values which the series to be returned must match (filtering by column labels) or
+* limiting the time range or number of observations per series (filtering by row labels) 
   
 From the ECB's dataflow on exchange rates, 
 we specify the CURRENCY dimension to be either 'USD' or 'JPY'.
@@ -317,7 +339,7 @@ introduced in v0.3.0 is more convenient and pythonic
 as it allows pandaSDMX to infer the string form from the dict. 
 Its keys (= dimension names) and
 values (= dimension values) will be validated against the 
-datastructure definition as well as the content-constraint if available. 
+datastructure definition as well as the content-constraints if available. 
 
 Content-constraints are
 implemented only in their CubeRegion flavor. KeyValueSets are not yet supported. In this
@@ -333,17 +355,28 @@ in the previous section, the ECB's dataflow for exchange rates has five relevant
 'CURRENCY' dimension being at position two. This yields the key '.USD+JPY...'. The '+' can be
 read as an 'OR' operator. The dict form is shown below.
 
-Further, we will set the start period for the time series to 2014 to
+Further, we will set a meaningful start period for the time series to
 exclude any prior data from the request.
+
+To request the data in generic format, we could simply issue:
+
+>>> data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': ['USD', 'JPY']}, params = {'startPeriod': '2016'})
+
+However, we want to demonstrate how structure-specific data sets are requested. To this
+end, we instantiate a Request object configured to make requests for structure-specific
+data, and we provided the dsd directly. 
+Otherwise the DSD would be downloaded automatically behind the scenes:  
 
 .. ipython:: python
 
-    data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': 'USD+JPY'}, params = {'startPeriod': '2016'})
+    data_response = Request('ecb_s').data(resource_id = 'EXR', 
+    key={'CURRENCY': ['USD', 'JPY']}, 
+    params = {'startPeriod': '2016'}, dsd=dsd)
     data = data_response.data
     type(data)
     
-Datasets 
-::::::::::::::::::::
+Data sets 
+:::::::::::::::::::::
 
 This section explains the key elements and structure of datasets. You can skip
 it on first read when you just want to be able to download data and

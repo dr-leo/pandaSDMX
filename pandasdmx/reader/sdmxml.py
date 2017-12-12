@@ -57,7 +57,10 @@ class Reader(BaseReader):
                 # download the DSD if not already
                 # provided by the caller at instantiation.
                 if not self.dsd:
-                    dsd_id = msg.header.structured_by
+                    dsd_id_raw = msg.header.structured_by
+                    # strip off leading agency ID and trailing version
+                    start = dsd_id_raw.find('_') + 1
+                    dsd_id = dsd_id_raw[start:-4]
                     self.dsd = self.request.datastructure(
                         dsd_id, params={'references': None}).datastructure[dsd_id]
                 # extract dimension and attribute IDs from the DSD for later
@@ -278,7 +281,7 @@ class Reader(BaseReader):
 
     def group_key(self, sdmxobj):
         if self.dsd:
-            # handle structured-specific dataset
+            # handle structure-specific dataset
             group_attrib = sdmxobj._elem.attrib
             group_key_id, group_key_values = zip(*((k, group_attrib[k])
                                                    for k in self.dim_ids if k in group_attrib))
@@ -292,7 +295,7 @@ class Reader(BaseReader):
 
     def series_attrib(self, sdmxobj):
         if self.dsd:
-            # structured-specific dataset
+            # structure-specific dataset
             series_attrib = sdmxobj._elem.attrib
             attrib_l = [(k, series_attrib[k])
                         for k in self.attrib_ids if k in series_attrib]

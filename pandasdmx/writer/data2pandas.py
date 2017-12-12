@@ -226,8 +226,10 @@ class Writer(BaseWriter):
 
             else:
                 # There are no observations. So generate empty DataFrames
-                value_series = PD.Series(name=series.key)
-                attrib_series = PD.Series(name=series.key)
+                if dtype:
+                    value_series = PD.Series(name=series.key)
+                if attributes:
+                    attrib_series = PD.Series(name=series.key)
 
             # decide what to yield
             if dtype and attributes:

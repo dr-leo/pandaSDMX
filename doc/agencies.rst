@@ -9,12 +9,12 @@ Overview
 
 pandaSDMX supports a number of data providers out of the box. Each data provider
 is configured by an item in ``agencies.json`` in the package root. Data providers are
-identified by an uppercased string such as "ECB" or "OECD". For each pre-configured data provider, ``agencies.json`` contains
+identified by a case-insensitive string such as "ECB", "ESTAT_S" or "OECD". For each pre-configured data provider, ``agencies.json`` contains
 the URL and name of the SDMX API and potentially some additional
 metadata about the provider's web API. The configuration information about data
 providers is stored in the dict-type class attribute ``_agencies`` of :class:`Request`.
 Other data providers can be configured by passing a suitable json-file to the
-:meth:`pandasdmx.api.Request.add_agency` which will be used to update the dict
+:meth:`pandasdmx.api.Request.add_agency` method which will be used to update the dict
 storing the agency configuration. 
   
 
@@ -25,9 +25,12 @@ This section describes the data providers supported
 out of the box. The most salient distinction
 between data providers derives from the supported API: While OECD and
 Australian Bureau of Statistics (ABS) are only supported with regards to their SDMX-JSON APIs, all others
-send SDMX-ML messages. SDMX-JSON is confined to
+send SDMX-ML messages. SDMX-JSON is currently confined to
 data messages. Hence, pandaSDMX features relating to
 structural metadata are unavailable when making requests to OECD or ABS.
+
+Agencies supporting SDMXML messages come in two flavors: one for
+generic data sets (e.g. ECB, ESTAT, INSEE etc.), the other for structure-specific data sets (e.g., ECB_S, ESTAT_S etc.).
 
 
 `Australian Bureau of Statistics (ABS) <http://www.abs.gov.au/>`_

@@ -306,13 +306,15 @@ Generic or structure-specific data format?
 
 Data providers which support SDMXML offer data sets in two distinct formats:
 
-* generic data sets: These are self-explanatory but tend to be not so memory efficient.
-  They are less suitable when requesting large data sets.
-* Structure-specific data sets: This format is rather small but requires
-  the datastructure definition (DSD) to be present. The DSD must be downloaded prior to
+* generic data sets: These are self-contained but not memory-efficient.
+  They are suitable for small to medium data sets, but less so for large ones.
+* Structure-specific data sets: This format is memory-efficient 
+(typically about 60 per cent smaller than a generic data set)
+but it requires
+  the datastructure definition (DSD) to interpret the XML file. The DSD must be downloaded prior to
   parsing the data set. However, as we shall see in the next section, the DSD
   can be provided by the caller to save an additional
-  request. Structure-specific are recommended for large data sets.  
+  request.   
   
 The intended data format is chosen by selecting the agency. For example, 'ECB' provides generic data sets, whereas
 'ECB_S' provides structure-specific data sets. Hence, there are actually two agency IDs for ECB, ESTAT etc. 
@@ -363,29 +365,30 @@ To request the data in generic format, we could simply issue:
 >>> data_response = ecb.data(resource_id = 'EXR', key={'CURRENCY': ['USD', 'JPY']}, params = {'startPeriod': '2016'})
 
 However, we want to demonstrate how structure-specific data sets are requested. To this
-end, we instantiate a Request object configured to make requests for structure-specific
-data, and we provided the dsd directly. 
-Otherwise the DSD would be downloaded automatically behind the scenes:  
+end, we instantiate a one-off Request object configured to make requests for efficient structure-specific
+data, and we pass it the DSD obtained in the previous section. 
+Without passing the DSD, it would be downloaded automatically 
+right after the data set:  
 
 .. ipython:: python
 
     data_response = Request('ecb_s').data(resource_id = 'EXR', 
     key={'CURRENCY': ['USD', 'JPY']}, 
-    params = {'startPeriod': '2016'}, dsd=dsd)
+    params = {'startPeriod': '2017'}, dsd=dsd)
     data = data_response.data
     type(data)
     
-Data sets 
+Anatomy of data sets 
 :::::::::::::::::::::
 
-This section explains the key elements and structure of datasets. You can skip
+This section explains the key elements and structure of a data set. You can skip
 it on first read when you just want to be able to download data and
 export it to pandas. More advanced operations, e.g., exporting only a subset of series to pandas, requires some understanding of
 the anatomy of a dataset including observations and attributes. 
 
 As we saw in the previous section,
 the datastructure definition (DSD) is crucial to understanding the data structure, the meaning of dimension
-and attribute values, and to select series of interest from the entire dataset
+and attribute values, and to select series of interest from the entire data set
 by specifying a valid key.
 
 The :class:`pandasdmx.model.DataSet` class has the following features:
@@ -437,9 +440,9 @@ Selecting columns using the model API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, 
-we must not mix up the time spans. 
+we avoid mixing up different frequencies. 
 Therefore, we
-single out the daily data first.  
+single out the series with daily data.  
 The :meth:`pandasdmx.api.Response.write` method accepts an optional iterable to select a subset
 of the series contained in the dataset. Thus we can now
 generate our pandas DataFrame from daily exchange rate data only:

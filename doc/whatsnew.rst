@@ -4,18 +4,16 @@ What's new?
 ==============
 
 
-v0.7.1 (2017-11-10)
+v0.8 (2017-12-12)
 ----------------------------
 
+
+* add support for structure-specific data sets
+  Use 'ECB_S' or 'ESTAT_S' as agency IDs instead of 'ESTAT' and 'ECB.
 * raise ValueError when user attempts to request a resource other than data
   from an agency delivering data in SCMX-JSON format only (OECD and ABS).
-* Fix INSEE URL
-* add experimental support for structure-specific data sets
-  Data sets are much smaller, in typical use cases about 60% smaller.
-  Currently only implemented for ECB and ESTAT.
-  Use 'ECB_S' or 'ESTAT_S' as agency IDs instead of 'ESTAT' and 'ECB.
-
-
+* Update INSEE profile
+* handle empty series properly
 
 
 v0.7.0 (2017-06-10)

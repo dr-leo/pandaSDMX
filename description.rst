@@ -38,7 +38,7 @@ Main features
 
 * support for many SDMX features including
 
-  - generic data sets in SDMXML format
+  - generic and structure-specific data sets in SDMXML format
   - data sets in SDMXJSON format  
   - data structure definitions, code lists and concept schemes
   - dataflow definitions and content-constraints

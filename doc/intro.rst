@@ -58,10 +58,10 @@ Of course, you can also download the tarball from the PyPI and issue
 
 Running the test suite
 ---------------------------------------------------------
+
+The test suite is contained in the repo on github, not in the source distribution. 
+It is recommended to run the tests with py.test. 
  
-From the package directory, issue the folloing command::
- 
-    >>> py.test
 
     
 Package overview

@@ -98,7 +98,6 @@ to obtain data on Greece, Ireland and Spain only.
 Quick install
 -----------------
 
-* ``conda install -c alcibiade pandasdmx # Latest release should be available soon. Check the version!``
 * ``pip install pandasdmx # for all others``
 
 

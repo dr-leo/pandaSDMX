@@ -309,8 +309,8 @@ Data providers which support SDMXML offer data sets in two distinct formats:
 * generic data sets: These are self-contained but not memory-efficient.
   They are suitable for small to medium data sets, but less so for large ones.
 * Structure-specific data sets: This format is memory-efficient 
-(typically about 60 per cent smaller than a generic data set)
-but it requires
+  (typically about 60 per cent smaller than a generic data set)
+  but it requires
   the datastructure definition (DSD) to interpret the XML file. The DSD must be downloaded prior to
   parsing the data set. However, as we shall see in the next section, the DSD
   can be provided by the caller to save an additional

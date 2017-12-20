@@ -98,7 +98,7 @@ to obtain data on Greece, Ireland and Spain only.
 Quick install
 -----------------
 
-* ``pip install pandasdmx # for all others``
+* ``pip install pandasdmx``
 
 
 pandaSDMX Links

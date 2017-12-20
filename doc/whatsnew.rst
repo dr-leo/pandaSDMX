@@ -3,18 +3,34 @@
 What's new?
 ==============
 
+v0.8.1 (2017-12-20)
+----------------------------
+
+* fix broken  package preventing pip installs of the wheel 
+
 
 v0.8 (2017-12-12)
 ----------------------------
 
-
-* add support for structure-specific data sets
-  Use 'ECB_S' or 'ESTAT_S' as agency IDs instead of 'ESTAT' and 'ECB.
+* add support for an alternative data set format 
+  defined for SDMXML messages. These so-called  structure-specific data sets lend themselves
+  for large data queries. File sizes are typically
+  about 60 % smaller than with equivalent generic data sets. To make use of 
+  structure-specific data sets, instantiate Request 
+  objects with agency IDs such as   
+  'ECB_S', 'INSEE_S' or 'ESTAT_S' instead of 'ECB' etc.
+  These alternative agency profiles prompt pandaSDMX to execute data queries for structure-specific data sets.
+  For all other queries they behave exactly as their siblings. 
+  See a code example in chapter 5 of the docs.
 * raise ValueError when user attempts to request a resource other than data
   from an agency delivering data in SCMX-JSON format only (OECD and ABS).
 * Update INSEE profile
 * handle empty series properly
-
+* data2pd writer: the code for Series index generation was rewritten from scratch to make
+  better use of pandas' time series functionality. However, some data sets, in particular from INSEE, which
+  come with bimonthly or semestrial frequencies cannot be rendered as PeriodIndex. Pass
+  ``parse_time=False`` to the .write method to prevent errors.
+  
 
 v0.7.0 (2017-06-10)
 ----------------------------

@@ -13,7 +13,7 @@ from codecs import open
 
 
 # Get version
-ver = '0.8'
+ver = '0.8.1'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r', encoding='utf8').read()

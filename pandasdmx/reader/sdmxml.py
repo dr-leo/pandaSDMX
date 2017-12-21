@@ -58,11 +58,21 @@ class Reader(BaseReader):
                 # provided by the caller at instantiation.
                 if not self.dsd:
                     dsd_id_raw = msg.header.structured_by
-                    # strip off leading agency ID and trailing version
-                    start = dsd_id_raw.find('_') + 1
-                    dsd_id = dsd_id_raw[start:-4]
-                    self.dsd = self.request.datastructure(
-                        dsd_id, params={'references': None}).datastructure[dsd_id]
+                    # Some agencies such as ECB put the DSD ID into the structured_by field,
+                    # others prepend the agency ID and append the version. We try
+                    # to muddle through this mess. But there may be unknown
+                    # pitfalls.
+                    try:
+                        dsd_id = dsd_id_raw
+                        self.dsd = self.request.datastructure(dsd_id,
+                                                              params={'references': None}).datastructure[dsd_id]
+                    except Exception:
+                        # strip off leading agency ID and trailing version
+                        start = dsd_id_raw.find('_') + 1
+                        dsd_id = dsd_id_raw[start:-4]
+                        self.dsd = self.request.datastructure(dsd_id,
+                                                              params={'references': None}).datastructure[dsd_id]
+
                 # extract dimension and attribute IDs from the DSD for later
                 # use
                 self.dim_ids = [d.id for d in self.dsd.dimensions.aslist()]

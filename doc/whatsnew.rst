@@ -3,6 +3,11 @@
 What's new?
 ==============
 
+v0.8.2 (2017-12-21)
+----------------------------
+
+* fix reading of structure-specific data sets when DSD_ID is present in the data set
+
 v0.8.1 (2017-12-20)
 ----------------------------
 

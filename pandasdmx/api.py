@@ -147,7 +147,7 @@ class Request(object):
     def timeout(self, value):
         self.client.config['timeout'] = value
 
-    def series_keys(self, flow_id, cache=True):
+    def series_keys(self, flow_id, cache=True, dsd=None):
         '''
         Get an empty dataset with all possible series keys.
 
@@ -162,7 +162,8 @@ class Request(object):
             return self.cache[cache_id]
         else:
             # download an empty dataset with all available series keys
-            resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
+            resp = self.data(flow_id, params={'detail': 'serieskeysonly'},
+                             dsd=dsd)
             l = list(s.key for s in resp.data.series)
             df = PD.DataFrame(l, columns=l[0]._fields, dtype='category')
             if cache:
@@ -278,7 +279,7 @@ class Request(object):
             if resource_type == 'data' and isinstance(key, dict):
                 # select validation method based on agency capabilities
                 if self._agencies[self.agency].get('supports_series_keys_only'):
-                    key = self._make_key_from_series(resource_id, key)
+                    key = self._make_key_from_series(resource_id, key, dsd)
                 else:
                     key = self._make_key_from_dsd(resource_id, key)
 
@@ -455,7 +456,7 @@ class Request(object):
             parts.append(part)
         return '.'.join(parts)
 
-    def _make_key_from_series(self, flow_id, key):
+    def _make_key_from_series(self, flow_id, key, dsd):
         '''
         Get all series keys by calling
         self.series_keys, and validate 
@@ -467,7 +468,7 @@ class Request(object):
         Return: key(str) 
         '''
         # get all series keys
-        all_keys = self.series_keys(flow_id)
+        all_keys = self.series_keys(flow_id, dsd=dsd)
         dim_names = list(all_keys)
         # Validate the key dict
         # First, check correctness of dimension names
@@ -500,7 +501,7 @@ class Request(object):
         parts = [key_l.get(name, '') for name in dim_names]
         return '.'.join(parts)
 
-    def preview_data(self, flow_id, key=None, count=True, total=True):
+    def preview_data(self, flow_id, key=None, count=True, total=True, dsd=None):
         '''
         Get keys or number of series for a prospective dataset query allowing for
         keys with multiple values per dimension.
@@ -529,7 +530,7 @@ class Request(object):
             respectively. If 'count' is True, dict values will be int rather than
             PD.DataFrame.
         '''
-        all_keys = self.series_keys(flow_id)
+        all_keys = self.series_keys(flow_id, dsd=dsd)
         # Handle the special case that no key is provided
         if not key:
             if count:

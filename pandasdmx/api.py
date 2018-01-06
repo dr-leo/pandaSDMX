@@ -136,8 +136,16 @@ class Request(object):
                 list(self._agencies)))
         self.cache = {}  # for SDMX messages and other stuff.
 
-    def clear_cache(self):
-        self.cache.clear()
+    def clear_cache(self, key=None):
+        '''
+        If key is Non (default), remove the item if it exists. 
+        Otherwise, clear the entire cache.
+        '''
+        if key:
+            if key in self.cache:
+                del self.cache[key]
+        else:
+            self.cache.clear()
 
     @property
     def timeout(self):

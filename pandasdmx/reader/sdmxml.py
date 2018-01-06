@@ -62,16 +62,22 @@ class Reader(BaseReader):
                     # others prepend the agency ID and append the version. We try
                     # to muddle through this mess. But there may be unknown
                     # pitfalls.
+                    cache_id = self.request.agency + dsd_id_raw
                     try:
                         dsd_id = dsd_id_raw
                         self.dsd = self.request.datastructure(dsd_id,
-                                                              params={'references': None}).datastructure[dsd_id]
+                                                              params={
+                                                                  'references': None},
+                                                              cache=cache_id).datastructure[dsd_id]
                     except Exception:
+                        self.request.clear_cache(cache_id)
                         # strip off leading agency ID and trailing version
                         start = dsd_id_raw.find('_') + 1
                         dsd_id = dsd_id_raw[start:-4]
                         self.dsd = self.request.datastructure(dsd_id,
-                                                              params={'references': None}).datastructure[dsd_id]
+                                                              params={
+                                                                  'references': None},
+                                                              cache=cache_id).datastructure[dsd_id]
 
                 # extract dimension and attribute IDs from the DSD for later
                 # use

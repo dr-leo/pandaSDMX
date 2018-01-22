@@ -469,9 +469,18 @@ class Ref(SDMXObject):
     def maintainable_parent_id(self):
         return self._reader.read_as_str('maintainable_parent_id', self)
 
-    def resolve(self):
-        pkg = getattr(self._reader.msg, self.package)
-        return pkg[self.id]
+    def __call__(self):
+        '''
+        Resolv reference. Referenced artefact must be in the
+        same message.
+        ToDo: make request on the fly.
+
+        return referenced artefact. 
+        '''
+        rc = getattr(self._reader.message, self.ref_class.lower())
+        if self.maintainable_parent_id:
+            rc = rc[self.maintainable_parent_id]
+        return rc[self.id]
 
 
 class Categorisation(MaintainableArtefact):
@@ -708,25 +717,6 @@ class StructureMessage(Message):
         ('constraint', 'read_identifiables', ContentConstraint, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])
-
-    def __getattr__(self, name):
-        '''
-        Some attributes have been renamed in v0.4.
-        Old names are deprecated.
-        This method ensures backward compatibility. It will be
-        removed in a future version.
-        '''
-        old2new = {
-            'codelists': 'codelist',
-            'dataflows': 'dataflow',
-            'categoryschemes': 'categoryscheme',
-            'categorisations': 'categorisation',
-            'conceptschemes': 'conceptscheme',
-            'datastructures': 'datastructure'}
-        if name in old2new:
-            return getattr(self, old2new[name])
-        else:
-            raise AttributeError
 
 
 class DataMessage(Message):

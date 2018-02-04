@@ -284,11 +284,11 @@ class Representation(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(Representation, self).__init__(*args)
-        enum = self._reader.read_instance(
+        enum_ref = self._reader.read_instance(
             Ref, self, offset='enumeration')
-        if enum:
+        if enum_ref:
             self.text_type = self.max_length = None
-            self.enum = self._reader.message.codelist[enum.id]
+            self.enum = enum_ref()
         else:
             self.enum = None
             self.text_type = self._reader.read_as_str('texttype', self)
@@ -469,18 +469,33 @@ class Ref(SDMXObject):
     def maintainable_parent_id(self):
         return self._reader.read_as_str('maintainable_parent_id', self)
 
-    def __call__(self):
+    def __call__(self, request=False, **kwargs):
         '''
-        Resolv reference. Referenced artefact must be in the
-        same message.
-        ToDo: make request on the fly.
+        Resolv reference. 
+        If `request` is True (defaut: False), and
+        the referenced artefact is not in the same message,
+        a request to the data provider will be made to
+        fetch it. It will use the
+        current Request instance. Thus, requests to
+        other agencies are not supported.
 
-        return referenced artefact. 
+        kwargs: are passed on to Request.get(). 
+
+        return referenced artefact or None if not found. 
         '''
-        rc = getattr(self._reader.message, self.ref_class.lower())
-        if self.maintainable_parent_id:
-            rc = rc[self.maintainable_parent_id]
-        return rc[self.id]
+        try:
+            rc = getattr(self._reader.message, self.ref_class.lower())
+            if self.maintainable_parent_id:
+                rc = rc[self.maintainable_parent_id]
+                return rc[self.id]
+        except (AttributeError, TypeError):
+            if request:
+                req = self._reader.request
+                resp = req.get(self.ref_class.lower(), self.id, **kwargs)
+                rc = getattr(resp.msg, self.ref_class.lower())
+                return rc[self.id]
+            else:
+                return None
 
 
 class Categorisation(MaintainableArtefact):

@@ -41,6 +41,7 @@
     },
     "IMF_SDMXCENTRAL": {
         "id": "IMF",
+        "supports_series_keys_only": true,
         "resources": {},
         "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
         "name": "International Monetary Fund - SDMXCentral"
@@ -48,7 +49,7 @@
     "SGR": {
         "id": "SGR",
         "resources": {},
-        "url": "https://registry.sdmx.org/ws/rest",
+        "url": "https://registry.sdmx.org/FusionRegistry/ws/rest",
         "name": "SDMX Global Registry"
     },
     "INSEE": {
@@ -121,6 +122,29 @@
             "headers": {} 
      } 
      } 
-     }
+     },
+         "INEGI": { 
+        "name": "Instituto Nacional de estatistica y geografìa - INEGI (Mexico)",
+        "id": "inegi", 
+        "url": "http://sdmx.snieg.mx/service/rest", 
+        "resources": { 
+            "data": { 
+            "headers": {
+            "Accept": "application/vnd.sdmx.structurespecificdata+xml"
+            } 
+     } 
+     } 
+     },
+              "ISTAT": { 
+        "name": "Italian Statistics Office",
+        "id": "ISTAT", 
+        "url": "http://sdmx.istat.it/SDMXWS", 
+        "resources": { 
+            "data": {  
+            "headers": {
+            "Accept": "application/vnd.sdmx.structurespecificdata+xml"
+            } 
+     } 
 }
-
+}
+}

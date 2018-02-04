@@ -3,6 +3,15 @@
 What's new?
 ==============
 
+
+v0.9dev (2018-04)
+----------------------------
+
+* New agencies: Mexican Instituto de estatistica y geografìa (INEGI), and
+  Italian statistics office (ISTAT)
+* model: make Ref instances callable for resolving
+
+
 v0.8.2 (2017-12-21)
 ----------------------------
 

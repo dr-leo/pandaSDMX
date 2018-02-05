@@ -150,9 +150,9 @@ class Writer(BaseWriter):
                 dsd = source.datastructure.any()
                 # Relate dimensions and attributes to corresponding codelists to
                 # show this relation in the resulting dataframe
-                dim2cl = {d: d.local_repr.enum for d in dsd.dimensions.values()
+                dim2cl = {d: d.local_repr.enum() for d in dsd.dimensions.values()
                           if d.local_repr.enum}
-                attr2cl = {a: a.local_repr.enum for a in dsd.attributes.values()
+                attr2cl = {a: a.local_repr.enum() for a in dsd.attributes.values()
                            if a.local_repr.enum}
             except:
                 dsd = None

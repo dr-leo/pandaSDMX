@@ -288,7 +288,7 @@ class Representation(SDMXObject):
             Ref, self, offset='enumeration')
         if enum_ref:
             self.text_type = self.max_length = None
-            self.enum = enum_ref()
+            self.enum = enum_ref
         else:
             self.enum = None
             self.text_type = self._reader.read_as_str('texttype', self)
@@ -484,15 +484,15 @@ class Ref(SDMXObject):
         return referenced artefact or None if not found. 
         '''
         try:
-            rc = getattr(self._reader.message, self.ref_class.lower())
+            rc = getattr(self._reader.message, self.package)
             if self.maintainable_parent_id:
                 rc = rc[self.maintainable_parent_id]
-                return rc[self.id]
+            return rc[self.id]
         except (AttributeError, TypeError):
             if request:
                 req = self._reader.request
-                resp = req.get(self.ref_class.lower(), self.id, **kwargs)
-                rc = getattr(resp.msg, self.ref_class.lower())
+                resp = req.get(self.package, self.id, **kwargs)
+                rc = getattr(resp.msg, self.package)
                 return rc[self.id]
             else:
                 return None

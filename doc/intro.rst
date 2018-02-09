@@ -50,8 +50,9 @@ Download
 
 From the command line of your OS, issue
 
-* ``conda install -c alcibiade pandasdmx`` if you are using Anaconda,
-* ``pip install pandasdmx`` otherwise. 
+    ``pip install pandasdmx`` 
+
+Installation with ``conda`` is currently not supported. 
 
 Of course, you can also download the tarball from the PyPI and issue 
 ``python setup.py install`` from the package dir.

@@ -512,6 +512,10 @@ class DataflowDefinition(StructureUsage, Constrainable):
     pass
 
 
+class ProvisionAgreement(StructureUsage, Constrainable):
+    pass
+
+
 class DataAttribute(Component):
 
     @property
@@ -729,6 +733,8 @@ class StructureMessage(Message):
          'dataflow_from_msg'),
         ('datastructure', 'read_identifiables',
          DataStructureDefinition, None),
+        ('provisionagreement', 'read_identifiables',
+            ProvisionAgreement, None),
         ('constraint', 'read_identifiables', ContentConstraint, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])

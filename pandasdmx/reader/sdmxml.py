@@ -144,6 +144,7 @@ class Reader(BaseReader):
         model.Categorisation: 'str:Categorisation',
         model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
         model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
+        model.ProvisionAgreement: 'mes:Structures/str:ProvisionAgreements/str:ProvisionAgreement',
         model.DataflowDefinition: 'str:Dataflow',
         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',

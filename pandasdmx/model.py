@@ -75,7 +75,11 @@ class Footer(SDMXObject):
 
 
 class Constrainable:
-    pass
+
+    @property
+    def constraints(self):
+        return [c for c in self._reader.message.constraint.values()
+                if c.constraint_attachment() is self]
 
 
 class Annotation(SDMXObject):
@@ -350,7 +354,7 @@ class Constraint(MaintainableArtefact):
     def __init__(self, *args, **kwargs):
         super(Constraint, self).__init__(*args, **kwargs)
         self.constraint_attachment = self._reader.read_instance(
-            DataflowDefinition, self, offset='constraint_attachment')
+            Ref, self, offset='constraint_attachment')
 
 
 class ContentConstraint(Constraint):
@@ -438,6 +442,12 @@ class Categorisations(SDMXObject, DictLike):
 
 
 class Ref(SDMXObject):
+    # mappings used for resolution
+    _cls2rc_name = {
+        'Dataflow': 'dataflow',
+        'CodeList': 'codelist',
+        'DataStructure': 'datastructure',
+        'ProvisionAgreement': 'provisionagreement'}
 
     @property
     def package(self):
@@ -478,7 +488,8 @@ class Ref(SDMXObject):
         return referenced artefact or None if not found. 
         '''
         try:
-            rc = getattr(self._reader.message, self.package)
+            rc_name = self._cls2rc_name[self.ref_class]
+            rc = getattr(self._reader.message, rc_name)
             if self.maintainable_parent_id:
                 rc = rc[self.maintainable_parent_id]
             return rc[self.id]
@@ -721,6 +732,7 @@ class Message(SDMXObject):
 class StructureMessage(Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
+        ('constraint', 'read_identifiables', ContentConstraint, None),
         ('codelist', 'read_identifiables', Codelist, None),
         ('conceptscheme', 'read_identifiables', ConceptScheme, None),
         ('dataflow', 'read_identifiables', DataflowDefinition,
@@ -729,7 +741,6 @@ class StructureMessage(Message):
          DataStructureDefinition, None),
         ('provisionagreement', 'read_identifiables',
             ProvisionAgreement, None),
-        ('constraint', 'read_identifiables', ContentConstraint, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])
 

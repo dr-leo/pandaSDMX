@@ -102,7 +102,7 @@ class Reader(BaseReader):
         'footer_code': '@code',
         'footer_severity': '@severity',
         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
-        'constraint_attachment': 'str:ConstraintAttachment',
+        'constraint_attachment': 'str:ConstraintAttachment/*',
         'include': '@include',
         'id': '@id',
         'urn': '@urn',

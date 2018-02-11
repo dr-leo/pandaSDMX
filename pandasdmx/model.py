@@ -263,12 +263,6 @@ class Item(NameableArtefact):
         return self._reader._item_children(self)
 
 
-class Structure(MaintainableArtefact):
-    # the groupings are added in subclasses as class attributes.
-    # This deviates from the info model
-    pass
-
-
 class StructureUsage(MaintainableArtefact):
 
     @property
@@ -508,11 +502,11 @@ class Categorisation(MaintainableArtefact):
             Ref, self, offset='ref_source')
 
 
-class DataflowDefinition(StructureUsage, Constrainable):
+class DataflowDefinition(Constrainable, StructureUsage):
     pass
 
 
-class ProvisionAgreement(StructureUsage, Constrainable):
+class ProvisionAgreement(Constrainable, StructureUsage):
     pass
 
 
@@ -530,7 +524,7 @@ class DataAttribute(Component):
         return self._reader.read_as_str('assignment_status', self)
 
 
-class DataStructureDefinition(Structure, Constrainable):
+class DataStructureDefinition(Constrainable, MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)

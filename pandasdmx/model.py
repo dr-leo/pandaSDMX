@@ -77,9 +77,11 @@ class Footer(SDMXObject):
 class Constrainable:
 
     @property
-    def constraints(self):
-        return [c for c in self._reader.message.constraint.values()
-                if c.constraint_attachment() is self]
+    def constrained_by(self):
+        if not hasattr(self, '_constrained_by'):
+            self._constrained_by = [c for c in self._reader.message.constraint.values()
+                                    if c.constraint_attachment() is self]
+        return self._constrained_by
 
 
 class Annotation(SDMXObject):
@@ -197,7 +199,7 @@ class VersionableArtefact(NameableArtefact):
 
     @property
     def version(self):
-        return self._reader.version(self)
+        return self._reader.read_as_str('ref_version', self)
 
     @property
     def valid_from(self):
@@ -216,7 +218,7 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def is_external_ref(self):
-        return self._reader.is_external_ref(self)  # fix this
+        return bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def structure_url(self):
@@ -228,7 +230,7 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def maintainer(self):
-        return self._reader.maintainer(self)  # fix this
+        return self._reader.read_as_str('agencyID', self)
 
 
 # Helper class for ItemScheme and ComponentList.
@@ -445,7 +447,7 @@ class Ref(SDMXObject):
     # mappings used for resolution
     _cls2rc_name = {
         'Dataflow': 'dataflow',
-        'CodeList': 'codelist',
+        'Codelist': 'codelist',
         'DataStructure': 'datastructure',
         'ProvisionAgreement': 'provisionagreement'}
 
@@ -487,8 +489,8 @@ class Ref(SDMXObject):
 
         return referenced artefact or None if not found. 
         '''
+        rc_name = self._cls2rc_name[self.ref_class]
         try:
-            rc_name = self._cls2rc_name[self.ref_class]
             rc = getattr(self._reader.message, rc_name)
             if self.maintainable_parent_id:
                 rc = rc[self.maintainable_parent_id]
@@ -496,8 +498,10 @@ class Ref(SDMXObject):
         except (AttributeError, TypeError):
             if request:
                 req = self._reader.request
-                resp = req.get(self.package, self.id, **kwargs)
-                rc = getattr(resp.msg, self.package)
+                resp = req.get(resource_type=rc_name,
+                               resource_id=self.maintainable_parent_id or self.id,
+                               agency_id=self.agency_id, **kwargs)
+                rc = getattr(resp.msg, self.rc_name)
                 return rc[self.id]
             else:
                 return None
@@ -517,8 +521,12 @@ class DataflowDefinition(Constrainable, StructureUsage):
     pass
 
 
-class ProvisionAgreement(Constrainable, StructureUsage):
-    pass
+class ProvisionAgreement(Constrainable, MaintainableArtefact):
+
+    def __init__(self, *args, **kwargs):
+        super(ProvisionAgreement, self).__init__(*args, **kwargs)
+        self.structure_usage = self._reader.read_instance(
+            Ref, self, offset='structure_usage')
 
 
 class DataAttribute(Component):

@@ -68,7 +68,7 @@ class Reader(BaseReader):
                         self.dsd = self.request.datastructure(dsd_id,
                                                               params={
                                                                   'references': None},
-                                                              cache=cache_id).datastructure[dsd_id]
+                                                              memcache=cache_id).datastructure[dsd_id]
                     except Exception:
                         self.request.clear_cache(cache_id)
                         # strip off leading agency ID and trailing version
@@ -77,7 +77,7 @@ class Reader(BaseReader):
                         self.dsd = self.request.datastructure(dsd_id,
                                                               params={
                                                                   'references': None},
-                                                              cache=cache_id).datastructure[dsd_id]
+                                                              memcache=cache_id).datastructure[dsd_id]
 
                 # extract dimension and attribute IDs from the DSD for later
                 # use
@@ -103,6 +103,7 @@ class Reader(BaseReader):
         'footer_severity': '@severity',
         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
         'constraint_attachment': 'str:ConstraintAttachment/*',
+        'structure_usage': 'str:StructureUsage',
         'include': '@include',
         'id': '@id',
         'urn': '@urn',
@@ -120,7 +121,7 @@ class Reader(BaseReader):
         'ref_version': '@version',
         'concept_identity': 'str:ConceptIdentity',
         'position': '@position',
-        'isfinal': '@isfinal',
+        'isfinal': '@isFinal',
         'ref_package': '@package',
         'ref_class': '@class',
         'ref_target': 'str:Target',

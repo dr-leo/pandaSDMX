@@ -125,7 +125,7 @@
      },
          "INEGI": { 
         "name": "Instituto Nacional de estatistica y geografìa - INEGI (Mexico)",
-        "id": "inegi", 
+        "id": "INEGI", 
         "url": "http://sdmx.snieg.mx/service/rest", 
         "resources": { 
             "data": { 

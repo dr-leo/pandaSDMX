@@ -84,7 +84,7 @@ class Request(object):
         return sorted(list(cls._agencies))
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'codelist', 'conceptscheme']
+                  'codelist', 'conceptscheme', 'contentconstraint']
 
     @classmethod
     def _make_get_wrappers(cls):
@@ -413,6 +413,7 @@ class Request(object):
         dsd = dsd_resp.msg.datastructure[dsd_id]
         # Extract dimensions excluding the dimension at observation (time, time-period)
         # as we are only interested in dimensions for columns, not rows.
+        # This might fail in case of cross-sectional datasets.
         dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
                       ['TIME', 'TIME_PERIOD']]
         dim_names = [d.id for d in dimensions]
@@ -421,6 +422,7 @@ class Request(object):
             constraint_l = [c for c in dataflow.constraint.aslist()
                             if c.constraint_attachment.id == flow_id]
             if constraint_l:
+                # need to fix this for multiple constraints
                 constraint = constraint_l[0]
         except:
             constraint = None
@@ -438,28 +440,42 @@ class Request(object):
         # contains a value for the dimension, append it to the 'parts' list. Otherwise
         # append ''. Then join the parts to form the dotted str.
         for d in dimensions:
-            try:
+            if d.id in key:
                 values = key[d.id]
-                values_l = values.split('+')
-                codelist = d.local_repr.enum
-                codes = codelist.keys()
-                invalid = [v for v in values_l if v not in codes]
-                if invalid:
-                    # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
-                                     format(invalid, d.id, codes))
-                # Check if values are in Contentconstraint if present
-                if constraint:
-                    try:
-                        invalid = [
-                            v for v in values_l if (d.id, v) not in constraint]
-                        if invalid:
-                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
-                                             format(invalid, d.id))
-                    except NotImplementedError:
-                        pass
+                # values may already be a list of dim values, but also a
+                # +-separated str
+                if isinstance(values, str_type):
+                    values_l = values.split('+')
+                else:
+                    # so values must be a list
+                    values_l = values
+                    # make values a +-separated str to be used
+                    # as a slice for the result str
+                    values = '+'.join(values)
+                codelist = d.local_repr.enum()
+                # codelist for this dim may be missing as for INSEE.
+                # In this case no validation of dim values can be performed.
+                # Ref() returned None if no codelist was found in the message.
+                if codelist:
+                    codes = codelist.keys()
+                    invalid = [v for v in values_l if v not in codes]
+                    if invalid:
+                        # ToDo: attach codelist to exception.
+                        raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
+                                         format(invalid, d.id, codes))
+                    # Check if values are in Contentconstraint if present
+                    if constraint:
+                        try:
+                            invalid = [
+                                v for v in values_l if (d.id, v) not in constraint]
+                            if invalid:
+                                raise ValueError("'{0}' out of content_constraint for '{1}'.".
+                                                 format(invalid, d.id))
+                        except NotImplementedError:
+                            pass
                 part = values
-            except KeyError:
+            else:
+                # Key has no item for this dim
                 part = ''
             parts.append(part)
         return '.'.join(parts)
@@ -664,3 +680,20 @@ class Response(object):
             whatever the LXML deserializer returns.
         '''
         return self.msg._reader.write_source(filename)
+
+
+class ConstraintChecker:
+
+    def __init__(self, dsd, dataflow):
+        self.dsd = dsd
+        self.dataflow = dataflow
+        # Evaluate the constraints
+        # First, get the codelists for the dimensions skipping the time
+        # dimension
+        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
+                      ['TIME', 'TIME_PERIOD']]
+        # Get the set of cod ids for each dimension. The condition works around a bug at INSEE
+        # where the FREQ codelist is missing. See #63
+        codesets = {d.id: frozenset(d.local_repr.enum()) for d in dimensions
+                    if d.local_repr.enum()}
+        # Now get the constraints

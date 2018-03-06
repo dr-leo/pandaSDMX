@@ -14,7 +14,7 @@ This module is part of the pandaSDMX package
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils import DictLike, concat_namedtuples
+from pandasdmx.utils import DictLike, concat_namedtuples, str2bool
 from operator import attrgetter
 from collections import defaultdict
 
@@ -214,11 +214,11 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def is_final(self):
-        return bool(self._reader.read_as_str('isfinal', self))
+        return str2bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def is_external_ref(self):
-        return bool(self._reader.read_as_str('isfinal', self))
+        return str2bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def structure_url(self):
@@ -366,20 +366,17 @@ class ContentConstraint(Constraint):
         self.cube_region = self._reader.read_instance(
             CubeRegion, self, first_only=False)
 
-    def __contains__(self, v):
+    def __contains__(self, key):
         if self.cube_region:
-            result = [v in c for c in self.cube_region]
-            # Remove all cubes where v passed. The remaining ones indicate
-            # fails.
-            if True in result:
-                result.remove(True)
-            if result == []:
-                return True
-            else:
-                raise ValueError('Key outside cube region(s).', v, result)
+            return any(key in c for c in self.cube_region)
         else:
-            raise NotImplementedError(
-                'ContentConstraint does not contain any CubeRegion.')
+            # The case that a constraint does not contain
+            # any cube region could be due to the fact that it is represented by
+            # key sets. However, this is not implemented.
+            # at this stage we simply ignore such constraints for stability.
+            # This should not be a problem as we don't know of any
+            # data provider using such constraints.
+            return True
 
 
 class KeyValue(SDMXObject):
@@ -387,28 +384,37 @@ class KeyValue(SDMXObject):
     def __init__(self, *args, **kwargs):
         super(KeyValue, self).__init__(*args, **kwargs)
         self.id = self._reader.read_as_str('id', self)
-        self.values = self._reader.read_as_str('value', self, first_only=False)
+        self.values = frozenset(
+            self._reader.read_as_str('value', self, first_only=False))
 
 
 class CubeRegion(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(CubeRegion, self).__init__(*args, **kwargs)
-        self.include = bool(self._reader.read_as_str('include', self))
-        keyvalues = self._reader.read_instance(KeyValue, self,
-                                               first_only=False)
-        if keyvalues:
-            self.key_values = {kv.id: kv.values for kv in keyvalues}
-        else:
-            self.key_values = {}
+        self.include = str2bool(self._reader.read_as_str('include', self))
+        self.keyvalues = {kv.id: kv.values
+                          for kv in self._reader.read_instance(KeyValue, self,
+                                                               first_only=False)}
 
-    def __contains__(self, v):
-        key, value = v
-        kv = self.key_values
-        if key not in kv.keys():
-            raise KeyError(
-                'Unknown key: {0}. Allowed keys are: {1}'.format(key, list(kv.keys())))
-        return (value in kv[key]) == self.include
+    def __contains__(self, key):
+        '''
+        args:
+            key(dict): maps keys to values, both str 
+            '''
+        keyvalues = self.keyvalues
+        partial_key = {k: v for k, v in key.items() if k in keyvalues}
+        if self.include:
+            return all(v in keyvalues[k] for k, v in partial_key.items())
+        else:
+            if len(partial_key) == len(keyvalues):
+                # all constrained dimensions are set by partial_key
+                return not all(v in keyvalues[k] for k, v in partial_key.items())
+            else:
+                # key does not contain all constrained dimension. Then the
+                # wildcarded dims may make the key good regardless of the partial key.
+                # We shall thus be generous.
+                return True
 
 
 class Category(Item):
@@ -500,7 +506,7 @@ class Ref(SDMXObject):
                 req = self._reader.request
                 resp = req.get(resource_type=rc_name,
                                resource_id=self.maintainable_parent_id or self.id,
-                               agency_id=self.agency_id, **kwargs)
+                               agency=self.agency_id, **kwargs)
                 rc = getattr(resp.msg, self.rc_name)
                 return rc[self.id]
             else:

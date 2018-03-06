@@ -125,3 +125,9 @@ if sys.version[0] == '3':
     str_type = str
 else:
     str_type = unicode
+
+
+def str2bool(s):
+    if isinstance(s, str_type) and s.lower() == 'false':
+        return False
+    return bool(s)

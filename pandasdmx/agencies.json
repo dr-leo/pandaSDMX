@@ -61,13 +61,13 @@
                 }
             }
         },
-        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "url": "https://www.bdm.insee.fr/series/sdmx",
         "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques"
     },
         "INSEE_S": {
         "id": "FR1",
         "resources": {},
-        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "url": "https://www.bdm.insee.fr/series/sdmx",
         "name": "Institut national de la statistique et des \u00e9tudes \u00e9conomiques - structure-specific data format"
     },
     "OECD": {
@@ -138,7 +138,7 @@
               "ISTAT": { 
         "name": "Italian Statistics Office",
         "id": "ISTAT", 
-        "url": "http://sdmx.istat.it/SDMXWS", 
+        "url": "http://sdmx.istat.it/SDMXWS/rest", 
         "resources": { 
             "data": {  
             "headers": {

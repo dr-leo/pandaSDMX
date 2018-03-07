@@ -680,20 +680,3 @@ class Response(object):
             whatever the LXML deserializer returns.
         '''
         return self.msg._reader.write_source(filename)
-
-
-class ConstraintChecker:
-
-    def __init__(self, dsd, dataflow):
-        self.dsd = dsd
-        self.dataflow = dataflow
-        # Evaluate the constraints
-        # First, get the codelists for the dimensions skipping the time
-        # dimension
-        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
-                      ['TIME', 'TIME_PERIOD']]
-        # Get the set of cod ids for each dimension. The condition works around a bug at INSEE
-        # where the FREQ codelist is missing. See #63
-        codesets = {d.id: frozenset(d.local_repr.enum()) for d in dimensions
-                    if d.local_repr.enum()}
-        # Now get the constraints

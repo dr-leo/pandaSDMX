@@ -412,7 +412,7 @@ class CubeRegion(SDMXObject):
                 return not all(v in keyvalues[k] for k, v in partial_key.items())
             else:
                 # key does not contain all constrained dimension. Then the
-                # wildcarded dims may make the key good regardless of the partial key.
+                # wildcarded dims could make the key good regardless of the partial key.
                 # We shall thus be generous.
                 return True
 
@@ -763,3 +763,45 @@ class DataMessage(Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', DataSet, None)])
+
+
+class Validator:
+
+    def __init__(self, dsd, dataflow):
+        self.dsd = dsd
+        self.dataflow = dataflow
+        # Evaluate the constraints
+        # First, get the codelists for the dimensions skipping the time
+        # dimension
+        self.dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
+                           ['TIME', 'TIME_PERIOD']]
+        # Get the set of code id's for each dimension. The condition works around a bug at INSEE
+        # where the FREQ codelist is missing. See #63
+        self.codesets = {d.id: frozenset(d.local_repr.enum()) for d in dimensions
+                         if d.local_repr.enum()}
+
+    def __contains__(self, key):
+        '''
+        check key against all constraints attached to the DSD
+        or Dataflow provided on instantiation.
+        return True if key satisfies all constraints.
+        '''
+        # First, check ID's and codes against the code lists.
+        dim_names = [d.id for d in self.dimensions]
+        invalid = [d for d in key
+                   if d not in dim_names]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+        # Validate codes against the code lists
+        for k, values in key.items():
+            cl = self.codesets[k]
+            invalid = [v not in cl for v in values]
+            if invalid:
+                raise ValueError("'{0}' not in codelist for dimension '{1}: {2}'".
+                                 format(invalid, k, cl))
+        # Validate key against constraints if any
+        for c in (self.dsd, self.dataflow):
+            for constraint in c.constrained_by:
+                if key not in constraint:
+                    raise ValueError('Key out of constraint', constraint)

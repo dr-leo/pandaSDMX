@@ -135,15 +135,23 @@
      } 
      } 
      },
-              "ISTAT": { 
-        "name": "Italian Statistics Office",
-        "id": "ISTAT", 
+              "ISTAT_S": { 
+        "name": "Italian Statistics Office - structure-specific data",
         "url": "http://sdmx.istat.it/SDMXWS/rest", 
         "resources": { 
             "data": {  
             "headers": {
             "Accept": "application/vnd.sdmx.structurespecificdata+xml"
             } 
+     } 
+}
+},
+              "ISTAT": { 
+        "name": "Italian Statistics Office - generic data",
+        "url": "http://sdmx.istat.it/SDMXWS/rest", 
+        "resources": { 
+            "data": {  
+            "headers": {} 
      } 
 }
 }

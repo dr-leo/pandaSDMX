@@ -481,19 +481,26 @@ class Ref(SDMXObject):
     def maintainable_parent_id(self):
         return self._reader.read_as_str('maintainable_parent_id', self)
 
-    def __call__(self, request=False, **kwargs):
+    def __call__(self, request=False, target_only=True, **kwargs):
         '''
-        Resolv reference. 
-        If `request` is True (defaut: False), and
-        the referenced artefact is not in the same message,
-        a request to the data provider will be made to
-        fetch it. It will use the
-        current Request instance. Thus, requests to
-        other agencies are not supported.
+        Resolv reference.
 
-        kwargs: are passed on to Request.get(). 
+        args:
 
-        return referenced artefact or None if not found. 
+            request(bool): If True (defaut: False), and
+                the referenced artefact is not in the same message,
+                a request to the data provider will be made to
+                fetch it. It will use the
+                current Request instance. Thus, requests to
+                other agencies are not supported.
+            target_only(bool): If True (default), only the referenced artefact 
+                will be returned, otherwise the requested Response instance. Ignored if `request` is False. 
+                The latter is useful if writing to pandas is desired.
+
+            kwargs: are passed on to Request.get(). 
+
+        return referenced artefact or entire Response if requested via http, 
+            or None if artefact was not found in the current message. 
         '''
         rc_name = self._cls2rc_name[self.ref_class]
         try:
@@ -507,8 +514,11 @@ class Ref(SDMXObject):
                 resp = req.get(resource_type=rc_name,
                                resource_id=self.maintainable_parent_id or self.id,
                                agency=self.agency_id, **kwargs)
-                rc = getattr(resp.msg, self.rc_name)
-                return rc[self.id]
+                if target_only:
+                    rc = getattr(resp.msg, rc_name)
+                    return rc[self.id]
+                else:
+                    return resp
             else:
                 return None
 

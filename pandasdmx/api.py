@@ -263,7 +263,7 @@ class Request(object):
         else:
             # Construct URL from args unless ``tofile`` is given
             # Validate args
-            agency = agency or self._agencies[self.agency]['id']
+            agency = agency or self._agencies[self.agency].get('id')
             # Validate resource if no filename is specified
             if not fromfile and resource_type not in self._resources:
                 raise ValueError(
@@ -274,7 +274,7 @@ class Request(object):
             if resource_id and not isinstance(resource_id, (str_type, str)):
                 resource_id = resource_id.id
             # Raise error if agency is JSON-based and resource is not supported by the agency.
-            # Note that SDMX-JSON currently only supports data messags.
+            # Note that SDMX-JSON currently only supports data messages.
             if (self._agencies[self.agency]['resources'].get('data', {}).get('json')
                     and resource_type != 'data'):
                 raise ValueError(

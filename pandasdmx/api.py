@@ -680,3 +680,60 @@ class Response(object):
             whatever the LXML deserializer returns.
         '''
         return self.msg._reader.write_source(filename)
+
+
+class Validator:
+
+    def __init__(self, dataflow):
+        self.dataflow = dataflow
+        self.dsd = dataflow.structure()
+        # Evaluate the constraints
+        # First, get the codelists for the dimensions skipping the time
+        # dimension
+        self.dimensions = [d for d in self.dsd.dimensions.aslist() if d.id not in
+                           ['TIME', 'TIME_PERIOD']]
+        # Get the set of code id's for each dimension. The condition works around a bug at INSEE
+        # where the FREQ codelist is missing. See #63
+        self.codesets = {d.id: frozenset(d.local_repr.enum()) for d in self.dimensions
+                         if d.local_repr.enum()}
+
+    def prepare_key(self, key):
+        '''
+        Split any value of the form 'v1+v2+v3' into a list and
+        return a new key dict. Values that are lists already are 
+        left unchanged.
+        '''
+        return {k: v if isinstance(v, list) else v.split('+')
+                for k, v in key.items()}
+
+    def validate_against_codelists(self, key):
+        '''
+        key: a prepared key, i.e. multiple values within a dimension
+        must be represented as list of strings.
+
+        return True if all keys and values correspond to valid dimension names and related codes.
+        '''
+        # First, check keys against dim IDs
+        dim_ids = [d.id for d in self.dimensions]
+        for k in key:
+            if k not in dim_ids:
+                raise ValueError('Invalid dimension ID {0} in key. Allowed are {1}'.format(
+                    k, dim_ids))
+        # Check values against codelists
+        for k, values in key.items():
+            for v in values:
+                if v not in self.codesets[k]:
+                    raise ValueError(
+                        'Value {0} for dimension {1} is invalid.'.format(v, k))
+
+    def __contains__(self, key):
+        '''
+        check key against all constraints attached to the DSD
+        or Dataflow provided on instantiation.
+        return True if key satisfies all constraints.
+        '''
+        # Validate key against constraints if any
+        for c in (self.dsd, self.dataflow):
+            for constraint in c.constrained_by:
+                if key not in constraint:
+                    raise ValueError('Key out of constraint', constraint)

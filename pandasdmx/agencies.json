@@ -123,8 +123,18 @@
      } 
      } 
      },
-         "INEGI": { 
-        "name": "Instituto Nacional de estatistica y geografìa - INEGI (Mexico)",
+     "INEGI": { 
+        "name": "Instituto Nacional de estatistica y geografìa - INEGI (Mexico) - generic datasets",
+        "id": "INEGI", 
+        "url": "http://sdmx.snieg.mx/service/rest", 
+        "resources": { 
+            "data": { 
+            "headers": {} 
+     } 
+     } 
+     },
+         "INEGI_S": { 
+        "name": "Instituto Nacional de estatistica y geografìa - INEGI (Mexico) - structure-specific datasets",
         "id": "INEGI", 
         "url": "http://sdmx.snieg.mx/service/rest", 
         "resources": { 

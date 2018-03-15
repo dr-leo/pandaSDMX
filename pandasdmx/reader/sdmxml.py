@@ -164,6 +164,7 @@ class Reader(BaseReader):
         model.DataAttribute: 'str:Attribute',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
+        'cuberegion_attribute': 'com:Attribute',
         model.Ref: 'Ref',
         model.Header: 'mes:Header',
         model.Annotation: 'com:Annotations/com:Annotation',

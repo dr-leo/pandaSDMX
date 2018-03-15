@@ -393,16 +393,19 @@ class CubeRegion(SDMXObject):
     def __init__(self, *args, **kwargs):
         super(CubeRegion, self).__init__(*args, **kwargs)
         self.include = str2bool(self._reader.read_as_str('include', self))
-        self.keyvalues = {kv.id: kv.values
+        self.dimension = {kv.id: frozenset(kv.values)
                           for kv in self._reader.read_instance(KeyValue, self,
-                                                               first_only=False)}
+                                                               first_only=False) or frozenset()}
+        self.attribute = {kv.id: frozenset(kv.values)
+                          for kv in self._reader.read_instance(KeyValue, self,
+                                                               first_only=False, offset='cuberegion_attribute') or frozenset()}
 
     def __contains__(self, key):
         '''
         args:
             key(dict): maps keys to values, both str 
             '''
-        keyvalues = self.keyvalues
+        keyvalues = self.dimension
         partial_key = {k: v for k, v in key.items() if k in keyvalues}
         if self.include:
             return all(v in keyvalues[k] for k, v in partial_key.items())

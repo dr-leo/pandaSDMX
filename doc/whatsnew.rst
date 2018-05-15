@@ -7,9 +7,16 @@ What's new?
 v0.9dev (2018-04)
 ----------------------------
 
-* New agencies: Mexican Instituto de estatistica y geografìa (INEGI), and
-  Italian statistics office (ISTAT)
+This version will be the last tested on Python 2.x. Future versions
+will be tested on Python 3.4+ only
+
+New features
+:::::::::::::::
+
+* Added data providers INEGI (Mexico), and Italian statistics office (ISTAT)
 * model: make Ref instances callable for resolving
+* improve loading of structure-specific messages when DSD is not passed / must be requested on the fly
+* process multiple and cascading content constraints as described in the Technical Guide (Chap. 6 of the SDMX 2.1 standard)
 
 
 v0.8.2 (2017-12-21)

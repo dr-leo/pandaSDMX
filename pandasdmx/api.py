@@ -17,7 +17,7 @@ SOAP interface.
 '''
 
 from pandasdmx import remote
-from pandasdmx.utils import str_type, namedtuple_factory
+from pandasdmx.utils import str_type, namedtuple_factory, LazyDict
 import pandas as PD
 from pkg_resources import resource_string
 from importlib import import_module
@@ -531,7 +531,7 @@ class Request(object):
         keys with multiple values per dimension.
         It downloads the complete list of series keys for a dataflow rather than using constraints and DSD. This feature is,
         however, not supported by all data providers.
-        ECB and UNSD are known to work.
+        ECB, IMF_SDMXCENTRAL and UNSD are known to work.
 
         Args:
 
@@ -684,18 +684,31 @@ class Response(object):
 
 class Validator:
 
-    def __init__(self, dataflow):
-        self.dataflow = dataflow
-        self.dsd = dataflow.structure()
-        # Evaluate the constraints
-        # First, get the codelists for the dimensions skipping the time
-        # dimension
-        self.dimensions = [d for d in self.dsd.dimensions.aslist() if d.id not in
-                           ['TIME', 'TIME_PERIOD']]
-        # Get the set of code id's for each dimension. The condition works around a bug at INSEE
-        # where the FREQ codelist is missing. See #63
-        self.codesets = {d.id: frozenset(d.local_repr.enum()) for d in self.dimensions
-                         if d.local_repr.enum()}
+    def __init__(self, constrainables):
+        '''
+        Prepare computation of constrained codelists using the
+        cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
+
+        args:
+            constrainables(iterable): Constrainable artefacts in descending order sorted by 
+                cascading level (e.g., `[DSD, Dataflow]`). At position 0 
+                there must be the DSD.
+        '''
+        self.constrainables = constrainables
+        # The first item must be the DSD.
+        self.dsd = constrainables[0]
+        # First, get the codelists for the dimensions skipping time
+        # dimensions
+        self.dimensions = [d for d in self.dsd.dimensions.aslist()
+                           if not d.id.startswith('TIME')]
+        self.dim_codesets = {d.id: frozenset(d.local_repr.enum())
+                             for d in self.dimensions}
+        # Compute the constrained codelists for each constrainable, dimensions
+        # only, as we do not care about attributes.
+        cur_codesets = self.dim_codesets
+        for c in constrainables:
+            cur_codesets = c.apply(dim_codesets=cur_codesets)
+        self.constrained_codesets = cur_codesets
 
     def prepare_key(self, key):
         '''
@@ -714,17 +727,17 @@ class Validator:
         return True if all keys and values correspond to valid dimension names and related codes.
         '''
         # First, check keys against dim IDs
-        dim_ids = [d.id for d in self.dimensions]
+        dim_ids = list(self.dsd.dimensions)
         for k in key:
             if k not in dim_ids:
-                raise ValueError('Invalid dimension ID {0} in key. Allowed are {1}'.format(
-                    k, dim_ids))
+                raise ValueError('Invalid dimension ID in key:',
+                                 k, dim_ids)
         # Check values against codelists
         for k, values in key.items():
             for v in values:
                 if v not in self.codesets[k]:
                     raise ValueError(
-                        'Value {0} for dimension {1} is invalid.'.format(v, k))
+                        'Value not in codelist.', k, v)
 
     def __contains__(self, key):
         '''
@@ -733,7 +746,7 @@ class Validator:
         return True if key satisfies all constraints.
         '''
         # Validate key against constraints if any
-        for c in (self.dsd, self.dataflow):
-            for constraint in c.constrained_by:
+        for level in (self.dsd, self.dataflow):
+            for constraint in level.constrained_by:
                 if key not in constraint:
                     raise ValueError('Key out of constraint', constraint)

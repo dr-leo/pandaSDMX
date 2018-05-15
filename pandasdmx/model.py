@@ -1,8 +1,7 @@
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014-2018 Dr. Leo <fhaxbox66qgmail.com>
 
 '''
 
@@ -15,8 +14,9 @@ This module is part of the pandaSDMX package
 '''
 
 from pandasdmx.utils import DictLike, concat_namedtuples, str2bool
-from operator import attrgetter
+from operator import attrgetter, or_
 from collections import defaultdict
+from functools import reduce
 
 
 class SDMXObject(object):
@@ -82,6 +82,34 @@ class Constrainable:
             self._constrained_by = [c for c in self._reader.message.constraint.values()
                                     if c.constraint_attachment() is self]
         return self._constrained_by
+
+    def apply(self, dim_codesets=None, attr_codesets=None):
+        '''
+        Compute the constrained code lists as frozensets by
+        merging the constraints resulting from all ContentConstraint instances 
+        into a dict of sets of valid codes 
+        for dimensions and attributes respectively.
+        Each codelist is constrained by at most one Constraint
+        so that no set operations are required.
+
+        Return tuple of constrained_dimensions(dict), constrained_attribute_codes(dict)
+        '''
+        dimension, attribute = {}, {}
+        for c in self.constrained_by:
+            d, a = c.apply(dim_codesets, attr_codesets)
+            if d:
+                dimension.update(d)
+            if a:
+                attribute.update(a)
+        # Fill any empty slots with passed codesets. This implements
+        # the inheritance mechanism.
+        if dim_codesets:
+            for k, v in dim_codesets.items():
+                dimension.setdefault(k, v)
+        if attr_codesets:
+            for k, v in attr_codesets.items():
+                attribute.setdefault(k, v)
+        return dimension, attribute
 
 
 class Annotation(SDMXObject):
@@ -366,17 +394,24 @@ class ContentConstraint(Constraint):
         self.cube_region = self._reader.read_instance(
             CubeRegion, self, first_only=False)
 
-    def __contains__(self, key):
-        if self.cube_region:
-            return any(key in c for c in self.cube_region)
-        else:
-            # The case that a constraint does not contain
-            # any cube region could be due to the fact that it is represented by
-            # key sets. However, this is not implemented.
-            # at this stage we simply ignore such constraints for stability.
-            # This should not be a problem as we don't know of any
-            # data provider using such constraints.
-            return True
+    def apply(self, dim_codesets=None, attr_codesets=None):
+        '''
+        Compute the constrained code lists as frozensets by
+        merging the constraints resulting from all cube regions into a dict of sets of valid codes 
+        for dimensions and attributes respectively.
+        We assume that each codelist is constrained by at most one cube
+        region so that no set operations are required.
+
+        Return tuple of constrained_dimension_codesets(dict), constrained_attribute_codesets(dict)
+        '''
+        dimension, attribute = {}, {}
+        for c in self.cube_region:
+            d, a = c.apply(dim_codesets, attr_codesets)
+            if d:
+                dimension.update(d)
+            if a:
+                attribute.update(a)
+        return dimension, attribute
 
 
 class KeyValue(SDMXObject):
@@ -384,40 +419,62 @@ class KeyValue(SDMXObject):
     def __init__(self, *args, **kwargs):
         super(KeyValue, self).__init__(*args, **kwargs)
         self.id = self._reader.read_as_str('id', self)
-        self.values = frozenset(
-            self._reader.read_as_str('value', self, first_only=False))
+
+    @property
+    def values(self):
+        if not hasattr(self, '_values'):
+            self._values = frozenset(
+                self._reader.read_as_str('value', self, first_only=False)) or frozenset()
+        return self._values
 
 
 class CubeRegion(SDMXObject):
 
     def __init__(self, *args, **kwargs):
+        '''
+        Get the KeyValues and other attributes.
+                '''
         super(CubeRegion, self).__init__(*args, **kwargs)
         self.include = str2bool(self._reader.read_as_str('include', self))
-        self.dimension = {kv.id: frozenset(kv.values)
+        # get any key-values for dimensions
+        self.dimension = {kv.id: kv.values
                           for kv in self._reader.read_instance(KeyValue, self,
-                                                               first_only=False) or frozenset()}
-        self.attribute = {kv.id: frozenset(kv.values)
+                                                               first_only=False)}
+        # get any key-values for attributes
+        self.attribute = {kv.id: kv.values
                           for kv in self._reader.read_instance(KeyValue, self,
-                                                               first_only=False, offset='cuberegion_attribute') or frozenset()}
+                                                               first_only=False, offset='cuberegion_attribute')}
 
-    def __contains__(self, key):
+    def apply(self, dim_codesets=None, attr_codesets=None):
         '''
+        Compute the code lists constrained by
+        the cube region as frozensets.
+
         args:
-            key(dict): maps keys to values, both str 
-            '''
-        keyvalues = self.dimension
-        partial_key = {k: v for k, v in key.items() if k in keyvalues}
-        if self.include:
-            return all(v in keyvalues[k] for k, v in partial_key.items())
-        else:
-            if len(partial_key) == len(keyvalues):
-                # all constrained dimensions are set by partial_key
-                return not all(v in keyvalues[k] for k, v in partial_key.items())
-            else:
-                # key does not contain all constrained dimension. Then the
-                # wildcarded dims could make the key good regardless of the partial key.
-                # We shall thus be generous.
-                return True
+            dim_codesets(dict): maps dim IDs to 
+                the referenced codelist represented by a frozenset.
+                The set may or may not be constrained by a jigher-level
+                ContentConstraint. See the 
+                Technical Guideline (Part 6 of the SDMX Standard). Default is None (disregard dimensions)
+            attr_codesets(dict): same as above, but for attributes as 
+                specified by a DSD.
+
+        Return tuple of constrained_dimensions(dict), constrained_attribute_codes(dict)
+        '''
+        dimension = attribute = None
+        if dim_codesets:
+            dimension = {k: (self.dimension[k] & dim_codesets[k])
+                         for k in self.dimension}
+            if not self.include:
+                for k, v in dimension.items():
+                    dimension[k] = dim_codesets[k] - v
+        if attr_codesets:
+            attribute = {k: (self.attribute[k] & attr_codesets[k])
+                         for k in self.attribute}
+            if not self.include:
+                for k, v in attribute.items():
+                    attribute[k] = attr_codesets[k] - v
+        return dimension, attribute
 
 
 class Category(Item):

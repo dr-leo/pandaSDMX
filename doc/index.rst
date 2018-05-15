@@ -1,7 +1,6 @@
 pandaSDMX: Statistical Data and Metadata eXchange in Python
 =============================================================
 
-
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ 
 client to retrieve and acquire statistical data
 and metadata disseminated in
@@ -24,6 +23,9 @@ configured by the user):
 * `Eurostat <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`_
 * `French National Institute for Statistics (INSEE) 
   <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`_
+* `Instituto Nacional de la Estadìstica y Geografìa - INEGI (Mexico)
+  <http://www.inegi.org.mx/default.aspx>`_   
+* `Italian statistics Office (ISTAT) <http://www.istat.it/en/>`_
 * `International Monetary Fund (IMF) - SDMX Central only 
   <https://sdmxcentral.imf.org/>`_   
 * `Organisation for Economic Cooperation and Development (OECD)
@@ -38,10 +40,10 @@ Main features
 
 * support for many SDMX features including
 
-  - both generic and structure-specific data sets in SDMXML format 
+  - generic and structure-specific data sets in SDMXML format 
   - data sets in SDMXJSON format  
   - data structure definitions, code lists and concept schemes
-  - dataflow definitions and content-constraints
+  - dataflow definitions, provision agreements, and content-constraints
   - categorisations and category schemes
 
 * pythonic representation of the SDMX information model  
@@ -104,9 +106,9 @@ Quick install
 pandaSDMX Links
 -------------------------------
 
-* `Download the latest stable version from the Python package index <https://pypi.python.org/pypi/pandaSDMX>`_
-* `Mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_  
+* `PyPI <https://pypi.python.org/pypi/pandaSDMX>`_
 * `github <https://github.com/dr-leo/pandaSDMX>`_
+* `Google group <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_
 * `Official SDMX website <http://www.sdmx.org>`_ 
  
 Table of contents

@@ -460,7 +460,6 @@ class Request(object):
                     codes = codelist.keys()
                     invalid = [v for v in values_l if v not in codes]
                     if invalid:
-                        # ToDo: attach codelist to exception.
                         raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
                                          format(invalid, d.id, codes))
                     # Check if values are in Contentconstraint if present
@@ -684,13 +683,13 @@ class Response(object):
 
 class Validator:
 
-    def __init__(self, constrainables):
+    def __init__(self, *constrainables):
         '''
         Prepare computation of constrained codelists using the
         cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
 
         args:
-            constrainables(iterable): Constrainable artefacts in descending order sorted by 
+            constrainables(model.Constrainable): Constrainable artefacts in descending order sorted by 
                 cascading level (e.g., `[DSD, Dataflow]`). At position 0 
                 there must be the DSD.
         '''
@@ -715,6 +714,9 @@ class Validator:
         Split any value of the form 'v1+v2+v3' into a list and
         return a new key dict. Values that are lists already are 
         left unchanged.
+
+        This method is called by __in__. Thus it is not intended 
+        to be called from application code.
         '''
         return {k: v if isinstance(v, list) else v.split('+')
                 for k, v in key.items()}
@@ -724,14 +726,17 @@ class Validator:
         key: a prepared key, i.e. multiple values within a dimension
         must be represented as list of strings.
 
+        This method is called by __in__. Thus it is not intended 
+        to be called from application code.
+
         return True if all keys and values correspond to valid dimension names and related codes.
         '''
         # First, check keys against dim IDs
         dim_ids = list(self.dsd.dimensions)
         for k in key:
             if k not in dim_ids:
-                raise ValueError('Invalid dimension ID in key:',
-                                 k, dim_ids)
+                raise ValueError(
+                    'Invalid dimension name {0}, allowed are: {1}'.format(k, dim_ids))
         # Check values against codelists
         for k, values in key.items():
             for v in values:
@@ -745,8 +750,13 @@ class Validator:
         or Dataflow provided on instantiation.
         return True if key satisfies all constraints.
         '''
+        # Convert any str-type value sets to lists
+        key = self.prepare_key(key)
+        # validate key against codelists
+        self.validate_against_codelists(key)
         # Validate key against constraints if any
-        for level in (self.dsd, self.dataflow):
-            for constraint in level.constrained_by:
-                if key not in constraint:
-                    raise ValueError('Key out of constraint', constraint)
+        for k, values in key.items():
+            for v in values:
+                if v not in self.constrained_codesets[k]:
+                    raise ValueError(
+                        'Value not in codelist.', k, v)

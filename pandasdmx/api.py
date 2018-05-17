@@ -417,14 +417,10 @@ class Request(object):
         # validate key against constrained codelists
         if key in val:
             # construct the key string for the URL
-            parts = []
-            # Iterate over the dimensions. If the key dict
-            # contains a value for the dimension, append it to the 'parts' list. Otherwise
-            # append ''. Then join the parts to form the dotted str.
-            for d in val.dimensions:
-                values = '+'.join(key[d.id]) if d.id in key else ''
-                parts.append(values)
-        return '.'.join(parts)
+            # Iterate over the dimensions
+            parts = ['+'.join(key[d.id]) if d.id in key else ''
+                     for d in val.dimensions]
+            return '.'.join(parts)
 
     def _make_key_from_series(self, flow_id, key, dsd):
         '''
@@ -677,16 +673,18 @@ class Validator:
         '''
         # First, check keys against dim IDs
         dim_ids = list(self.dsd.dimensions)
-        for k in key:
-            if k not in dim_ids:
-                raise ValueError(
-                    'Invalid dimension name {0}, allowed are: {1}'.format(k, dim_ids))
+        invalid = [k for k in key if k not in dim_ids]
+        raise ValueError(
+            'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
         # Check values against codelists
+        invalid = defaultdict(list)
         for k, values in key.items():
             for v in values:
                 if v not in self.codesets[k]:
-                    raise ValueError(
-                        'Value not in codelist.', k, v)
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in codelists.', invalid)
 
     def __contains__(self, key):
         '''
@@ -697,8 +695,11 @@ class Validator:
         # validate key against codelists
         self.validate_against_codelists(key)
         # Validate key against constraints if any
+        invalid = defaultdict(list)
         for k, values in key.items():
             for v in values:
                 if v not in self.constrained_codesets[k]:
-                    raise ValueError(
-                        'Value not in codelist.', k, v)
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in constrained codelists.', invalid)

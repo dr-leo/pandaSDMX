@@ -26,6 +26,7 @@ from time import sleep
 from functools import partial, reduce
 from itertools import chain, product
 from operator import and_
+from collections import defaultdict
 import logging
 import json
 
@@ -692,7 +693,7 @@ class Validator:
         or Dataflow provided on instantiation.
         return True if key satisfies all constraints.
         '''
-        # validate key against codelists
+        # validate key against unconstrained codelists
         self.validate_against_codelists(key)
         # Validate key against constraints if any
         invalid = defaultdict(list)

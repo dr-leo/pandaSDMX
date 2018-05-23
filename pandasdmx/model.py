@@ -438,12 +438,12 @@ class CubeRegion(SDMXObject):
         self.include = str2bool(self._reader.read_as_str('include', self))
         # get any key-values for dimensions
         self.dimension = {kv.id: kv.values
-                          for kv in self._reader.read_instance(KeyValue, self,
-                                                               first_only=False)}
+                          for kv in (self._reader.read_instance(KeyValue, self,
+                                                                first_only=False) or [])}
         # get any key-values for attributes
         self.attribute = {kv.id: kv.values
-                          for kv in self._reader.read_instance(KeyValue, self,
-                                                               first_only=False, offset='cuberegion_attribute')}
+                          for kv in (self._reader.read_instance(KeyValue, self,
+                                                                first_only=False, offset='cuberegion_attribute') or [])}
 
     def apply(self, dim_codesets=None, attr_codesets=None):
         '''

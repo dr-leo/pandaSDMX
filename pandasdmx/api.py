@@ -183,7 +183,7 @@ class Request(object):
             version=None, key='',
             params={}, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None, writer=None, dsd=None):
+            memcache=None, writer=None, dsd=None, series_keys=True):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -248,7 +248,13 @@ class Request(object):
             Should inherit from pandasdmx.writer.BaseWriter. Defaults to None, 
             i.e. one of the included writers is selected as appropriate.
         dsd(model.DataStructure): DSD to be passed on to the sdmxml reader
-            to process a structure-specific dataset without an incidental http request. 
+            to process a structure-specific dataset without an incidental http request.
+        series_keys(bool):
+            If True (default), use the SeriesKeysOnly http param if supported by the
+            agency (e.g. ECB) to download all valid key combinations. This is the most
+            accurate key validation method. Otherwise, i.e.
+            if False or the agency does not support SeriesKeysOnly requests, key validation
+            is performed using codelists and content constraints, if any.
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -287,7 +293,8 @@ class Request(object):
             # API spec.
             if resource_type == 'data' and isinstance(key, dict):
                 # select validation method based on agency capabilities
-                if self._agencies[self.agency].get('supports_series_keys_only'):
+                if (series_keys and
+                        self._agencies[self.agency].get('supports_series_keys_only')):
                     key = self._make_key_from_series(resource_id, key, dsd)
                 else:
                     key = self._make_key_from_dsd(resource_id, key)
@@ -398,6 +405,15 @@ class Request(object):
             self.cache[memcache] = r
         return r
 
+    def prepare_key(self, key):
+        '''
+        Split any value of the form 'v1+v2+v3' into a list and
+        return a new key dict. Values that are lists already are 
+        left unchanged.
+        '''
+        return {k: v if isinstance(v, list) else v.split('+')
+                for k, v in key.items()}
+
     def _make_key_from_dsd(self, flow_id, key):
         '''
         Download the dataflow def. and DSD and validate 
@@ -405,17 +421,15 @@ class Request(object):
 
         Return: key(str)
         '''
-        # get the dataflow and the DSD ID
-        dataflow = self.get('dataflow', flow_id,
-                            memcache='dataflow' + flow_id)
-        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
-        dsd_resp = self.get('datastructure', dsd_id,
-                            memcache='datastructure' + dsd_id)
-        dsd = dsd_resp.msg.datastructure[dsd_id]
-        val = Validator(dsd, dataflow)
+        # get dataflow and DSD ID
+        dataflow = self.dataflow(flow_id,
+                                 memcache='dataflow' + flow_id).dataflow[flow_id]
+        dsd = dataflow.structure(request=True,
+                                 memcache='datastructure' + flow_id)
         # normalize key making str-type, '+'-separated values a list
-        key = val.prepare_key(key)
+        key = self.prepare_key(key)
         # validate key against constrained codelists
+        val = Validator(dsd, dataflow)
         if key in val:
             # construct the key string for the URL
             # Iterate over the dimensions
@@ -445,13 +459,9 @@ class Request(object):
             raise ValueError(
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
         # Pre-process key by expanding multiple values as list
-        key = {k: v.split('+') if '+' in v else v for k, v in key.items()}
+        key_l = self.prepare_key(key)
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
-        # First, wrap each single dim value in a list to allow
-        # uniform treatment of single and multiple dim values.
-        key_l = {k: [v] if isinstance(v, str_type) else v
-                 for k, v in key.items()}
         # Iterate over the dimensions. If the key dict
         # contains an allowed value for the dimension,
         # it will become part of the string.
@@ -507,8 +517,7 @@ class Request(object):
 
         # So there is a key specifying at least one dimension value.
         # Wrap single values in 1-elem list for uniform treatment
-        key_l = {k: [v] if isinstance(v, str_type) else v
-                 for k, v in key.items()}
+        key_l = self.prepare_key(key)
         # order dim_names that are present in the key
         dim_names = [k for k in all_keys if k in key]
         # Drop columns that are not in the key
@@ -650,17 +659,8 @@ class Validator:
         # only, as we do not care about attributes.
         cur_codesets = self.dim_codesets
         for c in constrainables:
-            cur_codesets = c.apply(dim_codesets=cur_codesets)
+            cur_codesets, _ = c.apply(dim_codesets=cur_codesets)
         self.constrained_codesets = cur_codesets
-
-    def prepare_key(self, key):
-        '''
-        Split any value of the form 'v1+v2+v3' into a list and
-        return a new key dict. Values that are lists already are 
-        left unchanged.
-        '''
-        return {k: v if isinstance(v, list) else v.split('+')
-                for k, v in key.items()}
 
     def validate_against_codelists(self, key):
         '''
@@ -675,13 +675,14 @@ class Validator:
         # First, check keys against dim IDs
         dim_ids = list(self.dsd.dimensions)
         invalid = [k for k in key if k not in dim_ids]
-        raise ValueError(
-            'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
+        if invalid:
+            raise ValueError(
+                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
         # Check values against codelists
         invalid = defaultdict(list)
         for k, values in key.items():
             for v in values:
-                if v not in self.codesets[k]:
+                if v not in self.dim_codesets[k]:
                     invalid[k].append(v)
         if invalid:
             raise ValueError(
@@ -704,3 +705,4 @@ class Validator:
         if invalid:
             raise ValueError(
                 'Value(s) not in constrained codelists.', invalid)
+        return True

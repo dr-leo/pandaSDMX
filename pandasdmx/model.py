@@ -828,6 +828,14 @@ class StructureMessage(Message):
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])
 
+    def set_validator(self, validator):
+        '''
+        Attach validator instance to validate codelists
+        against constraints or series keys. This mey be used by writers exporting
+        constrained codelists. See e.g. pandasdmx.writer.structure2pd. 
+        '''
+        self.validator = validator
+
 
 class DataMessage(Message):
     _content_types = Message._content_types[:]

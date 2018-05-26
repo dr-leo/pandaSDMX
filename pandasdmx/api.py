@@ -265,6 +265,9 @@ class Request(object):
         if memcache in self.cache:
             return self.cache[memcache]
 
+        # default value for key validator to be passed to the Response instance
+        val = None
+
         if url:
             base_url = url
         else:
@@ -297,7 +300,7 @@ class Request(object):
                         self._agencies[self.agency].get('supports_series_keys_only')):
                     key = self._make_key_from_series(resource_id, key, dsd)
                 else:
-                    key = self._make_key_from_dsd(resource_id, key)
+                    key, val = self._make_key_from_dsd(resource_id, key)
 
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
@@ -374,6 +377,8 @@ class Request(object):
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
             msg = reader_cls(self, dsd).initialize(source)
+            if val:
+                msg.set_validator(val)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             logger.info('Footer found in SDMX message.')
@@ -419,7 +424,7 @@ class Request(object):
         Download the dataflow def. and DSD and validate 
         key(dict) against it. 
 
-        Return: key(str)
+        Return: tuple (key(str), validator(Validator))
         '''
         # get dataflow and DSD ID
         dataflow = self.dataflow(flow_id,
@@ -435,7 +440,7 @@ class Request(object):
             # Iterate over the dimensions
             parts = ['+'.join(key[d.id]) if d.id in key else ''
                      for d in val.dimensions]
-            return '.'.join(parts)
+            return '.'.join(parts), val
 
     def _make_key_from_series(self, flow_id, key, dsd):
         '''
@@ -567,7 +572,8 @@ class Response(object):
             Arguments are propagated to the writer.
     '''
 
-    def __init__(self, msg, url, headers, status_code, writer=None):
+    def __init__(self, msg, url, headers, status_code,
+                 writer=None):
         '''
         Set the main attributes and instantiate the writer if given.
 
@@ -577,7 +583,6 @@ class Response(object):
             headers(dict): http headers 
             status_code(int): the status code returned by the server
             writer(str): the module path for the writer class
-
         '''
         self.msg = msg
         self.url = url
@@ -601,7 +606,8 @@ class Response(object):
             self._writer = None
 
     def write(self, source=None, **kwargs):
-        '''Wrappe    r to call the writer's write method if present.
+        '''
+        Wrapper to call the writer's write method if present.
 
         Args:
             source(pandasdmx.model.Message, iterable): stuff to be written.
@@ -649,18 +655,23 @@ class Validator:
         self.constrainables = constrainables
         # The first item must be the DSD.
         self.dsd = constrainables[0]
-        # First, get the codelists for the dimensions skipping time
-        # dimensions
+        # First, get the codelists for the components (dimensions and attributes)
+        # represented by codelists (this excludes TIME_PERIOD etc.)
         self.dimensions = [d for d in self.dsd.dimensions.aslist()
-                           if not d.id.startswith('TIME')]
+                           if d.local_repr.enum()]
+        self.attributes = [d for d in self.dsd.attributes.aslist()
+                           if d.local_repr.enum()]
         self.dim_codesets = {d.id: frozenset(d.local_repr.enum())
                              for d in self.dimensions}
-        # Compute the constrained codelists for each constrainable, dimensions
-        # only, as we do not care about attributes.
-        cur_codesets = self.dim_codesets
+        self.attr_codesets = {d.id: frozenset(d.local_repr.enum())
+                              for d in self.attributes}
+        # Compute the constrained codelists for each constrainable
+        cur_dim_codesets, cur_attr_codesets = self.dim_codesets, self.attr_codesets
         for c in constrainables:
-            cur_codesets, _ = c.apply(dim_codesets=cur_codesets)
-        self.constrained_codesets = cur_codesets
+            cur_dim_codesets, cur_attr_codesets = c.apply(
+                cur_dim_codesets, cur_attr_codesets)
+        self.constrained_codesets = cur_dim_codesets
+        self.constrained_codesets.update(cur_attr_codesets)
 
     def validate_against_codelists(self, key):
         '''

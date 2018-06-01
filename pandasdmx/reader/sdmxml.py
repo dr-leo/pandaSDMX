@@ -40,6 +40,7 @@ class Reader(BaseReader):
         root = tree.getroot()
         if root.tag.endswith('Structure'):
             msg = model.StructureMessage(self, root)
+
         elif (root.tag.endswith('GenericTimeSeriesData')
               or root.tag.endswith('GenericData')):
             msg = model.DataMessage(self, root)

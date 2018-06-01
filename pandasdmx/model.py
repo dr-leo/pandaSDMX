@@ -379,6 +379,142 @@ class ConceptScheme(ItemScheme):
     _get_items = Concept
 
 
+class CodelistHandler:
+    '''
+    High-level API implementing the
+    application of content constraints to codelists. It is primarily
+    used as a mixin to StructureMessage instances containing codelists,
+    a DSD, Dataflow and related constraints. However, it
+    may also be used stand-online. It computes
+    the constrained codelists in collaboration with 
+    Constrainable, ContentConstraint and Cube Region classes. 
+    '''
+
+    def __init__(self, *args, constrainables=[], request_dsd=False, **kwargs):
+        '''
+        Prepare computation of constrained codelists using the
+        cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
+
+        args:
+            constrainables(model.Constrainable): Constrainable artefacts in descending order sorted by 
+                cascading level (e.g., `[DSD, Dataflow]`). At position 0 
+                there must be the DSD.
+        '''
+        super(CodelistHandler, self).__init__(*args, **kwargs)
+        if constrainables:
+            self.__constrainables = constrainables
+        elif (hasattr(self, 'constraint') and hasattr(self, 'datastructure')
+              and hasattr(self, 'codelist')):
+            self.in_codelists = self._in_codelists
+            self.in_constraints = self._in_constraints
+
+    @property
+    def _constrainables(self):
+        if not hasattr(self, '__constrainables'):
+            if (hasattr(self, 'dataflow') and len(self.dataflow) == 1
+                    and hasattr(self, 'datastructure')):
+                flow = self.dataflow.aslist()[0]
+                self.__constrainables = [flow.structure(), flow]
+                if hasattr(self, 'provisionagreement'):
+                    for p in self.provisionagreement.values():
+                        if flow in p.constrained_by:
+                            self.__constrainables.append(p)
+                            break
+        return self.__constrainables
+
+    @property
+    def _dimensions(self):
+        '''
+        get the codelists for dimensions 
+        represented by codelists (this excludes TIME_PERIOD etc.)
+        '''
+        if not hasattr(self, '__dimensions'):
+            self.__dimensions = [d for d in self._constrainables[0].dimensions.aslist()
+                                 if d.local_repr.enum]
+        return self.__dimensions
+
+    @property
+    def _attributes(self):
+        '''
+        get the codelists for attributes 
+        represented by codelists 
+        '''
+        if not hasattr(self, '__attributes'):
+            self.__attributes = [d for d in self._constrainables[0].attributes.aslist()
+                                 if d.local_repr.enum]
+        return self.__attributes
+
+    @property
+    def _dim_codesets(self):
+        if not hasattr(self, '__dim_codesets'):
+            self.__dim_codesets = DictLike({d.id: frozenset(d.local_repr.enum())
+                                            for d in self._dimensions})
+        return self.__dim_codesets
+
+    @property
+    def _attr_codesets(self):
+        if not hasattr(self, '__attr_codesets'):
+            self.__attr_codesets = DictLike({d.id: frozenset(d.local_repr.enum())
+                                             for d in self._attributes})
+        return self.__attr_codesets
+
+    @property
+    def _constrained_codesets(self):
+        if not hasattr(self, '__constrained_codesets'):
+            cur_dim_codesets, cur_attr_codesets = self._dim_codesets, self._attr_codesets
+            for c in self._constrainables:
+                cur_dim_codesets, cur_attr_codesets = c.apply(
+                    cur_dim_codesets, cur_attr_codesets)
+            self.__constrained_codesets = DictLike(cur_dim_codesets)
+            self.__constrained_codesets.update(cur_attr_codesets)
+        return self.__constrained_codesets
+
+    def _in_codelists(self, key):
+        '''
+        key: a prepared key, i.e. multiple values within a dimension
+        must be represented as list of strings.
+
+        This method is called by __in__. Thus it is not intended 
+        to be called from application code.
+
+        return True if all keys and values correspond to valid dimension names and related codes.
+        '''
+        # First, check keys against dim IDs
+        invalid = [k for k in key if k not in self._dim_codesets]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
+        # Check values against codelists
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._dim_codesets[k]:
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in codelists.', invalid)
+        return True
+
+    def _in_constraints(self, key):
+        '''
+        check key against all constraints attached to the DSD
+        or Dataflow provided on instantiation.
+        return True if key satisfies all constraints.
+        '''
+        # validate key against unconstrained codelists
+        self._in_codelists(key)
+        # Validate key against constraints if any
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._constrained_codesets[k]:
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in constrained codelists.', invalid)
+        return True
+
+
 class Constraint(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
@@ -813,7 +949,7 @@ class Message(SDMXObject):
                 setattr(self, name, payload)
 
 
-class StructureMessage(Message):
+class StructureMessage(CodelistHandler, Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('constraint', 'read_identifiables', ContentConstraint, None),
@@ -827,14 +963,6 @@ class StructureMessage(Message):
             ProvisionAgreement, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])
-
-    def set_validator(self, validator):
-        '''
-        Attach validator instance to validate codelists
-        against constraints or series keys. This mey be used by writers exporting
-        constrained codelists. See e.g. pandasdmx.writer.structure2pd. 
-        '''
-        self.validator = validator
 
 
 class DataMessage(Message):

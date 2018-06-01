@@ -377,8 +377,6 @@ class Request(object):
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
             msg = reader_cls(self, dsd).initialize(source)
-            if val:
-                msg.set_validator(val)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             logger.info('Footer found in SDMX message.')
@@ -424,17 +422,15 @@ class Request(object):
         Download the dataflow def. and DSD and validate 
         key(dict) against it. 
 
-        Return: tuple (key(str), validator(Validator))
+        Return: key(str)
         '''
         # get dataflow and DSD ID
-        dataflow = self.dataflow(flow_id,
-                                 memcache='dataflow' + flow_id).dataflow[flow_id]
-        dsd = dataflow.structure(request=True,
-                                 memcache='datastructure' + flow_id)
+        dataflow_msg = self.dataflow(flow_id,
+                                     memcache='dataflow' + flow_id).msg
         # normalize key making str-type, '+'-separated values a list
         key = self.prepare_key(key)
         # validate key against constrained codelists
-        val = Validator(dsd, dataflow)
+        val = dataflow_msg.codelist_handler
         if key in val:
             # construct the key string for the URL
             # Iterate over the dimensions
@@ -638,82 +634,3 @@ class Response(object):
             whatever the LXML deserializer returns.
         '''
         return self.msg._reader.write_source(filename)
-
-
-class Validator:
-
-    def __init__(self, *constrainables):
-        '''
-        Prepare computation of constrained codelists using the
-        cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
-
-        args:
-            constrainables(model.Constrainable): Constrainable artefacts in descending order sorted by 
-                cascading level (e.g., `[DSD, Dataflow]`). At position 0 
-                there must be the DSD.
-        '''
-        self.constrainables = constrainables
-        # The first item must be the DSD.
-        self.dsd = constrainables[0]
-        # First, get the codelists for the components (dimensions and attributes)
-        # represented by codelists (this excludes TIME_PERIOD etc.)
-        self.dimensions = [d for d in self.dsd.dimensions.aslist()
-                           if d.local_repr.enum()]
-        self.attributes = [d for d in self.dsd.attributes.aslist()
-                           if d.local_repr.enum()]
-        self.dim_codesets = {d.id: frozenset(d.local_repr.enum())
-                             for d in self.dimensions}
-        self.attr_codesets = {d.id: frozenset(d.local_repr.enum())
-                              for d in self.attributes}
-        # Compute the constrained codelists for each constrainable
-        cur_dim_codesets, cur_attr_codesets = self.dim_codesets, self.attr_codesets
-        for c in constrainables:
-            cur_dim_codesets, cur_attr_codesets = c.apply(
-                cur_dim_codesets, cur_attr_codesets)
-        self.constrained_codesets = cur_dim_codesets
-        self.constrained_codesets.update(cur_attr_codesets)
-
-    def validate_against_codelists(self, key):
-        '''
-        key: a prepared key, i.e. multiple values within a dimension
-        must be represented as list of strings.
-
-        This method is called by __in__. Thus it is not intended 
-        to be called from application code.
-
-        return True if all keys and values correspond to valid dimension names and related codes.
-        '''
-        # First, check keys against dim IDs
-        dim_ids = list(self.dsd.dimensions)
-        invalid = [k for k in key if k not in dim_ids]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
-        # Check values against codelists
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self.dim_codesets[k]:
-                    invalid[k].append(v)
-        if invalid:
-            raise ValueError(
-                'Value(s) not in codelists.', invalid)
-
-    def __contains__(self, key):
-        '''
-        check key against all constraints attached to the DSD
-        or Dataflow provided on instantiation.
-        return True if key satisfies all constraints.
-        '''
-        # validate key against unconstrained codelists
-        self.validate_against_codelists(key)
-        # Validate key against constraints if any
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self.constrained_codesets[k]:
-                    invalid[k].append(v)
-        if invalid:
-            raise ValueError(
-                'Value(s) not in constrained codelists.', invalid)
-        return True

@@ -423,39 +423,43 @@ class CodelistHandler:
         return self.__constrainables
 
     @property
-    def _dimensions(self):
+    def _dim_ids(self):
         '''
-        get the codelists for dimensions 
+        get the IDs of dimensions which are 
         represented by codelists (this excludes TIME_PERIOD etc.)
         '''
-        if not hasattr(self, '__dimensions'):
-            self.__dimensions = [d for d in self._constrainables[0].dimensions.aslist()
-                                 if d.local_repr.enum]
-        return self.__dimensions
+        if not hasattr(self, '__dim_ids'):
+            self.__dim_ids = [d.id for d in self._constrainables[0].dimensions.aslist()
+                              if d.local_repr.enum]
+        return self.__dim_ids
 
     @property
-    def _attributes(self):
+    def _attr_ids(self):
         '''
-        get the codelists for attributes 
+        get the IDs of attributes which are 
         represented by codelists 
         '''
-        if not hasattr(self, '__attributes'):
-            self.__attributes = [d for d in self._constrainables[0].attributes.aslist()
-                                 if d.local_repr.enum]
-        return self.__attributes
+        if not hasattr(self, '__attr_ids'):
+            self.__attr_ids = [d.id for d in self._constrainables[0].attributes.aslist()
+                               if d.local_repr.enum]
+        return self.__attr_ids
 
     @property
     def _dim_codesets(self):
         if not hasattr(self, '__dim_codesets'):
+            enum_components = [d for d in self._constrainables[0].dimensions.aslist()
+                               if d.local_repr.enum]
             self.__dim_codesets = DictLike({d.id: frozenset(d.local_repr.enum())
-                                            for d in self._dimensions})
+                                            for d in enum_components})
         return self.__dim_codesets
 
     @property
     def _attr_codesets(self):
         if not hasattr(self, '__attr_codesets'):
+            enum_components = [d for d in self._constrainables[0].attributes.aslist()
+                               if d.local_repr.enum]
             self.__attr_codesets = DictLike({d.id: frozenset(d.local_repr.enum())
-                                             for d in self._attributes})
+                                             for d in enum_components})
         return self.__attr_codesets
 
     @property
@@ -483,7 +487,7 @@ class CodelistHandler:
         invalid = [k for k in key if k not in self._dim_codesets]
         if invalid:
             raise ValueError(
-                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, dim_ids))
+                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, self._dim_ids))
         # Check values against codelists
         invalid = defaultdict(list)
         for k, values in key.items():
@@ -493,7 +497,6 @@ class CodelistHandler:
         if invalid:
             raise ValueError(
                 'Value(s) not in codelists.', invalid)
-        return True
 
     def _in_constraints(self, key):
         '''
@@ -512,7 +515,6 @@ class CodelistHandler:
         if invalid:
             raise ValueError(
                 'Value(s) not in constrained codelists.', invalid)
-        return True
 
 
 class Constraint(MaintainableArtefact):
@@ -969,3 +971,17 @@ class DataMessage(Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', DataSet, None)])
+
+    @property
+    def _dim_ids(self):
+        if not hasattr(self, '__dim_ids'):
+            self.__dim_ids = next(self.series).key._fields
+        return self.__dim_ids
+
+    @property
+    def _dim_codesets(self):
+        if not hasattr(self, '__dim_codesets'):
+            keys = (s.key for s in self.series)
+            self.__dim_codesets = {k: frozenset(v)
+                                   for k, v in zip(self._dim_ids, zip(*keys))}
+        return self.__dim_codesets

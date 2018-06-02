@@ -265,9 +265,6 @@ class Request(object):
         if memcache in self.cache:
             return self.cache[memcache]
 
-        # default value for key validator to be passed to the Response instance
-        val = None
-
         if url:
             base_url = url
         else:
@@ -293,14 +290,16 @@ class Request(object):
             # If key is a dict, validate items against the DSD
             # and construct the key string which becomes part of the URL
             # Otherwise, do nothing as key must be a str confirming to the REST
-            # API spec.
+            # API specs.
             if resource_type == 'data' and isinstance(key, dict):
+                # normalize key making str-type, '+'-separated values a list
+                key = self.prepare_key(key)
                 # select validation method based on agency capabilities
                 if (series_keys and
                         self._agencies[self.agency].get('supports_series_keys_only')):
-                    key = self._make_key_from_series(resource_id, key, dsd)
+                    key = self._make_key_from_series(resource_id, key)
                 else:
-                    key, val = self._make_key_from_dsd(resource_id, key)
+                    key = self._make_key_from_dsd(resource_id, key)
 
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
@@ -427,18 +426,14 @@ class Request(object):
         # get dataflow and DSD ID
         dataflow_msg = self.dataflow(flow_id,
                                      memcache='dataflow' + flow_id).msg
-        # normalize key making str-type, '+'-separated values a list
-        key = self.prepare_key(key)
         # validate key against constrained codelists
-        val = dataflow_msg.codelist_handler
-        if key in val:
-            # construct the key string for the URL
-            # Iterate over the dimensions
-            parts = ['+'.join(key[d.id]) if d.id in key else ''
-                     for d in val.dimensions]
-            return '.'.join(parts), val
+        dataflow_msg.in_constraints(key)
+        # construct the key string for the URL
+        # Iterate over the dimensions
+        parts = ['+'.join(key.get(i, [''])) for i in dataflow_msg._dim_ids]
+        return '.'.join(parts)
 
-    def _make_key_from_series(self, flow_id, key, dsd):
+    def _make_key_from_series(self, flow_id, key):
         '''
         Get all series keys by calling
         self.series_keys, and validate 
@@ -450,8 +445,9 @@ class Request(object):
         Return: key(str) 
         '''
         # get all series keys
-        all_keys = self.series_keys(flow_id, dsd=dsd)
-        dim_names = list(all_keys)
+        resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
+        all_keys = self.series_keys(flow_id)
+        dim_names = resp.msg._dim_ids
         # Validate the key dict
         # First, check correctness of dimension names
         invalid = [d for d in key
@@ -459,24 +455,20 @@ class Request(object):
         if invalid:
             raise ValueError(
                 'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
-        # Pre-process key by expanding multiple values as list
-        key_l = self.prepare_key(key)
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
         # Iterate over the dimensions. If the key dict
         # contains an allowed value for the dimension,
         # it will become part of the string.
         invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
-                                            for k, vl in key_l.items())))
+                                            for k, vl in key.items())))
         if invalid:
             raise ValueError("The following dimension values are invalid: {0}".
                              format(invalid))
         # Generate the 'Val1+Val2' notation for multiple dim values and remove the
         # lists
-        for k, v in key_l.items():
-            key_l[k] = '+'.join(v)
-        # assemble the key string which goes into the URL
-        parts = [key_l.get(name, '') for name in dim_names]
+        parts = ['+'.join(key[d.id]) if d.id in key else ''
+                 for d in dim_names]
         return '.'.join(parts)
 
     def preview_data(self, flow_id, key=None, count=True, total=True, dsd=None):

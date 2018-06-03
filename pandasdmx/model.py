@@ -379,7 +379,53 @@ class ConceptScheme(ItemScheme):
     _get_items = Concept
 
 
-class CodelistHandler:
+class KeyValidatorMixin:
+
+    def _in_codelists(self, key):
+        '''
+        key: a prepared key, i.e. multiple values within a dimension
+        must be represented as list of strings.
+
+        This method is called by __in__. Thus it is not intended 
+        to be called from application code.
+
+        Raises ValueError if not all keys and values correspond to valid dimension names and related codes.
+        '''
+        # First, check keys against dim IDs
+        invalid = [k for k in key if k not in self._dim_ids]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, self._dim_ids))
+        # Check values against codelists
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._dim_codesets[k]:
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in codelists.', invalid)
+
+    def _in_constraints(self, key):
+        '''
+        check key against all constraints attached to the DSD
+        or Dataflow provided on instantiation.
+        return True if key satisfies all constraints.
+        '''
+        # validate key against unconstrained codelists
+        self._in_codelists(key)
+        # Validate key against constraints if any
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._constrained_codesets[k]:
+                    invalid[k].append(v)
+        if invalid:
+            raise ValueError(
+                'Value(s) not in constrained codelists.', invalid)
+
+
+class CodelistHandler(KeyValidatorMixin):
     '''
     High-level API implementing the
     application of content constraints to codelists. It is primarily
@@ -472,49 +518,6 @@ class CodelistHandler:
             self.__constrained_codesets = DictLike(cur_dim_codesets)
             self.__constrained_codesets.update(cur_attr_codesets)
         return self.__constrained_codesets
-
-    def _in_codelists(self, key):
-        '''
-        key: a prepared key, i.e. multiple values within a dimension
-        must be represented as list of strings.
-
-        This method is called by __in__. Thus it is not intended 
-        to be called from application code.
-
-        return True if all keys and values correspond to valid dimension names and related codes.
-        '''
-        # First, check keys against dim IDs
-        invalid = [k for k in key if k not in self._dim_codesets]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, self._dim_ids))
-        # Check values against codelists
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self._dim_codesets[k]:
-                    invalid[k].append(v)
-        if invalid:
-            raise ValueError(
-                'Value(s) not in codelists.', invalid)
-
-    def _in_constraints(self, key):
-        '''
-        check key against all constraints attached to the DSD
-        or Dataflow provided on instantiation.
-        return True if key satisfies all constraints.
-        '''
-        # validate key against unconstrained codelists
-        self._in_codelists(key)
-        # Validate key against constraints if any
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self._constrained_codesets[k]:
-                    invalid[k].append(v)
-        if invalid:
-            raise ValueError(
-                'Value(s) not in constrained codelists.', invalid)
 
 
 class Constraint(MaintainableArtefact):
@@ -967,21 +970,29 @@ class StructureMessage(CodelistHandler, Message):
         ('_categorisation', 'read_instance', Categorisations, None)])
 
 
-class DataMessage(Message):
+class DataMessage(KeyValidatorMixin, Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', DataSet, None)])
 
+    def __init__(self, *args, **kwargs):
+        super(DataMessage, self).__init__(*args, **kwargs)
+        # As series keys always reflect constrained codelists, we equate both methods
+        # inherited from KeyValidatorMixin for API compatibility.
+        # the _in_constraints methods must not be used.
+        self.in_codelists = self._in_codelists
+        self.in_constraints = self._in_codelists
+
     @property
     def _dim_ids(self):
         if not hasattr(self, '__dim_ids'):
-            self.__dim_ids = next(self.series).key._fields
+            self.__dim_ids = next(self.data.series).key._fields
         return self.__dim_ids
 
     @property
     def _dim_codesets(self):
         if not hasattr(self, '__dim_codesets'):
-            keys = (s.key for s in self.series)
-            self.__dim_codesets = {k: frozenset(v)
-                                   for k, v in zip(self._dim_ids, zip(*keys))}
+            keys = (s.key for s in self.data.series)
+            self.__dim_codesets = DictLike({dim_id: frozenset(codes)
+                                            for dim_id, codes in zip(self._dim_ids, zip(*keys))})
         return self.__dim_codesets

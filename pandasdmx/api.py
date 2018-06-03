@@ -297,9 +297,15 @@ class Request(object):
                 # select validation method based on agency capabilities
                 if (series_keys and
                         self._agencies[self.agency].get('supports_series_keys_only')):
-                    key = self._make_key_from_series(resource_id, key)
+                    val_msg = self.data(resource_id,
+                                        params={'detail': 'serieskeysonly'})
                 else:
-                    key = self._make_key_from_dsd(resource_id, key)
+                    val_msg = self.dataflow(resource_id,
+                                            memcache='dataflow' + resource_id).msg
+                # validate key
+                val_msg.in_constraints(key)
+                key = '.'.join('+'.join(key.get(i, ('')))
+                               for i in val_msg._dim_ids)
 
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
@@ -415,61 +421,6 @@ class Request(object):
         '''
         return {k: v if isinstance(v, list) else v.split('+')
                 for k, v in key.items()}
-
-    def _make_key_from_dsd(self, flow_id, key):
-        '''
-        Download the dataflow def. and DSD and validate 
-        key(dict) against it. 
-
-        Return: key(str)
-        '''
-        # get dataflow and DSD ID
-        dataflow_msg = self.dataflow(flow_id,
-                                     memcache='dataflow' + flow_id).msg
-        # validate key against constrained codelists
-        dataflow_msg.in_constraints(key)
-        # construct the key string for the URL
-        # Iterate over the dimensions
-        parts = ['+'.join(key.get(i, [''])) for i in dataflow_msg._dim_ids]
-        return '.'.join(parts)
-
-    def _make_key_from_series(self, flow_id, key):
-        '''
-        Get all series keys by calling
-        self.series_keys, and validate 
-        the key(dict) against it. Raises ValueError if
-        a value does not occur in the respective
-        set of dimension values. Multiple values per
-        dimension can be provided as a list or in 'V1+V2' notation.
-
-        Return: key(str) 
-        '''
-        # get all series keys
-        resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
-        all_keys = self.series_keys(flow_id)
-        dim_names = resp.msg._dim_ids
-        # Validate the key dict
-        # First, check correctness of dimension names
-        invalid = [d for d in key
-                   if d not in dim_names]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
-        # Check for each dimension name if values are correct and construct
-        # string of the form 'value1.value2.value3+value4' etc.
-        # Iterate over the dimensions. If the key dict
-        # contains an allowed value for the dimension,
-        # it will become part of the string.
-        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
-                                            for k, vl in key.items())))
-        if invalid:
-            raise ValueError("The following dimension values are invalid: {0}".
-                             format(invalid))
-        # Generate the 'Val1+Val2' notation for multiple dim values and remove the
-        # lists
-        parts = ['+'.join(key[d.id]) if d.id in key else ''
-                 for d in dim_names]
-        return '.'.join(parts)
 
     def preview_data(self, flow_id, key=None, count=True, total=True, dsd=None):
         '''

@@ -110,11 +110,10 @@ class Writer(BaseWriter):
         def iter_keys(container):
             if codelist_and_dsd:
                 # ``container`` is a pair of (dimension, codelist)
-                component, codelist = container[0], container[1]
-                if constraint and hasattr(source, 'validator'):
-                    constrained_codesets = source.validator.constrained_codesets
-                    result = (v for v in codelist.values()
-                              if v.id in constrained_codesets[component.id])
+                component, codelist = container
+                if constraint and source._constrained_codesets:
+                    result = (codelist[v]
+                              for v in source._constrained_codesets[component.id])
                 else:
                     result = codelist.values()
             else:

@@ -47,8 +47,9 @@ Connecting to an SDMX web service, caching
 -----------------------------------------------
 
 We instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
-agency ID as string. The list of supported agencies
-(as of version 0.4: ECB, ESTAT, INSEE) is shown in the error message if an invalid agency ID is passed:
+agency ID as string. The list of supported agencies can be viewed
+`here <agencies.html#pre-configured-data-providers>`_, or is shown in the error message if an
+invalid agency ID is passed.
             
 .. ipython:: python
 

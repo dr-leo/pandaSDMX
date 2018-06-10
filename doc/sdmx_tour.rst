@@ -13,9 +13,10 @@ processing of statistical data and metadata.
 SDMX is sponsored by a wide range of public institutions including the UN, the IMF, the Worldbank, BIS, ILO, FAO, 
 the OECD, the ECB, Eurostat, and a number of national statistics offices. These and other institutions
 provide a vast array of current and historic data sets and metadata sets via free or fee-based REST and SOAP web services. 
-pandaSDMX only supports SDMX v2.1, that is, the latest version of this standard. Some agencies such as the IMF continue to offer SDMX 2.0-compliant services.
+pandaSDMX only supports SDMX v2.1, that is, the latest version of this standard. 
+Some agencies such as the ILO and WHO still offer SDMX 2.0-compliant services.
 These cannot be accessed by pandaSDMX. 
-It is expected that most SDMX providers will ultimately upgrade to the latest standards.  
+It is expected that most SDMX providers will ultimately upgrade to the latest version of the standard.  
  
 Information model
 ----------------------------------------------------------------
@@ -24,8 +25,9 @@ At its core, SDMX defines an :index:`information model` consisting of a set of :
 There are classes defining things like data sets, metadata sets, data and metadata structures, 
 processes, organisations and their specific roles to name but a few. The information model is agnostic as to its
 implementation. The SDMX standard provides an XML-based implementation (see below). And
-a more efficient JSON-variant is being standardised by the 
-`SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_. 
+a more efficient JSON-variant called SDMXJSON is being standardised by the 
+`SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_. PandaSDMX
+supports both formats. 
  
 The following sections briefly introduces some key elements of the information model.
 
@@ -51,7 +53,7 @@ A group is
 defined by specifying one or more dimension values, but not all: At least the dimension at observation and one other
 dimension must remain free (or wild-carded). Otherwise, the group would in fact be either a single observation or a series.
 The main purpose of :index:`group` is to 
-serve as another attachment point for attributes. Hence, a given attribute may be attached to all series
+serve as a convenient attachment point for attributes. Hence, a given attribute may be attached to all series
 within the group at once. Attributes may finally be attached to the entire data set, i.e. to all series/observations therein. 
  
 Structural metadata: data structure definition, concept scheme and code list
@@ -73,11 +75,12 @@ defined by a special dimension called :index:`MeasureDimension`.
 Dataflow definition
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-A :index:`dataflow` describes what a particular data set is about, 
+A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), 
 how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
 The terminology is a bit confusing: You cannot actually
 obtain a dataflow from an SDMX web service. Rather, you can request one or more dataflow definitions
-describing a flow of data over time. The dataflow definition and the artefacts to which it refers give you
+describing how datasets under this dataflow are structured, which codes may be used to 
+query for desired columns etc. The dataflow definition and the artefacts to which it refers give you
 all the information you need to exploit the data sets you can request using the dataflow's ID. 
     
 A :index:`DataFlowDefinition` is a class that describes a dataflow. A DataFlowDefinition  
@@ -105,9 +108,12 @@ the code-lists representing dimension values. For example,
 the datastructure definition for a dataflow on exchange rates
 references the code list of all country codes in the world, whereas
 the data sets provided under this dataflow only covers the ten largest currencies. These can be 
-enumerated by a content-constraint attached to the dataflow definition.
+enumerated by a content-constraint attached to the dataflow definition or DSD.
 Content-constraints can be used to validate dimension names and values (a.k.a. keys)
-when requesting data sets selecting columns of interest.
+when requesting data sets selecting columns of interest. pandaSDMX supports content
+constraints and provides convenient methods to validate keys, compute
+the constrained code lists etc. 
+
 
 An :index:`attachment-constraint` describes to which parts of a data set (column/series,
 group of series, observation, the entire data set) certain attributes may be attached. Attachment-constraints are not
@@ -128,12 +134,12 @@ categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
 Class hierarchy
 :::::::::::::::::
 
-The SDMX information model defines a number of base classes from which concrete classes
-such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` inherit.
+The SDMX information model defines a number of abstract base classes from which subclasses
+such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` are derived.
 E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining
 agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from
 :index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth. Hence, DataStructureDefinition may have a unique
-ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes advantage from
+ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes full advantage from
 this class hierarchy.
     
 Implementations of the information model
@@ -162,7 +168,12 @@ all the information required to interpret it. Hence, data sets in generic repres
 knowing the related :index:`DataStructureDefinition`. The downside is that generic data set messages are
 much larger than their sister format :index:`StructureSpecificdata set`. pandaSDMX has always supported generic
 data set messages. In v0.8, support for structure-specific
-data messages has been aded. SDMX-JSON messages can be consumed as well.  
+data messages was aded. SDMX-JSON messages can be consumed as well.  
+  
+The term 'structure-specific dataset' reflects the fact that in order to interpret such
+dataset, one needs to know the datastructure definition (DSD). Otherwise, it would be impossible
+to distinguish dimension values from attributes etc. Hence, when downloading a structure-specific
+dataset, pandaSDMX will download the DSD on the fly or retrieves it from a local cash.
   
 Another important SDMXML message type is :index:`StructureMessage` 
 which may contain artefacts such as DataStructureDefinitions, code lists,
@@ -186,7 +197,7 @@ SDMXJSON
 JSON files provided by RESTful web services. Early adopters of this format are OECD, ECB and IMF. As of v0.5, pandaSDMX
 supports the OECD's REST interface for SDMXJSON. However, note that
 structural metadata is not yet fully standardised. Hence, it is impossible at
-this stage to download dataflow definitions, codelists etc. from OECD. 
+this stage to download dataflow definitions, codelists etc. from ABS (Australia) and OECD. 
  
         
 SDMX web services

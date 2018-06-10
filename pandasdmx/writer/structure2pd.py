@@ -23,7 +23,7 @@ from operator import attrgetter
 class Writer(BaseWriter):
 
     _row_content = {'codelist', 'conceptscheme', 'dataflow',
-                    'categoryscheme', 'provision_agreement'}
+                    'categoryscheme', 'provisionagreement'}
 
     def write(self, source=None, rows=None, **kwargs):
         '''
@@ -111,9 +111,9 @@ class Writer(BaseWriter):
             if codelist_and_dsd:
                 # ``container`` is a pair of (dimension, codelist)
                 component, codelist = container
-                if constraint and source._constrained_codesets:
+                if constraint and source._constrained_codes:
                     result = (codelist[v]
-                              for v in source._constrained_codesets[component.id])
+                              for v in source._constrained_codes[component.id])
                 else:
                     result = codelist.values()
             else:

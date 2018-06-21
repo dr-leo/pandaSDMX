@@ -382,7 +382,7 @@ class ConceptScheme(ItemScheme):
     _get_items = Concept
 
 
-class KeyValidatorMixin:
+class KeyValidatorMixin(object):
     '''
     Mix-in class with methods for key validation. Relies on properties computing 
     code sets, constrained codes etc. Subclasses are DataMessage and
@@ -473,7 +473,7 @@ class CodelistHandler(KeyValidatorMixin):
     Constrainable, ContentConstraint and Cube Region classes. 
     '''
 
-    def __init__(self, *args, constrainables=[], request_dsd=False, **kwargs):
+    def __init__(self, *args, **kwargs):
         '''
         Prepare computation of constrained codelists using the
         cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
@@ -487,11 +487,9 @@ class CodelistHandler(KeyValidatorMixin):
                 If not given, try to
                 collect the constrainables from the StructureMessage. 
                 this will be the most common use case. 
-
-            request_dsd(bool): if True, make a remote request to download
-                the DSD which is required to compute constrained codelists etc.
         '''
         super(CodelistHandler, self).__init__(*args, **kwargs)
+        constrainables = kwargs.get('constrainables', [])
         if constrainables:
             self.__constrainables = constrainables
         elif (hasattr(self, 'constraint') and hasattr(self, 'datastructure')
@@ -526,8 +524,8 @@ class CodelistHandler(KeyValidatorMixin):
         represented by codelists (this excludes TIME_PERIOD etc.)
         '''
         if not hasattr(self, '__dim_ids'):
-            self.__dim_ids = [d.id for d in self._constrainables[0].dimensions.aslist()
-                              if d.local_repr.enum]
+            self.__dim_ids = tuple(d.id for d in self._constrainables[0].dimensions.aslist()
+                                   if d.local_repr.enum)
         return self.__dim_ids
 
     @property
@@ -537,8 +535,8 @@ class CodelistHandler(KeyValidatorMixin):
         represented by codelists 
         '''
         if not hasattr(self, '__attr_ids'):
-            self.__attr_ids = [d.id for d in self._constrainables[0].attributes.aslist()
-                               if d.local_repr.enum]
+            self.__attr_ids = tuple(d.id for d in self._constrainables[0].attributes.aslist()
+                                    if d.local_repr.enum)
         return self.__attr_ids
 
     @property
@@ -710,12 +708,16 @@ class Categorisations(SDMXObject, DictLike):
 
 
 class Ref(SDMXObject):
-    # mappings used for resolution
+    # mappings used for resolving the ref
     _cls2rc_name = {
         'Dataflow': 'dataflow',
         'Codelist': 'codelist',
         'DataStructure': 'datastructure',
         'ProvisionAgreement': 'provisionagreement'}
+
+    def __str__(self):
+        return ' | '.join(
+            (self.__class__.__name__, self.maintainer, self.package, self.id))
 
     @property
     def package(self):

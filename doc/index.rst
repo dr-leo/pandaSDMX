@@ -8,7 +8,7 @@ and metadata disseminated in
 widely used by institutions
 such as statistics offices, central banks, and international organisations.
 pandaSDMX exposes datasets and related structural metadata 
-including dataflows, code-lists, 
+including dataflows, codelists, 
 and datastructure definitions as `pandas <http://pandas.pydata.org>`_ Series 
 or multi-indexed DataFrames. Many other 
 output formats and storage backends are available thanks to `Odo <http://odo.readthedocs.io/>`_.  
@@ -38,14 +38,8 @@ configured by the user):
 Main features
 ---------------------
 
-* support for many SDMX features including
-
-  - generic and structure-specific data sets in SDMXML format 
-  - data sets in SDMXJSON format  
-  - data structure definitions, code lists and concept schemes
-  - dataflow definitions, provision agreements, and content-constraints
-  - categorisations and category schemes
-
+* support for many SDMX 2.1 features 
+* SDMXML and SDMXJSON formats 
 * pythonic representation of the SDMX information model  
 * When requesting datasets, validate column selections against code lists 
   and content-constraints if available
@@ -63,12 +57,12 @@ Example
 
 Suppose we want to analyze annual unemployment data for some European countries. All we need to know
 in advance is the data provider, eurostat. pandaSDMX makes it super easy to
-search the directory of dataflows, and the complete structural metadata about the datasets
+search the directory of dataflows, and analyze the complete structural metadata about the datasets
 available through the selected dataflow. We will skip this step here.
 The impatient reader may directly jump to :ref:`basic-usage`. 
-The dataflow with the ID 'une_rt_a' contains the data we want. The dataflow definition references a 
-datastructure definition with the ID 'DSD_une_rt_a'. 
-It contains or references all the metadata describing data sets available through this dataflow: the dimensions, 
+The dataflow with the ID 'une_rt_a' contains the data we want. The dataflow definition references the 
+datastructure definition  
+which contains or references all the metadata describing data sets available through this dataflow: the dimensions, 
 concept schemes, and corresponding code lists. 
  
 .. ipython:: python
@@ -76,7 +70,7 @@ concept schemes, and corresponding code lists.
     from pandasdmx import Request
     estat = Request('ESTAT')
     # Download the metadata and expose it as a dict mapping resource names to pandas DataFrames
-    metadata = estat.datastructure('DSD_une_rt_a').write()
+    metadata = estat.dataflow('une_rt').write()
     # Show some code lists.
     metadata.codelist.iloc[8:18]
     

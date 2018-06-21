@@ -98,3 +98,11 @@ class test_exr_constraints(unittest.TestCase):
         self.assertTrue(m.in_constraints({'CURRENCY': ['CHF']}))
         # test with invalid key
         self.assertRaises(TypeError, m._in_constraints, {'FREQ': 'A'})
+        # structure writer with constraints
+        out = self.resp.write()
+        cl = out.codelist
+        self.assertEqual(cl.shape, (3555, 2))
+        # unconstrained codelists
+        out = self.resp.write(constraint=False)
+        cl = out.codelist
+        self.assertEqual(cl.shape, (4177, 2))

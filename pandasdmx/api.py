@@ -304,7 +304,7 @@ class Request(object):
                                             memcache='dataflow' + resource_id).msg
                 # validate key
                 val_msg.in_constraints(key)
-                key = '.'.join('+'.join(key.get(i, ('')))
+                key = '.'.join('+'.join(key.get(i, ''))
                                for i in val_msg._dim_ids)
 
             # Get http headers from agency config if not given by the caller

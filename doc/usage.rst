@@ -8,23 +8,22 @@ Overview
 
 This chapter illustrates the main steps of a typical workflow, namely:
 
-1. retrieving relevant
-   dataflows by category or from a complete list of dataflows,  
-#. exploring the data structure, related code lists, and other metadata by exporting
-   them as pandas DataFrames
+1. Downloading the catalogue of dataflows available from the data provider of choice
+#. downloading metadata including
+   the datastructure definition, concepts, codelists and content constraints describing
+   the datasets available under the chosen dataflow 
+#. understanding the datastructure by viewing
+   various types of metadata as pandas DataFrames or by browsing the Pythonic information model
 #. selecting relevant series (columns) and a time-range (rows) from a dataset provided under the chosen dataflow 
-   and requesting datasets via http   
+   and downloading datasets   
 #. exploring the received data using the information model
 #. writing a dataset or selected series thereof to a pandas DataFrame or Series 
-#. Reading and writing SDMX files
-#. odo support
-#. Handling errors
 
-These steps share common tasks which flow from the architecture of pandaSDMX:
+Each of the steps share common tasks which flow from the architecture of pandaSDMX:
 
 1. Use a new or existing :class:`pandasdmx.api.Request` instance
    to get an SDMX message from a web service or file 
-   and load it into memory. Since version 0.4 this can be conveniently done by descriptors named after the web resources defined by the SDMX standard (``dataflow``, ``categoryscheme``, ``data`` etc.). In older versions, these operations required to call :meth:`pandasdmx.api.Request.get` 
+   and load it into memory.  
 #. Explore the returned :class:`pandasdmx.api.Response` instance 
 
    * check for errors 
@@ -32,16 +31,7 @@ These steps share common tasks which flow from the architecture of pandaSDMX:
    * write data or metadata to a pandas DataFrame or Series by Calling 
      :meth:`pandasdmx.api.Response.write`.      
      
-     
-Importing pandaSDMX
---------------------------------
-    
-    As explained in the preceeding section, we will need :class:`pandasdmx.api.Request` all the time.
-    Yet, we can use the following shortcut to import it:    
         
-.. ipython:: python
-        
-    from pandasdmx import Request
             
 Connecting to an SDMX web service, caching
 -----------------------------------------------
@@ -53,6 +43,7 @@ invalid agency ID is passed.
             
 .. ipython:: python
 
+    from pandasdmx import Request # '*' would do as well
     ecb = Request('ECB')
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to

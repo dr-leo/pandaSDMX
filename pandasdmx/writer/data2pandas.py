@@ -174,7 +174,7 @@ class Writer(BaseWriter):
                     if f == 'H':
                         f = '2Q'
                         # patch the dim values
-                        obs_dim = [''.join((od[:-2], 'Q', '1' if od[-1] == '1' else '3'))
+                        obs_dim = ['Q'.join((od[:-2], '1' if od[-1] == '1' else '3'))
                                    for od in obs_dim]
                     # Check if we can build the index based on start and freq
                     # Constructing the index from the first value and FREQ should only

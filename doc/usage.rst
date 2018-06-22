@@ -8,16 +8,18 @@ Overview
 
 This chapter illustrates the main steps of a typical workflow, namely:
 
-1. Downloading the catalogue of dataflows available from the data provider of choice
-#. downloading metadata including
+1. Choose a data provider 
+#. Download the catalogue of dataflows available from the data provider  
+   and select a dataflow for further inspection  
+#. download metadata on the selected dataflow including
    the datastructure definition, concepts, codelists and content constraints describing
-   the datasets available under the chosen dataflow 
-#. understanding the datastructure by viewing
-   various types of metadata as pandas DataFrames or by browsing the Pythonic information model
-#. selecting relevant series (columns) and a time-range (rows) from a dataset provided under the chosen dataflow 
-   and downloading datasets   
-#. exploring the received data using the information model
-#. writing a dataset or selected series thereof to a pandas DataFrame or Series 
+   the datasets available through that dataflow 
+#. Analyze the metadata   
+   as pandas DataFrames or by directly inspecting the Pythonic information model
+#. Specify the needed portions of the data from the dataflow  
+   by constructing a selection ("key") of series and a period/time range for the prospective dataset  
+#. Download the actual dataset specified by dataflow ID, key and period/time range   
+#. write the dataset or selected series thereof to a pandas DataFrame or Series to analyze the dataset 
 
 Each of the steps share common tasks which flow from the architecture of pandaSDMX:
 
@@ -27,9 +29,9 @@ Each of the steps share common tasks which flow from the architecture of pandaSD
 #. Explore the returned :class:`pandasdmx.api.Response` instance 
 
    * check for errors 
-   * explore the SDMX message's content .
+   * explore the SDMX message contained in the :class:`pandasdmx.api.Response` instance
    * write data or metadata to a pandas DataFrame or Series by Calling 
-     :meth:`pandasdmx.api.Response.write`.      
+     :meth:`pandasdmx.api.Response.write` on the Response instance.      
      
         
             
@@ -38,8 +40,7 @@ Connecting to an SDMX web service, caching
 
 We instantiate :class:`pandasdmx.api.Request`. The constructor accepts an optional
 agency ID as string. The list of supported agencies can be viewed
-`here <agencies.html#pre-configured-data-providers>`_, or is shown in the error message if an
-invalid agency ID is passed.
+`here <agencies.html#pre-configured-data-providers>`_, or as shown below.
             
 .. ipython:: python
 
@@ -47,7 +48,7 @@ invalid agency ID is passed.
     ecb = Request('ECB')
     
 ``ecb`` is now configured so as to make requests to the European Central Bank. If you want to
-send requests to other agencies, you can instantiate multiple ``Request`` objects. 
+send requests to multiple agencies, instantiate multiple ``Request`` objects. 
 
 Configuring the http connection
 :::::::::::::::::::::::::::::::::::::
@@ -76,16 +77,16 @@ a ``timeout`` property to set the timeout in seconds for http requests.
 Caching received files
 ::::::::::::::::::::::::::
 
-Since version 0.3.0, `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ is supported. To use it, 
+Since v0.3.0, `requests-cache <https://readthedocs.io/projects/requests-cache/>`_ is supported. To use it, 
 pass an optional ``cache`` keyword argument to ``Request()`` constructor.
-If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function. Use it if you
-want to cache SDMX messages in databases such as MongoDB, Redis or SQLite. 
+If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function. Use it 
+to cache SDMX messages in databases such as MongoDB, Redis or SQLite. 
 See the `requests-cache`` docs for further information.
      
 Loading a file instead of requesting it via http
 ::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-Any ``Request`` instance
+``Request`` instances
 can load SDMX messages from local files. 
 Issuing ``r = Request()`` without passing any agency ID
 instantiates a ``Request`` object not tied to any agency. It may only be used to
@@ -97,7 +98,7 @@ Obtaining and exploring metadata about datasets
 This section illustrates by a typical use case how to download and explore metadata.
 Assume we are looking for time-series on exchange rates. Our best guess is
 that the European Central Bank provides a relevant dataflow. We could
-google for the dataflow ID or browse through the ECB's website. However,
+google for the dataflow ID or browse the ECB's website. However,
 we choose to use SDMX metadata, namely category-schemes to get a complete overview of
 the dataflows the ECB provides. 
 
@@ -108,7 +109,7 @@ the dataflows the ECB provides.
     facilitate dataflow retrieval. If you already know, e.g., from
     the data provider's website or other publications, what
     dataflows you are looking for, you won't need this step.
-    Yet this section should still be useful as
+    Yet this section is still useful as
     it demonstrates how metadata can be explored
     using pandas DataFrames.
     

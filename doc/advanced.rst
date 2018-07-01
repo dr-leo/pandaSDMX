@@ -2,6 +2,37 @@ Advanced topics
 ===================
 
 
+
+Category schemes
+--------------------
+
+SDMX supports category-schemes to categorize dataflow definitions and other objects. 
+This helps retrieve, e.g., a dataflow of interest. Note that not all agencies support
+categoryschemes. A good example is the ECB. However, as the ECB's SDMX service offers less than 100 dataflows, using categoryschemes is not strictly
+necessary. A counter-example is Eurostat which offers more
+than 6000 dataflows, yet does not categorize them. Hence,
+the user must search through the flat list of dataflows.
+
+To search the list of dataflows by category, we request the category scheme from the 
+ECB's SDMX service and explore the response like so:
+
+.. ipython:: python
+
+    from pandasdmx import *
+    ecb = Request('ecb')
+    cat_response = ecb.categoryscheme()
+
+Like any other scheme, a category scheme is essentially a dict mapping ID's 
+to the actual SDMX objects.
+To display the categorised items, in our case the dataflow definitions contained in the category
+on exchange rates, we iterate over the `Category` instance (new in version 0.5): 
+ 
+.. ipython:: python
+
+    cat_response.categoryscheme.keys()
+    list(cat_response.categoryscheme.MOBILE_NAVI['07'])
+
+    
 The information model in detail
 ------------------------------------------------------------
 

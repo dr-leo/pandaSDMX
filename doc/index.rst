@@ -70,9 +70,10 @@ concept schemes, and corresponding code lists.
     from pandasdmx import Request
     estat = Request('ESTAT')
     # Download the metadata and expose it as a dict mapping resource names to pandas DataFrames
-    metadata = estat.dataflow('une_rt').write()
+    une_flow = estat.dataflow('une_rt_a').dataflow.une_rt_a
+    structures = une_flow.structure(request=True, target_only=False)
     # Show some code lists.
-    metadata.codelist.iloc[8:18]
+    une_flow.codelist.loc['GEO'].head()
     
 Next we download a dataset. We use codes from the code list 'GEO'
 to obtain data on Greece, Ireland and Spain only.

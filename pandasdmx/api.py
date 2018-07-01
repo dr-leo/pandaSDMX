@@ -226,7 +226,7 @@ class Request(object):
                 accessing an SDMX web service. Defaults to None. If `fromfile` is
                 given, args relating to URL construction will be ignored.
             tofile(str): file path to write the received SDMX file on the fly. This
-                is useful if you want to load data offline using
+                is useful, e.g., if you want to save it for later loading as local file with
                 `fromfile` or if you want to open an SDMX file in
                 an XML editor.
             url(str): URL of the resource to download.
@@ -268,11 +268,11 @@ class Request(object):
         if url:
             base_url = url
         else:
-            # Construct URL from args unless ``tofile`` is given
+            # Construct URL from args unless ``fromfile`` is given
             # Validate args
             agency = agency or self._agencies[self.agency].get('id')
             # Validate resource if no filename is specified
-            if not fromfile and resource_type not in self._resources:
+            if not (fromfile or resource_type in self._resources):
                 raise ValueError(
                     'resource must be one of {0}'.format(self._resources))
             # resource_id: if it is not a str or unicode type,
@@ -326,7 +326,7 @@ class Request(object):
                 version = 'latest'
             # Remove None's and '' first. Then join them to form the base URL.
             # Any parameters are appended by remote module.
-            if self.agency:
+            if not fromfile and self.agency:
                 parts = [self._agencies[self.agency]['url'],
                          resource_type,
                          agency_id,

@@ -8,16 +8,21 @@ v0.9dev (2018-04)
 ----------------------------
 
 This version will be the last tested on Python 2.x. Future versions
-will be tested on Python 3.4+ only
+will be tested on Python 3.5+ only
 
 New features
 :::::::::::::::
 
 * Added data providers INEGI (Mexico), and Italian statistics office (ISTAT)
-* model: make Ref instances callable for resolving
+* model: make Ref instances callable for resolving them, i.e. getting the referenced object
+  by making a remote request if needed
 * improve loading of structure-specific messages when DSD is not passed / must be requested on the fly
 * process multiple and cascading content constraints as described in the Technical Guide (Chap. 6 of the SDMX 2.1 standard)
-
+* StructureMessages and DataMessages now have properties to compute the constrained and unconstrained codelists as
+  dicts of frozensets of codes. For DataMessage this is useful when ``series_keys`` was set to True when making
+  the request. This prompts the data provider to generate a dataset without data, but with
+  the complete set of series keys. This is the most accurate representation
+  of the available series. Agencies such as IMF and ECB support this feature. 
 
 v0.8.2 (2017-12-21)
 ----------------------------

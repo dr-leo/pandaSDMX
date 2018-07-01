@@ -171,6 +171,7 @@ class Reader(BaseReader):
         model.Annotation: 'com:Annotations/com:Annotation',
         model.Group: 'gen:Group',
         model.Series: 'gen:Series',
+        'struct_spec_series': 'data:Series',
         model.DataSet: 'mes:DataSet',
         'int_str_names': './*[local-name() = $name]/@xml:lang',
         model.Representation: 'str:LocalRepresentation',

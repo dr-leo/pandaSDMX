@@ -170,8 +170,9 @@ class Reader(BaseReader):
         model.Header: 'mes:Header',
         model.Annotation: 'com:Annotations/com:Annotation',
         model.Group: 'gen:Group',
-        model.Series: 'gen:Series',
-        'struct_spec_series': 'data:Series',
+        'gen_series': 'gen:Series',
+        'struct_spec_series_ns': 'data:Series',
+        'struct_spec_series': 'Series',
         model.DataSet: 'mes:DataSet',
         'int_str_names': './*[local-name() = $name]/@xml:lang',
         model.Representation: 'str:LocalRepresentation',
@@ -270,12 +271,14 @@ class Reader(BaseReader):
                     obs_attr = None
                 yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
-    def generic_series(self, sdmxobj):
+    def iter_series(self, sdmxobj):
         if self.dsd:
-            iter_series = sdmxobj._elem.iterchildren('Series')
+            iter_s = self._paths['struct_spec_series'](sdmxobj._elem)
+            if not iter_s:
+                iter_s = self._paths['struct_spec_series_ns'](sdmxobj._elem)
         else:
-            iter_series = self._paths[model.Series](sdmxobj._elem)
-        for series in iter_series:
+            iter_s = self._paths['gen_series'](sdmxobj._elem)
+        for series in iter_s:
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):

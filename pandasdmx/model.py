@@ -945,7 +945,7 @@ class DataSet(SDMXObject):
         Note that DataSets in flat format, i.e.
         header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs() instead.
         '''
-        return self._reader.generic_series(self)
+        return self._reader.iter_series(self)
 
     @property
     def iter_groups(self):

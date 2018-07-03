@@ -255,7 +255,7 @@ class Reader(BaseReader):
                 obs_attr = None
             yield self._SeriesObsTuple(obs_key, obs_value, obs_attr)
 
-    def generic_series(self, sdmxobj):
+    def iter_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
             series['_key'] = key
         for series in sorted(sdmxobj._elem.value['series'].values(), key=self.getitem_key):

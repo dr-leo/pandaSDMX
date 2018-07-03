@@ -167,29 +167,36 @@ See the chapter on advanced topics for details.
 Extracting the metadata related to a dataflow
 -----------------------------------------------------------
 
-We will download the 'EXR' dataflow from the
-European Central Bank. The dataflow definition is part of the
-entire list of dataflows we studied in the last chapter.
-This time we will pass the dataflow ID 'EXR' to tell pandaSDMX that
-we want to drill down into a specific dataflow. pandaSDMX will set the 
+We will download the dataflow definition with the ID 'EXR' from the
+European Central Bank. This dataflow definition is already contained in the 
+complete list of dataflows we studied in the last chapter, 
+but without any related metadata.
+Now we will pass the dataflow ID 'EXR' to tell pandaSDMX that
+we want to drill down into a single dataflow. 
+Passing a dataflow ID prompts pandaSDMX to set the 
 ''references'' parameter to ``all`` which instructs the SDMX
-server to return any metadata related to the dataflow definition alongside the dataflow definition itself.  
+server to return any metadata related to the dataflow definition as well.  
  
 .. ipython:: python
 
     exr_flow = ecb.dataflow('EXR')
     exr_flow.url
     dir(exr_flow.msg)
-    # Get the datastructure definition referred to by the dataflow
+    # Show the datastructure definition referred to by the dataflow
     dsd = exr_flow.dataflow.EXR.structure()
-    dsd 
+    dsd
+    dsd is exr_flow.msg.datastructure.ECB_EXR1
+    # Explore the DSD:
+    dsd.dimensions.aslist()
+    dsd.attributes.aslist()
+    # Show a codelist referenced by a dimension. It contains a superset of the allowed values.
+    dsd.dimensions.FREQ.local_repr.enum()  
     
      
 Dataflow definitions at a glance
 :::::::::::::::::::::::::::::::::::
 
-A :class:`pandasdmx.model.DataFlowDefinition` ("DSD") has an ``id`` , ``name`` , ``version``  and many
-other attributes inherited from various base classes. It is worthwhile to look at the method resolution order. 
+A :class:`pandasdmx.model.DataFlowDefinition` ("DSD") has an ``id`` , ``name`` , ``version``  and other attributes inherited from various base classes. It is worthwhile to look at the method resolution order. 
 Many other classes from the model have similar base classes. 
 
 It is crucial to bear in mind two things when working with dataflows:
@@ -200,7 +207,7 @@ It is crucial to bear in mind two things when working with dataflows:
   References can be called to return the referenced object. Call it with ``request`` set to True, and it will
   download the referenced object remotely if it cannot be retrieved in the present message. Set
   ``target_only`` to False to get the SDMX response rather than just the referenced object. See the code example on the front page
-  for a demonstration.
+  for a demonstration of this feature.
 
 
 A DSD essentially defines three things:
@@ -218,25 +225,31 @@ A DSD essentially defines three things:
 
 * the measure dimension and the primary measure.
 
+A DSD, a dataflow definition and some other entities may be referenced
+by what is called a content constraint. A content constraint
+constrains the codelists referenced by the DSD's dimensions and attributes
+(collectively called 'components').
+
 Let's look at the dimensions and for the 'CURRENCY' dimension 
 also at the allowed values
-as enumerated in the referenced code list:
+as contained in the potentially constrained codelists. We now use pandas:
 
 .. ipython:: python
-
-    dsd.dimensions.aslist()
-    dsd_response.write().codelist.loc['CURRENCY'].head()    
+    exr_flow.write().codelist.loc['CURRENCY'].head()
+    # An example for constrained codelists (code ID's only as frozenset)
+    exr_flow.msg.constrained_codes.FREQ    
     
 The order of dimensions will determine the order of column index levels of the
 pandas DataFrame (see below). Note that the pandas DataFrame containing the
-codelists does is indexed by dimension and attribute ID rather 
+codelists is indexed by dimension and attribute ID rather 
 than codelist ID. Further, it is worth stressing that
-the codelists are exported by default after applying any content constraints
+the codelists are by default exported to pandas after applying any content constraints
 to them. Content constraints are specific to a dataflow definition, DSD or, in theory,
 provision agreement. They serve to tell the user for which codes there is actually data
 available. The unconstrained codelists are, by contrast, not specific to a given data set. Rather,
 they are meant to be reusable for many data sets and hence tend to be complete to be as 
 versatile as possible.
+If you want to export the unconstrained codelists, pass ``constraints=False`` to the .write method.
   
   The DataFrame representation of the code list for the
 CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values. 
@@ -263,7 +276,7 @@ Selecting and requesting data from a dataflow
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 Requesting a dataset is as easy as requesting a dataflow definition or any other
-SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id. Alternatively, you can use the
+SDMX artefact: Just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id. As a shortcut, you can use the
 ``data`` descriptor which calls the ``get`` method implicitly.  
 
 Generic or structure-specific data format?
@@ -271,20 +284,21 @@ Generic or structure-specific data format?
 
 Data providers which support SDMXML offer data sets in two distinct formats:
 
-* generic data sets: These are self-contained but not memory-efficient.
+* generic data sets: These are self-contained but less memory-efficient.
   They are suitable for small to medium data sets, but less so for large ones.
 * Structure-specific data sets: This format is memory-efficient 
   (typically about 60 per cent smaller than a generic data set)
   but it requires
   the datastructure definition (DSD) to interpret the XML file. The DSD must be downloaded prior to
-  parsing the data set. However, as we shall see in the next section, the DSD
-  can be provided by the caller to save an additional
+  parsing the dataset. pandaSDMX can do this behind the scenes. 
+  However, as we shall see in the next section, the DSD
+  can also be provided by the caller to save an additional
   request.   
   
 The intended data format is chosen by selecting the agency. For example, 'ECB' provides generic data sets, whereas
-'ECB_S' provides structure-specific data sets. Hence, there are actually two agency IDs for ECB, ESTAT etc. 
+'ECB_S' provides structure-specific data sets. Hence, there are actually two agency ID's for ECB, ESTAT etc. 
 Note that data providers supporting SDMXJSON only work with a single format
-for data sets. Hence, there is merely one agency ID for OECD. 
+for data sets. Hence, there is merely one agency ID for OECD and ABS. 
  
 Filtering
 ::::::::::::
@@ -310,10 +324,22 @@ datastructure definition as well as the content-constraints if available.
 
 Content-constraints are
 implemented only in their CubeRegion flavor. KeyValueSets are not yet supported. In this
-case, the provided demension values will be validated only against the code-list. It is thus not
+case, the provided demension values will be validated only against the unconstrained codelist. It is thus not
 always guaranteed that the dataset actually contains the desired data, e.g., 
 because the country of
-interest does not deliver the data to the SDMX data provider.  
+interest does not deliver the data to the SDMX data provider.
+Note that even constrained codelists do not guarantee that
+for agiven key there will be data on the server. This is because the
+codelists may mislead the user to think that
+every element of their cartesian product is a valid key for a series, whereas
+there is actually data merely for a subset of that product. The KeyValue flavor of 
+content constrainta is thus a more accurate predictor. But this feature is
+not known to be used by any data provider. Thus pandaSDMX does not support it.
+
+Another way to validate a key against valid codes are series-key-only datasets, i.e. a dataset
+with all possible series keys where no series contains any observation. pandaSDMX
+suports this validation method as well. However, it is disabled by default. Pass ``series_keys=True`` to the
+Request method to validate a given key against a series-keys only dataset rather than the DSD.       
  
 If we choose the string form of the key, 
 it must consist of
@@ -405,7 +431,8 @@ Selecting columns using the model API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, 
-we avoid mixing up different frequencies. 
+we avoid mixing up different frequencies as pandas may raise an error when
+passed data with incompatible frequencies. 
 Therefore, we
 single out the series with daily data.  
 The :meth:`pandasdmx.api.Response.write` method accepts an optional iterable to select a subset

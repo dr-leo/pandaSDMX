@@ -27,7 +27,9 @@ configured by the user):
   <http://www.inegi.org.mx/default.aspx>`_   
 * `Italian statistics Office (ISTAT) <http://www.istat.it/en/>`_
 * `International Monetary Fund (IMF) - SDMX Central only 
-  <https://sdmxcentral.imf.org/>`_   
+  <https://sdmxcentral.imf.org/>`_
+* `Norges Bank (Norway) 
+  <https://www.norges-bank.no/en/Statistics/open-data/>`_     
 * `Organisation for Economic Cooperation and Development (OECD)
   <http://stats.oecd.org/SDMX-JSON/>`_  
 * `United Nations Statistics Division (UNSD) <https://unstats.un.org/home/>`_
@@ -70,10 +72,10 @@ concept schemes, and corresponding code lists.
     from pandasdmx import Request
     estat = Request('ESTAT')
     # Download the metadata and expose it as a dict mapping resource names to pandas DataFrames
-    une_flow = estat.dataflow('une_rt_a').dataflow.une_rt_a
-    structures = une_flow.structure(request=True, target_only=False)
+    flow_response = estat.dataflow('une_rt_a')
+    structure_response = flow_response.dataflow.une_rt_a.structure(request=True, target_only=False)
     # Show some code lists.
-    une_flow.codelist.loc['GEO'].head()
+    structure_response.write().codelist.loc['GEO'].head()
     
 Next we download a dataset. We use codes from the code list 'GEO'
 to obtain data on Greece, Ireland and Spain only.

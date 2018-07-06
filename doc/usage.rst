@@ -26,11 +26,11 @@ Each of the steps share common tasks which flow from the architecture of pandaSD
 1. Use an :class:`pandasdmx.api.Request` instance
    to get an SDMX message from a web service or file.  
 #. Explore the returned :class:`pandasdmx.api.Response` instance. The SDMX message
-  is contained in its ``msg`` attribute. Note that there are two types of
-  message: DataMessage and StructureMessage. The former contains
-  a data set, the latter contains structural metadata about
-  one or more dataflows, most importantly one or more dataflow definitions and related
-  metadata such as the datastructure definition, codelists, constraints etc. 
+   is contained in its ``msg`` attribute. Note that there are two types of
+   message: DataMessage and StructureMessage. The former contains
+   a data set, the latter contains structural metadata about
+   one or more dataflows, most importantly one or more dataflow definitions and related
+   metadata such as the datastructure definition, codelists, constraints etc. 
 
    * check for errors 
    * explore the SDMX message contained in the :class:`pandasdmx.api.Response` instance
@@ -235,9 +235,10 @@ also at the allowed values
 as contained in the potentially constrained codelists. We now use pandas:
 
 .. ipython:: python
+
     exr_flow.write().codelist.loc['CURRENCY'].head()
     # An example for constrained codelists (code ID's only as frozenset)
-    exr_flow.msg.constrained_codes.FREQ    
+    exr_flow.msg._constrained_codes.FREQ    
     
 The order of dimensions will determine the order of column index levels of the
 pandas DataFrame (see below). Note that the pandas DataFrame containing the
@@ -251,7 +252,7 @@ they are meant to be reusable for many data sets and hence tend to be complete t
 versatile as possible.
 If you want to export the unconstrained codelists, pass ``constraints=False`` to the .write method.
   
-  The DataFrame representation of the code list for the
+The DataFrame representation of the code list for the
 CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values. 
 We need this information to construct a filter
 for our dataset query which should be limited to
@@ -329,16 +330,16 @@ always guaranteed that the dataset actually contains the desired data, e.g.,
 because the country of
 interest does not deliver the data to the SDMX data provider.
 Note that even constrained codelists do not guarantee that
-for agiven key there will be data on the server. This is because the
+for a given key there will be data on the server. This is because the
 codelists may mislead the user to think that
 every element of their cartesian product is a valid key for a series, whereas
 there is actually data merely for a subset of that product. The KeyValue flavor of 
-content constrainta is thus a more accurate predictor. But this feature is
+content constraints is thus a more accurate predictor. But this feature is
 not known to be used by any data provider. Thus pandaSDMX does not support it.
 
 Another way to validate a key against valid codes are series-key-only datasets, i.e. a dataset
 with all possible series keys where no series contains any observation. pandaSDMX
-suports this validation method as well. However, it is disabled by default. Pass ``series_keys=True`` to the
+supports this validation method as well. However, it is disabled by default. Pass ``series_keys=True`` to the
 Request method to validate a given key against a series-keys only dataset rather than the DSD.       
  
 If we choose the string form of the key, 

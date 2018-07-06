@@ -492,10 +492,13 @@ class CodelistHandler(KeyValidatorMixin):
         constrainables = kwargs.get('constrainables', [])
         if constrainables:
             self.__constrainables = constrainables
-        elif (hasattr(self, 'constraint') and hasattr(self, 'datastructure')
+        elif (hasattr(self, 'datastructure')
               and hasattr(self, 'codelist')):
             self.in_codes = self._in_codes
-            self.in_constraints = self._in_constraints
+            if hasattr(self, 'constraint'):
+                self.in_constraints = self._in_constraints
+            else:
+                self.in_constraints = self.in_codes
 
     @property
     def _constrainables(self):
@@ -717,7 +720,7 @@ class Ref(SDMXObject):
 
     def __str__(self):
         return ' | '.join(
-            (self.__class__.__name__, self.maintainer, self.package, self.id))
+            (self.__class__.__name__, self.agency_id, self.package, self.id))
 
     @property
     def package(self):

@@ -4,16 +4,17 @@ What's new?
 ==============
 
 
-v0.9dev (2018-04)
+v0.9 (2018-04)
 ----------------------------
 
-This version will be the last tested on Python 2.x. Future versions
+This version is the last tested on Python 2.x. Future versions
 will be tested on Python 3.5+ only
 
 New features
 :::::::::::::::
 
-* Added data providers INEGI (Mexico), and Italian statistics office (ISTAT)
+* new data providers INEGI (Mexico), Norges Bank (Norway) 
+  and Italian statistics office (ISTAT)
 * model: make Ref instances callable for resolving them, i.e. getting the referenced object
   by making a remote request if needed
 * improve loading of structure-specific messages when DSD is not passed / must be requested on the fly

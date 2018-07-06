@@ -164,5 +164,41 @@
             "headers": {} 
      } 
 }
-}
+},
+    "NORGES_BANK": {
+        "id": "NB",
+        "resources": {
+        "data": {
+                "headers": {
+                "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+                }
+            }
+            },
+        "url": "https://data.norges-bank.no/api",
+        "name": "Norges Bank - generic data format"
+    },
+    "NORGES_BANK_S": {
+        "id": "NB",
+        "resources": {
+        "data": {
+                "headers": {
+                "Accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+                }
+            }
+            },
+        "url": "https://data.norges-bank.no/api",
+        "name": "Norges Bank - structure-specific data format"
+    },
+    "ILO": {
+        "id": "NB",
+        "resources": {
+        "data": {
+                "headers": {
+                "Accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+                }
+            }
+            },
+        "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
+        "name": "ILO - structure-specific data format"
+    }
 }

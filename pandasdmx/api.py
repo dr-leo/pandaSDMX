@@ -297,11 +297,17 @@ class Request(object):
                 # select validation method based on agency capabilities
                 if (series_keys and
                         self._agencies[self.agency].get('supports_series_keys_only')):
-                    val_msg = self.data(resource_id,
-                                        params={'detail': 'serieskeysonly'})
+                    val_resp = self.data(resource_id,
+                                         params={'detail': 'serieskeysonly'})
                 else:
-                    val_msg = self.dataflow(resource_id,
-                                            memcache='dataflow' + resource_id).msg
+                    val_resp = self.dataflow(resource_id,
+                                             memcache='dataflow' + resource_id)
+                    # check if the message contains the datastructure. This is
+                    # not the case, eg, for ESTAT. If not, download it.
+                    if not hasattr(val_resp.msg, 'datastructure'):
+                        val_resp = val_resp.dataflow[resource_id].structure(
+                            request=True, target_only=False)
+                val_msg = val_resp.msg
                 # validate key
                 val_msg.in_constraints(key)
                 key = '.'.join('+'.join(key.get(i, ''))

@@ -544,6 +544,11 @@ class CodelistHandler(KeyValidatorMixin):
 
     @property
     def _dim_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's from the DSD to
+        frozensets containing all code IDs from the codelist
+        referenced by the Concept describing the respective dimensions.
+        '''
         if not hasattr(self, '__dim_codes'):
             if self._constrainables:
                 enum_components = [d for d in self._constrainables[0].dimensions.aslist()
@@ -556,6 +561,11 @@ class CodelistHandler(KeyValidatorMixin):
 
     @property
     def _attr_codes(self):
+        '''
+        Cached property returning a DictLike mapping attribute ID's from the DSD to
+        frozensets containing all code IDs from the codelist
+        referenced by the Concept describing the respective attributes.
+        '''
         if not hasattr(self, '__attr_codes'):
             if self._constrainables:
                 enum_components = [d for d in self._constrainables[0].attributes.aslist()
@@ -568,6 +578,15 @@ class CodelistHandler(KeyValidatorMixin):
 
     @property
     def _constrained_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's from the DSD to
+        frozensets containing the code IDs from the codelist
+        referenced by the Concept for the dimension after applying
+        all content constraints to the codelists. Those contenten constraints are
+        retrieved pursuant to an implementation of the algorithm described in the
+        SDMX 2.1 Technical Guidelines (Part 6) Chap. 9. Hence, constraints
+        may constrain the DSD, dataflow definition or provision-agreement.
+        '''
         if not hasattr(self, '__constrained_codes'):
             # Run the cascadation mechanism from Chap. 8 of the SDMX 2.1
             # Technical Guidelines.

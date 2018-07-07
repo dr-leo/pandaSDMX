@@ -168,9 +168,9 @@ class Writer(BaseWriter):
                     f = None
 
                 if parse_time and dim_at_obs == 'TIME_PERIOD':
-                    # First, handle the special case of half-yearly freq and '2010-S1' format dim
-                    # pandas cannot parse those. So convert them to quarterly
-                    # data
+                    # First, handle half-yearly and bimonthly freqs
+                    # and format such as '2010-S1' format dim
+                    # pandas cannot parse those. So convert them
                     if f == 'H':
                         f = '2Q'
                         # patch the dim values

@@ -190,7 +190,7 @@
         "name": "Norges Bank - structure-specific data format"
     },
     "ILO": {
-        "id": "NB",
+        "id": "ilo",
         "resources": {
         "data": {
                 "headers": {
@@ -202,3 +202,4 @@
         "name": "ILO - structure-specific data format"
     }
 }
+ 

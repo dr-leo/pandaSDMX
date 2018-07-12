@@ -13,7 +13,8 @@ will be tested on Python 3.5+ only
 New features
 :::::::::::::::
 
-* new data providers INEGI (Mexico), Norges Bank (Norway) 
+* four new data providers INEGI (Mexico), Norges Bank (Norway), 
+  International Labour Organization (ILO) and 
   and Italian statistics office (ISTAT)
 * model: make Ref instances callable for resolving them, i.e. getting the referenced object
   by making a remote request if needed

@@ -10,7 +10,7 @@ pandaSDMX
 | License: Apache 2.0
 | Documentation: http://pandasdmx.readthedocs.io
 | Development website: https://github.com/dr-leo/pandasdmx/
-
+| PyPI: https://pypi.org/project/pandaSDMX/
 
 Purpose of this project
 -----------------------

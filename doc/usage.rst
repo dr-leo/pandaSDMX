@@ -447,8 +447,8 @@ generate our pandas DataFrame from daily exchange rate data only:
     cur_df.shape
     cur_df.tail()
 
-Controlling the output
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Specifying whether to write observations, attributes or both 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 The docstring of the :meth:`pandasdmx.writer.data2pandas.Writer.write` method explains
 a number of optional arguments to control whether or not another dataframe should be generated for the

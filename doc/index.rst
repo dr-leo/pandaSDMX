@@ -25,9 +25,10 @@ configured by the user):
   <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`_
 * `Instituto Nacional de la Estadìstica y Geografìa - INEGI (Mexico)
   <http://www.inegi.org.mx/default.aspx>`_   
-* `Italian statistics Office (ISTAT) <http://www.istat.it/en/>`_
 * `International Monetary Fund (IMF) - SDMX Central only 
   <https://sdmxcentral.imf.org/>`_
+* `International Labour Organization (ILO) <www.ilo.org/ilostat/>`_
+* `Italian statistics Office (ISTAT) <http://www.istat.it/en/>`_
 * `Norges Bank (Norway) 
   <https://www.norges-bank.no/en/Statistics/open-data/>`_     
 * `Organisation for Economic Cooperation and Development (OECD)
@@ -103,7 +104,7 @@ Quick install
 pandaSDMX Links
 -------------------------------
 
-* `PyPI <https://pypi.python.org/pypi/pandaSDMX>`_
+* `PyPI <https://pypi.org/project/pandaSDMX/>`_
 * `github <https://github.com/dr-leo/pandaSDMX>`_
 * `Google group <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_
 * `Official SDMX website <http://www.sdmx.org>`_ 

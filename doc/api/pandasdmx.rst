@@ -13,24 +13,24 @@ Subpackages
 Submodules
 ----------
 
-pandasdmx\.api module
----------------------
+pandasdmx.api module
+--------------------
 
 .. automodule:: pandasdmx.api
     :members:
     :undoc-members:
     :show-inheritance:
 
-pandasdmx\.model module
------------------------
+pandasdmx.model module
+----------------------
 
 .. automodule:: pandasdmx.model
     :members:
     :undoc-members:
     :show-inheritance:
 
-pandasdmx\.remote module
-------------------------
+pandasdmx.remote module
+-----------------------
 
 .. automodule:: pandasdmx.remote
     :members:

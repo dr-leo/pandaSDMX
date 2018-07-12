@@ -165,7 +165,7 @@
      } 
 }
 },
-    "NORGES_BANK": {
+    "NB": {
         "id": "NB",
         "resources": {
         "data": {
@@ -177,7 +177,7 @@
         "url": "https://data.norges-bank.no/api",
         "name": "Norges Bank - generic data format"
     },
-    "NORGES_BANK_S": {
+    "NB_S": {
         "id": "NB",
         "resources": {
         "data": {
@@ -190,16 +190,15 @@
         "name": "Norges Bank - structure-specific data format"
     },
     "ILO": {
-        "id": "ilo",
+        "id": "ILO",
         "resources": {
         "data": {
                 "headers": {
-                "Accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
                 }
             }
             },
         "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
-        "name": "ILO - structure-specific data format"
+        "name": "International Labour Organization - any format"
     }
 }
  

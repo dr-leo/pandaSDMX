@@ -1074,12 +1074,26 @@ class DataMessage(KeyValidatorMixin, Message):
 
     @property
     def _dim_ids(self):
+        '''
+        Return a tuple of dimension IDs gleened from the
+        first Series in the dataset.
+        '''
         if not hasattr(self, '__dim_ids'):
             self.__dim_ids = next(self.data.series).key._fields
         return self.__dim_ids
 
     @property
     def _dim_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's gleened from
+        the key attribute of the first series in the dataset to
+        frozensets containing all code IDs occurring in the dataset.
+        The result is identical to the homonymous methods of :class:`StructureMessage` if
+        and only if the dataset was requested with 'serieskeyonly=True`. To do this,
+        use an agency which supports this feature and enable it
+        by passing 'series_keys=True' to the get() method of the Request
+        instance.
+        '''
         if not hasattr(self, '__dim_codes'):
             keys = (s.key for s in self.data.series)
             self.__dim_codes = DictLike({dim_id: frozenset(codes)

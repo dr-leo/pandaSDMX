@@ -1,8 +1,7 @@
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+# (c) 2014-2018 Dr. Leo <fhaxbox66qgmail.com>
 
 '''
 
@@ -14,9 +13,10 @@ This module is part of the pandaSDMX package
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
 
-from pandasdmx.utils import DictLike, concat_namedtuples
-from operator import attrgetter
+from pandasdmx.utils import DictLike, concat_namedtuples, str2bool
+from operator import attrgetter, or_
 from collections import defaultdict
+from functools import reduce
 
 
 class SDMXObject(object):
@@ -75,7 +75,44 @@ class Footer(SDMXObject):
 
 
 class Constrainable:
-    pass
+
+    @property
+    def constrained_by(self):
+        if not hasattr(self, '_constrained_by'):
+            if hasattr(self._reader.message, 'constraint'):
+                self._constrained_by = [c for c in self._reader.message.constraint.values()
+                                        if c.constraint_attachment() is self]
+            else:
+                self._constrained_by = []
+        return self._constrained_by
+
+    def apply(self, dim_codes=None, attr_codes=None):
+        '''
+        Compute the constrained code lists as frozensets by
+        merging the constraints resulting from all ContentConstraint instances 
+        into a dict of sets of valid codes 
+        for dimensions and attributes respectively.
+        Each codelist is constrained by at most one Constraint
+        so that no set operations are required.
+
+        Return tuple of constrained_dimensions(dict), constrained_attribute_codes(dict)
+        '''
+        dimension, attribute = {}, {}
+        for c in self.constrained_by:
+            d, a = c.apply(dim_codes, attr_codes)
+            if d:
+                dimension.update(d)
+            if a:
+                attribute.update(a)
+        # Fill any empty slots with passed codesets. This implements
+        # the inheritance mechanism.
+        if dim_codes:
+            for k, v in dim_codes.items():
+                dimension.setdefault(k, v)
+        if attr_codes:
+            for k, v in attr_codes.items():
+                attribute.setdefault(k, v)
+        return dimension, attribute
 
 
 class Annotation(SDMXObject):
@@ -193,7 +230,7 @@ class VersionableArtefact(NameableArtefact):
 
     @property
     def version(self):
-        return self._reader.version(self)
+        return self._reader.read_as_str('ref_version', self)
 
     @property
     def valid_from(self):
@@ -208,11 +245,11 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def is_final(self):
-        return bool(self._reader.read_as_str('isfinal', self))
+        return str2bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def is_external_ref(self):
-        return self._reader.is_external_ref(self)  # fix this
+        return str2bool(self._reader.read_as_str('isfinal', self))
 
     @property
     def structure_url(self):
@@ -224,7 +261,7 @@ class MaintainableArtefact(VersionableArtefact):
 
     @property
     def maintainer(self):
-        return self._reader.maintainer(self)  # fix this
+        return self._reader.read_as_str('agencyID', self)
 
 
 # Helper class for ItemScheme and ComponentList.
@@ -263,12 +300,6 @@ class Item(NameableArtefact):
         return self._reader._item_children(self)
 
 
-class Structure(MaintainableArtefact):
-    # the groupings are added in subclasses as class attributes.
-    # This deviates from the info model
-    pass
-
-
 class StructureUsage(MaintainableArtefact):
 
     @property
@@ -284,11 +315,11 @@ class Representation(SDMXObject):
 
     def __init__(self, *args, **kwargs):
         super(Representation, self).__init__(*args)
-        enum = self._reader.read_instance(
+        enum_ref = self._reader.read_instance(
             Ref, self, offset='enumeration')
-        if enum:
+        if enum_ref:
             self.text_type = self.max_length = None
-            self.enum = self._reader.message.codelist[enum.id]
+            self.enum = enum_ref
         else:
             self.enum = None
             self.text_type = self._reader.read_as_str('texttype', self)
@@ -351,12 +382,229 @@ class ConceptScheme(ItemScheme):
     _get_items = Concept
 
 
+class KeyValidatorMixin(object):
+    '''
+    Mix-in class with methods for key validation. Relies on properties computing 
+    code sets, constrained codes etc. Subclasses are DataMessage and
+    CodelistHandler which is, in turn, inherited by StructureMessage.
+    '''
+
+    def _in_codes(self, key, raise_error=True):
+        '''
+        key: a prepared key, i.e. multiple values within a dimension
+        must be represented as list of strings.
+
+        This method is called by self._in_constraints. Thus it does not 
+        be called from application code.
+
+args:
+    key(dict): normalized key, i.e. values must be lists of str
+    raises_error(bool): if True (default),
+        ValueError is raised if at least one value within key
+        is not in the (unconstrained) codes. Otherwise, False is returned.
+        If all values from key are in the respective code list,
+        True is returned
+
+        '''
+        # First, check keys against dim IDs
+        invalid = [k for k in key if k not in self._dim_ids]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, self._dim_ids))
+        # Raise error if some value is not of type list
+        if [k for k in key.values() if not isinstance(k, list)]:
+            raise TypeError(
+                'All values of the key-dict must be of type ``list``.')
+        # Check values against codelists
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._dim_codes[k]:
+                    invalid[k].append(v)
+        if invalid:
+            if raise_error:
+                raise ValueError(
+                    'Value(s) not in codelists.', invalid)
+            else:
+                return False
+        return True
+
+    def _in_constraints(self, key, raise_error=True):
+        '''
+        check key against all constraints, i.e. the constrained
+        code lists.
+
+        args:
+    key(dict): normalized key, i.e. values must be lists of str
+    raises_error(bool): if True (default),
+        ValueError is raised if at least one value within key
+        is not in the (unconstrained) codes. Otherwise, False is returned.
+        If all values from key are in the respective code list,
+        True is returned
+
+        return True if key satisfies all constraints. Otherwise, return False or
+        raise ValueError, depending on the value of ``raise_error``
+        '''
+        # validate key against unconstrained codelists
+        self._in_codes(key, raise_error)
+        # Validate key against constraints if any
+        invalid = defaultdict(list)
+        for k, values in key.items():
+            for v in values:
+                if v not in self._constrained_codes[k]:
+                    invalid[k].append(v)
+        if invalid:
+            if raise_error:
+                raise ValueError(
+                    'Value(s) not in constrained codelists.', invalid)
+            else:
+                return False
+        return True
+
+
+class CodelistHandler(KeyValidatorMixin):
+    '''
+    High-level API implementing the
+    application of content constraints to codelists. It is primarily
+    used as a mixin to StructureMessage instances containing codelists,
+    a DSD, Dataflow and related constraints. However, it
+    may also be used stand-online. It computes
+    the constrained codelists in collaboration with 
+    Constrainable, ContentConstraint and Cube Region classes. 
+    '''
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Prepare computation of constrained codelists using the
+        cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
+
+        args:
+
+            constrainables(list of model.Constrainable instances): 
+                Constrainable artefacts in descending order sorted by 
+                cascading level (e.g., `[DSD, Dataflow]`). At position 0 
+                there must be the DSD. Defaults to []. 
+                If not given, try to
+                collect the constrainables from the StructureMessage. 
+                this will be the most common use case. 
+        '''
+        super(CodelistHandler, self).__init__(*args, **kwargs)
+        constrainables = kwargs.get('constrainables', [])
+        if constrainables:
+            self.__constrainables = constrainables
+        elif (hasattr(self, 'datastructure')
+              and hasattr(self, 'codelist')):
+            self.in_codes = self._in_codes
+            if hasattr(self, 'constraint'):
+                self.in_constraints = self._in_constraints
+            else:
+                self.in_constraints = self.in_codes
+
+    @property
+    def _constrainables(self):
+        if not hasattr(self, '__constrainables'):
+            self.__constrainables = []
+            # Collecting any constrainables from the StructureMessage
+            # is only meaningful if the Message contains but one DataFlow and
+            # DSD.
+            if (hasattr(self, 'datastructure') and len(self.datastructure) == 1):
+                dsd = self.datastructure.aslist()[0]
+                self.__constrainables.append(dsd)
+                if hasattr(self, 'dataflow'):
+                    flow = self.dataflow.aslist()[0]
+                    self.__constrainables.append(flow)
+                if hasattr(self, 'provisionagreement'):
+                    for p in self.provisionagreement.values():
+                        if flow in p.constrained_by:
+                            self.__constrainables.append(p)
+                            break
+        return self.__constrainables
+
+    @property
+    def _dim_ids(self):
+        '''
+        Collect the IDs of dimensions which are 
+        represented by codelists (this excludes TIME_PERIOD etc.)
+        '''
+        if not hasattr(self, '__dim_ids'):
+            self.__dim_ids = tuple(d.id for d in self._constrainables[0].dimensions.aslist()
+                                   if d.local_repr.enum)
+        return self.__dim_ids
+
+    @property
+    def _attr_ids(self):
+        '''
+        Collect the IDs of attributes which are 
+        represented by codelists 
+        '''
+        if not hasattr(self, '__attr_ids'):
+            self.__attr_ids = tuple(d.id for d in self._constrainables[0].attributes.aslist()
+                                    if d.local_repr.enum)
+        return self.__attr_ids
+
+    @property
+    def _dim_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's from the DSD to
+        frozensets containing all code IDs from the codelist
+        referenced by the Concept describing the respective dimensions.
+        '''
+        if not hasattr(self, '__dim_codes'):
+            if self._constrainables:
+                enum_components = [d for d in self._constrainables[0].dimensions.aslist()
+                                   if d.local_repr.enum]
+                self.__dim_codes = DictLike({d.id: frozenset(d.local_repr.enum())
+                                             for d in enum_components})
+            else:
+                self.__dim_codes = {}
+        return self.__dim_codes
+
+    @property
+    def _attr_codes(self):
+        '''
+        Cached property returning a DictLike mapping attribute ID's from the DSD to
+        frozensets containing all code IDs from the codelist
+        referenced by the Concept describing the respective attributes.
+        '''
+        if not hasattr(self, '__attr_codes'):
+            if self._constrainables:
+                enum_components = [d for d in self._constrainables[0].attributes.aslist()
+                                   if d.local_repr.enum]
+                self.__attr_codes = DictLike({d.id: frozenset(d.local_repr.enum())
+                                              for d in enum_components})
+            else:
+                self.__attr_codes = {}
+        return self.__attr_codes
+
+    @property
+    def _constrained_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's from the DSD to
+        frozensets containing the code IDs from the codelist
+        referenced by the Concept for the dimension after applying
+        all content constraints to the codelists. Those contenten constraints are
+        retrieved pursuant to an implementation of the algorithm described in the
+        SDMX 2.1 Technical Guidelines (Part 6) Chap. 9. Hence, constraints
+        may constrain the DSD, dataflow definition or provision-agreement.
+        '''
+        if not hasattr(self, '__constrained_codes'):
+            # Run the cascadation mechanism from Chap. 8 of the SDMX 2.1
+            # Technical Guidelines.
+            cur_dim_codes, cur_attr_codes = self._dim_codes, self._attr_codes
+            for c in self._constrainables:
+                cur_dim_codes, cur_attr_codes = c.apply(
+                    cur_dim_codes, cur_attr_codes)
+            self.__constrained_codes = DictLike(cur_dim_codes)
+            self.__constrained_codes.update(cur_attr_codes)
+        return self.__constrained_codes
+
+
 class Constraint(MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(Constraint, self).__init__(*args, **kwargs)
         self.constraint_attachment = self._reader.read_instance(
-            DataflowDefinition, self, offset='constraint_attachment')
+            Ref, self, offset='constraint_attachment')
 
 
 class ContentConstraint(Constraint):
@@ -366,20 +614,24 @@ class ContentConstraint(Constraint):
         self.cube_region = self._reader.read_instance(
             CubeRegion, self, first_only=False)
 
-    def __contains__(self, v):
-        if self.cube_region:
-            result = [v in c for c in self.cube_region]
-            # Remove all cubes where v passed. The remaining ones indicate
-            # fails.
-            if True in result:
-                result.remove(True)
-            if result == []:
-                return True
-            else:
-                raise ValueError('Key outside cube region(s).', v, result)
-        else:
-            raise NotImplementedError(
-                'ContentConstraint does not contain any CubeRegion.')
+    def apply(self, dim_codes=None, attr_codes=None):
+        '''
+        Compute the constrained code lists as frozensets by
+        merging the constraints resulting from all cube regions into a dict of sets of valid codes 
+        for dimensions and attributes respectively.
+        We assume that each codelist is constrained by at most one cube
+        region so that no set operations are required.
+
+        Return tuple of constrained_dimension_codes(dict), constrained_attribute_codes(dict)
+        '''
+        dimension, attribute = {}, {}
+        for c in self.cube_region:
+            d, a = c.apply(dim_codes, attr_codes)
+            if d:
+                dimension.update(d)
+            if a:
+                attribute.update(a)
+        return dimension, attribute
 
 
 class KeyValue(SDMXObject):
@@ -387,28 +639,62 @@ class KeyValue(SDMXObject):
     def __init__(self, *args, **kwargs):
         super(KeyValue, self).__init__(*args, **kwargs)
         self.id = self._reader.read_as_str('id', self)
-        self.values = self._reader.read_as_str('value', self, first_only=False)
+
+    @property
+    def values(self):
+        if not hasattr(self, '_values'):
+            self._values = frozenset(
+                self._reader.read_as_str('value', self, first_only=False)) or frozenset()
+        return self._values
 
 
 class CubeRegion(SDMXObject):
 
     def __init__(self, *args, **kwargs):
+        '''
+        Get the KeyValues and other attributes.
+                '''
         super(CubeRegion, self).__init__(*args, **kwargs)
-        self.include = bool(self._reader.read_as_str('include', self))
-        keyvalues = self._reader.read_instance(KeyValue, self,
-                                               first_only=False)
-        if keyvalues:
-            self.key_values = {kv.id: kv.values for kv in keyvalues}
-        else:
-            self.key_values = {}
+        self.include = str2bool(self._reader.read_as_str('include', self))
+        # get any key-values for dimensions
+        self.dimension = {kv.id: kv.values
+                          for kv in (self._reader.read_instance(KeyValue, self,
+                                                                first_only=False) or [])}
+        # get any key-values for attributes
+        self.attribute = {kv.id: kv.values
+                          for kv in (self._reader.read_instance(KeyValue, self,
+                                                                first_only=False, offset='cuberegion_attribute') or [])}
 
-    def __contains__(self, v):
-        key, value = v
-        kv = self.key_values
-        if key not in kv.keys():
-            raise KeyError(
-                'Unknown key: {0}. Allowed keys are: {1}'.format(key, list(kv.keys())))
-        return (value in kv[key]) == self.include
+    def apply(self, dim_codes=None, attr_codes=None):
+        '''
+        Compute the code lists constrained by
+        the cube region as frozensets.
+
+        args:
+            dim_codes(dict): maps dim IDs to 
+                the referenced codelist represented by a frozenset.
+                The set may or may not be constrained by a jigher-level
+                ContentConstraint. See the 
+                Technical Guideline (Part 6 of the SDMX Standard). Default is None (disregard dimensions)
+            attr_codes(dict): same as above, but for attributes as 
+                specified by a DSD.
+
+        Return tuple of constrained_dimensions(dict), constrained_attribute_codes(dict)
+        '''
+        dimension = attribute = None
+        if dim_codes:
+            dimension = {k: (self.dimension[k] & dim_codes[k])
+                         for k in self.dimension}
+            if not self.include:
+                for k, v in dimension.items():
+                    dimension[k] = dim_codes[k] - v
+        if attr_codes:
+            attribute = {k: (self.attribute[k] & attr_codes[k])
+                         for k in self.attribute}
+            if not self.include:
+                for k, v in attribute.items():
+                    attribute[k] = attr_codes[k] - v
+        return dimension, attribute
 
 
 class Category(Item):
@@ -444,6 +730,16 @@ class Categorisations(SDMXObject, DictLike):
 
 
 class Ref(SDMXObject):
+    # mappings used for resolving the ref
+    _cls2rc_name = {
+        'Dataflow': 'dataflow',
+        'Codelist': 'codelist',
+        'DataStructure': 'datastructure',
+        'ProvisionAgreement': 'provisionagreement'}
+
+    def __str__(self):
+        return ' | '.join(
+            (self.__class__.__name__, self.agency_id, self.package, self.id))
 
     @property
     def package(self):
@@ -469,9 +765,52 @@ class Ref(SDMXObject):
     def maintainable_parent_id(self):
         return self._reader.read_as_str('maintainable_parent_id', self)
 
-    def resolve(self):
-        pkg = getattr(self._reader.msg, self.package)
-        return pkg[self.id]
+    def __call__(self, request=False, target_only=True, **kwargs):
+        '''
+        Resolv reference.
+
+        args:
+
+            request(bool): If True (defaut: False), and
+                the referenced artefact is not in the same message,
+                a request to the data provider will be made to
+                fetch it. It will use the
+                current Request instance. Thus, requests to
+                other agencies are not supported.
+            response(bool): If False (default), only the referenced artefact 
+                will be returned, otherwise the requested Response instance. Ignored if `request` is False. 
+                The latter is useful if writing to pandas is intended.
+
+            kwargs: are passed on to Request.get(). 
+
+        return referenced artefact or entire Response if requested via http, 
+            or None if artefact was not found in the current message. 
+        '''
+        rc_name = self._cls2rc_name[self.ref_class]
+        try:
+            rc = getattr(self._reader.message, rc_name)
+            if self.maintainable_parent_id:
+                rc = rc[self.maintainable_parent_id]
+            return rc[self.id]
+        except (AttributeError, TypeError):
+            # Raise error if kwargs is non-empty while no request is made.
+            # This is most likely not intended by the caller.
+            if not request and kwargs:
+                raise ValueError('''Reference target not found in the current message, 
+                but ``request`` is False. Yet, kwargs to be passed 
+                on to the request were given: {0}'''.format(kwargs))
+            if request:
+                req = self._reader.request
+                resp = req.get(resource_type=rc_name,
+                               resource_id=self.maintainable_parent_id or self.id,
+                               agency=self.agency_id, **kwargs)
+                if target_only:
+                    rc = getattr(resp.msg, rc_name)
+                    return rc[self.id]
+                else:
+                    return resp
+            else:
+                return None
 
 
 class Categorisation(MaintainableArtefact):
@@ -484,8 +823,16 @@ class Categorisation(MaintainableArtefact):
             Ref, self, offset='ref_source')
 
 
-class DataflowDefinition(StructureUsage, Constrainable):
+class DataflowDefinition(Constrainable, StructureUsage):
     pass
+
+
+class ProvisionAgreement(Constrainable, MaintainableArtefact):
+
+    def __init__(self, *args, **kwargs):
+        super(ProvisionAgreement, self).__init__(*args, **kwargs)
+        self.structure_usage = self._reader.read_instance(
+            Ref, self, offset='structure_usage')
 
 
 class DataAttribute(Component):
@@ -502,7 +849,7 @@ class DataAttribute(Component):
         return self._reader.read_as_str('assignment_status', self)
 
 
-class DataStructureDefinition(Structure, Constrainable):
+class DataStructureDefinition(Constrainable, MaintainableArtefact):
 
     def __init__(self, *args, **kwargs):
         super(DataStructureDefinition, self).__init__(*args, **kwargs)
@@ -620,7 +967,7 @@ class DataSet(SDMXObject):
         Note that DataSets in flat format, i.e.
         header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs() instead.
         '''
-        return self._reader.generic_series(self)
+        return self._reader.iter_series(self)
 
     @property
     def iter_groups(self):
@@ -696,40 +1043,59 @@ class Message(SDMXObject):
                 setattr(self, name, payload)
 
 
-class StructureMessage(Message):
+class StructureMessage(CodelistHandler, Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
+        ('constraint', 'read_identifiables', ContentConstraint, None),
         ('codelist', 'read_identifiables', Codelist, None),
         ('conceptscheme', 'read_identifiables', ConceptScheme, None),
         ('dataflow', 'read_identifiables', DataflowDefinition,
          'dataflow_from_msg'),
         ('datastructure', 'read_identifiables',
          DataStructureDefinition, None),
-        ('constraint', 'read_identifiables', ContentConstraint, None),
+        ('provisionagreement', 'read_identifiables',
+            ProvisionAgreement, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
         ('_categorisation', 'read_instance', Categorisations, None)])
 
-    def __getattr__(self, name):
-        '''
-        Some attributes have been renamed in v0.4.
-        Old names are deprecated.
-        This method ensures backward compatibility. It will be
-        removed in a future version.
-        '''
-        old2new = {
-            'codelists': 'codelist',
-            'dataflows': 'dataflow',
-            'categoryschemes': 'categoryscheme',
-            'categorisations': 'categorisation',
-            'conceptschemes': 'conceptscheme',
-            'datastructures': 'datastructure'}
-        if name in old2new:
-            return getattr(self, old2new[name])
-        else:
-            raise AttributeError
 
-
-class DataMessage(Message):
+class DataMessage(KeyValidatorMixin, Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', DataSet, None)])
+
+    def __init__(self, *args, **kwargs):
+        super(DataMessage, self).__init__(*args, **kwargs)
+        # As series keys always reflect constrained codelists, we equate both methods
+        # inherited from KeyValidatorMixin for API compatibility.
+        # the _in_constraints methods must not be used.
+        self.in_codes = self._in_codes
+        self.in_constraints = self._in_codes
+
+    @property
+    def _dim_ids(self):
+        '''
+        Return a tuple of dimension IDs gleened from the
+        first Series in the dataset.
+        '''
+        if not hasattr(self, '__dim_ids'):
+            self.__dim_ids = next(self.data.series).key._fields
+        return self.__dim_ids
+
+    @property
+    def _dim_codes(self):
+        '''
+        Cached property returning a DictLike mapping dim ID's gleened from
+        the key attribute of the first series in the dataset to
+        frozensets containing all code IDs occurring in the dataset.
+        The result is identical to the homonymous methods of :class:`StructureMessage` if
+        and only if the dataset was requested with 'serieskeyonly=True`. To do this,
+        use an agency which supports this feature and enable it
+        by passing 'series_keys=True' to the get() method of the Request
+        instance.
+        '''
+        if not hasattr(self, '__dim_codes'):
+            keys = (s.key for s in self.data.series)
+            self.__dim_codes = DictLike({dim_id: frozenset(codes)
+                                         for dim_id, codes in zip(self._dim_ids, zip(*keys))})
+        return self.__dim_codes

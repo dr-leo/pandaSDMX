@@ -40,6 +40,7 @@ class Reader(BaseReader):
         root = tree.getroot()
         if root.tag.endswith('Structure'):
             msg = model.StructureMessage(self, root)
+
         elif (root.tag.endswith('GenericTimeSeriesData')
               or root.tag.endswith('GenericData')):
             msg = model.DataMessage(self, root)
@@ -68,7 +69,7 @@ class Reader(BaseReader):
                         self.dsd = self.request.datastructure(dsd_id,
                                                               params={
                                                                   'references': None},
-                                                              cache=cache_id).datastructure[dsd_id]
+                                                              memcache=cache_id).datastructure[dsd_id]
                     except Exception:
                         self.request.clear_cache(cache_id)
                         # strip off leading agency ID and trailing version
@@ -77,7 +78,7 @@ class Reader(BaseReader):
                         self.dsd = self.request.datastructure(dsd_id,
                                                               params={
                                                                   'references': None},
-                                                              cache=cache_id).datastructure[dsd_id]
+                                                              memcache=cache_id).datastructure[dsd_id]
 
                 # extract dimension and attribute IDs from the DSD for later
                 # use
@@ -102,7 +103,8 @@ class Reader(BaseReader):
         'footer_code': '@code',
         'footer_severity': '@severity',
         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
-        'constraint_attachment': 'str:ConstraintAttachment',
+        'constraint_attachment': 'str:ConstraintAttachment/*',
+        'structure_usage': 'str:StructureUsage',
         'include': '@include',
         'id': '@id',
         'urn': '@urn',
@@ -120,7 +122,7 @@ class Reader(BaseReader):
         'ref_version': '@version',
         'concept_identity': 'str:ConceptIdentity',
         'position': '@position',
-        'isfinal': '@isfinal',
+        'isfinal': '@isFinal',
         'ref_package': '@package',
         'ref_class': '@class',
         'ref_target': 'str:Target',
@@ -144,6 +146,7 @@ class Reader(BaseReader):
         model.Categorisation: 'str:Categorisation',
         model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
         model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
+        model.ProvisionAgreement: 'mes:Structures/str:ProvisionAgreements/str:ProvisionAgreement',
         model.DataflowDefinition: 'str:Dataflow',
         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
@@ -162,11 +165,14 @@ class Reader(BaseReader):
         model.DataAttribute: 'str:Attribute',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
+        'cuberegion_attribute': 'com:Attribute',
         model.Ref: 'Ref',
         model.Header: 'mes:Header',
         model.Annotation: 'com:Annotations/com:Annotation',
         model.Group: 'gen:Group',
-        model.Series: 'gen:Series',
+        'gen_series': 'gen:Series',
+        'struct_spec_series_ns': 'data:Series',
+        'struct_spec_series': 'Series',
         model.DataSet: 'mes:DataSet',
         'int_str_names': './*[local-name() = $name]/@xml:lang',
         model.Representation: 'str:LocalRepresentation',
@@ -265,12 +271,14 @@ class Reader(BaseReader):
                     obs_attr = None
                 yield self._ObsTuple(obs_key, obs_value, obs_attr)
 
-    def generic_series(self, sdmxobj):
+    def iter_series(self, sdmxobj):
         if self.dsd:
-            iter_series = sdmxobj._elem.iterchildren('Series')
+            iter_s = self._paths['struct_spec_series'](sdmxobj._elem)
+            if not iter_s:
+                iter_s = self._paths['struct_spec_series_ns'](sdmxobj._elem)
         else:
-            iter_series = self._paths[model.Series](sdmxobj._elem)
-        for series in iter_series:
+            iter_s = self._paths['gen_series'](sdmxobj._elem)
+        for series in iter_s:
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):

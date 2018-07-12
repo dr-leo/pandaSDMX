@@ -156,18 +156,26 @@ class Writer(BaseWriter):
 
                 # Generate the index
                 # Get frequency if present
-                if 'FREQ' in series.key:
+                if 'FREQ' in series.key._fields:
                     f = series.key.FREQ
-                elif series.attrib and 'FREQUENCY' in series.attrib:
+                elif series.attrib and 'FREQUENCY' in series.attrib._fields:
                     f = series.attrib.FREQUENCY
-                elif 'FREQUENCY' in series.key:
+                elif 'FREQUENCY' in series.key._fields:
                     f = series.key.FREQUENCY
-                elif series.attrib and 'FREQ' in series.attrib:
+                elif series.attrib and 'FREQ' in series.attrib._fields:
                     f = series.attrib.FREQ
                 else:
                     f = None
 
                 if parse_time and dim_at_obs == 'TIME_PERIOD':
+                    # First, handle half-yearly and bimonthly freqs
+                    # and format such as '2010-S1' format dim
+                    # pandas cannot parse those. So convert them
+                    if f == 'H':
+                        f = '2Q'
+                        # patch the dim values
+                        obs_dim = ['Q'.join((od[:-2], '1' if od[-1] == '1' else '3'))
+                                   for od in obs_dim]
                     # Check if we can build the index based on start and freq
                     # Constructing the index from the first value and FREQ should only
                     # occur if 'fromfreq' and hence f is True

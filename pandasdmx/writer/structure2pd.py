@@ -23,7 +23,7 @@ from operator import attrgetter
 class Writer(BaseWriter):
 
     _row_content = {'codelist', 'conceptscheme', 'dataflow',
-                    'categoryscheme'}
+                    'categoryscheme', 'provisionagreement'}
 
     def write(self, source=None, rows=None, **kwargs):
         '''
@@ -51,6 +51,10 @@ class Writer(BaseWriter):
                 values (nameable SDMX objects such as Code or ConceptScheme) that will be stored in the
                 DataFrame. If a list, it must contain strings
                 that are valid attibute values. Defaults to: ['name', 'description']
+            constraint(bool): if True (default), apply any constraints to codelists, i.e. only the codes allowed by
+                the constraints attached to the DSD, dataflow and provision agreements contained in the
+                message are written to the DataFrame. Otherwise, the entire codelist
+                is written.
             lang(str): locale identifier. Specifies the preferred 
                 language for international strings such as names.
                 Default is 'en'.
@@ -77,7 +81,7 @@ class Writer(BaseWriter):
         else:
             return frames
 
-    def _make_dataframe(self, source, rows, constraint=None,
+    def _make_dataframe(self, source, rows, constraint=True,
                         columns=['name'], lang='en'):
 
         def make_column(scheme, item):
@@ -105,12 +109,13 @@ class Writer(BaseWriter):
 
         def iter_keys(container):
             if codelist_and_dsd:
-                if (constraint
-                        and container[1] in dim2cl.values()):
-                    result = (v for v in container[1].values()
-                              if (v.id, container[0].id) in constraint)
+                # ``container`` is a pair of (dimension, codelist)
+                component, codelist = container
+                if constraint and source._constrained_codes:
+                    result = (codelist[v]
+                              for v in source._constrained_codes[component.id])
                 else:
-                    result = container[1].values()
+                    result = codelist.values()
             else:
                 result = container.values()
             return sorted(result, key=attrgetter('id'))
@@ -150,22 +155,12 @@ class Writer(BaseWriter):
                 dsd = source.datastructure.any()
                 # Relate dimensions and attributes to corresponding codelists to
                 # show this relation in the resulting dataframe
-                dim2cl = {d: d.local_repr.enum for d in dsd.dimensions.values()
+                dim2cl = {d: d.local_repr.enum() for d in dsd.dimensions.values()
                           if d.local_repr.enum}
-                attr2cl = {a: a.local_repr.enum for a in dsd.attributes.values()
+                attr2cl = {a: a.local_repr.enum() for a in dsd.attributes.values()
                            if a.local_repr.enum}
             except:
                 dsd = None
-
-            if constraint:
-                try:
-                    # use any user-provided constraint
-                    constraint = constraint.constraints.any()
-                except AttributeError:
-                    # So the Message must containe a constraint
-                    # the following is buggy: Should be linked to a dataflow,
-                    # DSD or provision-agreement
-                    constraint = source.constraints.any()
 
         # pre-compute bool value to test for DSD-related codelists
         codelist_and_dsd = (rows == 'codelist' and dsd)
@@ -188,7 +183,7 @@ class Writer(BaseWriter):
             # from them other attributes for the dataframe columns.
             raw_tuples = chain.from_iterable(zip(
                 # 1st index level eg ID of dimension
-                # represented by codelist, or or ConceptScheme etc.
+                # represented by codelist, or ConceptScheme etc.
                 repeat(container),
                 # 2nd index level: first row in each codelist is the corresponding
                 # container id. The following rows are item ID's. .

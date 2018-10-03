@@ -9,26 +9,41 @@
 
 
 '''
-    This module contains the base class for readers.
+    This module contains the abstract base class for readers.
 
 '''
+from abc import ABC, abstractmethod
 
 from pandasdmx.utils import DictLike
 
 
-class BaseReader:
+class BaseReader(ABC):
 
     def __init__(self, request, **kwargs):
         self.request = request
-        # subclasses must declare '_compiled' flag and '_paths' dict
-        # and '_compile_paths' function
-        # Check if we need to compile path expressions
-        if not self._compiled:
-            self._compile_paths()
-            self.__class__._compiled = True
+        self._compile_paths()
 
+    @classmethod
+    def _compile_paths(cls):
+        """Compile path expressions.
+
+        Subclasses MAY declare a _paths dict, in which case they MUST implement
+        _compile_paths() that compiles these paths *only once*. To avoid
+        repeated compilation, they can:
+        - set and check an attribute like _compiled,
+        - check the type of a value in _paths, or
+        - anything else.
+        """
+        if hasattr(cls, '_paths'):
+            raise NotImplemented
+
+    @abstractmethod
     def initialize(self, source):
-        raise NotImplemented
+        """Initialize the reader.
+
+        Must return an instance of model.Message or a subclass.
+        """
+        pass
 
     def read_identifiables(self, cls,  sdmxobj, offset=None):
         '''
@@ -55,9 +70,9 @@ class BaseReader:
         '''
         If cls in _paths and matches,
         return an instance of cls with the first XML element,
-        or, if first_only is False, a list of cls instances 
+        or, if first_only is False, a list of cls instances
         for all elements found,
-        If no matches were found, return None.  
+        If no matches were found, return None.
         '''
         if offset:
             try:

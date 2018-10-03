@@ -46,9 +46,6 @@ class Reader(BaseReader):
         self.message = cls(self, root)
         return self.message
 
-    # flag to prevent multiple compiling. See BaseReader.__init__
-    _compiled = False
-
     def write_source(self, filename):
         '''
         Save XML source to file by calling `write` on the root element.
@@ -139,6 +136,10 @@ class Reader(BaseReader):
 
     @classmethod
     def _compile_paths(cls):
+        if isinstance(next(iter(cls._paths.values())), XPath):
+            # Already compiled
+            return
+
         for key, path in cls._paths.items():
             cls._paths[key] = XPath(
                 path, namespaces=cls._nsmap, smart_strings=False)

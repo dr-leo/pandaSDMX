@@ -1,5 +1,3 @@
-from pandasdmx.model import DataSet
-from pandasdmx.writer.data2pandas import Writer
 from unittest import TestCase
 
 
@@ -10,8 +8,16 @@ class TestAPI(TestCase):
         with self.assertRaises(TypeError):
             BaseReader(None)
 
+    def test_null_reader(self):
+        """Instantiate the null reader."""
+        from pandasdmx.reader.null import Reader
+        Reader()
+
 
 def test_dataset_bare():
+    from pandasdmx.model import DataSet
+    from pandasdmx.writer.data2pandas import Writer
+
     # Create a bare dataset
     ds = DataSet()
 

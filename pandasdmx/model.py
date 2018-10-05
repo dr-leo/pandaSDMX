@@ -1,7 +1,8 @@
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this distribution.
-# (c) 2014-2018 Dr. Leo <fhaxbox66qgmail.com>
+# This is notwithstanding any licenses of third-party software included in this
+# distribution.
+# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
 
 '''
 
@@ -20,15 +21,49 @@ from functools import reduce
 
 
 class SDMXObject(object):
+    # Mapping from attribute names → path names for looking up string
+    # attributes. See __getattr__()
+    _str_attrs = {}
 
-    def __init__(self, reader, elem, **kwargs):
+    def __init__(self, reader=None, elem=None, **kwargs):
 
-        object.__setattr__(self, '_reader', reader)
-        object.__setattr__(self, '_elem', elem)
+        if reader:
+            setattr(self, '_reader', reader)
+        else:
+            # If reader is not supplied, create one that reads nothing
+            from pandasdmx.reader.null import Reader
+            setattr(self, '_reader', Reader())
+        setattr(self, '_elem', elem)
         super(SDMXObject, self).__init__(**kwargs)
+
+    def __getattr__(self, name):
+        """Maybe read string attributes.
+
+        If *name* is in the _str_attrs attribute of SDMXObject or a subclass,
+        then try to read a string value from the object's Reader, and return
+        the value. If *name* is not such a special attribute OR there is no
+        Reader, then AttributeError is returned.
+        """
+        # TODO handle attributes that pass first_only=False to read_as_str()
+        # TODO handle attributes with type conversion of the result, e.g. int()
+        try:
+            path = self._str_attrs[name]
+            # Set the attribute on the object, so subsequent calls will not
+            # trigger this method
+            setattr(self, name, self._reader.read_as_str(path, self))
+            return getattr(self, name)
+        except (KeyError, AttributeError) as e:
+            raise AttributeError(name)
 
 
 class Header(SDMXObject):
+    _str_attrs = {
+        'error': 'error',
+        'id': 'headerID',
+        'prepared': 'header_prepared',
+        'receiver': 'header_receiver',
+        'sender': 'header_sender',
+        }
 
     def __init__(self, *args, **kwargs):
         super(Header, self).__init__(*args, **kwargs)
@@ -38,36 +73,13 @@ class Header(SDMXObject):
             if value:
                 setattr(self, name, value)
 
-    @property
-    def id(self):
-        return self._reader.read_as_str('headerID', self)
-
-    @property
-    def prepared(self):
-        return self._reader.read_as_str('header_prepared', self)
-
-    @property
-    def sender(self):
-        return self._reader.read_as_str('header_sender', self)
-
-    @property
-    def receiver(self):
-        return self._reader.read_as_str('header_receiver', self)
-
-    @property
-    def error(self):
-        return self._reader.read_as_str('error', self)
-
 
 class Footer(SDMXObject):
+    _str_attrs = {'severity': 'footer_severity'}
 
     @property
     def text(self):
         return self._reader.read_as_str('footer_text', self, first_only=False)
-
-    @property
-    def severity(self):
-        return self._reader.read_as_str('footer_severity', self)
 
     @property
     def code(self):
@@ -89,8 +101,8 @@ class Constrainable:
     def apply(self, dim_codes=None, attr_codes=None):
         '''
         Compute the constrained code lists as frozensets by
-        merging the constraints resulting from all ContentConstraint instances 
-        into a dict of sets of valid codes 
+        merging the constraints resulting from all ContentConstraint instances
+        into a dict of sets of valid codes
         for dimensions and attributes respectively.
         Each codelist is constrained by at most one Constraint
         so that no set operations are required.
@@ -116,6 +128,10 @@ class Constrainable:
 
 
 class Annotation(SDMXObject):
+    _str_attrs = {
+        'annotationtype': 'annotationtype',
+        'url': 'url',
+        }
 
     @property
     def id(self):
@@ -124,14 +140,6 @@ class Annotation(SDMXObject):
     @property
     def title(self):
         return self._reader.title(self)
-
-    @property
-    def annotationtype(self):
-        return self._reader.read_as_str('annotationtype', self)
-
-    @property
-    def url(self):
-        return self._reader.read_as_str('url', self)
 
     @property
     def text(self):
@@ -149,11 +157,14 @@ class AnnotableArtefact(SDMXObject):
 
 
 class IdentifiableArtefact(AnnotableArtefact):
+    _str_attrs = {
+        'uri': 'uri',
+        'urn': 'urn',
+        }
 
     def __init__(self, *args, **kwargs):
         super(IdentifiableArtefact, self).__init__(*args, **kwargs)
         ref = self._reader.read_instance(Ref, self)
-        self.urn = self._reader.read_as_str('urn', self)
         if ref:
             self.ref = ref
         try:
@@ -181,10 +192,6 @@ class IdentifiableArtefact(AnnotableArtefact):
 
     def __hash__(self):
         return hash(self.urn)
-
-    @property
-    def uri(self):
-        return self._reader.read_as_str('uri', self)
 
     def __repr__(self):
         result = ' | '.join(
@@ -278,8 +285,8 @@ class Scheme(DictLike):
         self._reader.read_identifiables(self._get_items, self)
 
     # DictLike.aslist returns a list sorted by _sort_key.
-    # Alphabetical order by 'id' is the default. DimensionDescriptor overrides this
-    # to sort by position.
+    # Alphabetical order by 'id' is the default. DimensionDescriptor overrides
+    # this to sort by position.
     _sort_key = attrgetter('id')
 
     def aslist(self):
@@ -291,6 +298,12 @@ class ItemScheme(MaintainableArtefact, Scheme):
     @property
     def is_partial(self):
         return self._reader.is_partial(self)
+
+    def __getattr__(self, name):
+        """Attribute access."""
+        # Override the MRO for ItemScheme and subclasses: only use the DictLike
+        # attribute access, and not the _str_attrs lookup in SDMXObject
+        return super(Scheme, self).__getattr__(name)
 
 
 class Item(NameableArtefact):
@@ -384,7 +397,7 @@ class ConceptScheme(ItemScheme):
 
 class KeyValidatorMixin(object):
     '''
-    Mix-in class with methods for key validation. Relies on properties computing 
+    Mix-in class with methods for key validation. Relies on properties computing
     code sets, constrained codes etc. Subclasses are DataMessage and
     CodelistHandler which is, in turn, inherited by StructureMessage.
     '''
@@ -394,7 +407,7 @@ class KeyValidatorMixin(object):
         key: a prepared key, i.e. multiple values within a dimension
         must be represented as list of strings.
 
-        This method is called by self._in_constraints. Thus it does not 
+        This method is called by self._in_constraints. Thus it does not
         be called from application code.
 
 args:
@@ -469,8 +482,8 @@ class CodelistHandler(KeyValidatorMixin):
     used as a mixin to StructureMessage instances containing codelists,
     a DSD, Dataflow and related constraints. However, it
     may also be used stand-online. It computes
-    the constrained codelists in collaboration with 
-    Constrainable, ContentConstraint and Cube Region classes. 
+    the constrained codelists in collaboration with
+    Constrainable, ContentConstraint and Cube Region classes.
     '''
 
     def __init__(self, *args, **kwargs):
@@ -480,13 +493,13 @@ class CodelistHandler(KeyValidatorMixin):
 
         args:
 
-            constrainables(list of model.Constrainable instances): 
-                Constrainable artefacts in descending order sorted by 
-                cascading level (e.g., `[DSD, Dataflow]`). At position 0 
-                there must be the DSD. Defaults to []. 
+            constrainables(list of model.Constrainable instances):
+                Constrainable artefacts in descending order sorted by
+                cascading level (e.g., `[DSD, Dataflow]`). At position 0
+                there must be the DSD. Defaults to [].
                 If not given, try to
-                collect the constrainables from the StructureMessage. 
-                this will be the most common use case. 
+                collect the constrainables from the StructureMessage.
+                this will be the most common use case.
         '''
         super(CodelistHandler, self).__init__(*args, **kwargs)
         constrainables = kwargs.get('constrainables', [])
@@ -523,7 +536,7 @@ class CodelistHandler(KeyValidatorMixin):
     @property
     def _dim_ids(self):
         '''
-        Collect the IDs of dimensions which are 
+        Collect the IDs of dimensions which are
         represented by codelists (this excludes TIME_PERIOD etc.)
         '''
         if not hasattr(self, '__dim_ids'):
@@ -534,8 +547,8 @@ class CodelistHandler(KeyValidatorMixin):
     @property
     def _attr_ids(self):
         '''
-        Collect the IDs of attributes which are 
-        represented by codelists 
+        Collect the IDs of attributes which are
+        represented by codelists
         '''
         if not hasattr(self, '__attr_ids'):
             self.__attr_ids = tuple(d.id for d in self._constrainables[0].attributes.aslist()
@@ -617,7 +630,7 @@ class ContentConstraint(Constraint):
     def apply(self, dim_codes=None, attr_codes=None):
         '''
         Compute the constrained code lists as frozensets by
-        merging the constraints resulting from all cube regions into a dict of sets of valid codes 
+        merging the constraints resulting from all cube regions into a dict of sets of valid codes
         for dimensions and attributes respectively.
         We assume that each codelist is constrained by at most one cube
         region so that no set operations are required.
@@ -635,17 +648,11 @@ class ContentConstraint(Constraint):
 
 
 class KeyValue(SDMXObject):
+    _str_attrs = {'id': 'id'}
 
     def __init__(self, *args, **kwargs):
         super(KeyValue, self).__init__(*args, **kwargs)
-        self.id = self._reader.read_as_str('id', self)
-
-    @property
-    def values(self):
-        if not hasattr(self, '_values'):
-            self._values = frozenset(
-                self._reader.read_as_str('value', self, first_only=False)) or frozenset()
-        return self._values
+        self.values = self._reader.read_as_str('value', self, first_only=False)
 
 
 class CubeRegion(SDMXObject):
@@ -671,12 +678,12 @@ class CubeRegion(SDMXObject):
         the cube region as frozensets.
 
         args:
-            dim_codes(dict): maps dim IDs to 
+            dim_codes(dict): maps dim IDs to
                 the referenced codelist represented by a frozenset.
                 The set may or may not be constrained by a jigher-level
-                ContentConstraint. See the 
+                ContentConstraint. See the
                 Technical Guideline (Part 6 of the SDMX Standard). Default is None (disregard dimensions)
-            attr_codes(dict): same as above, but for attributes as 
+            attr_codes(dict): same as above, but for attributes as
                 specified by a DSD.
 
         Return tuple of constrained_dimensions(dict), constrained_attribute_codes(dict)
@@ -730,40 +737,14 @@ class Categorisations(SDMXObject, DictLike):
 
 
 class Ref(SDMXObject):
-    # mappings used for resolving the ref
-    _cls2rc_name = {
-        'Dataflow': 'dataflow',
-        'Codelist': 'codelist',
-        'DataStructure': 'datastructure',
-        'ProvisionAgreement': 'provisionagreement'}
-
-    def __str__(self):
-        return ' | '.join(
-            (self.__class__.__name__, self.agency_id, self.package, self.id))
-
-    @property
-    def package(self):
-        return self._reader.read_as_str('ref_package', self)
-
-    @property
-    def id(self):
-        return self._reader.read_as_str('id', self)
-
-    @property
-    def ref_class(self):
-        return self._reader.read_as_str('ref_class', self)
-
-    @property
-    def version(self):
-        return self._reader.read_as_str('ref_version', self)
-
-    @property
-    def agency_id(self):
-        return self._reader.read_as_str('agencyID', self)
-
-    @property
-    def maintainable_parent_id(self):
-        return self._reader.read_as_str('maintainable_parent_id', self)
+    _str_attrs = {
+        'agency_id': 'agencyID',
+        'id': 'id',
+        'maintainable_parent_id': 'maintainable_parent_id',
+        'package': 'ref_package',
+        'ref_class': 'ref_class',
+        'ref_version': 'ref_version',
+        }
 
     def __call__(self, request=False, target_only=True, **kwargs):
         '''
@@ -777,14 +758,14 @@ class Ref(SDMXObject):
                 fetch it. It will use the
                 current Request instance. Thus, requests to
                 other agencies are not supported.
-            response(bool): If False (default), only the referenced artefact 
-                will be returned, otherwise the requested Response instance. Ignored if `request` is False. 
+            response(bool): If False (default), only the referenced artefact
+                will be returned, otherwise the requested Response instance. Ignored if `request` is False.
                 The latter is useful if writing to pandas is intended.
 
-            kwargs: are passed on to Request.get(). 
+            kwargs: are passed on to Request.get().
 
-        return referenced artefact or entire Response if requested via http, 
-            or None if artefact was not found in the current message. 
+        return referenced artefact or entire Response if requested via http,
+            or None if artefact was not found in the current message.
         '''
         rc_name = self._cls2rc_name[self.ref_class]
         try:
@@ -796,8 +777,8 @@ class Ref(SDMXObject):
             # Raise error if kwargs is non-empty while no request is made.
             # This is most likely not intended by the caller.
             if not request and kwargs:
-                raise ValueError('''Reference target not found in the current message, 
-                but ``request`` is False. Yet, kwargs to be passed 
+                raise ValueError('''Reference target not found in the current message,
+                but ``request`` is False. Yet, kwargs to be passed
                 on to the request were given: {0}'''.format(kwargs))
             if request:
                 req = self._reader.request
@@ -836,6 +817,8 @@ class ProvisionAgreement(Constrainable, MaintainableArtefact):
 
 
 class DataAttribute(Component):
+    _str_attrs = Component._str_attrs.copy()
+    _str_attrs.update({'usage_status': 'assignment_status'})
 
     @property
     def related_to(self):
@@ -843,10 +826,6 @@ class DataAttribute(Component):
 
     # fix this
     # role = Instance(Concept)
-
-    @property
-    def usage_status(self):
-        return self._reader.read_as_str('assignment_status', self)
 
 
 class DataStructureDefinition(Constrainable, MaintainableArtefact):

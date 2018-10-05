@@ -325,46 +325,8 @@ class Reader(BaseReader):
 
     dataset_attrib = series_attrib
 
-    def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
-                                reverse_obs=False):
-        ObsAttrTuple = None
-        if self.dsd:
-            # this is a structure-specific dataset
-            for obs in sdmxobj._elem.iterchildren(reversed=reverse_obs):
-                obs_attrib = obs.attrib  # XML attributes
-                # dim at obs
-                obs_dim = obs_attrib[self.message.data.dim_at_obs]
-                obs_value = obs_attrib['OBS_VALUE'] if with_value else None
-                if with_attributes:
-                    if not ObsAttrTuple:
-                        obs_attr_id = [
-                            k for k in self.attrib_ids if k in obs_attrib]
-                        ObsAttrTuple = namedtuple_factory(
-                            'ObsAttributes', obs_attr_id)
-                    obs_attr_values = [obs_attrib[k] for k in obs_attr_id]
-                    obs_attr = ObsAttrTuple(*obs_attr_values)
-                else:
-                    obs_attr = None
-                yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
-        else:
-            # we have a generic dataset
-            for obs in sdmxobj._elem.iterchildren(
-                    '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
-                    reversed=reverse_obs):
-                obs_dim = self._paths['generic_series_dim_path'](obs)[0]
-                if with_value:
-                    obs_value = self._paths['obs_value_path'](obs)[0]
-                else:
-                    obs_value = None
-                if with_attributes:
-                    obs_attr_values = self._paths['attr_values_path'](obs)
-                    obs_attr_id = self._paths['attr_id_path'](obs)
-                    obs_attr_type = namedtuple_factory(
-                        'ObsAttributes', obs_attr_id)
-                    obs_attr = obs_attr_type(*obs_attr_values)
-                else:
-                    obs_attr = None
-                yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+    def iter_generic_series_obs(self, sdmxobj, with_value=True,
+                                with_attributes=True, reverse_obs=False):
         for obs in sdmxobj._elem.iterchildren(
                 '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
                 reversed=reverse_obs):

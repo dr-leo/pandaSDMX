@@ -15,14 +15,19 @@ class Reader(BaseReader):
         pass
 
     def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
-        return []
+        return iter([])
 
     def generic_series(self, sdmxobj):
         pass
 
-    # Methods required by model.header
+    # Methods required by model.Header
     def dim_at_obs(self, sdmxobj):
         pass
 
     def structured_by(self, sdmxobj):
         pass
+
+    # Methods required by model.Series
+    def iter_generic_series_obs(self, sdmxobj, with_value=True,
+                                with_attributes=False, reverse_obs=False):
+        return iter([])

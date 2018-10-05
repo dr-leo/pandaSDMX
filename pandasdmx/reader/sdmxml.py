@@ -225,8 +225,8 @@ class Reader(BaseReader):
         return namedtuple_factory('Attrib', attr_id)(*attr_values)
     dataset_attrib = series_attrib
 
-    def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
-                                reverse_obs=False):
+    def iter_generic_series_obs(self, sdmxobj, with_value=True,
+                                with_attributes=True, reverse_obs=False):
         for obs in sdmxobj._elem.iterchildren(
                 '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
                 reversed=reverse_obs):

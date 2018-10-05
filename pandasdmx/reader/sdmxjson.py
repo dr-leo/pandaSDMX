@@ -295,8 +295,8 @@ class Reader(BaseReader):
             attrib_ids, attrib_values = zip(*attrib_list)
             return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
 
-    def iter_generic_series_obs(self, sdmxobj, with_value, with_attributes,
-                                reverse_obs=False):
+    def iter_generic_series_obs(self, sdmxobj, with_value=True,
+                                with_attributes=True, reverse_obs=False):
         obs_l = sorted(sdmxobj._elem['observations'].items(),
                        key=self.getitem0, reverse=reverse_obs)
         for obs in obs_l:

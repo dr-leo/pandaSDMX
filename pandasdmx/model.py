@@ -641,6 +641,7 @@ class DataSet(SDMXObject):
 
 
 class Series(SDMXObject):
+    _obs = None
 
     def __init__(self, *args, **kwargs):
         super(Series, self).__init__(*args)
@@ -663,17 +664,42 @@ class Series(SDMXObject):
         if group_attributes:
             return concat_namedtuples(*group_attributes)
 
-    def obs(self, with_values=True, with_attributes=True, reverse_obs=False):
-        '''
-        return an iterator over observations in a series.
-        An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
-        obs.key is a namedtuple of dimensions, obs.value is a string value and
-        obs.attrib is a namedtuple of attributes. If with_values or with_attributes
-        is False, the respective value is None. Use these flags to
-        increase performance. The flags default to True.
-        '''
-        return self._reader.iter_generic_series_obs(self,
-                                                    with_values, with_attributes, reverse_obs)
+    def iter_obs(self, with_values=True, with_attributes=True,
+                 reverse_obs=False):
+        """Return an iterator over observations, with performance options.
+
+        See DataSet.iter_obs().
+        """
+        if self._obs is not None:
+            yield from self._obs
+        else:
+            self._obs = []
+            if self._reader:
+                for o in self._reader.iter_generic_series_obs(self,
+                                                              with_values,
+                                                              with_attributes,
+                                                              reverse_obs):
+                    self._obs.append(o)
+                    yield o
+
+    @property
+    def obs(self):
+        """Observations.
+
+        See DataSet.obs.
+        """
+        if self._obs is None:
+            self._obs = []
+            try:
+                self.obs.extend(self._reader.iter_generic_series_obs(self))
+            except AttributeError:
+                pass
+
+        return self._obs
+
+    @obs.setter
+    def obs(self, value):
+        self._obs = value
 
 
 class Group(SDMXObject):

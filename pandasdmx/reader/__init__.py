@@ -128,3 +128,9 @@ class BaseReader(ABC):
     @abstractmethod
     def structured_by(self, sdmxobj):
         pass
+
+    # Methods required by model.Series
+    @abstractmethod
+    def iter_generic_series_obs(self, sdmxobj, with_value=True,
+                                with_attributes=False, reverse_obs=False):
+        return iter([])

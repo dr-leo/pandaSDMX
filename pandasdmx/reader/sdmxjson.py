@@ -12,13 +12,15 @@
 This module contains a reader for SDMXML v2.1.
 
 '''
-
-from pandasdmx.utils import DictLike, namedtuple_factory
-from pandasdmx import model
-from pandasdmx.reader import BaseReader
-import json
-from jsonpath_rw import parse
 from operator import itemgetter
+import json
+
+from jsonpath_rw import parse
+
+from pandasdmx import model
+from pandasdmx.model import SeriesObservation
+from pandasdmx.reader import BaseReader
+from pandasdmx.utils import DictLike, namedtuple_factory
 
 
 class XPath:
@@ -203,12 +205,6 @@ class Reader(BaseReader):
     def structured_by(self, sdmxobj):
         return None  # complete this
 
-    # Types for generic observations
-    _ObsTuple = namedtuple_factory(
-        'GenericObservation', ('key', 'value', 'attrib'))
-    _SeriesObsTuple = namedtuple_factory(
-        'SeriesObservation', ('dim', 'value', 'attrib'))
-
     # Operators
     getitem0 = itemgetter(0)
     getitem_key = itemgetter('_key')
@@ -254,7 +250,7 @@ class Reader(BaseReader):
                     obs_attr = None
             else:
                 obs_attr = None
-            yield self._SeriesObsTuple(obs_key, obs_value, obs_attr)
+            yield SeriesObservation(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
@@ -323,4 +319,4 @@ class Reader(BaseReader):
                     obs_attr = None
             else:
                 obs_attr = None
-            yield self._SeriesObsTuple(obs_dim_value, obs_value, obs_attr)
+            yield SeriesObservation(obs_dim_value, obs_value, obs_attr)

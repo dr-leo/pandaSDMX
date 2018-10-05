@@ -12,12 +12,13 @@
 This module contains a reader for SDMXML v2.1.
 
 '''
-
-from pandasdmx.utils import DictLike, namedtuple_factory
-from pandasdmx import model
-from pandasdmx.reader import BaseReader
 from lxml import etree
 from lxml.etree import XPath
+
+from pandasdmx import model
+from pandasdmx.model import GenericObservation, SeriesObservation
+from pandasdmx.reader import BaseReader
+from pandasdmx.utils import DictLike, namedtuple_factory
 
 
 class Reader(BaseReader):
@@ -169,12 +170,6 @@ class Reader(BaseReader):
     def structured_by(self, sdmxobj):
         return self.read_as_str('structured_by', sdmxobj)
 
-    # Types for generic observations
-    _ObsTuple = namedtuple_factory(
-        'GenericObservation', ('key', 'value', 'attrib'))
-    _SeriesObsTuple = namedtuple_factory(
-        'SeriesObservation', ('dim', 'value', 'attrib'))
-
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
         for obs in self._paths['generic_obs_path'](sdmxobj._elem):
             # Construct the namedtuple for the ObsKey.
@@ -198,7 +193,7 @@ class Reader(BaseReader):
                 obs_attr = obs_attr_type(*obs_attr_values)
             else:
                 obs_attr = None
-            yield self._ObsTuple(obs_key, obs_value, obs_attr)
+            yield GenericObservation(obs_key, obs_value, obs_attr)
 
     def generic_series(self, sdmxobj):
         path = self._paths[model.Series]
@@ -248,4 +243,4 @@ class Reader(BaseReader):
                 obs_attr = obs_attr_type(*obs_attr_values)
             else:
                 obs_attr = None
-            yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+            yield SeriesObservation(obs_dim, obs_value, obs_attr)

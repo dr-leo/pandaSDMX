@@ -14,10 +14,10 @@ This module is part of the pandaSDMX package
 
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
+from collections import defaultdict, namedtuple
+from operator import attrgetter
 
 from pandasdmx.utils import DictLike, concat_namedtuples
-from operator import attrgetter
-from collections import defaultdict
 
 
 class SDMXObject(object):
@@ -717,3 +717,10 @@ class DataMessage(Message):
     _content_types = Message._content_types[:]
     _content_types.extend([
         ('data', 'read_instance', DataSet, None)])
+
+
+# Types for generic observations
+GenericObservation = namedtuple('GenericObservation',
+                                ('key', 'value', 'attrib'))
+SeriesObservation = namedtuple('SeriesObservation',
+                               ('dim', 'value', 'attrib'))

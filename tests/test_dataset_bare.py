@@ -15,6 +15,8 @@ class TestAPI(TestCase):
 
 
 def test_dataset_bare():
+    from collections import namedtuple
+
     from pandasdmx.model import DataSet, Message, SeriesObservation
     from pandasdmx.writer.data2pandas import Writer
 
@@ -28,52 +30,42 @@ def test_dataset_bare():
     msg.header.sender = 'ECB'
 
     ds = DataSet()
-    # TODO populate message data:
-    obs = SeriesObservation(None, 1.5931, None)
 
-    # SeriesObservation(
-    #     dim=GenericObservationKey(
-    #         FREQ='D',
-    #         CURRENCY='NZD',
-    #         CURRENCY_DENOM='EUR',
-    #         EXR_TYPE='SP00',
-    #         EXR_SUFFIX='A',
-    #         TIME_PERIOD='2013-01-18'),
-    #     value=1.5931,
-    #     attrib=ObsAttributes(TITLE=None, OBS_STATUS='A')
-    #     )
-    # SeriesObservation(
-    #     dim=GenericObservationKey(
-    #         FREQ='D',
-    #         CURRENCY='NZD',
-    #         CURRENCY_DENOM='EUR',
-    #         EXR_TYPE='SP00',
-    #         EXR_SUFFIX='A',
-    #         TIME_PERIOD='2013-01-21'),
-    #     value=1.5925,
-    #     attrib=ObsAttributes(TITLE=None, OBS_STATUS='A')
-    #     )
-    # SeriesObservation(
-    #     dim=GenericObservationKey(
-    #         FREQ='D',
-    #         CURRENCY='RUB',
-    #         CURRENCY_DENOM='EUR',
-    #         EXR_TYPE='SP00',
-    #         EXR_SUFFIX='A',
-    #         TIME_PERIOD='2013-01-18'),
-    #     value=40.3426,
-    #     attrib=ObsAttributes(TITLE=None, OBS_STATUS='A')
-    #     )
-    # SeriesObservation(
-    #     dim=GenericObservationKey(
-    #         FREQ='D',
-    #         CURRENCY='RUB',
-    #         CURRENCY_DENOM='EUR',
-    #         EXR_TYPE='SP00',
-    #         EXR_SUFFIX='A',
-    #         TIME_PERIOD='2013-01-21'),
-    #     value=40.3,
-    #     attrib=ObsAttributes(TITLE=None, OBS_STATUS='A'))
+    # FIXME in exr-flat.json, these are stored in two places:
+    #   $.structure.dimensions.dataSet:
+    #      FREQ, CURRENCY_DENOM, EXR_TYPE, EXR_SUFFIX
+    #   $.structure.dimensions.observation:
+    #      CURRENCY, TIME_PERIOD
+    #
+    # It should be possible to create them programmatically by setting:
+    #   msg.structure.dimensions.dataset = …
+    #   msg.structure.dimensions.observation = …
+    GenericObservationKey = namedtuple(
+        'GenericObservationKey',
+        'FREQ CURRENCY CURRENCY_DENOM EXR_TYPE EXR_SUFFIX TIME_PERIOD',
+        )
+    key = GenericObservationKey('D', 'NZD', 'EUR', 'SP00', 'A', '2013-01-18')
+
+    # FIXME in exr-flat.json, these are stored at the path:
+    #   $.structure.attributes.observation.
+    #
+    # It should be possible to create them programmatically by setting:
+    #   msg.structure.attributes.observation = …
+    ObsAttributes = namedtuple('ObsAttributes', 'TITLE OBS_STATUS')
+    attrib = ObsAttributes(None, 'A')
+
+    obs = [SeriesObservation(key, 1.5931, attrib)]
+
+    key = key._replace(TIME_PERIOD='2013-01-21')
+    obs.append(SeriesObservation(key, 1.5925, attrib))
+
+    key = key._replace(CURRENCY='RUB', TIME_PERIOD='2013-01-18')
+    obs.append(SeriesObservation(key, 40.3426, attrib))
+
+    key = key._replace(TIME_PERIOD='2013-01-21')
+    obs.append(SeriesObservation(key, 40.3000, attrib))
+
+    # TODO add obs to ds
     msg.data = ds
 
     # Write to pd.Dataframe

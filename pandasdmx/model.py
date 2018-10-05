@@ -883,7 +883,6 @@ class ReportingYearStartDay(DataAttribute):
 
 
 class DataSet(SDMXObject):
-
     #     reporting_begin = Any
     #     reporting_end = Any
     #     valid_from = Any
@@ -897,6 +896,8 @@ class DataSet(SDMXObject):
     #     structured_by = Instance(DataStructureDefinition)
     #     published_by = Any
     #     attached_attribute = Any
+
+    _obs = None
 
     def __init__(self, *args, **kwargs):
         super(DataSet, self).__init__(*args, **kwargs)
@@ -918,32 +919,60 @@ class DataSet(SDMXObject):
     def dim_at_obs(self):
         return self._reader.dim_at_obs(self)
 
-    def obs(self, with_values=True, with_attributes=True):
-        '''
-        return an iterator over observations in a flat dataset.
-        An observation is represented as a namedtuple with 3 fields ('key', 'value', 'attrib').
+    def iter_obs(self, with_values=True, with_attributes=True):
+        """Return an iterator over observations, with performance options.
 
-        obs.key is a namedtuple of dimensions. Its field names represent dimension names,
-        its values the dimension values.
-
-        obs.value is a string that can in in most cases be interpreted as float64
-        obs.attrib is a namedtuple of attribute names and values.
-
-        with_values and with_attributes: If one or both of these flags
-        is False, the respective value will be None. Use these flags to
-        increase performance. The flags default to True.
-        '''
+        If *with_values* and *with_attributes* are both True (default), the
+        return value is identical to iter(DataSet.obs). If *with_values* is
+        False, then the value of each observations is omitted. If
+        *with_attributes* is False, then observation-level attributes are
+        omitted. These options may increase performance.
+        """
         # distinguish between generic and structure-specific observations
         # only generic ones are currently implemented.
-        return self._reader.iter_generic_obs(
-            self, with_values, with_attributes)
+        if self._obs is not None:
+            yield from self._obs
+        else:
+            self._obs = []
+            if self._reader:
+                for o in self._reader.iter_generic_obs(self,
+                                                       with_values,
+                                                       with_attributes):
+                    self._obs.append(o)
+                    yield o
+
+    @property
+    def obs(self):
+        """Observations in a flat dataset.
+
+        An observation is represented as a namedtuple with 3 fields: 'key',
+        'value', and 'attrib':
+
+          key: a namedtuple of dimensions. Its field names represent dimension
+               names, its values the dimension values at the observation.
+          value: a string that can in in most cases be interpreted as float64.
+          attrib: is a namedtuple of attribute names and values.
+        """
+        if self._obs is None:
+            self._obs = []
+            try:
+                self.obs.extend(self._reader.iter_generic_obs(self))
+            except AttributeError:
+                pass
+
+        return self._obs
+
+    @obs.setter
+    def obs(self, value):
+        self._obs = value
 
     @property
     def series(self):
         '''
         return an iterator over Series instances in this DataSet.
         Note that DataSets in flat format, i.e.
-        header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs() instead.
+        header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs()
+        instead.
         '''
         return self._reader.iter_series(self)
 

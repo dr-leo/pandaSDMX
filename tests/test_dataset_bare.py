@@ -38,7 +38,7 @@ def test_dataset_bare():
     #      CURRENCY, TIME_PERIOD
     #
     # It should be possible to create them programmatically by setting:
-    #   msg.structure.dimensions.dataset = …
+    #   msg.structure.dimensions.dataset[0] = Dimension('FREQ'…)
     #   msg.structure.dimensions.observation = …
     GenericObservationKey = namedtuple(
         'GenericObservationKey',
@@ -54,19 +54,20 @@ def test_dataset_bare():
     ObsAttributes = namedtuple('ObsAttributes', 'TITLE OBS_STATUS')
     attrib = ObsAttributes(None, 'A')
 
-    obs = [SeriesObservation(key, 1.5931, attrib)]
+    ds.obs.append(SeriesObservation(key, 1.5931, attrib))
 
     key = key._replace(TIME_PERIOD='2013-01-21')
-    obs.append(SeriesObservation(key, 1.5925, attrib))
+    ds.obs.append(SeriesObservation(key, 1.5925, attrib))
 
     key = key._replace(CURRENCY='RUB', TIME_PERIOD='2013-01-18')
-    obs.append(SeriesObservation(key, 40.3426, attrib))
+    ds.obs.append(SeriesObservation(key, 40.3426, attrib))
 
     key = key._replace(TIME_PERIOD='2013-01-21')
-    obs.append(SeriesObservation(key, 40.3000, attrib))
+    ds.obs.append(SeriesObservation(key, 40.3000, attrib))
 
-    # TODO add obs to ds
     msg.data = ds
 
     # Write to pd.Dataframe
-    Writer(msg).write(msg)  # FIXME fails; no msg.data
+    df = Writer(msg).write(msg)
+    print(df)
+    assert False  # Works, but still other changes to be made

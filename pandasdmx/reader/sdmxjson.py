@@ -9,7 +9,7 @@
 
 
 '''
-This module contains a reader for SDMXML v2.1.
+This module contains a reader for SDMX-JSON v2.1.
 
 '''
 from operator import itemgetter
@@ -209,7 +209,7 @@ class Reader(BaseReader):
     getitem0 = itemgetter(0)
     getitem_key = itemgetter('_key')
 
-    def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
+    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
         # Make type namedtuple for obs_key. It must be
         # merged with any dimension values at dataset level maintaining the
         # key position order.

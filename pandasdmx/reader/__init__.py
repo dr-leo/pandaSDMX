@@ -108,8 +108,9 @@ class BaseReader(ABC):
         pass
 
     @abstractmethod
-    def iter_generic_obs(self, sdmxobj):
-        pass
+    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
+        """Must return an iterator."""
+        return iter([])
 
     def generic_groups(self, sdmxobj):
         """Must return an iterator."""

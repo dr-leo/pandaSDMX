@@ -39,7 +39,7 @@ class TestGenericFlatDataSet(unittest.TestCase):
         data = self.resp.data
         # empty series list
         self.assertEqual(len(list(data.series)), 0)
-        obs_list = list(data.obs())
+        obs_list = data.obs
         self.assertEqual(len(obs_list), 12)
         o0 = obs_list[0]
         self.assertEqual(len(o0), 3)
@@ -75,7 +75,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_generic_obs(self):
         data = self.resp.data
         # empty obs iterator
-        self.assertEqual(len(list(data.obs())), 0)
+        self.assertEqual(len(data.obs), 0)
         series_list = list(data.series)
         self.assertEqual(len(series_list), 4)
         s3 = series_list[3]
@@ -188,7 +188,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     def test_generic_obs(self):
         data = self.resp.data
         # empty obs iterator
-        self.assertEqual(len(list(data.obs())), 0)
+        self.assertEqual(len(data.obs), 0)
         series_list = list(data.series)
         self.assertEqual(len(series_list), 4)
         s3 = series_list[3]

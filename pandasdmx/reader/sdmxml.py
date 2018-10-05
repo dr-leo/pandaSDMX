@@ -218,18 +218,12 @@ class Reader(BaseReader):
     def structured_by(self, sdmxobj):
         return self.read_as_str('structured_by', sdmxobj)
 
-    def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
-        ObsKeyTuple = ObsAttrTuple = None
-        if self.dsd:
-            # this is a structure-specific dataset
-            for obs in sdmxobj._elem.iterchildren('Obs'):
-                # dimensions:
-                obs_attrib = obs.attrib  # XML attrib
-                if not ObsKeyTuple:
-                    obs_key_id = [k for k in self.dim_ids if k in obs_attrib]
-                    ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
-                obs_key_values = [obs_attrib[k]
-                                  for k in self.dim_ids if k in obs_attrib]
+    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
+        for obs in self._paths['generic_obs_path'](sdmxobj._elem):
+            # Construct the namedtuple for the ObsKey.
+            # The namedtuple class is created on first iteration.
+            obs_key_values = self._paths['obs_key_values_path'](obs)
+            try:
                 obs_key = ObsKeyTuple._make(obs_key_values)
                 obs_value = obs_attrib['OBS_VALUE'] if with_value else None
                 if with_attributes:

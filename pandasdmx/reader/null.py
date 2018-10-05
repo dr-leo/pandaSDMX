@@ -14,8 +14,8 @@ class Reader(BaseReader):
     def dataset_attrib(self, sdmxobj):
         pass
 
-    def iter_generic_obs(self, sdmxobj):
-        pass
+    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
+        return []
 
     def generic_series(self, sdmxobj):
         pass

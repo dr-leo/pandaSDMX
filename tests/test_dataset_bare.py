@@ -1,6 +1,9 @@
 from pathlib import Path
 from unittest import TestCase
 
+from pandasdmx import Request
+from pandasdmx.writer.data2pandas import Writer
+
 test_data_path = Path(__file__).parent / 'data'
 
 
@@ -20,9 +23,7 @@ class TestAPI(TestCase):
 def test_flat():
     from collections import namedtuple
 
-    from pandasdmx import Request
     from pandasdmx.model import DataSet, Message, SeriesObservation
-    from pandasdmx.writer.data2pandas import Writer
 
     # Create a bare Message
     msg = Message()
@@ -78,4 +79,42 @@ def test_flat():
     df2 = Writer(ref).write(ref)
 
     assert (df1 == df2).all()
-    assert False  # Works, but still other changes to be made
+    # assert False  # Works, but still other changes to be made
+
+
+def test_bare_series():
+    ref = Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
+                        'generic' / 'ecb_exr_ng_ts.xml').msg
+
+    for s in ref.data.series:
+        print(s)
+        for o in s.iter_obs():
+            print(o)
+
+    # TODO generate the following series and observations
+
+    # Attrib(DECIMALS='4', UNIT_MEASURE='CHF', UNIT_MULT='0', COLL_METHOD='Average of observations through period', TITLE='ECB reference exchange rate, Swiss franc/Euro')
+    # SeriesKey(FREQ='M', CURRENCY='CHF', CURRENCY_DENOM='EUR', EXR_TYPE='SP00', EXR_VAR='E')
+    # SeriesObservation(dim='2010-08', value='1.3413', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-09', value='1.3089', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-10', value='1.3452', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+
+    # Attrib(DECIMALS='5', UNIT_MEASURE='GBP', UNIT_MULT='0', COLL_METHOD='Average of observations through period', TITLE='ECB reference exchange rate, U.K. Pound sterling /Euro')
+    # SeriesKey(FREQ='M', CURRENCY='GBP', CURRENCY_DENOM='EUR', EXR_TYPE='SP00', EXR_VAR='E')
+    # SeriesObservation(dim='2010-08', value='0.82363', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-09', value='0.83987', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-10', value='0.87637', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+
+    # Attrib(DECIMALS='2', UNIT_MEASURE='JPY', UNIT_MULT='0', COLL_METHOD='Average of observations through period', TITLE='ECB reference exchange rate, Japanese yen/Euro')
+    # SeriesKey(FREQ='M', CURRENCY='JPY', CURRENCY_DENOM='EUR', EXR_TYPE='SP00', EXR_VAR='E')
+    # SeriesObservation(dim='2010-08', value='110.04', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-09', value='110.26', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-10', value='113.67', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+
+    # Attrib(DECIMALS='4', UNIT_MEASURE='USD', UNIT_MULT='0', COLL_METHOD='Average of observations through period', TITLE='ECB reference exchange rate, U.S. dollar/Euro')
+    # SeriesKey(FREQ='M', CURRENCY='USD', CURRENCY_DENOM='EUR', EXR_TYPE='SP00', EXR_VAR='E')
+    # SeriesObservation(dim='2010-08', value='1.2894', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-09', value='1.3067', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+    # SeriesObservation(dim='2010-10', value='1.3898', attrib=ObsAttributes(OBS_STATUS='A', CONF_STATUS_OBS='F'))
+
+    assert False

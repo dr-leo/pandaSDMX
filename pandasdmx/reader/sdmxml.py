@@ -12,12 +12,13 @@
 This module contains a reader for SDMXML v2.1.
 
 '''
-
-from pandasdmx.utils import DictLike, namedtuple_factory
-from pandasdmx import model
-from pandasdmx.reader import BaseReader
 from lxml import etree
 from lxml.etree import XPath
+
+from pandasdmx import model
+from pandasdmx.model import GenericObservation, SeriesObservation
+from pandasdmx.reader import BaseReader
+from pandasdmx.utils import DictLike, namedtuple_factory
 
 
 class Reader(BaseReader):
@@ -217,12 +218,6 @@ class Reader(BaseReader):
     def structured_by(self, sdmxobj):
         return self.read_as_str('structured_by', sdmxobj)
 
-    # Types for generic observations
-    _ObsTuple = namedtuple_factory(
-        'GenericObservation', ('key', 'value', 'attrib'))
-    _SeriesObsTuple = namedtuple_factory(
-        'SeriesObservation', ('dim', 'value', 'attrib'))
-
     def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
         ObsKeyTuple = ObsAttrTuple = None
         if self.dsd:
@@ -258,19 +253,19 @@ class Reader(BaseReader):
                     obs_key_id = self._paths['obs_key_id_path'](obs)
                     ObsKeyTuple = namedtuple_factory('ObsKey', obs_key_id)
                 obs_key = ObsKeyTuple._make(obs_key_values)
-                if with_value:
-                    obs_value = self._paths['obs_value_path'](obs)[0]
-                else:
-                    obs_value = None
-                if with_attributes:
-                    obs_attr_values = self._paths['attr_values_path'](obs)
-                    obs_attr_id = self._paths['attr_id_path'](obs)
-                    obs_attr_type = namedtuple_factory(
-                        'ObsAttributes', obs_attr_id)
-                    obs_attr = obs_attr_type(*obs_attr_values)
-                else:
-                    obs_attr = None
-                yield self._ObsTuple(obs_key, obs_value, obs_attr)
+            if with_value:
+                obs_value = self._paths['obs_value_path'](obs)[0]
+            else:
+                obs_value = None
+            if with_attributes:
+                obs_attr_values = self._paths['attr_values_path'](obs)
+                obs_attr_id = self._paths['attr_id_path'](obs)
+                obs_attr_type = namedtuple_factory(
+                    'ObsAttributes', obs_attr_id)
+                obs_attr = obs_attr_type(*obs_attr_values)
+            else:
+                obs_attr = None
+            yield GenericObservation(obs_key, obs_value, obs_attr)
 
     def iter_series(self, sdmxobj):
         if self.dsd:
@@ -376,3 +371,20 @@ class Reader(BaseReader):
                 else:
                     obs_attr = None
                 yield self._SeriesObsTuple(obs_dim, obs_value, obs_attr)
+        for obs in sdmxobj._elem.iterchildren(
+                '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
+                reversed=reverse_obs):
+            obs_dim = self._paths['generic_series_dim_path'](obs)[0]
+            if with_value:
+                obs_value = self._paths['obs_value_path'](obs)[0]
+            else:
+                obs_value = None
+            if with_attributes:
+                obs_attr_values = self._paths['attr_values_path'](obs)
+                obs_attr_id = self._paths['attr_id_path'](obs)
+                obs_attr_type = namedtuple_factory(
+                    'ObsAttributes', obs_attr_id)
+                obs_attr = obs_attr_type(*obs_attr_values)
+            else:
+                obs_attr = None
+            yield SeriesObservation(obs_dim, obs_value, obs_attr)

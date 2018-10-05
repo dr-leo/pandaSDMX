@@ -13,11 +13,10 @@ This module is part of the pandaSDMX package
 
 (c) 2014 Dr. Leo (fhaxbox66@gmail.com)
 '''
+from collections import defaultdict, namedtuple
+from operator import attrgetter
 
-from pandasdmx.utils import DictLike, concat_namedtuples, str2bool
-from operator import attrgetter, or_
-from collections import defaultdict
-from functools import reduce
+from pandasdmx.utils import DictLike, concat_namedtuples
 
 
 class SDMXObject(object):
@@ -1078,3 +1077,9 @@ class DataMessage(KeyValidatorMixin, Message):
             self.__dim_codes = DictLike({dim_id: frozenset(codes)
                                          for dim_id, codes in zip(self._dim_ids, zip(*keys))})
         return self.__dim_codes
+
+# Types for generic observations
+GenericObservation = namedtuple('GenericObservation',
+                                ('key', 'value', 'attrib'))
+SeriesObservation = namedtuple('SeriesObservation',
+                               ('dim', 'value', 'attrib'))

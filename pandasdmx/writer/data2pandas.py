@@ -27,7 +27,7 @@ class Writer(BaseWriter):
         or iterator over pandas Series.
 
         Args:
-            source(pandasdmx.model.DataMessage): a pandasdmx.model.DataSet or iterator 
+            source(pandasdmx.model.DataMessage): a pandasdmx.model.DataSet or iterator
                 of pandasdmx.model.Series
 
             asframe(bool): if True, merge the series of values and/or attributes
@@ -46,14 +46,14 @@ class Writer(BaseWriter):
                 Where 'o', 's', 'g', and 'd' mean that attributes at observation,
                 series, group and dataset level will be returned as members of
                 per-observation namedtuples.
-            reverse_obs(bool): if True, return observations in 
+            reverse_obs(bool): if True, return observations in
                 reverse order. Default: False
-            fromfreq(bool): if True, extrapolate time periods 
+            fromfreq(bool): if True, extrapolate time periods
                 from the first item and FREQ dimension. Default: False
             parse_time(bool): if True (default), try to generate datetime index, provided that
                 dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_time`` is ignored. If False,
-                always generate index of strings. 
-                Set it to False to increase performance and avoid 
+                always generate index of strings.
+                Set it to False to increase performance and avoid
                 parsing errors for exotic date-time formats unsupported by pandas.
         '''
 
@@ -82,7 +82,7 @@ class Writer(BaseWriter):
 
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = iter(zip(*source.data.obs()))
+            obs_zip = iter(zip(*source.data.obs))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(
                 dimensions, names=dimensions[0]._fields)

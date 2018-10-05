@@ -170,7 +170,7 @@ class Reader(BaseReader):
     def structured_by(self, sdmxobj):
         return self.read_as_str('structured_by', sdmxobj)
 
-    def iter_generic_obs(self, sdmxobj, with_value, with_attributes):
+    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
         for obs in self._paths['generic_obs_path'](sdmxobj._elem):
             # Construct the namedtuple for the ObsKey.
             # The namedtuple class is created on first iteration.

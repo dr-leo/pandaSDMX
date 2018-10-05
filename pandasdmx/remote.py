@@ -10,7 +10,7 @@
 This module is part of pandaSDMX. It contains
 a classes for http access.
 '''
-
+from pathlib import Path
 
 import requests
 from pandasdmx.utils import DictLike, str_type
@@ -80,11 +80,12 @@ class REST:
                 is returned
  '''
         if fromfile:
+            fromfile = Path(fromfile)
             try:
                 # Load data from local file
                 # json files must be opened in text mode, all others in binary as
                 # they may be zip files or xml.
-                if fromfile.endswith('.json'):
+                if fromfile.suffix == '.json':
                     mode_str = 'r'
                 else:
                     mode_str = 'rb'

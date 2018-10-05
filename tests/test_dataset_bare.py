@@ -1,4 +1,7 @@
+from pathlib import Path
 from unittest import TestCase
+
+test_data_path = Path(__file__).parent / 'data'
 
 
 class TestAPI(TestCase):
@@ -14,9 +17,10 @@ class TestAPI(TestCase):
         Reader()
 
 
-def test_dataset_bare():
+def test_flat():
     from collections import namedtuple
 
+    from pandasdmx import Request
     from pandasdmx.model import DataSet, Message, SeriesObservation
     from pandasdmx.writer.data2pandas import Writer
 
@@ -68,6 +72,10 @@ def test_dataset_bare():
     msg.data = ds
 
     # Write to pd.Dataframe
-    df = Writer(msg).write(msg)
-    print(df)
+    df1 = Writer(msg).write(msg)
+
+    ref = Request().get(fromfile=test_data_path / 'json' / 'exr-flat.json').msg
+    df2 = Writer(ref).write(ref)
+
+    assert (df1 == df2).all()
     assert False  # Works, but still other changes to be made

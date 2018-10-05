@@ -15,6 +15,7 @@ only the chapters on REST services are relevant as pandasdmx does not support th
 SOAP interface.
 
 '''
+from pathlib import Path
 
 from pandasdmx import remote
 from pandasdmx.utils import str_type, namedtuple_factory, LazyDict
@@ -40,7 +41,7 @@ class SDMXException(Exception):
 
 class ResourceGetter(object):
     '''
-    Descriptor to wrap Request.get vor convenient calls 
+    Descriptor to wrap Request.get vor convenient calls
     without specifying the resource as arg.
     '''
 
@@ -80,7 +81,7 @@ class Request(object):
     @classmethod
     def list_agencies(cls):
         '''
-        Return a sorted list of valid agency IDs. These can be used to create ``Request`` instances.  
+        Return a sorted list of valid agency IDs. These can be used to create ``Request`` instances.
         '''
         return sorted(list(cls._agencies))
 
@@ -106,15 +107,15 @@ class Request(object):
                 load data or metadata from files or a pre-fabricated URL. .
                 defaults to '', i.e. no agency.
 
-            cache(dict): args to be passed on to 
+            cache(dict): args to be passed on to
                 ``requests_cache.install_cache()``. Default is None (no caching).
-            log_level(int): set log level for lib-wide logger as set up in pandasdmx.__init__.py. 
-                For details see the docs on the 
+            log_level(int): set log level for lib-wide logger as set up in pandasdmx.__init__.py.
+                For details see the docs on the
                 logging package from the standard lib. Default: None (= do nothing).
-            **http_cfg: used to configure http requests. E.g., you can 
+            **http_cfg: used to configure http requests. E.g., you can
             specify proxies, authentication information and more.
-            See also the docs of the ``requests`` package at 
-            http://www.python-requests.org/en/latest/.   
+            See also the docs of the ``requests`` package at
+            http://www.python-requests.org/en/latest/.
         '''
         # If needed, generate wrapper properties for get method
         if not hasattr(self, 'data'):
@@ -139,7 +140,7 @@ class Request(object):
 
     def clear_cache(self, key=None):
         '''
-        If key is Non (default), remove the item if it exists. 
+        If key is Non (default), remove the item if it exists.
         Otherwise, clear the entire cache.
         '''
         if key:
@@ -162,7 +163,7 @@ class Request(object):
 
         Return a pandas DataFrame. Each
         column represents a dimension, each row
-        a series key of datasets of 
+        a series key of datasets of
         the given dataflow.
         '''
         # Check if requested series keys are already cached
@@ -209,8 +210,8 @@ class Request(object):
             key(str, dict): select columns from a dataset by specifying dimension values.
                 If type is str, it must conform to the SDMX REST API, i.e. dot-separated dimension values.
                 If 'key' is of type 'dict', it must map dimension names to allowed dimension values. Two or more
-                values can be separated by '+' as in the str form. The DSD will be downloaded 
-                and the items are validated against it before downloading the dataset.  
+                values can be separated by '+' as in the str form. The DSD will be downloaded
+                and the items are validated against it before downloading the dataset.
             params(dict): defines the query part of the URL.
                 The SDMX web service guidelines (www.sdmx.org) explain the meaning of
                 permissible parameters. It can be used to restrict the
@@ -220,7 +221,7 @@ class Request(object):
                 depending on the values of other args such as `resource_type`.
                 Defaults to {}.
             headers(dict): http headers. Given headers will overwrite instance-wide headers passed to the
-                constructor. Defaults to None, i.e. use defaults 
+                constructor. Defaults to None, i.e. use defaults
                 from agency configuration
             fromfile(str): path to the file to be loaded instead of
                 accessing an SDMX web service. Defaults to None. If `fromfile` is
@@ -232,29 +233,21 @@ class Request(object):
             url(str): URL of the resource to download.
                 If given, any other arguments such as
                 ``resource_type`` or ``resource_id`` are ignored. Default is None.
-            get_footer_url((int, int)): 
+            get_footer_url((int, int)):
                 tuple of the form (seconds, number_of_attempts). Determines the
                 behavior in case the received SDMX message has a footer where
                 one of its lines is a valid URL. ``get_footer_url`` defines how many attempts should be made to
                 request the resource at that URL after waiting so many seconds before each attempt.
                 This behavior is useful when requesting large datasets from Eurostat. Other agencies do not seem to
-                send such footers. Once an attempt to get the resource has been 
+                send such footers. Once an attempt to get the resource has been
                 successful, the original message containing the footer is dismissed and the dataset
                 is returned. The ``tofile`` argument is propagated. Note that the written file may be
                 a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3).
-            memcache(str): If given, return Response instance if already in self.cache(dict), 
-            otherwise download resource and cache Response instance.             
-        writer(str): optional custom writer class. 
-            Should inherit from pandasdmx.writer.BaseWriter. Defaults to None, 
+            memcache(str): If given, return Response instance if already in self.cache(dict),
+            otherwise download resource and cache Response instance.
+        writer(str): optional custom writer class.
+            Should inherit from pandasdmx.writer.BaseWriter. Defaults to None,
             i.e. one of the included writers is selected as appropriate.
-        dsd(model.DataStructure): DSD to be passed on to the sdmxml reader
-            to process a structure-specific dataset without an incidental http request.
-        series_keys(bool):
-            If True (default), use the SeriesKeysOnly http param if supported by the
-            agency (e.g. ECB) to download all valid key combinations. This is the most
-            accurate key validation method. Otherwise, i.e.
-            if False or the agency does not support SeriesKeysOnly requests, key validation
-            is performed using codelists and content constraints, if any.
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -264,6 +257,8 @@ class Request(object):
         # Try to get resource from memory cache if specified
         if memcache in self.cache:
             return self.cache[memcache]
+
+        fromfile = Path(fromfile) if fromfile else None
 
         if url:
             base_url = url
@@ -381,8 +376,9 @@ class Request(object):
                 # undo side effect of is_zipfile
                 source.seek(0)
             # select reader class
-            if ((fromfile and fromfile.endswith('.json'))
-                    or self._agencies[self.agency]['resources'].get(resource_type, {}).get('json')):
+            if ((fromfile and fromfile.suffix == '.json')
+                    or (self.agency and self._agencies[self.agency]['resources'].get(resource_type)
+                        and self._agencies[self.agency]['resources'][resource_type].get('json'))):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')
@@ -421,14 +417,117 @@ class Request(object):
 
     def prepare_key(self, key):
         '''
-        Split any value of the form 'v1+v2+v3' into a list and
-        return a new key dict. Values that are lists already are 
-        left unchanged.
-        '''
-        return {k: v if isinstance(v, list) else v.split('+')
-                for k, v in key.items()}
+        Download the dataflow def. and DSD and validate
+        key(dict) against it.
 
-    def preview_data(self, flow_id, key=None, count=True, total=True, dsd=None):
+        Return: key(str)
+        '''
+        # get the dataflow and the DSD ID
+        dataflow = self.get('dataflow', flow_id,
+                            memcache='dataflow' + flow_id)
+        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
+        dsd_resp = self.get('datastructure', dsd_id,
+                            memcache='datastructure' + dsd_id)
+        dsd = dsd_resp.msg.datastructure[dsd_id]
+        # Extract dimensions excluding the dimension at observation (time, time-period)
+        # as we are only interested in dimensions for columns, not rows.
+        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
+                      ['TIME', 'TIME_PERIOD']]
+        dim_names = [d.id for d in dimensions]
+        # Retrieve any ContentConstraint
+        try:
+            constraint_l = [c for c in dataflow.constraint.aslist()
+                            if c.constraint_attachment.id == flow_id]
+            if constraint_l:
+                constraint = constraint_l[0]
+        except:
+            constraint = None
+        # Validate the key dict
+        # First, check correctness of dimension names
+        invalid = [d for d in key.keys()
+                   if d not in dim_names]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+        # Check for each dimension name if values are correct and construct
+        # string of the form 'value1.value2.value3+value4' etc.
+        parts = []
+        # Iterate over the dimensions. If the key dict
+        # contains a value for the dimension, append it to the 'parts' list. Otherwise
+        # append ''. Then join the parts to form the dotted str.
+        for d in dimensions:
+            try:
+                values = key[d.id]
+                values_l = values.split('+')
+                codelist = d.local_repr.enum
+                codes = codelist.keys()
+                invalid = [v for v in values_l if v not in codes]
+                if invalid:
+                    # ToDo: attach codelist to exception.
+                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
+                                     format(invalid, d.id, codes))
+                # Check if values are in Contentconstraint if present
+                if constraint:
+                    try:
+                        invalid = [
+                            v for v in values_l if (d.id, v) not in constraint]
+                        if invalid:
+                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
+                                             format(invalid, d.id))
+                    except NotImplementedError:
+                        pass
+                part = values
+            except KeyError:
+                part = ''
+            parts.append(part)
+        return '.'.join(parts)
+
+    def _make_key_from_series(self, flow_id, key):
+        '''
+        Get all series keys by calling
+        self.series_keys, and validate
+        the key(dict) against it. Raises ValueError if
+        a value does not occur in the respective
+        set of dimension values. Multiple values per
+        dimension can be provided as a list or in 'V1+V2' notation.
+
+        Return: key(str)
+        '''
+        # get all series keys
+        all_keys = self.series_keys(flow_id)
+        dim_names = list(all_keys)
+        # Validate the key dict
+        # First, check correctness of dimension names
+        invalid = [d for d in key
+                   if d not in dim_names]
+        if invalid:
+            raise ValueError(
+                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+        # Pre-process key by expanding multiple values as list
+        key = {k: v.split('+') if '+' in v else v for k, v in key.items()}
+        # Check for each dimension name if values are correct and construct
+        # string of the form 'value1.value2.value3+value4' etc.
+        # First, wrap each single dim value in a list to allow
+        # uniform treatment of single and multiple dim values.
+        key_l = {k: [v] if isinstance(v, str_type) else v
+                 for k, v in key.items()}
+        # Iterate over the dimensions. If the key dict
+        # contains an allowed value for the dimension,
+        # it will become part of the string.
+        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
+                                            for k, vl in key_l.items())))
+        if invalid:
+            raise ValueError("The following dimension values are invalid: {0}".
+                             format(invalid))
+        # Generate the 'Val1+Val2' notation for multiple dim values and remove the
+        # lists
+        for k, v in key_l.items():
+            key_l[k] = '+'.join(v)
+        # assemble the key string which goes into the URL
+        parts = [key_l.get(name, '') for name in dim_names]
+        return '.'.join(parts)
+
+    def preview_data(self, flow_id, key=None, count=True, total=True):
         '''
         Get keys or number of series for a prospective dataset query allowing for
         keys with multiple values per dimension.
@@ -525,7 +624,7 @@ class Response(object):
         Args:
             msg(pandasdmx.model.Message): the SDMX message
             url(str): the URL, if any, that had been sent to the SDMX server
-            headers(dict): http headers 
+            headers(dict): http headers
             status_code(int): the status code returned by the server
             writer(str): the module path for the writer class
         '''

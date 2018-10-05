@@ -63,16 +63,18 @@ class Reader(BaseReader):
                                     for dim in self._dataset_dim}
         if self._series_dim:
             self._key_len = len(self._dataset_dim) + len(self._series_dim)
-            # Map keyPositions of dimensions at series level to dimension IDs, like with dataset-level dims above.
-            # In case of cross-sectional dataset, the only dimension at series level has no
-            # keyPosition, eg. TIME_PERIOD. Instead, the keyPosition of the dim at observation
-            # is used to fill the gap.
-            self._series_dim_key = {dim.get('keyPosition',
-                                            self._obs_dim[0].get('keyPosition')):
-                                    dim['id'] for dim in self._series_dim}
-            self.SeriesKeyTuple = namedtuple_factory('SeriesKeyTuple',
-                                                     (self._dataset_dim_key.get(i) or self._series_dim_key.get(i)
-                                                      for i in range(self._key_len)))
+            # Map keyPositions of dimensions at series level to dimension IDs,
+            # like with dataset-level dims above.
+            # In case of cross-sectional dataset, the only dimension at series
+            # level has no keyPosition, eg. TIME_PERIOD. Instead, the
+            # keyPosition of the dim at observation is used to fill the gap.
+            self._series_dim_key = {
+                dim.get('keyPosition', self._obs_dim[0].get('keyPosition')):
+                dim['id'] for dim in self._series_dim}
+            self.SeriesKeyTuple = namedtuple_factory(
+                'SeriesKeyTuple',
+                (self._dataset_dim_key.get(i) or self._series_dim_key.get(i)
+                 for i in range(self._key_len)))
         else:
             # Dataset must be flat
             self._key_len = len(self._dataset_dim) + len(self._obs_dim)
@@ -90,83 +92,89 @@ class Reader(BaseReader):
             return json.dump(self.message._elem, fp, indent=4, sort_keys=True)
 
     _paths = {
-        #         'footer_text': 'com:Text/text()',
-        #         'footer_code': '@code',
-        #         'footer_severity': '@severity',
-        #         'dataflow_from_msg': 'mes:Structures/str:Dataflows',
-        #         'constraint_attachment': 'str:ConstraintAttachment',
-        #         'include': '@include',
-        #         'id': '@id',
-        #         'urn': '@urn',
-        #         'url': '@url',
-        #         'uri': '@uri',
-        #         'agencyID': '@agencyID',
-        #         'maintainable_parent_id': '@maintainableParentID',
-        #         'value': 'com:Value/text()',
+        # 'footer_text': 'com:Text/text()',
+        # 'footer_code': '@code',
+        # 'footer_severity': '@severity',
+        # 'dataflow_from_msg': 'mes:Structures/str:Dataflows',
+        # 'constraint_attachment': 'str:ConstraintAttachment',
+        # 'include': '@include',
+        # 'id': '@id',
+        # 'urn': '@urn',
+        # 'url': '@url',
+        # 'uri': '@uri',
+        # 'agencyID': '@agencyID',
+        # 'maintainable_parent_id': '@maintainableParentID',
+        # 'value': 'com:Value/text()',
         'headerID': '$.header.id',
         'header_prepared': '$.header.prepared',
         'header_sender': '$.header.sender.*',
-        #         'header_receiver': 'mes:Receiver/@*',
-        #         'assignment_status': '@assignmentStatus',
-        #         'error': 'mes:error/@*',
-        #         'ref_version': '@version',
-        #         'concept_id': 'str:ConceptIdentity',
-        #         'position': '@position',
-        #         'isfinal': '@isfinal',
-        #         'ref_package': '@package',
-        #         'ref_class': '@class',
-        #         'ref_target': 'str:Target',
-        #         'ref_source': 'str:Source',
-        #         'ref_structure': 'str:Structure',
-        #         'annotationtype': 'com:AnnotationType/text()',
-        #         'generic_obs_path': 'gen:Obs',
-        #         'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
-        #         'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
-        #         'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
-        #         'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
-        #         'generic_series_dim_path': 'gen:ObsDimension/@value',
-        #         'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
-        #         'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
-        #         'obs_value_path': 'gen:ObsValue/@value',
-        #         'attr_id_path': 'gen:Attributes/gen:Value/@id',
-        #         'attr_values_path': 'gen:Attributes/gen:Value/@value',
-        #         model.Code: 'str:Code',
-        #         model.Categorisation: 'str:Categorisation',
-        #         model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
-        #         model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
-        #         model.DataflowDefinition: 'str:Dataflow',
-        #         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
-        #         model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
-        #         model.Concept: 'str:Concept',
-        #         model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
-        #         model.Categorisations: 'mes:Structures/str:Categorisations',
+        # 'header_receiver': 'mes:Receiver/@*',
+        # 'assignment_status': '@assignmentStatus',
+        # 'error': 'mes:error/@*',
+        # 'ref_version': '@version',
+        # 'concept_id': 'str:ConceptIdentity',
+        # 'position': '@position',
+        # 'isfinal': '@isfinal',
+        # 'ref_package': '@package',
+        # 'ref_class': '@class',
+        # 'ref_target': 'str:Target',
+        # 'ref_source': 'str:Source',
+        # 'ref_structure': 'str:Structure',
+        # 'annotationtype': 'com:AnnotationType/text()',
+        # 'generic_obs_path': 'gen:Obs',
+        # 'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
+        # 'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
+        # 'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
+        # 'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
+        # 'generic_series_dim_path': 'gen:ObsDimension/@value',
+        # 'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
+        # 'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
+        # 'obs_value_path': 'gen:ObsValue/@value',
+        # 'attr_id_path': 'gen:Attributes/gen:Value/@id',
+        # 'attr_values_path': 'gen:Attributes/gen:Value/@value',
+        # model.Code: 'str:Code',
+        # model.Categorisation: 'str:Categorisation',
+        # model.CategoryScheme:
+        #     'mes:Structures/str:CategorySchemes/str:CategoryScheme',
+        # model.DataStructureDefinition:
+        #     'mes:Structures/str:DataStructures/str:DataStructure',
+        # model.DataflowDefinition: 'str:Dataflow',
+        # model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
+        # model.ContentConstraint:
+        #     'mes:Structures/str:Constraints/str:ContentConstraint',
+        # model.Concept: 'str:Concept',
+        # model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
+        # model.Categorisations: 'mes:Structures/str:Categorisations',
         model.Footer: 'footer.message',
-        #         model.Category: 'str:Category',
-        #         model.DimensionDescriptor: 'str:DataStructureComponents/str:DimensionList',
-        #         model.Dimension: 'str:Dimension',
-        #         model.TimeDimension: 'str:TimeDimension',
-        #         model.MeasureDimension: 'str:MeasureDimension',
-        #         model.MeasureDescriptor: 'str:DataStructureComponents/str:MeasureList',
-        #         model.PrimaryMeasure: 'str:PrimaryMeasure',
-        #         model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
-        #         model.DataAttribute: 'str:Attribute',
-        #         model.CubeRegion: 'str:CubeRegion',
-        #         model.KeyValue: 'com:KeyValue',
-        #         model.Ref: 'Ref',
+        # model.Category: 'str:Category',
+        # model.DimensionDescriptor:
+        #     'str:DataStructureComponents/str:DimensionList',
+        # model.Dimension: 'str:Dimension',
+        # model.TimeDimension: 'str:TimeDimension',
+        # model.MeasureDimension: 'str:MeasureDimension',
+        # model.MeasureDescriptor:
+        #     'str:DataStructureComponents/str:MeasureList',
+        # model.PrimaryMeasure: 'str:PrimaryMeasure',
+        # model.AttributeDescriptor:
+        #     'str:DataStructureComponents/str:AttributeList',
+        # model.DataAttribute: 'str:Attribute',
+        # model.CubeRegion: 'str:CubeRegion',
+        # model.KeyValue: 'com:KeyValue',
+        # model.Ref: 'Ref',
         model.Header: '$.header',
-        #         model.Annotation: 'com:Annotations/com:Annotation',
-        #         model.Group: 'gen:Group',
-        #         model.Series: 'gen:Series',
+        # model.Annotation: 'com:Annotations/com:Annotation',
+        # model.Group: 'gen:Group',
+        # model.Series: 'gen:Series',
         model.DataSet: '$.dataSets[0]',
-        #         'int_str_names': './*[local-name() = $name]/@xml:lang',
-        #         model.Representation: 'str:LocalRepresentation',
-        #         'int_str_values': './*[local-name() = $name]/text()',
-        #         'enumeration': 'str:Enumeration',
-        #         'texttype': 'str:TextFormat/@textType',
-        #         'maxlength': 'str:TextFormat/@maxLength',
-        #         # need this? It is just a non-offset Ref
-        #         'attr_relationship': '*/Ref/@id',
-    }
+        # 'int_str_names': './*[local-name() = $name]/@xml:lang',
+        # model.Representation: 'str:LocalRepresentation',
+        # 'int_str_values': './*[local-name() = $name]/text()',
+        # 'enumeration': 'str:Enumeration',
+        # 'texttype': 'str:TextFormat/@textType',
+        # 'maxlength': 'str:TextFormat/@maxLength',
+        # # need this? It is just a non-offset Ref
+        # 'attr_relationship': '*/Ref/@id',
+        }
 
     @classmethod
     def _compile_paths(cls):
@@ -210,11 +218,10 @@ class Reader(BaseReader):
     getitem_key = itemgetter('_key')
 
     def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
-        # Make type namedtuple for obs_key. It must be
-        # merged with any dimension values at dataset level maintaining the
-        # key position order.
-        # Note that the measure dimension (such as TIME_PERIOD) has no key position.
-        # We fill this gap by injecting the highest key position.
+        # Make type namedtuple for obs_key. It must be merged with any
+        # dimension values at dataset level maintaining the key position order.
+        # Note that the measure dimension (such as TIME_PERIOD) has no key
+        # position. We fill this gap by injecting the highest key position.
         _obs_dim_key = {dim.get('keyPosition', self._key_len - 1): dim['id']
                         for dim in self._obs_dim}
         _GenericObsKey = namedtuple_factory('GenericObservationKey',
@@ -238,9 +245,9 @@ class Reader(BaseReader):
             # Read any attributes
             if with_attributes and len(value) > 1:
                 obs_attr_idx = value[1:]
-                obs_attr_raw = [(d['id'],
-                                 d['values'][i].get('id'))
-                                for i, d in zip(obs_attr_idx, self._obs_attrib)]
+                obs_attr_raw = [
+                    (d['id'], d['values'][i].get('id'))
+                    for i, d in zip(obs_attr_idx, self._obs_attrib)]
                 if obs_attr_raw:
                     obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
                     obs_attr_type = namedtuple_factory(
@@ -255,7 +262,8 @@ class Reader(BaseReader):
     def generic_series(self, sdmxobj):
         for key, series in sdmxobj._elem.value['series'].items():
             series['_key'] = key
-        for series in sorted(sdmxobj._elem.value['series'].values(), key=self.getitem_key):
+        for series in sorted(sdmxobj._elem.value['series'].values(),
+                             key=self.getitem_key):
             yield model.Series(self, series, dataset=sdmxobj)
 
     def generic_groups(self, sdmxobj):
@@ -280,18 +288,20 @@ class Reader(BaseReader):
     def dataset_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.value.get('attributes')
         if value_idx:
-            attrib_list = [(a['id'],
-                            a['values'][i].get('id', a['values'][i]['name']))
-                           for i, a in zip(value_idx, self._dataset_attrib) if i is not None]
+            attrib_list = [
+                (a['id'], a['values'][i].get('id', a['values'][i]['name']))
+                for i, a in zip(value_idx, self._dataset_attrib) if i is not
+                None]
             attrib_ids, attrib_values = zip(*attrib_list)
             return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
 
     def series_attrib(self, sdmxobj):
         value_idx = sdmxobj._elem.get('attributes')
         if value_idx:
-            attrib_list = [(a['id'],
-                            a['values'][i].get('id', a['values'][i]['name']))
-                           for i, a in zip(value_idx, self._series_attrib) if i is not None]
+            attrib_list = [
+                (a['id'], a['values'][i].get('id', a['values'][i]['name']))
+                for i, a in zip(value_idx, self._series_attrib) if i is not
+                None]
             attrib_ids, attrib_values = zip(*attrib_list)
             return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
 
@@ -301,15 +311,16 @@ class Reader(BaseReader):
                        key=self.getitem0, reverse=reverse_obs)
         for obs in obs_l:
             # value for dim at obs, e.g. '2014' for time series.
-            # As this method is called only when each obs has but one dimension, we
-            # it is at index 0.
+            # As this method is called only when each obs has but one
+            # dimension, we it is at index 0.
             obs_dim_value = self._obs_dim[0]['values'][int(obs[0])]['id']
             obs_value = obs[1][0] if with_value else None
             if with_attributes and len(obs[1]) > 1:
                 obs_attr_idx = obs[1][1:]
-                obs_attr_raw = [(d['id'],
-                                 d['values'][i].get('id'))
-                                for i, d in zip(obs_attr_idx, self._obs_attrib) if i is not None]
+                obs_attr_raw = [
+                    (d['id'], d['values'][i].get('id'))
+                    for i, d in zip(obs_attr_idx, self._obs_attrib) if i is not
+                    None]
                 if obs_attr_raw:
                     obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
                     obs_attr_type = namedtuple_factory(

@@ -31,9 +31,11 @@ class Reader(BaseReader):
         'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
         'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
         'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-        'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
-        'footer': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer'
-    }
+        'gen':
+            'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
+        'footer':
+            'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer',
+        }
 
     def initialize(self, source):
         tree = etree.parse(source)
@@ -51,7 +53,8 @@ class Reader(BaseReader):
         '''
         Save XML source to file by calling `write` on the root element.
         '''
-        return self.message._elem.getroottree().write(filename, encoding='utf8')
+        return self.message._elem.getroottree().write(filename,
+                                                      encoding='utf8')
 
     _paths = {
         'footer_text': 'com:Text/text()',
@@ -98,23 +101,28 @@ class Reader(BaseReader):
         'attr_values_path': 'gen:Attributes/gen:Value/@value',
         model.Code: 'str:Code',
         model.Categorisation: 'str:Categorisation',
-        model.CategoryScheme: 'mes:Structures/str:CategorySchemes/str:CategoryScheme',
-        model.DataStructureDefinition: 'mes:Structures/str:DataStructures/str:DataStructure',
+        model.CategoryScheme:
+            'mes:Structures/str:CategorySchemes/str:CategoryScheme',
+        model.DataStructureDefinition:
+            'mes:Structures/str:DataStructures/str:DataStructure',
         model.DataflowDefinition: 'str:Dataflow',
         model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
-        model.ContentConstraint: 'mes:Structures/str:Constraints/str:ContentConstraint',
+        model.ContentConstraint:
+            'mes:Structures/str:Constraints/str:ContentConstraint',
         model.Concept: 'str:Concept',
         model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
         model.Categorisations: 'mes:Structures/str:Categorisations',
         model.Footer: 'footer:Footer/footer:Message',
         model.Category: 'str:Category',
-        model.DimensionDescriptor: 'str:DataStructureComponents/str:DimensionList',
+        model.DimensionDescriptor:
+            'str:DataStructureComponents/str:DimensionList',
         model.Dimension: 'str:Dimension',
         model.TimeDimension: 'str:TimeDimension',
         model.MeasureDimension: 'str:MeasureDimension',
         model.MeasureDescriptor: 'str:DataStructureComponents/str:MeasureList',
         model.PrimaryMeasure: 'str:PrimaryMeasure',
-        model.AttributeDescriptor: 'str:DataStructureComponents/str:AttributeList',
+        model.AttributeDescriptor:
+            'str:DataStructureComponents/str:AttributeList',
         model.DataAttribute: 'str:Attribute',
         model.CubeRegion: 'str:CubeRegion',
         model.KeyValue: 'com:KeyValue',
@@ -227,9 +235,10 @@ class Reader(BaseReader):
 
     def iter_generic_series_obs(self, sdmxobj, with_value=True,
                                 with_attributes=True, reverse_obs=False):
-        for obs in sdmxobj._elem.iterchildren(
-                '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
-                reversed=reverse_obs):
+        child_path = ('{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/'
+                      'data/generic}Obs')
+        for obs in sdmxobj._elem.iterchildren(child_path,
+                                              reversed=reverse_obs):
             obs_dim = self._paths['generic_series_dim_path'](obs)[0]
             if with_value:
                 obs_value = self._paths['obs_value_path'](obs)[0]

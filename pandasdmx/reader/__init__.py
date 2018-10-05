@@ -81,7 +81,13 @@ class BaseReader(ABC):
                 return None
         else:
             base = sdmxobj._elem
-        result = self._paths[cls](base)
+
+        try:
+            result = self._paths[cls](base)
+        except AttributeError:
+            # No path for 'cls'; return an empty instance of cls
+            return cls()
+
         if result:
             if first_only:
                 return cls(self, result[0])
@@ -95,3 +101,29 @@ class BaseReader(ABC):
                 return result[0]
             else:
                 return result
+
+    # Methods required by model.DataSet
+    @abstractmethod
+    def dataset_attrib(self, sdmxobj):
+        pass
+
+    @abstractmethod
+    def iter_generic_obs(self, sdmxobj):
+        pass
+
+    def generic_groups(self, sdmxobj):
+        """Must return an iterator."""
+        return iter([])
+
+    @abstractmethod
+    def generic_series(self, sdmxobj):
+        pass
+
+    # Methods required by model.Header
+    @abstractmethod
+    def dim_at_obs(self, sdmxobj):
+        pass
+
+    @abstractmethod
+    def structured_by(self, sdmxobj):
+        pass

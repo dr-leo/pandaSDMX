@@ -26,7 +26,9 @@ from pandasdmx.model import (
     DataAttribute,
     DataMessage,
     DataSet,
+    Footer,
     Header,
+    InternationalString,
     GroupKey,
     Key,
     KeyValue,
@@ -76,7 +78,11 @@ class Reader(BaseReader):
                             KeyValue),
             }
         values = self._dispatch(root, context)
-        self.msg.data.append(values['dataset'])
+        self.msg.data.append(values.pop('dataset', None))
+        # Store the footer, if any
+        footer = values.pop('footer', None)
+        if footer:
+            self.msg.footer = footer[0]
         return self.msg
 
     def parse_attributes(self, elem, context):
@@ -90,6 +96,12 @@ class Reader(BaseReader):
     def parse_header(self, elem, context):
         values = self._collect('header', elem)
         self.msg.header = Header(**values)
+
+    def parse_message(self, elem, context):
+        f = Footer(**elem.attrib)
+        for locale, label in self._dispatch(elem, context)['text']:
+            f.text.append(InternationalString(**{locale: label}))
+        return f
 
     def parse_dataset(self, elem, context):
         ds = DataSet()
@@ -154,6 +166,7 @@ class Reader(BaseReader):
     parse_annotationtext = parse_international_string
     parse_name = parse_international_string
     parse_description = parse_international_string
+    parse_text = parse_international_string
 
     def parse_annotation(self, elem, context):
         return Annotation(**self._dispatch(elem, context))
@@ -216,7 +229,7 @@ class Reader(BaseReader):
                 result[key] = matches[0]
         return result
 
-    _dispatch_skip_level = ['annotations', 'codelists', 'concepts']
+    _dispatch_skip_level = ['annotations', 'codelists', 'concepts', 'footer']
 
     def _dispatch(self, elem, context={}, rtype=dict):
         results = rtype()

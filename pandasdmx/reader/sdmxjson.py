@@ -131,13 +131,14 @@ class Reader(BaseReader):
         return ds
 
     def read_series_obs(self, root, series_key):
-        series_attrs = self._make_attrs('series', root['attributes'])
+        series_attrs = self._make_attrs('series', root.get('attributes', []))
         for key, elem in root['observations'].items():
+            value = elem.pop(0) if len(elem) else None
             o = Observation(series_key=series_key,
                             dimension=self._make_key('observation', key),
-                            value=elem[0],
+                            value=value,
                             attrib=series_attrs)
-            o.attrib.update(self._make_attrs('observation', elem[1:]))
+            o.attrib.update(self._make_attrs('observation', elem))
             yield o
 
     def _make_key(self, level, value):

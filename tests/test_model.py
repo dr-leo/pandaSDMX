@@ -2,6 +2,8 @@ from traitlets import TraitError
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
+    AttributeValue,
+    DataAttribute,
     Dimension,
     Item,
     Key,
@@ -116,6 +118,7 @@ def test_observation():
 
     # Access by attribute name
     assert obs.attrib.TIME_PERIOD == 3
+    assert obs.attrib.CURRENCY == 'USD'
 
     # Access by item index
     assert obs.attrib[1] == 'USD'
@@ -123,3 +126,10 @@ def test_observation():
     # Add attributes
     obs.add_attributes(('FOO', 'BAR'), ('1', '2'))
     assert obs.attrib.FOO == '1' and obs.attrib['BAR'] == '2'
+
+    # Using classes
+    da = DataAttribute(id='FOO')
+    av = AttributeValue(value_for=da, value='baz')
+    obs.attrib[da] = av
+    print(obs.attrib.FOO, repr(obs.attrib.FOO))
+    assert obs.attrib[da] == 'baz'

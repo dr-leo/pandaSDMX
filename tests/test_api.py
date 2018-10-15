@@ -10,7 +10,7 @@ from . import test_data_path
 
 def test_request():
     # Constructor
-    r = Request(log_level=logging.DEBUG)
+    r = Request(log_level=logging.ERROR)
 
     # Invalid agency name (replaces former test_request.py)
     with raises(ValueError):

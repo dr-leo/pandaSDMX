@@ -59,9 +59,10 @@ class Writer(BaseWriter):
         """
         if isinstance(source, DataMessage):
             if len(source.data) == 1:
-                return self.write(source.data[0])
+                return self.write(source.data[0], attributes=attributes)
             else:
-                return [self.write(ds) for ds in source.data]
+                return [self.write(ds, attributes=attributes) for ds in
+                        source.data]
 
         # source will now be a DataSet
 
@@ -84,18 +85,14 @@ class Writer(BaseWriter):
             if dtype:
                 row['value'] = observation.value
             if attributes:
-                row.update(observation.attributes)
+                row.update(observation.attrib)
             result[observation.key.order().get_values()] = row
 
-        result = pd.DataFrame.from_dict(result)
-        result.columns.names = observation.key.order().values.keys()
-        result = result.stack([d.id for d in observation.dimension])
+        result = pd.DataFrame.from_dict(result, orient='index')
 
-        if dtype and attributes:
-            pass
-        elif dtype:
-            result.reset_index(level=0, inplace=True, drop=True)
-        else:
-            raise NotImplemented
+        if len(result):
+            result.index.names = observation.key.order().values.keys()
+            if dtype and not attributes:
+                result = result['value']
 
         return result

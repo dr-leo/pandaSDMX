@@ -14,13 +14,13 @@ for part in 'ng', 'rg', 'sg':
 
 
 # List structure files
-test_structure = [
-    test_data_path / 'common' / 'common.xml',
-    test_data_path / 'estat' / 'apro_dsd.xml',
-    test_data_path / 'insee' / 'insee-bug-data-namedtuple-datastructure.xml',
-    test_data_path / 'insee' / 'insee-dataflow.xml',
-    test_data_path / 'insee' / 'insee-IPI-2010-A21-datastructure.xml',
-    ]
+test_structure = [test_data_path.joinpath(*parts) for parts in [
+    ('common', 'common.xml'),
+    ('estat', 'apro_dsd.xml'),
+    ('insee', 'insee-bug-data-namedtuple-datastructure.xml'),
+    ('insee', 'insee-dataflow.xml'),
+    ('insee', 'insee-IPI-2010-A21-datastructure.xml'),
+    ]]
 
 
 def test_get_message_class():

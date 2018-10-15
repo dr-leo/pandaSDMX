@@ -29,6 +29,7 @@ from operator import attrgetter
 from traitlets import (
     Any,
     Bool,
+    CInt,
     Dict,
     Float,
     HasTraits,
@@ -62,13 +63,13 @@ class InternationalString(HasTraits):
     """
     localizations = Dict(Instance(Unicode))
 
-    def __init__(self, value=None):
+    def __init__(self, value=None, **kwargs):
         if isinstance(value, str):
             self.localizations[DEFAULT_LOCALE] = value
         elif isinstance(value, tuple) and len(value) == 2:
             self.localizations[value[0]] = value[1]
         elif value is None:
-            pass
+            self.localizations.update(kwargs)
         else:
             raise ValueError
 
@@ -88,7 +89,11 @@ class InternationalString(HasTraits):
         return result
 
     def __str__(self):
-        return self.localizations[DEFAULT_LOCALE]
+        try:
+            return self.localizations[DEFAULT_LOCALE]
+        except KeyError:
+            # No label in the default locale; use the first stored value
+            return next(iter(self.localizations.values()))
 
     def __repr__(self):
         return '\n'.join(['{}: {}'.format(*kv) for kv in
@@ -145,36 +150,11 @@ class IdentifiableArtefact(AnnotableArtefact):
     uri = Unicode()
     urn = Unicode()
 
-    # TODO is this the right comparison? What about objects where URN is not
-    # provided?
-    def __eq__(self, value):
-        return self.urn == value.urn
-
-    def __ne__(self, value):
-        return self.urn != value.urn
-
-    def __lt__(self, value):
-        return self.urn < value.urn
-
-    def __gt__(self, value):
-        return self.urn > value.urn
-
-    def __le__(self, value):
-        return self.urn <= value.urn
-
-    def __ge__(self, value):
-        return self.urn >= value.urn
-
-    def __hash__(self):
-        return hash(self.id)
-
     def __str__(self):
         return self.id
 
     def __repr__(self):
-        result = ' | '.join(
-            (self.__class__.__name__, self.id))
-        return result
+        return '<{}: {}>'.format(self.__class__.__name__, self.id)
 
 
 class NameableArtefact(IdentifiableArtefact):
@@ -531,6 +511,7 @@ class Key(HasTraits):
                 raise ValueError("Key() accepts either a single argument, or "
                                  "keyword arguments; not both.")
             kwargs.update(arg)
+        self.described_by = kwargs.pop('described_by', None)
         for id, value in kwargs.items():
             self.values[id] = KeyValue(id=id, value=value)
 
@@ -615,7 +596,7 @@ SeriesKey = Key
 
 class GroupKey(Key):
     id = Unicode()
-    described_by = Instance(GroupDimensionDescriptor)
+    described_by = Instance(GroupDimensionDescriptor, allow_none=True)
 
 
 class AttributeValue(HasTraits):
@@ -630,6 +611,13 @@ class AttributeValue(HasTraits):
 
     def __eq__(self, other):
         return self.value == other
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return '<{}: {} for {}>'.format(self.__class__.__name__, self.value,
+                                        self.value_for)
 
 
 class Observation(HasTraits):
@@ -692,8 +680,8 @@ class Header(HasTraits):
 
 class Footer(HasTraits):
     severity = Unicode()
-    text = List(Unicode())
-    code = Int()
+    text = List(Instance(InternationalString))
+    code = CInt()
 
 
 class Message(HasTraits):

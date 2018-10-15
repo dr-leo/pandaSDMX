@@ -14,7 +14,6 @@ from pandasdmx import model, Request
 from . import test_data_path
 
 
-@unittest.skip('refactoring')
 class TestGenericFlatDataSet(unittest.TestCase):
     def setUp(self):
         self.estat = Request('ESTAT')
@@ -31,9 +30,10 @@ class TestGenericFlatDataSet(unittest.TestCase):
                          model.AllDimensions)
 
     def test_generic_obs(self):
-        data = self.resp.data
-        # empty series list
-        self.assertEqual(len(list(data.series)), 0)
+        data = self.resp.data[0]
+        # REMOVE: series are not in the data model
+        # # empty series list
+        # self.assertEqual(len(list(data.series)), 0)
         obs_list = data.obs
         self.assertEqual(len(obs_list), 12)
         o0 = obs_list[0]
@@ -47,6 +47,11 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.value, '1.3413')
         # REMOVE: duck typing → test for desired behaviour of attrib instead
         # self.assertIsInstance(o0.attrib, tuple)
+        print(o0.attrib)
+        print('foo')
+        print(o0.attrib.OBS_STATUS)
+        print('bar')
+        assert o0.attrib.OBS_STATUS == 'A'
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
         self.assertEqual(o0.attrib.DECIMALS, '4')
 
@@ -56,7 +61,6 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertIsInstance(data_series, pandas.Series)
 
 
-@unittest.skip('refactoring')
 class TestGenericSeriesDataSet(unittest.TestCase):
 
     def setUp(self):
@@ -70,7 +74,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_generic_obs(self):
-        data = self.resp.data
+        data = self.resp.data[0]
         # empty obs iterator
         self.assertEqual(len(data.obs), 0)
         series_list = list(data.series)
@@ -94,7 +98,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
 
     def test_pandas(self):
         resp = self.resp
-        data = resp.data
+        data = resp.data[0]
         pd_series = [s for s in resp.write(
             data, attributes='', reverse_obs=True, asframe=False)]
         self.assertEqual(len(pd_series), 4)
@@ -131,7 +135,6 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
 
-@unittest.skip('refactoring')
 class TestGenericSeriesDataSet2(unittest.TestCase):
 
     def setUp(self):
@@ -145,7 +148,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
 
     def test_generic_obs(self):
-        data = self.resp.data
+        data = self.resp.data[0]
         # empty obs iterator
         self.assertEqual(len(data.obs), 0)
         series_list = list(data.series)
@@ -168,24 +171,23 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(o0.attrib.OBS_STATUS, 'A')
 
     def test_dataframe(self):
-        data = self.resp.data
+        data = self.resp.data[0]
         df = self.resp.write(
             data, attributes='', asframe=True, reverse_obs=True)
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (3, 4))
 
 
-@unittest.skip('refactoring')
 class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request()
-        filepath = test_data_path.join('exr', 'ecb_exr_sg', 'generic',
-                                       'ecb_exr_sg_ts.xml')
+        filepath = test_data_path.joinpath('exr', 'ecb_exr_sg', 'generic',
+                                           'ecb_exr_sg_ts.xml')
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_groups(self):
-        data = self.resp.data
+        data = self.resp.data[0]
         self.assertEqual(len(list(data.groups)), 4)
         self.assertEqual(len(list(data.series)), 4)
         g2 = list(data.groups)[2]
@@ -200,17 +202,16 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         # self.assertIsInstance(g_attrib, tuple)
 
 
-@unittest.skip('refactoring')
 class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request()
-        filepath = test_data_path.join('exr', 'ecb_exr_rg', 'generic',
-                                       'ecb_exr_rg_ts.xml')
+        filepath = test_data_path.joinpath('exr', 'ecb_exr_rg', 'generic',
+                                           'ecb_exr_rg_ts.xml')
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_groups(self):
-        data = self.resp.data
+        data = self.resp.data[0]
         self.assertEqual(len(list(data.groups)), 5)
         self.assertEqual(len(list(data.series)), 4)
         g2 = list(data.groups)[2]
@@ -232,4 +233,4 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         f = resp.footer
         assert f.code == 413
         assert f.severity == 'Infomation'
-        assert f.text[1].startswith('http')
+        assert str(f.text[1]).startswith('http')

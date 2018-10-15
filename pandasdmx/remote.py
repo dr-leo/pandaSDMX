@@ -10,16 +10,23 @@
 This module is part of pandaSDMX. It contains
 a classes for http access.
 '''
+from contextlib import closing
 from pathlib import Path
+import sys
+from tempfile import SpooledTemporaryFile
 
 import requests
-from pandasdmx.utils import DictLike, str_type
-from tempfile import SpooledTemporaryFile as STF
-from contextlib import closing
 try:
     import requests_cache
 except ImportError:
     pass
+
+
+def STF(*args, **kwargs):
+    """Create a SpooledTemporaryFile, ensuring Python 2 compatibility."""
+    if sys.version_info[0] < 3:
+        kwargs.pop('encoding', None)
+    return SpooledTemporaryFile(*args, **kwargs)
 
 
 def is_url(s):
@@ -48,7 +55,7 @@ class REST:
         default_cfg = dict(stream=True, timeout=30.1)
         for it in default_cfg.items():
             http_cfg.setdefault(*it)
-        self.config = DictLike(http_cfg)
+        self.config = dict(http_cfg)
         if cache:
             requests_cache.install_cache(**cache)
 
@@ -125,13 +132,8 @@ class REST:
                     enc, fmode = response.encoding, 'w+t'
                 else:
                     enc, fmode = None, 'w+b'
-                # Create temp file ensuring 2to3 compatibility
-                if str_type == str:  # we are on py3
-                    source = STF(
-                        max_size=self.max_size, mode=fmode, encoding=enc)
-                else:
-                    # On py27 we must omit the 'encoding' kwarg
-                    source = STF(max_size=self.max_size, mode=fmode)
+                # Create temporary file
+                source = STF(max_size=self.max_size, mode=fmode, encoding=enc)
                 for c in response.iter_content(chunk_size=1000000,
                                                decode_unicode=bool(enc)):
                     source.write(c)

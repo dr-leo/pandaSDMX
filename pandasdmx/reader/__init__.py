@@ -14,28 +14,11 @@
 '''
 from abc import ABC, abstractmethod
 
-from pandasdmx.utils import DictLike
-
 
 class BaseReader(ABC):
 
     def __init__(self, request, dsd, **kwargs):
         self.request = request
-        self._compile_paths()
-
-    @classmethod
-    def _compile_paths(cls):
-        """Compile path expressions.
-
-        Subclasses MAY declare a _paths dict, in which case they MUST implement
-        _compile_paths() that compiles these paths *only once*. To avoid
-        repeated compilation, they can:
-        - set and check an attribute like _compiled,
-        - check the type of a value in _paths, or
-        - anything else.
-        """
-        if hasattr(cls, '_paths'):
-            raise NotImplemented
 
     @abstractmethod
     def initialize(self, source):
@@ -43,94 +26,4 @@ class BaseReader(ABC):
 
         Must return an instance of model.Message or a subclass.
         """
-        pass
-
-    def read_identifiables(self, cls,  sdmxobj, offset=None):
-        '''
-        If sdmxobj inherits from dict: update it  with modelized elements.
-        These must be instances of model.IdentifiableArtefact,
-        i.e. have an 'id' attribute. This will be used as dict keys.
-        If sdmxobj does not inherit from dict: return a new DictLike.
-        '''
-        path = self._paths[cls]
-        if offset:
-            try:
-                base = self._paths[offset](sdmxobj._elem)[0]
-            except IndexError:
-                return None
-        else:
-            base = sdmxobj._elem
-        result = {e.get('id'): cls(self, e) for e in path(base)}
-        if isinstance(sdmxobj, dict):
-            sdmxobj.update(result)
-        else:
-            return DictLike(result)
-
-    def read_instance(self, cls, sdmxobj, offset=None, first_only=True):
-        '''
-        If cls in _paths and matches,
-        return an instance of cls with the first XML element,
-        or, if first_only is False, a list of cls instances
-        for all elements found,
-        If no matches were found, return None.
-        '''
-        if offset:
-            try:
-                base = self._paths[offset](sdmxobj._elem)[0]
-            except IndexError:
-                return None
-        else:
-            base = sdmxobj._elem
-
-        try:
-            result = self._paths[cls](base)
-        except AttributeError:
-            # No path for 'cls'; return an empty instance of cls
-            return cls()
-
-        if result:
-            if first_only:
-                return cls(self, result[0])
-            else:
-                return [cls(self, i) for i in result]
-
-    def read_as_str(self, name, sdmxobj, first_only=True):
-        result = self._paths[name](sdmxobj._elem)
-        if result:
-            if first_only:
-                return result[0]
-            else:
-                return result
-
-    # Methods required by model.DataSet
-    @abstractmethod
-    def dataset_attrib(self, sdmxobj):
-        pass
-
-    @abstractmethod
-    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
-        """Must return an iterator."""
-        return iter([])
-
-    def generic_groups(self, sdmxobj):
-        """Must return an iterator."""
-        return iter([])
-
-    @abstractmethod
-    def generic_series(self, sdmxobj):
-        pass
-
-    # Methods required by model.Header
-    @abstractmethod
-    def dim_at_obs(self, sdmxobj):
-        pass
-
-    @abstractmethod
-    def structured_by(self, sdmxobj):
-        pass
-
-    # Methods required by model.Series
-    @abstractmethod
-    def iter_generic_series_obs(self, sdmxobj, with_value=True,
-                                with_attributes=False, reverse_obs=False):
-        return iter([])
+        pass  # pragma: no cover

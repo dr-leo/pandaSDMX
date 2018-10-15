@@ -15,24 +15,23 @@ only the chapters on REST services are relevant as pandasdmx does not support th
 SOAP interface.
 
 '''
+from functools import partial, reduce
+from importlib import import_module
+from itertools import chain, product
+import json
+import logging
+from operator import and_
 from pathlib import Path
+from pkg_resources import resource_string
+from time import sleep
+from zipfile import ZipFile, is_zipfile
+
+import pandas as PD
 
 from pandasdmx import remote
-from pandasdmx.utils import str_type, namedtuple_factory, LazyDict
-import pandas as PD
-from pkg_resources import resource_string
-from importlib import import_module
-from zipfile import ZipFile, is_zipfile
-from time import sleep
-from functools import partial, reduce
-from itertools import chain, product
-from operator import and_
-from collections import defaultdict
-import logging
-import json
 
 
-logger = logging.getLogger('pandasdmx.api')
+logger = logging.getLogger(__name__)
 
 
 class SDMXException(Exception):
@@ -385,7 +384,7 @@ class Request(object):
             reader_cls = reader_module.Reader
             msg = reader_cls(self, dsd).initialize(source)
         # Check for URL in a footer and get the real data if so configured
-        if get_footer_url and hasattr(msg, 'footer'):
+        if get_footer_url and msg.footer is not None:
             logger.info('Footer found in SDMX message.')
             # Retrieve the first URL in the footer, if any
             url_l = [

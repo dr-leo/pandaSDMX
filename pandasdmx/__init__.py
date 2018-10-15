@@ -32,17 +32,17 @@ def _init_logger():
     logger.setLevel(logging.ERROR)
     return logger
 
+
 logger = _init_logger()
 
 
 def odo_register():
-    '''
-    Enable conversion of .sdmx files with odo (http://odo.readthedocs.org).
-    Adds conversion from sdmx to PD.DataFrame to odo graph.
-    Note that native discovery of sdmx files is not yet supported. odo will thus 
-    convert to PD.DataFrame
-    and discover the data shape from there.
-    '''
+    """Enable conversion of .sdmx files with odo (http://odo.readthedocs.org).
+
+    Adds conversion from sdmx to PD.DataFrame to odo graph. Note that native
+    discovery of sdmx files is not yet supported. odo will thus convert to
+    pd.DataFrame and discover the data shape from there.
+    """
     logger.info('Registering with odo...')
     import odo
     from odo.utils import keywords

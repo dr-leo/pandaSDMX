@@ -35,6 +35,7 @@ setup(name='pandaSDMX',
           'jsonpath-rw',
           'setuptools'
       ],
+      tests_require=['odo'],
       keywords='statistics SDMX pandas data economics science',
       zip_safe=True,
       provides=['pandasdmx'],

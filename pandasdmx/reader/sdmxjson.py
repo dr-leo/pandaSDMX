@@ -12,322 +12,164 @@
 This module contains a reader for SDMX-JSON v2.1.
 
 '''
-from operator import itemgetter
 import json
 
-from jsonpath_rw import parse
-
-from pandasdmx import model
-from pandasdmx.model import SeriesObservation
+from pandasdmx.model import (
+    AllDimensions,
+    AttributeValue,
+    DataAttribute,
+    DataMessage,
+    DataSet,
+    DataStructureDefinition,
+    Dimension,
+    DimensionDescriptor,
+    Header,
+    Item,
+    Key,
+    KeyValue,
+    Observation,
+    SeriesKey,
+    )
 from pandasdmx.reader import BaseReader
-from pandasdmx.utils import DictLike, namedtuple_factory
-
-
-class XPath:
-
-    def __init__(self, path):
-        self.path = parse(path)
-
-    def __call__(self, elem):
-        return self.path.find(elem)
 
 
 class Reader(BaseReader):
-
-    """
-    Read SDMXJSON 2.1 and expose it as instances from pandasdmx.model
-    """
-
-    def read_as_str(self, name, sdmxobj, first_only=True):
-        result = self._paths[name](sdmxobj._elem)
-        if result:
-            if first_only:
-                return result[0].value
-            else:
-                return [r.value for r in result]
-
+    """Read SDMXJSON 2.1 and expose it as instances from pandasdmx.model."""
     def initialize(self, source):
+        # Initialize message instance
+        msg = DataMessage()
+
+        # Read JSON
         tree = json.load(source)
+
+        # Read the header
+        elem = tree['header']
+        msg.header = Header(id=elem['id'], prepared=elem['prepared'],
+                            sender=Item(**elem['sender']))
+
         # pre-fetch some structures for efficient use in series and obs
-        a = tree['structure']['attributes']
-        self._dataset_attrib = a['dataSet']
-        self._series_attrib = a['series']
-        self._obs_attrib = a['observation']
-        d = tree['structure']['dimensions']
-        self._dataset_dim = d.get('dataSet', [])
-        self._series_dim = d['series']
-        self._obs_dim = d['observation']
-        self._dataset_dim_key = {dim['keyPosition']: dim['id']
-                                 for dim in self._dataset_dim}
-        self._dataset_dim_values = {dim['keyPosition']: dim['values'][0]['id']
-                                    for dim in self._dataset_dim}
-        if self._series_dim:
-            self._key_len = len(self._dataset_dim) + len(self._series_dim)
-            # Map keyPositions of dimensions at series level to dimension IDs,
-            # like with dataset-level dims above.
-            # In case of cross-sectional dataset, the only dimension at series
-            # level has no keyPosition, eg. TIME_PERIOD. Instead, the
-            # keyPosition of the dim at observation is used to fill the gap.
-            self._series_dim_key = {
-                dim.get('keyPosition', self._obs_dim[0].get('keyPosition')):
-                dim['id'] for dim in self._series_dim}
-            self.SeriesKeyTuple = namedtuple_factory(
-                'SeriesKeyTuple',
-                (self._dataset_dim_key.get(i) or self._series_dim_key.get(i)
-                 for i in range(self._key_len)))
+        structure = tree['structure']
+
+        # Read dimensions and values
+        dimensions = dict()
+        self._dim_level = dict()
+        self._dim_values = dict()
+        for level_name, level in structure['dimensions'].items():
+            for elem in level:
+                # Create the Dimension
+                d = Dimension(id=elem['id'], order=elem.get('keyPosition', -1))
+
+                # Record the level it appears at
+                self._dim_level[d] = level_name
+
+                # Record values
+                self._dim_values[d] = list()
+                for value in elem.get('values', []):
+                    self._dim_values[d].append(
+                        KeyValue(id=d.id, value=value['id']))
+
+                # Store
+                dimensions[d.order] = d
+
+        # Assign an order to an implicit dimension
+        if -1 in dimensions:
+            dimensions[len(dimensions)] = dimensions.pop(-1)
+
+        # Prepare a dimension descriptor
+        dd = DimensionDescriptor(components=[dim for _, dim in
+                                             sorted(dimensions.items())])
+        msg.structure = DataStructureDefinition(dimensions=dd)
+
+        # Make a SeriesKey for Observations in this DataSet
+        ds_key = SeriesKey(described_by=dd)
+        for _, dim in sorted(dimensions.items()):
+            if self._dim_level[dim] != 'dataSet':
+                continue
+            assert len(self._dim_values[dim]) == 1
+            ds_key[dim.id] = self._dim_values[dim][0]
+
+        # Determine the dimension at the observation level
+        if all([level == 'observation' for level in
+                self._dim_level.values()]):
+            msg.observation_dimension = AllDimensions
         else:
-            # Dataset must be flat
-            self._key_len = len(self._dataset_dim) + len(self._obs_dim)
-        self.obs_attr_id = [d['id'] for d in self._obs_attrib]
-        # init message instance
-        cls = model.DataMessage
-        self.message = cls(self, tree)
-        return self.message
+            msg.observation_dimension = [dim for dim in dimensions.values() if
+                                         self._dim_level[dim] == 'observation']
 
-    def write_source(self, filename):
-        '''
-        Save source to file by calling `write` on the root element.
-        '''
-        with open(filename, 'w') as fp:
-            return json.dump(self.message._elem, fp, indent=4, sort_keys=True)
+        # Read attributes and values
+        self._attr_level = dict()
+        self._attr_values = dict()
+        for level_name, level in structure['attributes'].items():
+            for attr in level:
+                # Create the DataAttribute and store in the DSD
+                a = DataAttribute(id=attr['id'], name=attr['name'])
+                msg.structure.attributes.append(a)
 
-    _paths = {
-        # 'footer_text': 'com:Text/text()',
-        # 'footer_code': '@code',
-        # 'footer_severity': '@severity',
-        # 'dataflow_from_msg': 'mes:Structures/str:Dataflows',
-        # 'constraint_attachment': 'str:ConstraintAttachment',
-        # 'include': '@include',
-        # 'id': '@id',
-        # 'urn': '@urn',
-        # 'url': '@url',
-        # 'uri': '@uri',
-        # 'agencyID': '@agencyID',
-        # 'maintainable_parent_id': '@maintainableParentID',
-        # 'value': 'com:Value/text()',
-        'headerID': '$.header.id',
-        'header_prepared': '$.header.prepared',
-        'header_sender': '$.header.sender.*',
-        # 'header_receiver': 'mes:Receiver/@*',
-        # 'assignment_status': '@assignmentStatus',
-        # 'error': 'mes:error/@*',
-        # 'ref_version': '@version',
-        # 'concept_id': 'str:ConceptIdentity',
-        # 'position': '@position',
-        # 'isfinal': '@isfinal',
-        # 'ref_package': '@package',
-        # 'ref_class': '@class',
-        # 'ref_target': 'str:Target',
-        # 'ref_source': 'str:Source',
-        # 'ref_structure': 'str:Structure',
-        # 'annotationtype': 'com:AnnotationType/text()',
-        # 'generic_obs_path': 'gen:Obs',
-        # 'obs_key_id_path': 'gen:ObsKey/gen:Value/@id',
-        # 'obs_key_values_path': 'gen:ObsKey/gen:Value/@value',
-        # 'series_key_values_path': 'gen:SeriesKey/gen:Value/@value',
-        # 'series_key_id_path':        'gen:SeriesKey/gen:Value/@id',
-        # 'generic_series_dim_path': 'gen:ObsDimension/@value',
-        # 'group_key_values_path': 'gen:GroupKey/gen:Value/@value',
-        # 'group_key_id_path': 'gen:GroupKey/gen:Value/@id',
-        # 'obs_value_path': 'gen:ObsValue/@value',
-        # 'attr_id_path': 'gen:Attributes/gen:Value/@id',
-        # 'attr_values_path': 'gen:Attributes/gen:Value/@value',
-        # model.Code: 'str:Code',
-        # model.Categorisation: 'str:Categorisation',
-        # model.CategoryScheme:
-        #     'mes:Structures/str:CategorySchemes/str:CategoryScheme',
-        # model.DataStructureDefinition:
-        #     'mes:Structures/str:DataStructures/str:DataStructure',
-        # model.DataflowDefinition: 'str:Dataflow',
-        # model.ConceptScheme: 'mes:Structures/str:Concepts/str:ConceptScheme',
-        # model.ContentConstraint:
-        #     'mes:Structures/str:Constraints/str:ContentConstraint',
-        # model.Concept: 'str:Concept',
-        # model.Codelist: 'mes:Structures/str:Codelists/str:Codelist',
-        # model.Categorisations: 'mes:Structures/str:Categorisations',
-        model.Footer: 'footer.message',
-        # model.Category: 'str:Category',
-        # model.DimensionDescriptor:
-        #     'str:DataStructureComponents/str:DimensionList',
-        # model.Dimension: 'str:Dimension',
-        # model.TimeDimension: 'str:TimeDimension',
-        # model.MeasureDimension: 'str:MeasureDimension',
-        # model.MeasureDescriptor:
-        #     'str:DataStructureComponents/str:MeasureList',
-        # model.PrimaryMeasure: 'str:PrimaryMeasure',
-        # model.AttributeDescriptor:
-        #     'str:DataStructureComponents/str:AttributeList',
-        # model.DataAttribute: 'str:Attribute',
-        # model.CubeRegion: 'str:CubeRegion',
-        # model.KeyValue: 'com:KeyValue',
-        # model.Ref: 'Ref',
-        model.Header: '$.header',
-        # model.Annotation: 'com:Annotations/com:Annotation',
-        # model.Group: 'gen:Group',
-        # model.Series: 'gen:Series',
-        model.DataSet: '$.dataSets[0]',
-        # 'int_str_names': './*[local-name() = $name]/@xml:lang',
-        # model.Representation: 'str:LocalRepresentation',
-        # 'int_str_values': './*[local-name() = $name]/text()',
-        # 'enumeration': 'str:Enumeration',
-        # 'texttype': 'str:TextFormat/@textType',
-        # 'maxlength': 'str:TextFormat/@maxLength',
-        # # need this? It is just a non-offset Ref
-        # 'attr_relationship': '*/Ref/@id',
-        }
+                # Record the level it appears at
+                self._attr_level[a] = level_name
 
-    @classmethod
-    def _compile_paths(cls):
-        if isinstance(next(iter(cls._paths.values())), XPath):
-            # Already compiled
-            return
+                # Record its values
+                self._attr_values[a] = list()
+                for value in attr.get('values', []):
+                    self._attr_values[a].append(
+                        AttributeValue(value=value['name'], value_for=a))
 
-        for key, path in cls._paths.items():
-            cls._paths[key] = XPath(path)
+        self.msg = msg
 
-    def international_str(self, name, sdmxobj):
-        '''
-        return DictLike of xml:lang attributes. If node has no attributes,
-        assume that language is 'en'.
-        '''
-        # Get language tokens like 'en', 'fr'...
-        elem_attrib = self._paths['int_str_names'](sdmxobj._elem, name=name)
-        values = self._paths['int_str_values'](sdmxobj._elem, name=name)
-        # Unilingual strings have no attributes. Assume 'en' instead.
-        if not elem_attrib:
-            elem_attrib = ['en']
-        return DictLike(zip(elem_attrib, values))
+        # Read DataSets
+        for ds in tree['dataSets']:
+            msg.data.append(self.read_dataset(ds, ds_key))
 
-    def header_error(self, sdmxobj):
-        try:
-            return DictLike(sdmxobj._elem.Error.attrib)
-        except AttributeError:
-            return None
+        return msg
 
-    def dim_at_obs(self, sdmxobj):
-        if len(self._obs_dim) > 1:
-            return 'AllDimensions'
-        else:
-            return self._obs_dim[0]['id']
+    def read_dataset(self, root, ds_key):
+        ds = DataSet(action=root['action'].lower(),
+                     valid_from=root.get('validFrom', None))
+        for key, elem in root.get('series', {}).items():
+            series_key = ds_key + self._make_key('series', key)
+            ds.obs.extend(self.read_series_obs(elem, series_key))
+        return ds
 
-    def structured_by(self, sdmxobj):
-        return None  # complete this
+    def read_series_obs(self, root, series_key):
+        series_attrs = self._make_attrs('series', root['attributes'])
+        for key, elem in root['observations'].items():
+            o = Observation(series_key=series_key,
+                            dimension=self._make_key('observation', key),
+                            value=elem[0],
+                            attrib=series_attrs)
+            o.attrib.update(self._make_attrs('observation', elem[1:]))
+            yield o
 
-    # Operators
-    getitem0 = itemgetter(0)
-    getitem_key = itemgetter('_key')
+    def _make_key(self, level, value):
+        """Convert a string observation key to a Key().
 
-    def iter_generic_obs(self, sdmxobj, with_value=True, with_attributes=True):
-        # Make type namedtuple for obs_key. It must be merged with any
-        # dimension values at dataset level maintaining the key position order.
-        # Note that the measure dimension (such as TIME_PERIOD) has no key
-        # position. We fill this gap by injecting the highest key position.
-        _obs_dim_key = {dim.get('keyPosition', self._key_len - 1): dim['id']
-                        for dim in self._obs_dim}
-        _GenericObsKey = namedtuple_factory('GenericObservationKey',
-                                            (self._dataset_dim_key.get(d)
-                                             or _obs_dim_key.get(d)
-                                             for d in range(self._key_len)))
-        obs_l = sorted(sdmxobj._elem.value['observations'].items(),
-                       key=self.getitem0)
-        for dim, value in obs_l:
-            # Construct the key for this observation
-            key_idx = [int(i) for i in dim.split(':')]
-            obs_key_values = [d['values'][i]['id'] for i, d in
-                              zip(key_idx, self._obs_dim)]
-            obs_key = _GenericObsKey._make(self._dataset_dim_values.get(d)
-                                           or obs_key_values.pop(0)
-                                           for d in range(self._key_len))
+        SDMXJSON observations have keys like '2' or '3:4', consisting of colon
+        (':') separated indices. Each index refers to one of the values given
+        in the DSD for an observation-level dimension.
+        """
+        # Instance of the proper class
+        key = {
+            'series': SeriesKey,
+            'observation': Key,
+            }[level]()
+        # Iterate over key indices and the corresponding dimensions
+        dims = [d for d in self.msg.structure.dimensions if
+                self._dim_level[d] == level]
+        for index, dim in zip(map(int, value.split(':')), dims):
+            # Look up the value and assign to the Key
+            # FIXME should not need to explicitly cast here
+            key[dim.id] = self._dim_values[dim][index]
+        return key
 
-            # Read the value
-            obs_value = value[0] if with_value else None
+    def _make_attrs(self, level, values):
+        """Convert integer attribute indices to an iterable of AttributeValues.
 
-            # Read any attributes
-            if with_attributes and len(value) > 1:
-                obs_attr_idx = value[1:]
-                obs_attr_raw = [
-                    (d['id'], d['values'][i].get('id'))
-                    for i, d in zip(obs_attr_idx, self._obs_attrib)]
-                if obs_attr_raw:
-                    obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
-                    obs_attr_type = namedtuple_factory(
-                        'ObsAttributes', obs_attr_id)
-                    obs_attr = obs_attr_type(*obs_attr_values)
-                else:
-                    obs_attr = None
-            else:
-                obs_attr = None
-            yield SeriesObservation(obs_key, obs_value, obs_attr)
-
-    def generic_series(self, sdmxobj):
-        for key, series in sdmxobj._elem.value['series'].items():
-            series['_key'] = key
-        for series in sorted(sdmxobj._elem.value['series'].values(),
-                             key=self.getitem_key):
-            yield model.Series(self, series, dataset=sdmxobj)
-
-    def generic_groups(self, sdmxobj):
-        return []
-
-    def series_key(self, sdmxobj):
-        key_idx = [int(i) for i in sdmxobj._elem['_key'].split(':')]
-        series_key_values = [d['values'][i]['id'] for i, d in
-                             zip(key_idx, self._series_dim)]
-        full_key_values = [self._dataset_dim_values.get(d)
-                           or series_key_values.pop(0)
-                           for d in range(self._key_len)]
-        return self.SeriesKeyTuple._make(full_key_values)
-
-    def group_key(self, sdmxobj):
-        group_key_id = self._paths['group_key_id_path'](sdmxobj._elem)
-        group_key_values = self._paths[
-            'group_key_values_path'](sdmxobj._elem)
-        GroupKeyTuple = namedtuple_factory('GroupKey', group_key_id)
-        return GroupKeyTuple._make(group_key_values)
-
-    def dataset_attrib(self, sdmxobj):
-        value_idx = sdmxobj._elem.value.get('attributes')
-        if value_idx:
-            attrib_list = [
-                (a['id'], a['values'][i].get('id', a['values'][i]['name']))
-                for i, a in zip(value_idx, self._dataset_attrib) if i is not
-                None]
-            attrib_ids, attrib_values = zip(*attrib_list)
-            return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
-
-    def series_attrib(self, sdmxobj):
-        value_idx = sdmxobj._elem.get('attributes')
-        if value_idx:
-            attrib_list = [
-                (a['id'], a['values'][i].get('id', a['values'][i]['name']))
-                for i, a in zip(value_idx, self._series_attrib) if i is not
-                None]
-            attrib_ids, attrib_values = zip(*attrib_list)
-            return namedtuple_factory('Attrib', attrib_ids)(*attrib_values)
-
-    def iter_generic_series_obs(self, sdmxobj, with_value=True,
-                                with_attributes=True, reverse_obs=False):
-        obs_l = sorted(sdmxobj._elem['observations'].items(),
-                       key=self.getitem0, reverse=reverse_obs)
-        for obs in obs_l:
-            # value for dim at obs, e.g. '2014' for time series.
-            # As this method is called only when each obs has but one
-            # dimension, we it is at index 0.
-            obs_dim_value = self._obs_dim[0]['values'][int(obs[0])]['id']
-            obs_value = obs[1][0] if with_value else None
-            if with_attributes and len(obs[1]) > 1:
-                obs_attr_idx = obs[1][1:]
-                obs_attr_raw = [
-                    (d['id'], d['values'][i].get('id'))
-                    for i, d in zip(obs_attr_idx, self._obs_attrib) if i is not
-                    None]
-                if obs_attr_raw:
-                    obs_attr_id, obs_attr_values = zip(*obs_attr_raw)
-                    obs_attr_type = namedtuple_factory(
-                        'ObsAttributes', obs_attr_id)
-                    obs_attr = obs_attr_type(*obs_attr_values)
-                else:
-                    obs_attr = None
-            else:
-                obs_attr = None
-            yield SeriesObservation(obs_dim_value, obs_value, obs_attr)
+        'level' must be one of 'dataSet', 'series', or 'observation'.
+        """
+        attrs = [a for a in self.msg.structure.attributes if
+                 self._attr_level[a] == level]
+        result = {}
+        for index, attr in zip(values, attrs):
+            av = self._attr_values[attr][index]
+            result[av.value_for] = av
+        return result

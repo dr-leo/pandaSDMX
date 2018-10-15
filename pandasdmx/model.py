@@ -1,140 +1,152 @@
+"""SDMX Information Model (SDMX-IM)
 
-# pandaSDMX is licensed under the Apache 2.0 license a copy of which
-# is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this
-# distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>
+This module implements many of the classes described in the SDMX-IM
+specification ('spec'), which is available from:
 
-'''
+- https://sdmx.org/?page_id=5008
+- https://sdmx.org/wp-content/uploads/
+    SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
 
+Details of the implementation:
+- the IPython traitlets package is used to enforce the types of attributes
+  that reference instances of other classes. Two custom trait types are used:
+  - DictLikeTrait: a dict-like object with attribute and integer index access.
+    See pandasdmx.util.
+  - InternationalStringTrait.
+- class definitions are grouped by section of the spec, but these section
+  appear out of order so that dependent classes are defined first.
 
-This module is part of the pandaSDMX package
+The module also implements extra classes that are NOT described in the spec,
+but are used in XML and JSON messages: Message, StructureMessage, DataMessage,
+Header, and Footer. These appear last
 
-        SDMX 2.1 information model
-
-(c) 2014 Dr. Leo (fhaxbox66@gmail.com)
-'''
-from collections import defaultdict, namedtuple
+"""
+from copy import copy
+from datetime import date, datetime, timedelta
+from enum import Enum
 from operator import attrgetter
 
-from pandasdmx.utils import DictLike, concat_namedtuples
+from traitlets import (
+    Any,
+    Bool,
+    Dict,
+    Float,
+    HasTraits,
+    Instance,
+    Int,
+    List,
+    Set,
+    This,
+    TraitType,
+    Unicode,
+    Union,
+    UseEnum,
+    )
+
+from pandasdmx.util import DictLikeTrait
 
 
-class SDMXObject(object):
-    # Mapping from attribute names → path names for looking up string
-    # attributes. See __getattr__()
-    _str_attrs = {}
+# TODO read this from the environment
+DEFAULT_LOCALE = 'EN_ca'
 
-    def __init__(self, reader=None, elem=None, **kwargs):
 
-        if reader:
-            setattr(self, '_reader', reader)
+# 3.2: Base structures
+
+class InternationalString(HasTraits):
+    """SDMX-IM InternationalString.
+
+    SDMX-IM LocalisedString is not implemented. Instead, the 'localizations' is
+    a mapping where:
+     - keys correspond to the 'locale' property of LocalisedString.
+     - values correspond to the 'label' property of LocalisedString.
+    """
+    localizations = Dict(Instance(Unicode))
+
+    def __init__(self, value=None):
+        if isinstance(value, str):
+            self.localizations[DEFAULT_LOCALE] = value
+        elif isinstance(value, tuple) and len(value) == 2:
+            self.localizations[value[0]] = value[1]
+        elif value is None:
+            pass
         else:
-            # If reader is not supplied, create one that reads nothing
-            from pandasdmx.reader.null import Reader
-            setattr(self, '_reader', Reader())
-        setattr(self, '_elem', elem)
-        super(SDMXObject, self).__init__(**kwargs)
+            raise ValueError
 
-    def __getattr__(self, name):
-        """Maybe read string attributes.
+    def set_label(self, value):
+        self.localizations[DEFAULT_LOCALE] = value
 
-        If *name* is in the _str_attrs attribute of SDMXObject or a subclass,
-        then try to read a string value from the object's Reader, and return
-        the value. If *name* is not such a special attribute OR there is no
-        Reader, then AttributeError is returned.
-        """
-        # TODO handle attributes that pass first_only=False to read_as_str()
-        # TODO handle attributes with type conversion of the result, e.g. int()
-        try:
-            path = self._str_attrs[name]
-            # Set the attribute on the object, so subsequent calls will not
-            # trigger this method
-            setattr(self, name, self._reader.read_as_str(path, self))
-            return getattr(self, name)
-        except (KeyError, AttributeError) as e:
-            raise AttributeError(name)
+    # Convenience access
+    def __getitem__(self, locale):
+        return self.localizations[locale]
 
+    def __setitem__(self, locale, label):
+        self.localizations[locale] = label
 
-class Header(SDMXObject):
-    _str_attrs = {
-        'error': 'error',
-        'id': 'headerID',
-        'prepared': 'header_prepared',
-        'receiver': 'header_receiver',
-        'sender': 'header_sender',
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(Header, self).__init__(*args, **kwargs)
-        # Set additional attributes present in DataSet messages
-        for name in ['structured_by', 'dim_at_obs']:
-            value = getattr(self._reader, name)(self)
-            if value:
-                setattr(self, name, value)
-
-
-class Footer(SDMXObject):
-    _str_attrs = {'severity': 'footer_severity'}
-
-    @property
-    def text(self):
-        return self._reader.read_as_str('footer_text', self, first_only=False)
-
-    @property
-    def code(self):
-        return int(self._reader.read_as_str('footer_code', self))
-
-
-class Constrainable:
-    pass
-
-
-class Annotation(SDMXObject):
-    _str_attrs = {
-        'annotationtype': 'annotationtype',
-        'url': 'url',
-        }
-
-    @property
-    def id(self):
-        return self._reader.id(self)
-
-    @property
-    def title(self):
-        return self._reader.title(self)
-
-    @property
-    def text(self):
-        return self._reader.international_str('AnnotationText', self)
+    def __add__(self, other):
+        result = copy(self)
+        result.localizations.update(other.localizations)
+        return result
 
     def __str__(self):
-        return 'Annotation: title=%s' % self.title
+        return self.localizations[DEFAULT_LOCALE]
+
+    def __repr__(self):
+        return '\n'.join(['{}: {}'.format(*kv) for kv in
+                          sorted(self.localizations.items())])
 
 
-class AnnotableArtefact(SDMXObject):
+class InternationalStringTrait(TraitType):
+    """Trait type for InternationalString.
 
-    @property
-    def annotations(self):
-        return self._reader.read_instance(Annotation, self, first_only=False)
+    With trailets.Instance, a locale must be provided for every label:
+
+    >>> class Foo(HasTraits):
+    >>>     name = Instance(InternationalString)
+    >>>
+    >>> f = Foo()
+    >>> f.name['en'] = "Foo's name in English"
+
+    With InternationalStringTrait, the DEFAULT_LOCALE is automatically selected
+    when setting with a string:
+
+    >>> class Bar(HasTraits):
+    >>>     name = InternationalStringTrait
+    >>>
+    >>> b = Bar()
+    >>> b.name = "Bar's name in English"
+
+    """
+    default_value = InternationalString()
+
+    def validate(self, obj, value):
+        if isinstance(value, InternationalString):
+            return value
+        try:
+            return obj._trait_values[self.name] + InternationalString(value)
+        except ValueError:
+            self.error(obj, value)
+
+
+class Annotation(HasTraits):
+    id = Unicode()
+    title = Unicode()
+    type = Unicode()
+    url = Unicode()
+
+    text = InternationalStringTrait()
+
+
+class AnnotableArtefact(HasTraits):
+    annotations = List(Instance(Annotation))
 
 
 class IdentifiableArtefact(AnnotableArtefact):
-    _str_attrs = {
-        'uri': 'uri',
-        'urn': 'urn',
-        }
+    id = Unicode()
+    uri = Unicode()
+    urn = Unicode()
 
-    def __init__(self, *args, **kwargs):
-        super(IdentifiableArtefact, self).__init__(*args, **kwargs)
-        ref = self._reader.read_instance(Ref, self)
-        if ref:
-            self.ref = ref
-        try:
-            self.id = self.ref.id
-        except AttributeError:
-            self.id = self._reader.read_as_str('id', self)
-
+    # TODO is this the right comparison? What about objects where URN is not
+    # provided?
     def __eq__(self, value):
         return self.urn == value.urn
 
@@ -154,7 +166,10 @@ class IdentifiableArtefact(AnnotableArtefact):
         return self.urn >= value.urn
 
     def __hash__(self):
-        return hash(self.urn)
+        return hash(self.id)
+
+    def __str__(self):
+        return self.id
 
     def __repr__(self):
         result = ' | '.join(
@@ -163,221 +178,217 @@ class IdentifiableArtefact(AnnotableArtefact):
 
 
 class NameableArtefact(IdentifiableArtefact):
+    name = InternationalStringTrait()
+    description = InternationalStringTrait(allow_none=True)
 
-    @property
-    def name(self):
-        try:
-            return object.__getattribute__(self, '_name')
-        except AttributeError:
-            object.__setattr__(
-                self, '_name', self._reader.international_str('Name', self))
-            return self._name
-
-    @property
-    def description(self):
-        try:
-            return self._description
-        except AttributeError:
-            self._description = self._reader.international_str(
-                'description', self)
-            return self._description
-
-    def __str__(self):
-        result = ' | '.join(
-            (self.__class__.__name__, self.id))
-        try:
-            result += (' | ' + self.name.en)
-        except AttributeError:
-            pass
-        return result
-
-    # Make dicts and lists of Artefacts more readable. Use pprint or altrepr
-    # instead?
-    __repr__ = __str__
+    def __repr__(self):
+        return "<{}: '{}'='{}'>".format(
+            self.__class__.__name__,
+            self.id,
+            str(self.name))
 
 
 class VersionableArtefact(NameableArtefact):
-
-    @property
-    def version(self):
-        return self._reader.version(self)
-
-    @property
-    def valid_from(self):
-        return self._reader.valid_from(self)
-
-    @property
-    def valid_to(self):
-        return self._reader.valid_to(self)
+    version = Unicode()
+    valid_from = Unicode(allow_none=True)
+    valid_to = Unicode(allow_none=True)
 
 
 class MaintainableArtefact(VersionableArtefact):
-
-    @property
-    def is_final(self):
-        return bool(self._reader.read_as_str('isfinal', self))
-
-    @property
-    def is_external_ref(self):
-        return self._reader.is_external_ref(self)  # fix this
-
-    @property
-    def structure_url(self):
-        return self._reader.structure_url(self)  # fix this
-
-    @property
-    def service_url(self):
-        return self._reader.service_url(self)  # fix this
-
-    @property
-    def maintainer(self):
-        return self._reader.maintainer(self)  # fix this
+    final = Bool()
+    is_external_reference = Bool()
+    service_url = Unicode()
+    structure_url = Unicode()
+    maintainer = Instance('pandasdmx.model.Agency')
 
 
-# Helper class for ItemScheme and ComponentList.
-# This is not specifically mentioned in the SDMX info-model.
-# ItemSchemes and ComponentList differ only in that ItemScheme is Nameable, whereas
-# ComponentList is only identifiable. Therefore, ComponentList cannot
-# inherit from ItemScheme.
-class Scheme(DictLike):
-    # will be passed to _reader.read_identifiables. overwrite in subclasses
-    _get_items = None
+# 3.4: Data Types
 
-    def __init__(self, *args, **kwargs):
-        super(Scheme, self).__init__(*args, **kwargs)
-        self._reader.read_identifiables(self._get_items, self)
+ActionType = Enum('ActionType', 'delete replace append information')
 
-    # DictLike.aslist returns a list sorted by _sort_key.
-    # Alphabetical order by 'id' is the default. DimensionDescriptor overrides
-    # this to sort by position.
-    _sort_key = attrgetter('id')
+UsageStatus = Enum('UsageStatus', 'mandatory conditional')
 
-    def aslist(self):
-        return sorted(self.values(), key=self._sort_key)
+FacetValueType = Enum(
+    'FacetValueType',
+    'string bigInteger integer long short decimal float double boolean uri'
+    'count inclusiveValueRange alpha alphaNumeric numeric exclusiveValueRange'
+    'incremental observationalTimePeriod standardTimePeriod basicTimePeriod'
+    'gregorianTimePeriod gregorianYearMonth gregorianDay reportingTimePeriod'
+    'reportingYear reportingSemester reportingTrimester reportingQuarter'
+    'reportingMonth reportingWeek reportingDay dateTime timesRange month'
+    'monthDay day time duration keyValues identifiableReference'
+    'dataSetReference')
 
 
-class ItemScheme(MaintainableArtefact, Scheme):
-
-    @property
-    def is_partial(self):
-        return self._reader.is_partial(self)
-
-    def __getattr__(self, name):
-        """Attribute access."""
-        # Override the MRO for ItemScheme and subclasses: only use the DictLike
-        # attribute access, and not the _str_attrs lookup in SDMXObject
-        return super(Scheme, self).__getattr__(name)
-
+# 3.5: Item Scheme
 
 class Item(NameableArtefact):
-
-    @property
-    def children(self):
-        return self._reader._item_children(self)
+    parent = Instance(This, allow_none=True)
+    child = List(Instance(This))
 
 
-class Structure(MaintainableArtefact):
-    # the groupings are added in subclasses as class attributes.
-    # This deviates from the info model
-    pass
+class ItemScheme(MaintainableArtefact):
+    is_partial = Bool()
+    items = List(Instance(Item))
+
+    def __repr__(self):
+        return "<{}: '{}', {} items>".format(
+            self.__class__.__name__,
+            self.id,
+            len(self.items))
 
 
-class StructureUsage(MaintainableArtefact):
+# 3.6: Structure
 
-    @property
-    def structure(self):
-        return self._reader.read_instance(Ref, self, offset='ref_structure')
-
-
-class ComponentList(IdentifiableArtefact, Scheme):
-    pass
-
-
-class Representation(SDMXObject):
-
-    def __init__(self, *args, **kwargs):
-        super(Representation, self).__init__(*args)
-        enum = self._reader.read_instance(
-            Ref, self, offset='enumeration')
-        if enum:
-            self.text_type = self.max_length = None
-            self.enum = self._reader.message.codelist[enum.id]
-        else:
-            self.enum = None
-            self.text_type = self._reader.read_as_str('texttype', self)
-            max_length = self._reader.read_as_str('maxlength', self)
-            if max_length:
-                self.max_length = int(max_length)
-            else:
-                self.max_length = None
+class FacetType(HasTraits):
+    isSequence = Bool()
+    min_length = Int()
+    max_length = Int()
+    min_value = Float()
+    max_value = Float()
+    start_value = Float()
+    end_value = Unicode()
+    interval = Float()
+    time_interval = Instance(timedelta)
+    decimals = Int()
+    pattern = Unicode()
+    start_time = Instance(datetime)
+    end_time = Instance(datetime)
 
 
-class Facet:
-    # This is not yet working. not used so far.
+class Facet(HasTraits):
+    type = Instance(FacetType)
+    value = Unicode()
+    value_type = UseEnum(FacetValueType)
 
-    facet_type = {}  # for attributes such as isSequence, interval
-    facet_value_type = ('String', 'Big Integer', 'Integer', 'Long',
-                        'Short', 'Double', 'Boolean', 'URI', 'DateTime',
-                        'Time', 'GregorianYear', 'GregorianMonth', 'GregorianDate',
-                        'Day', 'MonthDay', 'Duration')
-    itemscheme_facet = u''  # to be completed
 
-    def __init__(self, facet_type=None, facet_value_type=u'',
-                 itemscheme_facet=u'', *args, **kwargs):
-        self.facet_type = facet_type
-        self.facet_value_type = facet_value_type
-        self.itemscheme_facet = itemscheme_facet
+class Representation:
+    enumerated = List(Instance(ItemScheme))
+    non_enumerated = Set(Instance(Facet))
+
+
+# 4.4: Concept Scheme
+
+class ISOConceptReference(HasTraits):
+    agency = Unicode()
+    id = Unicode()
+    scheme_id = Unicode()
 
 
 class Concept(Item):
-    pass
-    # core_repr = Instance(Representation)
-    # iso_concept = Instance(IsoConceptReference
+    core_representation = Instance(Representation, allow_none=True)
+    iso_concept = Instance(ISOConceptReference)
 
+
+class ConceptScheme(ItemScheme):
+    items = List(Instance(Concept))
+
+
+# 3.3: Basic Inheritance
 
 class Component(IdentifiableArtefact):
+    concept_identity = Instance(Concept)
+    local_representation = Instance(Representation)
 
-    @property
-    def concept_identity(self):
-        return self._reader.read_instance(Ref, self, offset='concept_identity')
 
-    @property
-    def concept(self):
-        concept_id = self.concept_identity.id
-        parent_id = self.concept_identity.maintainable_parent_id
-        return self._reader.message.conceptscheme[parent_id][concept_id]
+class ComponentList(IdentifiableArtefact):
+    components = List(Instance(Component))
 
-    @property
-    def local_repr(self):
-        return self._reader.read_instance(Representation, self)
+    # Convenience access to the components
+    def append(self, value):
+        self.components.append(value)
 
+    def __iter__(self):
+        return iter(self.components)
+
+    def __repr__(self):
+        return '<{}: {}>'.format(self.__class__.__name__,
+                                 '; '.join(map(str, self.components)))
+
+
+# 4.3: Codelist
 
 class Code(Item):
     pass
 
 
 class Codelist(ItemScheme):
-    _get_items = Code
+    items = List(Instance(Code))
 
 
-class ConceptScheme(ItemScheme):
-    _get_items = Concept
+# 4.5: Category Scheme
+
+class Category(Item):
+    pass
+
+
+class CategoryScheme(ItemScheme):
+    items = List(Instance(Category))
+
+
+class Categorisation(MaintainableArtefact):
+    category = Instance(Category)
+    artefact = Instance(IdentifiableArtefact)
+
+
+# 4.6: Organisations
+
+class Organisation(Item):
+    pass
+
+
+class Agency(Organisation):
+    pass
+
+
+# 10.2: Constraint inheritance
+
+class ConstrainableArtefact:
+    pass
+
+
+# 10.3: Constraints
+
+ConstraintRoleType = Enum('ConstraintRoleType', 'allowable actual')
+
+
+class ConstraintRole(HasTraits):
+    role = UseEnum(ConstraintRoleType)
 
 
 class Constraint(MaintainableArtefact):
+    # data_content_keys = Instance(DataKeySet, allow_none=True)
+    # metadata_content_keys = Instance(MetadataKeySet, allow_none=True)
+    role = Set(Instance(ConstraintRole))
 
-    def __init__(self, *args, **kwargs):
-        super(Constraint, self).__init__(*args, **kwargs)
-        self.constraint_attachment = self._reader.read_instance(
-            DataflowDefinition, self, offset='constraint_attachment')
+
+class SelectionValue:
+    pass
+
+
+class MemberSelection(HasTraits):
+    included = Bool()
+    values_for = Instance(Component)
+    values = Set(Instance(SelectionValue))
+
+
+class CubeRegion(HasTraits):
+    included = Bool()
+    member = Set(Instance(MemberSelection))
+
+    def __contains__(self, v):
+        key, value = v
+        kv = self.key_values
+        if key not in kv.keys():
+            raise KeyError(
+                'Unknown key: {0}. Allowed keys are: {1}'.format(
+                    key, list(kv.keys())))
+        return (value in kv[key]) == self.include
 
 
 class ContentConstraint(Constraint):
-
-    def __init__(self, *args, **kwargs):
-        super(ContentConstraint, self).__init__(*args, **kwargs)
-        self.cube_region = self._reader.read_instance(
-            CubeRegion, self, first_only=False)
+    data_content_region = Instance(CubeRegion, allow_none=True)
+    # metadata_content_region = Instance(MetadataTargetRegion, allow_none=True)
 
     def __contains__(self, v):
         if self.cube_region:
@@ -395,145 +406,22 @@ class ContentConstraint(Constraint):
                 'ContentConstraint does not contain any CubeRegion.')
 
 
-class KeyValue(SDMXObject):
-    _str_attrs = {'id': 'id'}
+# 5.2: Data Structure Defintion
 
-    def __init__(self, *args, **kwargs):
-        super(KeyValue, self).__init__(*args, **kwargs)
-        self.values = self._reader.read_as_str('value', self, first_only=False)
+class DimensionComponent(Component):
+    order = Int()
 
 
-class CubeRegion(SDMXObject):
-
-    def __init__(self, *args, **kwargs):
-        super(CubeRegion, self).__init__(*args, **kwargs)
-        self.include = bool(self._reader.read_as_str('include', self))
-        keyvalues = self._reader.read_instance(KeyValue, self,
-                                               first_only=False)
-        if keyvalues:
-            self.key_values = {kv.id: kv.values for kv in keyvalues}
-        else:
-            self.key_values = {}
-
-    def __contains__(self, v):
-        key, value = v
-        kv = self.key_values
-        if key not in kv.keys():
-            raise KeyError(
-                'Unknown key: {0}. Allowed keys are: {1}'.format(key, list(kv.keys())))
-        return (value in kv[key]) == self.include
-
-
-class Category(Item):
-
-    def __iter__(self):
-        '''
-        Return an iterator over the categorised objects
-        '''
-        m = self._reader.message
-        # We assume that only dataflow definitions are categorised.
-        resource = m.dataflow
-        idx = (self._reader.read_as_str('cat_scheme_id', self), self.id)
-        return (resource[c.artefact.id] for c in m._categorisation[idx])
-
-
-class CategoryScheme(ItemScheme):
-    _get_items = Category
-
-
-class Categorisations(SDMXObject, DictLike):
-
-    def __init__(self, *args, **kwargs):
-        super(Categorisations, self).__init__(*args, **kwargs)
-        # Group categorisations by categoryscheme id and category id
-        # Each group is represented by a list.
-        result = defaultdict(list)
-        for c in self._reader.read_instance(
-                Categorisation, self, first_only=False):
-            key = (c.categorised_by.maintainable_parent_id,
-                   c.categorised_by.id)
-            result[key].append(c)
-        self.update(result)
-
-
-class Ref(SDMXObject):
-    _str_attrs = {
-        'agency_id': 'agencyID',
-        'id': 'id',
-        'maintainable_parent_id': 'maintainable_parent_id',
-        'package': 'ref_package',
-        'ref_class': 'ref_class',
-        'ref_version': 'ref_version',
-        }
-
-    def resolve(self):
-        pkg = getattr(self._reader.msg, self.package)
-        return pkg[self.id]
-
-
-class Categorisation(MaintainableArtefact):
-
-    def __init__(self, *args, **kwargs):
-        super(Categorisation, self).__init__(*args, **kwargs)
-        self.categorised_by = self._reader.read_instance(
-            Ref, self, offset='ref_target')
-        self.artefact = self._reader.read_instance(
-            Ref, self, offset='ref_source')
-
-
-class DataflowDefinition(StructureUsage, Constrainable):
+class Dimension(DimensionComponent):
     pass
 
 
-class DataAttribute(Component):
-    _str_attrs = Component._str_attrs.copy()
-    _str_attrs.update({'usage_status': 'assignment_status'})
-
-    @property
-    def related_to(self):
-        return self._reader.read_instance(Ref, self).id
-
-    # fix this
-    # role = Instance(Concept)
-
-
-class DataStructureDefinition(Structure, Constrainable):
-
-    def __init__(self, *args, **kwargs):
-        super(DataStructureDefinition, self).__init__(*args, **kwargs)
-        self.dimensions = self._reader.read_instance(DimensionDescriptor, self)
-        self.measures = self._reader.read_instance(MeasureDescriptor, self)
-        self.attributes = self._reader.read_instance(AttributeDescriptor, self)
-
-
-class Dimension(Component):
-    # role = Instance(Concept)
-
-    def __init__(self, *args, **kwargs):
-        super(Dimension, self).__init__(*args, **kwargs)
-        self._position = int(self._reader.read_as_str('position', self))
-
-
-class TimeDimension(Dimension):
+class TimeDimension(DimensionComponent):
     pass
-    # role must be None. Enforce this in future versions.
 
 
-class MeasureDimension(Dimension):
+class MeasureDimension(DimensionComponent):
     pass
-    # representation: must be concept scheme and local, i.e. no
-    # inheritance from concept
-
-
-class DimensionDescriptor(ComponentList):
-    _get_items = Dimension
-    _sort_key = attrgetter('_position')
-
-    def __init__(self, *args, **kwargs):
-        super(DimensionDescriptor, self).__init__(*args, **kwargs)
-        # add time_dimension and measure_dimension to the scheme
-        self._reader.read_identifiables(TimeDimension, self)
-        self._reader.read_identifiables(MeasureDimension, self)
 
 
 class PrimaryMeasure(Component):
@@ -541,203 +429,284 @@ class PrimaryMeasure(Component):
 
 
 class MeasureDescriptor(ComponentList):
-    _get_items = PrimaryMeasure
+    components = List(Instance(PrimaryMeasure))
 
 
-class AttributeDescriptor(ComponentList):
-    _get_items = DataAttribute
+class DataAttribute(Component):
+    usage_status = Instance(UsageStatus)
 
 
 class ReportingYearStartDay(DataAttribute):
     pass
 
 
-class DataSet(SDMXObject):
-    #     reporting_begin = Any
-    #     reporting_end = Any
-    #     valid_from = Any
-    #     valid_to = Any
-    #     data_extraction_date = Any
-    #     publication_year = Any
-    #     publication_period = Any
-    #     set_id = Unicode
-    #     action = Enum(('update', 'append', 'delete'))
-    #     described_by = Instance(DataflowDefinition)
-    #     structured_by = Instance(DataStructureDefinition)
-    #     published_by = Any
-    #     attached_attribute = Any
+class AttributeDescriptor(ComponentList):
+    components = List(Instance(DataAttribute))
 
-    _obs = None
 
-    def __init__(self, *args, **kwargs):
-        super(DataSet, self).__init__(*args, **kwargs)
-        self.attrib = self._reader.dataset_attrib(self)
-        self.groups = tuple(self.iter_groups)
+class Structure(MaintainableArtefact):
+    grouping = Instance(ComponentList)
 
-    @property
-    def dim_at_obs(self):
-        return self._reader.dim_at_obs(self)
 
-    def iter_obs(self, with_values=True, with_attributes=True):
-        """Return an iterator over observations, with performance options.
+class StructureUsage(MaintainableArtefact):
+    structure = Instance(Structure)
 
-        If *with_values* and *with_attributes* are both True (default), the
-        return value is identical to iter(DataSet.obs). If *with_values* is
-        False, then the value of each observations is omitted. If
-        *with_attributes* is False, then observation-level attributes are
-        omitted. These options may increase performance.
-        """
-        # distinguish between generic and structure-specific observations
-        # only generic ones are currently implemented.
-        if self._obs is not None:
-            yield from self._obs
-        else:
-            self._obs = []
-            if self._reader:
-                for o in self._reader.iter_generic_obs(self,
-                                                       with_values,
-                                                       with_attributes):
-                    self._obs.append(o)
-                    yield o
 
-    @property
-    def obs(self):
-        """Observations in a flat dataset.
+class DimensionDescriptor(ComponentList):
+    components = List(Union([
+        Instance(Dimension),
+        Instance(MeasureDimension),
+        Instance(TimeDimension),
+        ]))
 
-        An observation is represented as a namedtuple with 3 fields: 'key',
-        'value', and 'attrib':
-
-          key: a namedtuple of dimensions. Its field names represent dimension
-               names, its values the dimension values at the observation.
-          value: a string that can in in most cases be interpreted as float64.
-          attrib: is a namedtuple of attribute names and values.
-        """
-        if self._obs is None:
-            self._obs = []
+    def order_key(self, key):
+        """Return a key ordered according to the DSD."""
+        result = Key()
+        for dim in sorted(self.components, key=attrgetter('order')):
             try:
-                self.obs.extend(self._reader.iter_generic_obs(self))
-            except AttributeError:
-                pass
+                result[dim.id] = key[dim.id]
+            except KeyError:
+                continue
+        return result
 
-        return self._obs
 
-    @obs.setter
-    def obs(self, value):
-        self._obs = value
+class GroupDimensionDescriptor(DimensionDescriptor):
+    attachment_constraint = Bool()
+    # constraint = Instance(AttachmentConstraint, allow_none=True)
 
-    @property
-    def series(self):
-        '''
-        return an iterator over Series instances in this DataSet.
-        Note that DataSets in flat format, i.e.
-        header.dim_at_obs = "AllDimensions", have no series. Use DataSet.obs()
-        instead.
-        '''
-        return self._reader.generic_series(self)
+
+class DataStructureDefinition(Structure, ConstrainableArtefact):
+    attributes = Instance(AttributeDescriptor, args=())
+    dimensions = Instance(DimensionDescriptor)
+    measures = Instance(MeasureDescriptor)
+    group_dimensions = Instance(GroupDimensionDescriptor)
 
     @property
-    def iter_groups(self):
-        return self._reader.generic_groups(self)
+    def grouping(self):
+        return
 
 
-class Series(SDMXObject):
-    _obs = None
+class DataflowDefinition(StructureUsage, ConstrainableArtefact):
+    pass
 
-    def __init__(self, *args, **kwargs):
-        super(Series, self).__init__(*args)
-        self.key = self._reader.series_key(self)
-        self.attrib = self._reader.series_attrib(self)
-        dataset = kwargs.get('dataset')
-        if not isinstance(dataset, DataSet):
-            raise TypeError("'dataset' must be a DataSet instance, got %s"
-                            % dataset.__class__.__name__)
-        self.dataset = dataset
 
-    @property
-    def group_attrib(self):
-        '''
-        return a namedtuple containing all attributes attached
-        to groups of which the given series is a member
-        for each group of which the series is a member
-        '''
-        group_attributes = [g.attrib for g in self.dataset.groups if self in g]
-        if group_attributes:
-            return concat_namedtuples(*group_attributes)
+# 5.4: Data Set
 
-    def iter_obs(self, with_values=True, with_attributes=True,
-                 reverse_obs=False):
-        """Return an iterator over observations, with performance options.
+class KeyValue(HasTraits):
+    id = Unicode()
+    value = Any()
 
-        See DataSet.iter_obs().
-        """
-        if self._obs is not None:
-            yield from self._obs
+    def __eq__(self, other):
+        """Compare the value to a Python built-in type, e.g. str."""
+        return self.value == other
+
+    def __str__(self):
+        return '{0.id}: {0.value}'.format(self)
+
+
+TimeKeyValue = KeyValue
+
+
+class Key(HasTraits):
+    """SDMX Key class.
+
+    The constructor takes an optional list of keyword arguments; the keywords
+    are used as Dimension IDs, and the values as KeyValues.
+
+    For convience, the values of the key may be accessed directly:
+
+    >>> k = Key(foo=1, bar=2)
+    >>> k.values['foo']
+    1
+    >>> k['foo']
+    1
+
+    """
+    values = DictLikeTrait(Instance(KeyValue))
+    described_by = Instance(DimensionDescriptor, allow_none=True)
+
+    def __init__(self, arg=None, **kwargs):
+        if arg:
+            if len(kwargs):
+                raise ValueError("Key() accepts either a single argument, or "
+                                 "keyword arguments; not both.")
+            kwargs.update(arg)
+        for id, value in kwargs.items():
+            self.values[id] = KeyValue(id=id, value=value)
+
+    def __len__(self):
+        """The length of the key is the number of KeyValues it contains."""
+        return len(self.values)
+
+    def __contains__(self, other):
+        try:
+            return all([self.values[k] == v for k, v in other.values.items()])
+        except KeyError:
+            # 'k' in other does not appear in this Key()
+            return False
+
+    # Convenience access to values by name
+    def __getitem__(self, name):
+        return self.values[name]
+
+    def __setitem__(self, name, value):
+        # Convert a bare string or other Python object to a KeyValue instance
+        if not isinstance(value, KeyValue):
+            value = KeyValue(id=name, value=value)
+        self.values[name] = value
+
+    # Convenience access to values by attribute
+    def __getattr__(self, name):
+        try:
+            # To avoid recursion, use the underlying traitlets private member
+            return self._trait_values['values'][name]
+        except KeyError:
+            raise AttributeError
+
+    def __str__(self):
+        return '({})'.format(', '.join(map(str, self.values.values())))
+
+    # Copying
+    def __copy__(self):
+        result = Key()
+        if self.described_by:
+            result.described_by = self.described_by
+        for kv in self.values.values():
+            result[kv.id] = kv
+        return result
+
+    def copy(self, arg=None, **kwargs):
+        result = copy(self)
+        for id, value in kwargs.items():
+            result[id] = value
+        return result
+
+    def __add__(self, other):
+        if not isinstance(other, Key):
+            raise NotImplementedError
+        result = copy(self)
+        for id, value in other.values.items():
+            result[id] = value
+        return result
+
+    def __radd__(self, other):
+        if other is None:
+            return copy(self)
         else:
-            self._obs = []
-            if self._reader:
-                for o in self._reader.iter_generic_series_obs(self,
-                                                              with_values,
-                                                              with_attributes,
-                                                              reverse_obs):
-                    self._obs.append(o)
-                    yield o
+            raise NotImplementedError
+
+    def __eq__(self, other):
+        return all([a == b for a, b in zip(self.values, other.values)])
+
+    def order(self, value=None):
+        if value is None:
+            value = self
+        try:
+            return self.described_by.order_key(value)
+        except AttributeError:
+            return value
+
+    def get_values(self):
+        return tuple([kv.value for kv in self.values.values()])
+
+
+SeriesKey = Key
+
+
+class GroupKey(Key):
+    id = Unicode()
+    described_by = Instance(GroupDimensionDescriptor)
+
+
+class AttributeValue(HasTraits):
+    """SDMX-IM AttributeValue.
+
+    In the spec, AttributeValue is an abstract class. Here, it serves as both
+    the concrete subclasses CodedAttributeValue and UncodedAttributeValue.
+    """
+    value = Union([Unicode(), Instance(Code)])
+    value_for = Instance(DataAttribute, allow_none=True)
+    start_date = Instance(date)
+
+    def __eq__(self, other):
+        return self.value == other
+
+
+class Observation(HasTraits):
+    """SDMX-IM Observation.
+
+    This class also implements the spec classes ObservationValue,
+    UncodedObservationValue, and CodedObservation.
+    """
+    attrib = DictLikeTrait(Instance(AttributeValue))
+    series_key = Instance(SeriesKey, allow_none=True)
+    dimension = Instance(Key, allow_none=True)
+    value = Union([Any(), Instance(Code)])
+    value_for = Instance(PrimaryMeasure, allow_none=True)
 
     @property
-    def obs(self):
-        """Observations.
+    def dim(self):
+        if len(self.key) == 1:
+            return self.key.values[0]
+        else:
+            raise ValueError("Observations with keys of length > 1 have no "
+                             "dimension.")
 
-        See DataSet.obs.
-        """
-        if self._obs is None:
-            self._obs = []
-            try:
-                self.obs.extend(self._reader.iter_generic_series_obs(self))
-            except AttributeError:
-                pass
+    @property
+    def key(self):
+        return self.series_key + self.dimension
 
-        return self._obs
+    def __len__(self):
+        return len(self.key)
 
-    @obs.setter
-    def obs(self, value):
-        self._obs = value
+    def __str__(self):
+        return '{0.key}: {0.value}'.format(self)
 
-
-class Group(SDMXObject):
-
-    def __init__(self, *args, **kwargs):
-        super(Group, self).__init__(*args, **kwargs)
-        self.key = self._reader.group_key(self)
-        self.attrib = self._reader.series_attrib(self)
-
-    def __contains__(self, series):
-        group_key, series_key = self.key, series.key
-        for f in group_key._fields:
-            if getattr(group_key, f) != getattr(series_key, f):
-                return False
-        return True
+    def add_attributes(self, keys, values):
+        for k, v in zip(keys, values):
+            self.attrib[k] = AttributeValue(value=v)
 
 
-class Message(SDMXObject):
-    # Describe supported message content as 4-tuples of the form
-    # (attribute_name, reader_method_name,
-    # class_object_to_be_instantiated, optional_offset_path_name)
-    _content_types = [
-        ('header', 'read_instance', Header, None),
-        ('footer', 'read_instance', Footer, None)]
+class DataSet(AnnotableArtefact):
+    action = UseEnum(ActionType)
+    attrib = DictLikeTrait(Instance(AttributeValue))
+    valid_from = Unicode(allow_none=True)
+    structured_by = Instance(DataStructureDefinition)
+    obs = List(Instance(Observation))
 
-    def __init__(self, *args, **kwargs):
-        super(Message, self).__init__(*args, **kwargs)
-        # Initialize data attributes for which the response contains payload
-        for name, method, cls, offset in self._content_types:
-            payload = getattr(
-                self._reader, method)(cls, self, offset=offset)
-            if payload:
-                setattr(self, name, payload)
+    def add_attributes(self, keys, values):
+        for k, v in zip(keys, values):
+            self.attrib[k] = AttributeValue(value=v)
+
+
+###############################################################################
+# Message-related classes (not part of the SDMX-IM)
+
+class Header(HasTraits):
+    error = Unicode()
+    id = Unicode()
+    prepared = Unicode()
+    receiver = Unicode()
+    sender = Union([Instance(Item), Unicode()])
+
+
+class Footer(HasTraits):
+    severity = Unicode()
+    text = List(Unicode())
+    code = Int()
+
+
+class Message(HasTraits):
+    """Message.
+
+    Message and its subclasses are not part of the SDMX data model.
+    """
+    header = Instance(Header)
+    footer = Instance(Footer, allow_none=True)
 
 
 class StructureMessage(Message):
-    _content_types = Message._content_types[:]
-    _content_types.extend([
+    _content_types = [
         ('codelist', 'read_identifiables', Codelist, None),
         ('conceptscheme', 'read_identifiables', ConceptScheme, None),
         ('dataflow', 'read_identifiables', DataflowDefinition,
@@ -746,36 +715,18 @@ class StructureMessage(Message):
          DataStructureDefinition, None),
         ('constraint', 'read_identifiables', ContentConstraint, None),
         ('categoryscheme', 'read_identifiables', CategoryScheme, None),
-        ('_categorisation', 'read_instance', Categorisations, None)])
+        ]
 
-    def __getattr__(self, name):
-        '''
-        Some attributes have been renamed in v0.4.
-        Old names are deprecated.
-        This method ensures backward compatibility. It will be
-        removed in a future version.
-        '''
-        old2new = {
-            'codelists': 'codelist',
-            'dataflows': 'dataflow',
-            'categoryschemes': 'categoryscheme',
-            'categorisations': 'categorisation',
-            'conceptschemes': 'conceptscheme',
-            'datastructures': 'datastructure'}
-        if name in old2new:
-            return getattr(self, old2new[name])
-        else:
-            raise AttributeError
+
+class _AllDimensions:
+    pass
+
+
+AllDimensions = _AllDimensions()
 
 
 class DataMessage(Message):
-    _content_types = Message._content_types[:]
-    _content_types.extend([
-        ('data', 'read_instance', DataSet, None)])
-
-
-# Types for generic observations
-GenericObservation = namedtuple('GenericObservation',
-                                ('key', 'value', 'attrib'))
-SeriesObservation = namedtuple('SeriesObservation',
-                               ('dim', 'value', 'attrib'))
+    data = List(Instance(DataSet))
+    structure = Instance(DataStructureDefinition)
+    observation_dimension = Union([Instance(_AllDimensions),
+                                   List(Instance(Dimension))], allow_none=True)

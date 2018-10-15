@@ -6,7 +6,6 @@
 @author: Dr. Leo
 '''
 import unittest
-import pandasdmx
 from pandasdmx import model, Request
 import os.path
 import inspect
@@ -15,6 +14,7 @@ test_path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
+@unittest.skip('refactoring')
 class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
 
     def setUp(self):
@@ -43,6 +43,7 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
         pass
 
 
+@unittest.skip('refactoring')
 class test_dsd_common(unittest.TestCase):
 
     def setUp(self):

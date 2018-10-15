@@ -16,7 +16,10 @@ for part in 'ng', 'rg', 'sg':
 # List structure files
 test_structure = [
     test_data_path / 'common' / 'common.xml',
-    test_data_path / 'estat' / 'apro_dsd.xml'
+    test_data_path / 'estat' / 'apro_dsd.xml',
+    test_data_path / 'insee' / 'insee-bug-data-namedtuple-datastructure.xml',
+    test_data_path / 'insee' / 'insee-dataflow.xml',
+    test_data_path / 'insee' / 'insee-IPI-2010-A21-datastructure.xml',
     ]
 
 
@@ -26,13 +29,13 @@ def test_get_message_class():
 
 
 # Read example data files
-@pytest.mark.skip('working; skip for performance')
 @pytest.mark.parametrize('path', test_data)
 def test_read_xml(empty_req, path):
     empty_req.get(fromfile=path).msg
 
 
 # Read example structure files
+@pytest.mark.skip('partly complete')
 @pytest.mark.parametrize('path', test_structure)
 def test_read_xml_structure(empty_req, path):
     empty_req.get(fromfile=path).msg

@@ -19,8 +19,7 @@ from pandasdmx.writer import BaseWriter
 class Writer(BaseWriter):
 
     def write(self, source=None, asframe=True, dtype=np.float64,
-              attributes='', reverse_obs=False, fromfreq=False,
-              parse_time=True):
+              attributes='', fromfreq=False, parse_time=True):
         """Transform a :class:`pandasdmx.model.DataMessage` instance to a
         pandas DataFrame or iterator over pandas Series.
 
@@ -44,8 +43,6 @@ class Writer(BaseWriter):
                 'g', and 'd' mean that attributes at observation, series, group
                 and dataset level will be returned as members of
                 per-observation namedtuples.
-            reverse_obs(bool): if True, return observations in reverse order.
-                Default: False
             fromfreq(bool): if True, extrapolate time periods from the first
                 item and FREQ dimension. Default: False
             parse_time(bool): if True (default), try to generate datetime

@@ -56,8 +56,7 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertEqual(o0.attrib.DECIMALS, '4')
 
     def test_write2pandas(self):
-        data_series = self.resp.write(attributes='',
-                                      asframe=False, reverse_obs=False)
+        data_series = self.resp.write(attributes='', asframe=False)
         self.assertIsInstance(data_series, pandas.Series)
 
 
@@ -99,8 +98,8 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_pandas(self):
         resp = self.resp
         data = resp.data[0]
-        pd_series = [s for s in resp.write(
-            data, attributes='', reverse_obs=True, asframe=False)]
+        pd_series = [s.iloc[::-1] for s in resp.write(
+                     data, attributes='', asframe=False)]
         self.assertEqual(len(pd_series), 4)
         s3 = pd_series[3]
         self.assertIsInstance(s3, pandas.core.series.Series)
@@ -108,8 +107,8 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(s3.name, tuple)
         self.assertEqual(len(s3.name), 5)
         # now with attributes
-        pd_series = [s for s in resp.write(
-            data, attributes='osgd', reverse_obs=True, asframe=False)]
+        pd_series = [s.iloc[::-1] for s in resp.write(
+                     data, attributes='osgd', asframe=False)]
         self.assertEqual(len(pd_series), 4)
         self.assertIsInstance(pd_series[0], tuple)  # contains 2 series
         self.assertEqual(len(pd_series[0]), 2)
@@ -151,13 +150,11 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertEqual(a3[0].OBS_STATUS, 'A')
 
     def test_write2pandas(self):
-        df = self.resp.write(attributes='',
-                             reverse_obs=False)
+        df = self.resp.write(attributes='')
         self.assertIsInstance(df, pandas.DataFrame)
         assert df.shape == (3, 4)
         # with metadata
-        df, mdf = self.resp.write(attributes='osgd',
-                                  reverse_obs=False)
+        df, mdf = self.resp.write(attributes='osgd')
         assert mdf.shape == (3, 4)
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
@@ -210,8 +207,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
 
     def test_dataframe(self):
         data = self.resp.data[0]
-        df = self.resp.write(
-            data, attributes='', asframe=True, reverse_obs=True)
+        df = self.resp.write(data, attributes='', asframe=True).iloc[::-1]
         self.assertIsInstance(df, pandas.core.frame.DataFrame)
         self.assertEqual(df.shape, (3, 4))
 

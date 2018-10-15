@@ -62,26 +62,28 @@ class Request(object):
 
     @classmethod
     def load_agency_profile(cls, source):
-        '''
-        Classmethod loading metadata on a data provider. ``source`` must
-        be a json-formated string or file-like object describing one or more data providers
-        (URL of the SDMX web API, resource types etc.
-        The dict ``Request._agencies`` is updated with the metadata from the
+        """Load metadata about a data provider.
+
+        *source* must be a JSON-formated string or file-like object describing
+        one or more data providers (URL of the SDMX web API, resource types,
+        etc.).``Request._agencies`` is updated with the metadata from the
         source.
 
         Returns None
-        '''
-        if not isinstance(source, str_type):
-            # so it must be a text file
+        """
+        try:
             source = source.read()
+        except AttributeError:
+            pass
         new_agencies = json.loads(source)
         cls._agencies.update(new_agencies)
 
     @classmethod
     def list_agencies(cls):
-        '''
-        Return a sorted list of valid agency IDs. These can be used to create ``Request`` instances.
-        '''
+        """eturn a sorted list of valid agency IDs.
+
+        These can be used to create Request instances.
+        """
         return sorted(list(cls._agencies))
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',

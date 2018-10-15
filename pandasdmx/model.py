@@ -18,7 +18,7 @@ Details of the implementation:
 
 The module also implements extra classes that are NOT described in the spec,
 but are used in XML and JSON messages: Message, StructureMessage, DataMessage,
-Header, and Footer. These appear last
+Header, and Footer. These appear last.
 
 """
 from copy import copy
@@ -888,7 +888,6 @@ class DataSet(AnnotableArtefact):
             self.attrib[k] = AttributeValue(value=v)
 
 
-###############################################################################
 # Message-related classes (not part of the SDMX-IM)
 
 class Header(HasTraits):
@@ -906,26 +905,18 @@ class Footer(HasTraits):
 
 
 class Message(HasTraits):
-    """Message.
-
-    Message and its subclasses are not part of the SDMX data model.
-    """
+    """Message."""
     header = Instance(Header)
     footer = Instance(Footer, allow_none=True)
 
 
 class StructureMessage(Message):
-    _content_types = [
-        ('codelist', 'read_identifiables', Codelist, None),
-        ('conceptscheme', 'read_identifiables', ConceptScheme, None),
-        ('dataflow', 'read_identifiables', DataflowDefinition,
-         'dataflow_from_msg'),
-        ('datastructure', 'read_identifiables',
-         DataStructureDefinition, None),
-        ('provisionagreement', 'read_identifiables',
-            ProvisionAgreement, None),
-        ('categoryscheme', 'read_identifiables', CategoryScheme, None),
-        ]
+    codelist = Instance(Codelist)
+    concept_scheme = Instance(ConceptScheme)
+    dataflow = Instance(DataflowDefinition)
+    structure = Instance(DataStructureDefinition)
+    constraint = Instance(ContentConstraint)
+    category_scheme = Instance(CategoryScheme)
 
 
 class _AllDimensions:

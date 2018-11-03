@@ -215,8 +215,8 @@ class Reader(BaseReader):
             structures = values.pop('structures')
 
             # Dictionaries by ID
-            for name in ('dataflows', 'codelists'):
-                for obj in structures.pop(name, []):
+            for name in ('dataflow', 'codelist'):
+                for obj in structures.pop(name + 's', []):
                     getattr(msg, name)[obj.id] = obj
 
             # Single objects
@@ -240,7 +240,6 @@ class Reader(BaseReader):
                 assert (c.category in msg.category_scheme and
                         c.artefact in msg.dataflows.values())
 
-            print(structures)
             assert len(structures) == 0
 
         assert len(values) == 0, values
@@ -482,7 +481,7 @@ class Reader(BaseReader):
             c.parent = values.pop('parent')
         except KeyError:
             pass
-        assert len(values) == 0, values
+        assert len(values) == 0
         return c
 
     def parse_conceptscheme(self, elem):

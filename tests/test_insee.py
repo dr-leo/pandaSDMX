@@ -2,43 +2,46 @@
 
 import os
 from collections import OrderedDict
-
 import unittest
+
+import pytest
 
 from pandasdmx import Request
 
-CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+from . import test_data_path
 
-RESOURCES_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "data", "insee"))
+
+test_data_path = test_data_path / 'insee'
 
 DATAFLOW_FP = os.path.abspath(
-    os.path.join(RESOURCES_DIR, "insee-dataflow.xml"))
+    os.path.join(test_data_path, "insee-dataflow.xml"))
 
 DATASETS = {
     'IPI-2010-A21': {
-        'data-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-IPI-2010-A21-data.xml")),
-        'datastructure-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-IPI-2010-A21-datastructure.xml")),
+        'data-fp': test_data_path / 'insee-IPI-2010-A21-data.xml',
+        'datastructure-fp': (test_data_path /
+                             'insee-IPI-2010-A21-datastructure.xml'),
         'series_count': 20,
     },
     'CNA-2010-CONSO-SI-A17': {
-        'data-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-bug-data-namedtuple.xml")),
-        'datastructure-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-bug-data-namedtuple-datastructure.xml")),
+        'data-fp': test_data_path / 'insee-bug-data-namedtuple.xml',
+        'datastructure-fp': (test_data_path /
+                             'insee-bug-data-namedtuple-datastructure.xml'),
         'series_count': 1,
     },
 }
 
 SERIES = {
     'UNEMPLOYMENT_CAT_A_B_C': {
-        'data-fp': os.path.abspath(os.path.join(RESOURCES_DIR, "insee-bug-series-freq-data.xml")),
+        'data-fp': test_data_path / 'insee-bug-series-freq-data.xml',
     }
 }
 
 
-@unittest.skip('refactoring')
+pytestmark = pytest.mark.skip('refactoring')
+
+
 class InseeTestCase(unittest.TestCase):
-
-    # nosetests -s -v pandasdmx.tests.test_insee:InseeTestCase
-
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.sdmx = Request('INSEE')
@@ -58,14 +61,16 @@ class InseeTestCase(unittest.TestCase):
         '''load datastructure for current dataset_code'''
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
         datastructure_response = self.sdmx.get(
-            resource_type='datastructure', agency='FR1', fromfile=fp_datastructure)
+            resource_type='datastructure', agency='FR1',
+            fromfile=fp_datastructure)
         self.assertTrue(
             dataset_code in datastructure_response.msg.datastructure)
         dsd = datastructure_response.msg.datastructure[dataset_code]
 
         '''Verify dimensions list'''
-        dimensions = OrderedDict([dim.id, dim] for dim in dsd.dimensions.aslist(
-        ) if dim.id not in ['TIME', 'TIME_PERIOD'])
+        dimensions = OrderedDict([dim.id, dim] for dim in
+                                 dsd.dimensions.aslist() if dim.id not in
+                                 ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
         self.assertEqual(dim_keys, ['FREQ', 'PRODUIT', 'NATURE'])
 
@@ -99,13 +104,15 @@ class InseeTestCase(unittest.TestCase):
 
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
         datastructure_response = self.sdmx.get(
-            resource_type='datastructure', agency='FR1', fromfile=fp_datastructure)
+            resource_type='datastructure', agency='FR1',
+            fromfile=fp_datastructure)
         self.assertTrue(
             dataset_code in datastructure_response.msg.datastructure)
         dsd = datastructure_response.msg.datastructure[dataset_code]
 
-        dimensions = OrderedDict([dim.id, dim] for dim in dsd.dimensions.aslist(
-        ) if dim.id not in ['TIME', 'TIME_PERIOD'])
+        dimensions = OrderedDict([dim.id, dim] for dim in
+                                 dsd.dimensions.aslist() if dim.id not in
+                                 ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
         self.assertEqual(
             dim_keys, ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX'])
@@ -127,8 +134,9 @@ class InseeTestCase(unittest.TestCase):
 
     def test_freq_in_series_attribute(self):
         # Test that we don't have regression on Issues #39 and #41
-        # INSEE time series provide the FREQ value as attribute on the series instead of a dimension. This caused
-        # a runtime error when writing as pandas dataframe.
+        # INSEE time series provide the FREQ value as attribute on the series
+        # instead of a dimension. This caused a runtime error when writing as
+        # pandas dataframe.
         data_response = self.sdmx.data(
             fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
         data_response.write()

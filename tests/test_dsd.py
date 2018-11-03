@@ -5,21 +5,24 @@
 
 @author: Dr. Leo
 '''
-import unittest
-from pandasdmx import model, Request
 import os.path
-import inspect
 
-test_path = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
+import unittest
+import pytest
+
+from pandasdmx import model, Request
+
+from . import test_data_path
 
 
-@unittest.skip('refactoring')
+pytestmark = pytest.mark.skip('refactoring')
+
+
 class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request('ESTAT')
-        filepath = os.path.join(test_path, 'data/estat/apro_dsd.xml')
+        filepath = os.path.join(test_data_path, 'estat', 'apro_dsd.xml')
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_codelists_keys(self):
@@ -43,12 +46,11 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
         pass
 
 
-@unittest.skip('refactoring')
 class test_dsd_common(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request('ESTAT')
-        filepath = os.path.join(test_path, 'data/common/common.xml')
+        filepath = os.path.join(test_data_path, 'common', 'common.xml')
         self.resp = self.estat.get(fromfile=filepath)
 
     def test_codelists_keys(self):

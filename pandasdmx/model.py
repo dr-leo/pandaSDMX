@@ -29,6 +29,7 @@ from operator import attrgetter
 from traitlets import (
     Any,
     Bool,
+    CFloat,
     CInt,
     Dict,
     Float,
@@ -150,6 +151,12 @@ class IdentifiableArtefact(AnnotableArtefact):
     uri = Unicode()
     urn = Unicode()
 
+    def __eq__(self, other):
+        return self.id == other.id and self.__class__ == other.__class__
+
+    def __hash__(self):
+        return hash(self.id)
+
     def __str__(self):
         return self.id
 
@@ -175,7 +182,7 @@ class VersionableArtefact(NameableArtefact):
 
 
 class MaintainableArtefact(VersionableArtefact):
-    final = Bool()
+    is_final = Bool()
     is_external_reference = Bool()
     service_url = Unicode()
     structure_url = Unicode()
@@ -190,26 +197,40 @@ UsageStatus = Enum('UsageStatus', 'mandatory conditional')
 
 FacetValueType = Enum(
     'FacetValueType',
-    'string bigInteger integer long short decimal float double boolean uri'
-    'count inclusiveValueRange alpha alphaNumeric numeric exclusiveValueRange'
-    'incremental observationalTimePeriod standardTimePeriod basicTimePeriod'
-    'gregorianTimePeriod gregorianYearMonth gregorianDay reportingTimePeriod'
-    'reportingYear reportingSemester reportingTrimester reportingQuarter'
-    'reportingMonth reportingWeek reportingDay dateTime timesRange month'
-    'monthDay day time duration keyValues identifiableReference'
+    'string bigInteger integer long short decimal float double boolean uri '
+    'count inclusiveValueRange alpha alphaNumeric numeric exclusiveValueRange '
+    'incremental observationalTimePeriod standardTimePeriod basicTimePeriod '
+    'gregorianTimePeriod gregorianYearMonth gregorianDay reportingTimePeriod '
+    'reportingYear reportingSemester reportingTrimester reportingQuarter '
+    'reportingMonth reportingWeek reportingDay dateTime timesRange month '
+    'monthDay day time duration keyValues identifiableReference '
     'dataSetReference')
 
 
 # 3.5: Item Scheme
 
 class Item(NameableArtefact):
-    parent = Instance(This, allow_none=True)
+    # TODO debug this. Doesn't work on subclasses
+    # parent = Instance(This)
+    parent = Any()
     child = List(Instance(This))
+
+    def __contains__(self, item):
+        """Recursive containment."""
+        for c in self.child:
+            if item == c or item in c:
+                return True
 
 
 class ItemScheme(MaintainableArtefact):
     is_partial = Bool()
     items = List(Instance(Item))
+
+    def __contains__(self, item):
+        """Recursive containment."""
+        for i in self.items:
+            if item == i or item in i:
+                return True
 
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
@@ -222,10 +243,10 @@ class ItemScheme(MaintainableArtefact):
 
 class FacetType(HasTraits):
     isSequence = Bool()
-    min_length = Int()
-    max_length = Int()
-    min_value = Float()
-    max_value = Float()
+    min_length = CInt()
+    max_length = CInt()
+    min_value = CFloat()
+    max_value = CFloat()
     start_value = Float()
     end_value = Unicode()
     interval = Float()
@@ -237,12 +258,12 @@ class FacetType(HasTraits):
 
 
 class Facet(HasTraits):
-    type = Instance(FacetType)
+    type = Instance(FacetType, args=())
     value = Unicode()
     value_type = UseEnum(FacetValueType)
 
 
-class Representation:
+class Representation(HasTraits):
     enumerated = List(Instance(ItemScheme))
     non_enumerated = Set(Instance(Facet))
 
@@ -268,7 +289,7 @@ class ConceptScheme(ItemScheme):
 
 class Component(IdentifiableArtefact):
     concept_identity = Instance(Concept)
-    local_representation = Instance(Representation)
+    local_representation = Instance(Representation, allow_none=True)
 
 
 class ComponentList(IdentifiableArtefact):
@@ -277,6 +298,40 @@ class ComponentList(IdentifiableArtefact):
     # Convenience access to the components
     def append(self, value):
         self.components.append(value)
+
+    def get(self, id, **kwargs):
+        """Return or create the component with the given *id*.
+
+        The *kwargs* are passed to the constructor of Component(), or a
+        subclass if 'components' is overridden in a subclass of ComponentList.
+        """
+        # TODO use an index to speed up
+
+        # Chose an appropriate class specified for the trait in the
+        # ComponentList subclass.
+        trait = self.__class__.components._trait
+        try:
+            klass = trait.klass
+        except AttributeError:
+            # Union trait
+            klass = trait.trait_types[0].klass
+
+        # Create the candidate
+        candidate = klass(id=id, **kwargs)
+
+        # Search for a match
+        for c in self.components:
+            if c == candidate:
+                # Same Component, difference instance. Discard the candidate
+                return c
+
+        # No match; store and return the candidate
+        self.components.append(candidate)
+        return candidate
+
+    # Properties of components
+    def __len__(self):
+        return len(self.components)
 
     def __iter__(self):
         return iter(self.components)
@@ -633,7 +688,20 @@ class MeasureDescriptor(ComponentList):
     components = List(Instance(PrimaryMeasure))
 
 
+class AttributeRelationship(HasTraits):
+    dimensions = List(Instance(Dimension))
+    group = Instance('pandasdmx.model.GroupDimensionDescriptor',
+                     allow_none=True)
+
+
+NoSpecifiedRelationship = AttributeRelationship
+PrimaryMeasureRelationship = AttributeRelationship
+GroupRelationship = AttributeRelationship
+DimensionRelationship = AttributeRelationship
+
+
 class DataAttribute(Component):
+    related_to = Instance(AttributeRelationship)
     usage_status = Instance(UsageStatus)
 
 
@@ -678,7 +746,7 @@ class GroupDimensionDescriptor(DimensionDescriptor):
 
 class DataStructureDefinition(Structure, ConstrainableArtefact):
     attributes = Instance(AttributeDescriptor, args=())
-    dimensions = Instance(DimensionDescriptor)
+    dimensions = Instance(DimensionDescriptor, args=())
     measures = Instance(MeasureDescriptor)
     group_dimensions = Instance(GroupDimensionDescriptor)
 
@@ -686,9 +754,16 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     def grouping(self):
         return
 
+    # Convenience methods
+    def attribute(self, id, **kwargs):
+        return self.attributes.get(id, **kwargs)
+
+    def dimension(self, id, **kwargs):
+        return self.dimensions.get(id, **kwargs)
+
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):
-    pass
+    structure = Instance(DataStructureDefinition)
 
 
 # 5.4: Data Set
@@ -820,6 +895,15 @@ class GroupKey(Key):
     described_by = Instance(GroupDimensionDescriptor, allow_none=True)
 
 
+def value_for_dsd_ref(args, kwargs):
+    try:
+        dsd = kwargs.pop('dsd')
+        kwargs['value_for'] = dsd.attributes.get(kwargs['value_for'])
+    except KeyError:
+        pass
+    return args, kwargs
+
+
 class AttributeValue(HasTraits):
     """SDMX-IM AttributeValue.
 
@@ -829,6 +913,10 @@ class AttributeValue(HasTraits):
     value = Union([Unicode(), Instance(Code)])
     value_for = Instance(DataAttribute, allow_none=True)
     start_date = Instance(date)
+
+    def __init__(self, *args, **kwargs):
+        args, kwargs = value_for_dsd_ref(args, kwargs)
+        super(AttributeValue, self).__init__(*args, **kwargs)
 
     def __eq__(self, other):
         return self.value == other
@@ -911,12 +999,12 @@ class Message(HasTraits):
 
 
 class StructureMessage(Message):
-    codelist = Instance(Codelist)
-    concept_scheme = Instance(ConceptScheme)
-    dataflow = Instance(DataflowDefinition)
-    structure = Instance(DataStructureDefinition)
+    codelists = Dict(Instance(Codelist))
+    concept_scheme = Instance(ConceptScheme, allow_none=True)
+    dataflows = Dict(Instance(DataflowDefinition))
+    structure = Instance(DataStructureDefinition, allow_none=True)
     constraint = Instance(ContentConstraint)
-    category_scheme = Instance(CategoryScheme)
+    category_scheme = Instance(CategoryScheme, allow_none=True)
 
 
 class _AllDimensions:
@@ -928,6 +1016,6 @@ AllDimensions = _AllDimensions()
 
 class DataMessage(Message):
     data = List(Instance(DataSet))
-    structure = Instance(DataStructureDefinition)
+    structure = Instance(DataStructureDefinition, args=())
     observation_dimension = Union([Instance(_AllDimensions),
                                    List(Instance(Dimension))], allow_none=True)

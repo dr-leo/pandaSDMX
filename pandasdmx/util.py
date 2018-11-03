@@ -5,12 +5,13 @@ from traitlets import Dict, Undefined, SequenceTypes, is_trait, warn, repr_type
 
 class DictLike(OrderedDict):
     """Container with features of a dict & list, plus attribute access."""
-    def __getitem__(self, name):
-        if isinstance(name, int):
-            return list(self.values())[name]
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return list(self.values())[key]
         else:
-            return super(OrderedDict, self).__getitem__(name)
+            return super(OrderedDict, self).__getitem__(key)
 
+    # Access items as attributes
     __getattr__ = OrderedDict.__getitem__
     __setattr__ = OrderedDict.__setitem__
 
@@ -18,11 +19,10 @@ class DictLike(OrderedDict):
 class DictLikeTrait(Dict):
     """Container trait type using DictLike.
 
-    __init__() is identical to traitlets.Dict.__init__() except for the very
-    last line.
+    - __init__() is identical to traitlets.Dict.__init__() except for the very
+      last line.
+    - validate() casts a dict() to DictLike().
     """
-    _trait = None
-
     def __init__(self, trait=None, traits=None, default_value=Undefined,
                  **kwargs):  # pragma: no cover
         # Handling positional arguments

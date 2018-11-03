@@ -1,9 +1,11 @@
-import pytest
-from pytest import raises
+import warnings
 
-from pandasdmx.reader.sdmxml import get_message_class
+import pytest
 
 from . import test_data_path
+
+
+warnings.filterwarnings('error')
 
 
 # List all XML files in the 'generic' subdirectories
@@ -23,11 +25,6 @@ test_structure = [test_data_path.joinpath(*parts) for parts in [
     ]]
 
 
-def test_get_message_class():
-    with raises(ValueError):
-        get_message_class('foo')
-
-
 # Read example data files
 @pytest.mark.parametrize('path', test_data)
 def test_read_xml(empty_req, path):
@@ -35,7 +32,7 @@ def test_read_xml(empty_req, path):
 
 
 # Read example structure files
-@pytest.mark.skip('partly complete')
 @pytest.mark.parametrize('path', test_structure)
 def test_read_xml_structure(empty_req, path):
+    print(path)
     empty_req.get(fromfile=path).msg

@@ -48,8 +48,9 @@ from traitlets import (
 from pandasdmx.util import DictLikeTrait
 
 
-# TODO read this from the environment
-DEFAULT_LOCALE = 'EN_ca'
+# TODO read this from the environment, or use any value set in the SDMX XML
+# spec. Currently set to 'en' because test_dsd.py expects it
+DEFAULT_LOCALE = 'en'
 
 
 # 3.2: Base structures
@@ -84,6 +85,13 @@ class InternationalString(HasTraits):
     def __setitem__(self, locale, label):
         self.localizations[locale] = label
 
+    # Duplicate of __getitem__, to pass existing tests in test_dsd.py
+    def __getattr__(self, locale):
+        try:
+            return self._trait_values['localizations'][locale]
+        except KeyError:
+            super(HasTraits, self).__getattr__(locale)
+
     def __add__(self, other):
         result = copy(self)
         result.localizations.update(other.localizations)
@@ -93,8 +101,11 @@ class InternationalString(HasTraits):
         try:
             return self.localizations[DEFAULT_LOCALE]
         except KeyError:
-            # No label in the default locale; use the first stored value
-            return next(iter(self.localizations.values()))
+            if len(self.localizations):
+                # No label in the default locale; use the first stored value
+                return next(iter(self.localizations.values()))
+            else:
+                return ''
 
     def __repr__(self):
         return '\n'.join(['{}: {}'.format(*kv) for kv in
@@ -122,13 +133,15 @@ class InternationalStringTrait(TraitType):
     >>> b.name = "Bar's name in English"
 
     """
-    default_value = InternationalString()
+    def make_dynamic_default(self):
+        return InternationalString()
 
     def validate(self, obj, value):
         if isinstance(value, InternationalString):
             return value
         try:
-            return obj._trait_values[self.name] + InternationalString(value)
+            return obj._trait_values.get(self.name, InternationalString()) + \
+                InternationalString(value)
         except ValueError:
             self.error(obj, value)
 
@@ -225,6 +238,14 @@ class Item(NameableArtefact):
 class ItemScheme(MaintainableArtefact):
     is_partial = Bool()
     items = List(Instance(Item))
+
+    def __getattr__(self, name):
+        "Convenience attribute access to items."
+        # Provided to pass test_dsd.py
+        for i in self.items:
+            if i.id == name:
+                return i
+        raise AttributeError(name)
 
     def __contains__(self, item):
         """Recursive containment."""
@@ -999,7 +1020,7 @@ class Message(HasTraits):
 
 
 class StructureMessage(Message):
-    codelists = Dict(Instance(Codelist))
+    codelist = DictLikeTrait(Instance(Codelist))
     concept_scheme = Instance(ConceptScheme, allow_none=True)
     dataflows = Dict(Instance(DataflowDefinition))
     structure = Instance(DataStructureDefinition, allow_none=True)

@@ -801,7 +801,7 @@ class Message(HasTraits):
 class StructureMessage(Message):
     codelist = DictLikeTrait(Instance(Codelist))
     concept_scheme = Instance(ConceptScheme, allow_none=True)
-    dataflows = Dict(Instance(DataflowDefinition))
+    dataflow = Dict(Instance(DataflowDefinition))
     structure = Instance(DataStructureDefinition, allow_none=True)
     constraint = Instance(ContentConstraint)
     category_scheme = Instance(CategoryScheme, allow_none=True)

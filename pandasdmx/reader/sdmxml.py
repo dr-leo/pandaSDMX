@@ -238,7 +238,7 @@ class Reader(BaseReader):
             # linking the DataflowDefinition to the CategoryScheme
             for c in structures.pop('categorisations', []):
                 assert (c.category in msg.category_scheme and
-                        c.artefact in msg.dataflows.values())
+                        c.artefact in msg.dataflow.values())
 
             assert len(structures) == 0
 

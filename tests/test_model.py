@@ -4,6 +4,7 @@ from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeValue,
     DataAttribute,
+    DataStructureDefinition,
     Dimension,
     Item,
     Key,
@@ -11,6 +12,17 @@ from pandasdmx.model import (
     )
 
 from pytest import raises
+
+
+def test_datastructuredefinition():
+    dsd = DataStructureDefinition()
+
+    # Convenience methods
+    da = dsd.attribute(id='foo')
+    assert isinstance(da, DataAttribute)
+
+    d = dsd.dimension(id='baz', order=-1)
+    assert isinstance(d, Dimension)
 
 
 def test_dimension():
@@ -130,6 +142,6 @@ def test_observation():
     # Using classes
     da = DataAttribute(id='FOO')
     av = AttributeValue(value_for=da, value='baz')
-    obs.attrib[da] = av
+    obs.attrib[da.id] = av
     print(obs.attrib.FOO, repr(obs.attrib.FOO))
-    assert obs.attrib[da] == 'baz'
+    assert obs.attrib[da.id] == 'baz'

@@ -17,12 +17,9 @@ import json
 from pandasdmx.model import (
     AllDimensions,
     AttributeValue,
-    DataAttribute,
+    Concept,
     DataMessage,
     DataSet,
-    DataStructureDefinition,
-    Dimension,
-    DimensionDescriptor,
     Header,
     Item,
     Key,
@@ -57,7 +54,8 @@ class Reader(BaseReader):
         for level_name, level in structure['dimensions'].items():
             for elem in level:
                 # Create the Dimension
-                d = Dimension(id=elem['id'], order=elem.get('keyPosition', -1))
+                d = msg.structure.dimension(id=elem['id'],
+                                            order=elem.get('keyPosition', -1))
 
                 # Record the level it appears at
                 self._dim_level[d] = level_name
@@ -75,13 +73,8 @@ class Reader(BaseReader):
         if -1 in dimensions:
             dimensions[len(dimensions)] = dimensions.pop(-1)
 
-        # Prepare a dimension descriptor
-        dd = DimensionDescriptor(components=[dim for _, dim in
-                                             sorted(dimensions.items())])
-        msg.structure = DataStructureDefinition(dimensions=dd)
-
         # Make a SeriesKey for Observations in this DataSet
-        ds_key = SeriesKey(described_by=dd)
+        ds_key = SeriesKey(dsd=msg.structure)
         for _, dim in sorted(dimensions.items()):
             if self._dim_level[dim] != 'dataSet':
                 continue
@@ -101,9 +94,11 @@ class Reader(BaseReader):
         self._attr_values = dict()
         for level_name, level in structure['attributes'].items():
             for attr in level:
-                # Create the DataAttribute and store in the DSD
-                a = DataAttribute(id=attr['id'], name=attr['name'])
-                msg.structure.attributes.append(a)
+                # Create a DataAttribute in the DSD
+                a = msg.structure.attribute(
+                    id=attr['id'],
+                    concept_identity=Concept(name=attr['name']),
+                    )
 
                 # Record the level it appears at
                 self._attr_level[a] = level_name

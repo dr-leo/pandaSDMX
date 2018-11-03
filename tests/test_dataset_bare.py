@@ -4,6 +4,7 @@ from pandasdmx import Request
 from pandasdmx.model import (
     AttributeValue,
     Header,
+    DataAttribute,
     DataSet,
     DataMessage,
     Key,
@@ -32,7 +33,8 @@ def test_flat():
     # Create a Key and attributes
     key = Key(FREQ='D', CURRENCY='NZD', CURRENCY_DENOM='EUR', EXR_TYPE='SP00',
               EXR_SUFFIX='A', TIME_PERIOD='2013-01-18')
-    attr = {'OBS_STATUS': AttributeValue(id='OBS_STATUS', value='A')}
+    obs_status = DataAttribute(id='OBS_STATUS')
+    attr = {'OBS_STATUS': AttributeValue(value_for=obs_status, value='A')}
 
     ds.obs.append(Observation(dimension=key, value=1.5931, attrib=attr))
 

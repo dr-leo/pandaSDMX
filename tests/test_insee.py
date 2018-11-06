@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import os
 from collections import OrderedDict
-import unittest
 
 import pytest
 
@@ -13,8 +10,7 @@ from . import test_data_path
 
 test_data_path = test_data_path / 'insee'
 
-DATAFLOW_FP = os.path.abspath(
-    os.path.join(test_data_path, "insee-dataflow.xml"))
+DATAFLOW_FP = test_data_path / 'insee-dataflow.xml'
 
 DATASETS = {
     'IPI-2010-A21': {
@@ -38,105 +34,100 @@ SERIES = {
 }
 
 
-pytestmark = pytest.mark.skip('refactoring')
+class TestINSEE:
+    @pytest.fixture(scope='class')
+    def req(self):
+        return Request('INSEE')
 
-
-class InseeTestCase(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.sdmx = Request('INSEE')
-
-    def test_load_dataset(self):
-
+    def test_load_dataset(self, req):
         dataset_code = 'IPI-2010-A21'
 
         '''load all dataflows'''
-        dataflows_response = self.sdmx.get(
+        dataflows_response = req.get(
             resource_type='dataflow', agency='FR1', fromfile=DATAFLOW_FP)
         dataflows = dataflows_response.msg.dataflow
 
-        self.assertEqual(len(dataflows.keys()), 663)
-        self.assertTrue(dataset_code in dataflows)
+        assert len(dataflows) == 663
+        assert dataset_code in dataflows
 
         '''load datastructure for current dataset_code'''
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = self.sdmx.get(
+        datastructure_response = req.get(
             resource_type='datastructure', agency='FR1',
             fromfile=fp_datastructure)
-        self.assertTrue(
-            dataset_code in datastructure_response.msg.datastructure)
-        dsd = datastructure_response.msg.datastructure[dataset_code]
+        assert dataset_code in datastructure_response.msg.dataflow
+        dsd = datastructure_response.msg.dataflow[dataset_code].structure
 
         '''Verify dimensions list'''
         dimensions = OrderedDict([dim.id, dim] for dim in
-                                 dsd.dimensions.aslist() if dim.id not in
+                                 dsd.dimensions if dim.id not in
                                  ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
-        self.assertEqual(dim_keys, ['FREQ', 'PRODUIT', 'NATURE'])
+        assert dim_keys == ['FREQ', 'PRODUIT', 'NATURE']
 
         '''load datas for the current dataset'''
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = self.sdmx.get(
+        data = req.get(
             resource_type='data', agency='FR1', fromfile=fp_data)
 
         '''Verify series count and values'''
-        series = list(data.msg.data.series)
+        # CHANGED: dataset index added; list() not required
+        series = data.msg.data[0].series
         series_count = len(series)
-        self.assertEqual(series_count, DATASETS[dataset_code]['series_count'])
+        assert series_count == DATASETS[dataset_code]['series_count']
 
         first_series = series[0]
-        observations = first_series.obs
+        observations = first_series
 
         first_obs = observations[0]
         last_obs = observations[-1]
 
-        self.assertEqual(first_obs.dim, '2015-10')
-        self.assertEqual(first_obs.value, '105.61')
+        assert first_obs.dim == '2015-10'
+        assert first_obs.value == '105.61'
 
-        self.assertEqual(last_obs.dim, '1990-01')
-        self.assertEqual(last_obs.value, '139.22')
+        assert last_obs.dim == '1990-01'
+        assert last_obs.value == '139.22'
 
-    def test_fixe_key_names(self):
+    def test_fixe_key_names(self, req):
         """Verify key or attribute contains '-' in name
         """
-
         dataset_code = 'CNA-2010-CONSO-SI-A17'
 
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = self.sdmx.get(
+        datastructure_response = req.get(
             resource_type='datastructure', agency='FR1',
             fromfile=fp_datastructure)
-        self.assertTrue(
-            dataset_code in datastructure_response.msg.datastructure)
-        dsd = datastructure_response.msg.datastructure[dataset_code]
+        assert dataset_code in datastructure_response.msg.dataflow
+        dsd = datastructure_response.msg.dataflow[dataset_code].structure
 
         dimensions = OrderedDict([dim.id, dim] for dim in
-                                 dsd.dimensions.aslist() if dim.id not in
+                                 dsd.dimensions if dim.id not in
                                  ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
-        self.assertEqual(
-            dim_keys, ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX'])
+        assert dim_keys == ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX']
 
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = self.sdmx.get(
+        data = req.get(
             resource_type='data', agency='FR1', fromfile=fp_data)
-        series = list(data.msg.data.series)
 
-        series = series[0]
+        # CHANGED: dataset index added; list() not required
+        series = data.msg.data[0].series
 
-        self.assertEqual(list(series.key.values.keys()),
-                         ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX'])
+        series_key = list(series.keys())[0]
 
-        self.assertEqual(list(series.attrib.keys()),
-                         ['FREQ', 'IDBANK', 'TITLE', 'LAST_UPDATE',
-                          'UNIT_MEASURE', 'UNIT_MULT', 'REF_AREA', 'DECIMALS',
-                          'BASE_PER', 'TIME_PER_COLLECT'])
+        assert (list(series_key.values.keys()) ==
+                ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX'])
 
-    def test_freq_in_series_attribute(self):
+        assert (list(series_key.attrib.keys()) ==
+                ['FREQ', 'IDBANK', 'TITLE', 'LAST_UPDATE', 'UNIT_MEASURE',
+                 'UNIT_MULT', 'REF_AREA', 'DECIMALS', 'BASE_PER',
+                 'TIME_PER_COLLECT'])
+
+    def test_freq_in_series_attribute(self, req):
         # Test that we don't have regression on Issues #39 and #41
         # INSEE time series provide the FREQ value as attribute on the series
         # instead of a dimension. This caused a runtime error when writing as
         # pandas dataframe.
-        data_response = self.sdmx.data(
+        data_response = req.data(
             fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
         data_response.write()

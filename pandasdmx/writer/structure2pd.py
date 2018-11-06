@@ -17,6 +17,7 @@ from operator import attrgetter
 import pandas as pd
 import numpy as np
 
+from pandasdmx.util import DictLike
 from pandasdmx.writer import BaseWriter
 
 

@@ -27,12 +27,11 @@ test_structure = [test_data_path.joinpath(*parts) for parts in [
 
 # Read example data files
 @pytest.mark.parametrize('path', test_data)
-def test_read_xml(empty_req, path):
-    empty_req.get(fromfile=path).msg
+def test_read_xml(req, path):
+    req.get(fromfile=path).msg
 
 
 # Read example structure files
 @pytest.mark.parametrize('path', test_structure)
-def test_read_xml_structure(empty_req, path):
-    print(path)
-    empty_req.get(fromfile=path).msg
+def test_read_xml_structure(req, path):
+    req.get(fromfile=path).msg

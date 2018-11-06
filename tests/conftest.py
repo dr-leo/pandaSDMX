@@ -4,5 +4,6 @@ from pandasdmx.api import Request
 
 
 @pytest.fixture
-def empty_req():
+def req():
+    """An empty Request object."""
     return Request()

@@ -13,12 +13,14 @@ This module contains a reader for SDMXML v2.1.
 
 '''
 from collections import ChainMap
+from inspect import isclass
 
 from lxml import etree
 from lxml.etree import QName, XPath
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
+    AllDimensions,
     Agency,
     Annotation,
     AttributeDescriptor,
@@ -49,6 +51,7 @@ from pandasdmx.model import (
     IdentifiableArtefact,
     InternationalString,
     ItemScheme,
+    MaintainableArtefact,
     MeasureDescriptor,
     Key,
     KeyValue,
@@ -57,12 +60,12 @@ from pandasdmx.model import (
     Representation,
     SeriesKey,
     StructureMessage,
-    TimeKeyValue,
     UsageStatus,
     )
 
 from pandasdmx.reader import BaseReader
 
+# XML namespaces
 _ns = {
     'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
     'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
@@ -73,26 +76,39 @@ _ns = {
     'xml': 'http://www.w3.org/XML/1998/namespace',
     }
 
-QNAME = {name: QName(_ns[ns], name) for ns, name in (
-    ('com', 'Name'),
-    ('xml', 'lang'),
-    ('str', 'Dimension'),
-    ('str', 'PrimaryMeasure'),
-    )}
+
+def qname(ns, name):
+    """Return a fully-qualified tag *name* in namespace *ns*."""
+    return QName(_ns[ns], name)
+
 
 # Add namespaces
-_message_class = {QName(_ns['mes'], name): cls for name, cls in (
+_message_class = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
     ('GenericData', DataMessage),
     ('GenericTimeSeriesData', DataMessage),
     )}
 
+
+# XPath expressions for reader._collect()
 _collect_paths = {
     'header': {
         'id': 'mes:ID/text()',
         'prepared': 'mes:Prepared/text()',
         'sender': 'mes:Sender/@*',
         'receiver': 'mes:Receiver/@*',
+        'structure_id': 'mes:Structure/@structureID',
+        'dim_at_obs': 'mes:Structure/@dimensionAtObservation',
+        'structure_ref_id':
+            # 'Structure' vs 'StructureUsage' varies across XML specimens.
+            ('(mes:Structure/com:Structure/Ref/@id | '
+             'mes:Structure/com:StructureUsage/Ref/@id)[1]'),
+        'structure_ref_agencyid':
+            ('(mes:Structure/com:Structure/Ref/@agencyID | '
+             'mes:Structure/com:StructureUsage/Ref/@agencyID)[1]'),
+        'structure_ref_version':
+            ('(mes:Structure/com:Structure/Ref/@version | '
+             'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
         },
     'obs': {
         'dimension': 'gen:ObsDimension/@value',
@@ -101,12 +117,14 @@ _collect_paths = {
         },
     }
 
+# Precompile paths
 for group, vals in _collect_paths.items():
     for key, path in vals.items():
         _collect_paths[group][key] = XPath(path, namespaces=_ns,
                                            smart_strings=False)
 
 
+# For Reader._parse(): tag name → Reader.parse_[…] method to use
 _parse_alias = {
     'annotationtext': 'international_string',
     'name': 'international_string',
@@ -117,7 +135,11 @@ _parse_alias = {
     'measurelist': 'grouping',
     'corerepresentation': 'representation',
     'localrepresentation': 'representation',
-    'urn': 'string',
+    'annotationtype': 'text',
+    'urn': 'text',
+    'obskey': 'key',
+    'serieskey': 'key',
+    'groupkey': 'key',
     }
 
 # Class names stored as strings in XML attributes -> pandasdmx.model classes
@@ -127,140 +149,159 @@ _parse_class = {
         'AttributeDescriptor': AttributeDescriptor,
         'MeasureDescriptor': MeasureDescriptor,
         },
-    'ref': {
-        'Codelist': Codelist,
-        'Concept': Concept,
-        'Category': Category,
-        'Dataflow': DataflowDefinition,
-        'DataStructure': DataStructureDefinition,
+    'key': {
+        'groupkey': GroupKey,
+        'obskey': Key,
+        'serieskey': SeriesKey,
+        },
+    'ref': {  # Keys here are concatenated 'package' and 'class' attributes
+        'categoryscheme.Category': Category,
+        'codelist.Codelist': Codelist,
+        'conceptscheme.Concept': Concept,
+        'datastructure.Dataflow': DataflowDefinition,
+        'datastructure.DataStructure': DataStructureDefinition,
         },
     }
 
-
-_parse_skip_level = [
-    # Bare XML containers for other elements
-    'annotations',
-    'categoryschemes',
-    'categorisations',
-    'codelists',
-    'concepts',
-    'dataflows',
-    'datastructures',
-    'datastructurecomponents',
-    'footer',
-    # Contain only references
-    'source',
-    'structure',  # str:Structure, not mes:Structure
-    'target',
-    'conceptidentity',
-    'enumeration',
+# Tag names to skip entirely
+_parse_skip = [
+    # Tags that are bare containers for other XML elements
+    'Annotations',
+    'CategorySchemes',
+    'Categorisations',
+    'Codelists',
+    'Concepts',
+    'Dataflows',
+    'DataStructures',
+    'DataStructureComponents',
+    'Footer',
+    # Tag names that only ever contain references
+    'Source',
+    'Structure',  # str:Structure, not mes:Structure
+    'Target',
+    'ConceptIdentity',
+    'Enumeration',
     ]
 
 
-def add_group_attributes(observations, groups):
-    for obs in observations:
-        for group_key, group_attrs in groups:
-            if group_key in obs.key:
-                obs.attrib.update(group_attrs)
-        yield obs
+def wrap(value):
+    """Return *value* as a list.
+
+    Reader._parse(elem, unwrap=True) returns single children of *elem* as bare
+    objects. wrap() ensures they are a list.
+    """
+    return value if isinstance(value, list) else [value]
 
 
 def add_localizations(target, values):
+    """Add localized strings from *values* to *target*."""
     if isinstance(values, tuple) and len(values) == 2:
         values = [values]
     target.localizations.update({locale: label for locale, label in values})
 
 
-def wrap(value):
-    return value if isinstance(value, list) else [value]
-
-
 class Reader(BaseReader):
+    """Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model.
+
+    The implementation is recursive, and depends on:
+    - Methods _parse(), _collect(), _named() and _maintained().
+    - State variables _stack, _index.
     """
-    Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model
-    """
+    # State variables for reader
+
+    # Stack (0 = top) of tag names being parsed by _parse().
+    # Tag parsers may examine the stack to determine context for parsing.
+    _stack = []
+
+    # Map of (class name, id) → pandasdmx.model object.
+    # Only IdentifiableArtefacts should be stored. See _maintained().
+    _index = {}
 
     def initialize(self, source):
-        # State variables for reader
-        self._stack = []
-        self._index = {}
-        self._context = {}
-
+        # Root XML element
         root = etree.parse(source).getroot()
 
         # Message class
         cls = _message_class[root.tag]
 
-        # MAYBE use a factory method in DataMessage instead
-        self._context['obs_dim_cls'] = (TimeKeyValue if 'TimeSeries' in
-                                        root.tag else KeyValue)
+        # Reset state
+        self._stack = [QName(root).localname.lower()]
+        self._index = {}
 
-        # Parse the tree
         try:
+            # Parse the tree
             values = self._parse(root)
-        except Exception:
+        except Exception:  # pragma: no cover
+            # For debugging: print the stack
             print(' > '.join(self._stack))
             raise
 
-        # Base message object
-        msg = cls(header=values.pop('header'),
-                  footer=values.pop('footer', None))
+        # Instantiate the message object
+        msg = cls()
+
+        # Store the header
+        header = values.pop('header')
+        if len(header) == 2:
+            # Length-2 list includes DFD/DSD reference
+            msg.header, msg.dataflow = header
+            msg.observation_dimension = self._obs_dim
+        else:
+            # No DFD in the header, e.g. for a StructureMessage
+            msg.header = header[0]
+
+        # Store the footer
+        msg.footer = values.pop('footer', None)
 
         # Finalize according to the message type
         if cls is DataMessage:
-            dataset = values.pop('dataset')
-            dataset = [dataset] if not isinstance(dataset, list) else dataset
-            msg.data.extend(dataset)
+            # Simply store the datasets
+            msg.data.extend(wrap(values.pop('dataset', [])))
         elif cls is StructureMessage:
             structures = values.pop('structures')
 
-            # Dictionaries by ID
-            for name in ('dataflow', 'codelist'):
-                for obj in structures.pop(name + 's', []):
-                    getattr(msg, name)[obj.id] = obj
-
-            # Single objects
+            # Populate dictionaries by ID
             for attr, name in (
+                    ('dataflow', 'dataflows'),
+                    ('codelist', 'codelists'),
                     ('structure', 'datastructures'),
                     ('category_scheme', 'categoryschemes'),
                     ('concept_scheme', 'concepts'),
                     ):
-                obj_list = structures.pop(name, [None])
-                assert len(obj_list) == 1
-                setattr(msg, attr, obj_list[0])
+                for obj in structures.pop(name, []):
+                    getattr(msg, attr)[obj.id] = obj
 
-            # Commented: the following don't work for e.g. insee-dataflow.xml,
-            # which contains many Dataflows and no Structure
-            # # Add associations
-            # msg.dataflow.structure = msg.structure
-
-            # The specimen XML messages only include a single Categorisation,
-            # linking the DataflowDefinition to the CategoryScheme
             for c in structures.pop('categorisations', []):
-                assert (c.category in msg.category_scheme and
-                        c.artefact in msg.dataflow.values())
+                # Check, but do not store, the stated relationships
+                assert any(c.category in cs for cs in
+                           msg.category_scheme.values())
+                assert c.artefact in msg.dataflow.values()
 
             assert len(structures) == 0
 
-        assert len(values) == 0, values
+        assert len(values) == 0
         return msg
 
     def _collect(self, group, elem):
+        """Collect values from *elem* and its children using XPaths in *group*.
+
+        A dictionary is returned.
+        """
         result = {}
         for key, xpath in _collect_paths[group].items():
             matches = xpath(elem)
-            if len(matches) > 1:
-                result[key] = matches
-            elif len(matches):
-                result[key] = matches[0]
+            if len(matches) == 0:
+                continue
+            result[key] = matches[0] if len(matches) == 1 else matches
         return result
 
     def _parse(self, elem, rtype=dict, unwrap=True):
         """Recursively parse the XML *elem* and return pandasdmx.model objects.
 
         Methods like 'Reader.parse_attribute()' are called for XML elements
-        with tag names like '<namespace:Attribute>'. Return type depends on
-        *rtype*:
+        with tag names like '<ns:Attribute>'; each emits pandasdmx.model
+        objects.
+
+        *rtype* controls the return type of _parse():
         - dict: a mapping of tag names to lists of objects.
         - list: a list of objects.
 
@@ -272,27 +313,26 @@ class Reader(BaseReader):
 
         # Parse each child
         for child in elem:
-            # Tag name for the child
-            tag_name = child.tag.split('}')[-1].lower()
-
-            # Store state
+            # Store state: tag name for the child
+            tag_name = QName(child).localname.lower()
             self._stack.append(tag_name)
 
             # Invoke the parser for this element
-            if tag_name in _parse_skip_level:
-                # Element doesn't require any special parsing; immediately
-                # parse its children as a list
+            if QName(child).localname in _parse_skip:
+                # Element doesn't require any parsing, per se.
+                # Immediately parse its children, as a list.
                 self._stack[-1] += ' (skip)'
                 result = self._parse(child, rtype=list, unwrap=False)
             elif len(child) == 1 and child[0].tag == 'Ref':
-                # Parse or look up a reference
+                # Element contains nothing but a reference. Parse or look up
+                # the reference
                 result = [self.parse_ref(child[0])]
             else:
                 # Parse the element, maybe using an alias
                 method = 'parse_' + _parse_alias.get(tag_name, tag_name)
                 result = [getattr(self, method)(child)]
 
-            # Index object names
+            # Add objects with IDs to the index
             for r in result:
                 if (isinstance(r, IdentifiableArtefact) and not
                         getattr(r, 'is_external_reference', False)):
@@ -309,6 +349,7 @@ class Reader(BaseReader):
 
         if unwrap:
             if rtype is dict:
+                # Unwrap every value in results that is a length-1 list
                 results = {k: v[0] if len(v) == 1 else v for k, v in
                            results.items()}
             else:
@@ -316,30 +357,67 @@ class Reader(BaseReader):
 
         return results
 
+    def _maintained(self, cls, id, **kwargs):
+        """Retrieve or instantiate a MaintainableArtefact of *cls*.
+
+        *cls* may either be a string or a class. *id* is the ID of the
+        MaintainableArtefact. If the object has not been parsed yet, it is
+        instantiated as an external reference.
+        """
+        key = (cls.__name__, id) if isclass(cls) else (cls, id)
+
+        if key not in self._index:
+            if not isclass(cls):
+                raise TypeError("cannot instantiate from string class name: %s"
+                                % cls)
+            # Create a new object. A reference to a MaintainableArtefact
+            # without it being fully defined is necessarily external
+            self._index[key] = cls(id=id, is_external_reference=True,
+                                   **kwargs)
+
+        # Existing or newly-created object
+        return self._index[key]
+
     def _named(self, cls, elem, **kwargs):
-        """Shortcut for parsing NameableArtefacts."""
-        # Instantiate the *cls* and store the attributes
-        _named_attrs_convert = {
+        """Parse a NameableArtefact of *cls* from *elem*.
+
+        NameableArtefacts may have .name and .description attributes that are
+        InternationalStrings, plus zero or more Annotations. _named() handles
+        these common elements, and returns an object and a _parse()'d dict of
+        other, class-specific child values.
+
+        Additional *kwargs* are used when parsing the children of *elem*.
+        """
+        # Apply conversions to attributes
+        convert_attrs = {
             'agencyID': ('maintainer', lambda value: Agency(id=value)),
             'isFinal': ('is_final', bool),
             'isPartial': ('is_partial', bool),
             }
 
         attrs = {}
-        for source, (target, xform) in _named_attrs_convert.items():
+        for source, (target, xform) in convert_attrs.items():
             try:
                 value = elem.attrib.pop(source)
+                attrs[target] = xform(value)
             except KeyError:
                 continue
-            else:
-                attrs[target] = xform(value) if callable(xform) else value
 
-        obj = cls(**ChainMap(attrs, elem.attrib))
+        attrs = ChainMap(attrs, elem.attrib)
 
-        # Parse  children, including localizations for the name
+        if issubclass(cls, MaintainableArtefact):
+            # Maybe retrieve an existing reference
+            obj = self._maintained(cls, **attrs)
+            # Since the object is now being parsed, it's defined in the current
+            # message and no longer an external reference
+            obj.is_external_reference = False
+        else:
+            # Instantiate the class and store its attributes
+            obj = cls(**attrs)
+
+        # Parse children
         values = self._parse(elem, **kwargs)
-
-        # Store the name, description, and annotations
+        # Store the name, description and annotations
         add_localizations(obj.name, values.pop('name'))
         add_localizations(obj.description, values.pop('description', []))
         obj.annotations = wrap(values.pop('annotations', []))
@@ -347,21 +425,105 @@ class Reader(BaseReader):
         # Return the instance and any non-name values
         return obj, values
 
-    def parse_string(self, elem):
+    def _set_obs_dim(self, value):
+        """Store the observation dimension for the current DataSet."""
+        if value == 'AllDimensions':
+            self._obs_dim = AllDimensions
+        else:
+            try:
+                # Retrieve an already-defined Dimension (e.g. from the DSD)
+                obs_dim = self._index[('Dimension', value)]
+            except KeyError:
+                obs_dim = Dimension(id=value)
+            self._obs_dim = wrap(obs_dim)
+
+    # Parsers for common elements
+
+    def parse_international_string(self, elem):
+        locale = elem.attrib.get(qname('xml', 'lang'), DEFAULT_LOCALE)
+        return (locale, elem.text)
+
+    def parse_text(self, elem):
         return elem.text
 
-    # Data messages
+    def parse_ref(self, elem, hint=None):
+        """External and internal references to MaintainableArtefacts."""
+        args = {}
+
+        # Parse attributes
+        try:
+            args['maintainer'] = Agency(id=elem.attrib.pop('agencyID'))
+        except KeyError:
+            pass
+        try:
+            args['version'] = elem.attrib.pop('version')
+        except KeyError:
+            pass
+
+        ref_id = elem.attrib.pop('id')
+        try:
+            # If the element has 'package' and 'class' attributes, these give
+            # the class directly
+            cls_key = '.'.join([elem.attrib.pop('package'),
+                                elem.attrib.pop('class')])
+            cls = _parse_class['ref'][cls_key]
+        except KeyError:
+            cls = hint if hint else self._stack[-1].capitalize()
+            if cls == 'Parent':
+                # The parent of an Item in an ItemScheme has the same class as
+                # the Item
+                cls = self._stack[-2].capitalize()
+
+        obj = self._maintained(cls, id=ref_id)
+
+        try:
+            parent_cls = {
+                Category: CategoryScheme,
+                Concept: ConceptScheme,
+                }[cls]
+            parent_attrs = dict(
+                id=elem.attrib.pop('maintainableParentID'),
+                version=elem.attrib.pop('maintainableParentVersion'),
+                )
+            parent = self._maintained(parent_cls, **parent_attrs)
+            assert obj in parent
+        except KeyError:
+            pass
+
+        assert len(elem.attrib) == 0
+        return obj
+
+    # Parsers for elements appearing in data messages
 
     def parse_attributes(self, elem):
         result = {}
         for e in elem.iterchildren():
             da = DataAttribute(id=e.attrib['id'])
             av = AttributeValue(value_for=da, value=e.attrib['value'])
-            result[da] = av
+            result[da.id] = av
         return result
 
     def parse_header(self, elem):
-        return Header(**self._collect('header', elem))
+        values = self._collect('header', elem)
+        try:  # Handle a reference to a DataStructureDefinition
+            attrs = {k: values.pop('structure_ref_' + k) for k in
+                     ['id', 'agencyid', 'version']}
+            if 'agencyid' in attrs:
+                attrs['maintainer'] = Agency(id=attrs.pop('agencyid'))
+
+            # Create the DSD and DFD
+            dsd = self._maintained(DataStructureDefinition, **attrs)
+            dfd = DataflowDefinition(id=values.pop('structure_id'),
+                                     structure=dsd)
+
+            # Also store the dimension at observation
+            self._set_obs_dim(values.pop('dim_at_obs'))
+            extra = [dfd]
+        except KeyError:
+            extra = []
+
+        # Maybe return the DFD; see .initialize()
+        return [Header(**values)] + extra
 
     def parse_message(self, elem):
         f = Footer(**elem.attrib)
@@ -370,22 +532,34 @@ class Reader(BaseReader):
         return f
 
     def parse_dataset(self, elem):
-        ds = DataSet()
         values = self._parse(elem)
-        groups = values.get('groups', [])
-        # Add parsed observations to the dataset
-        for obs_list in values.get('series', []):
-            ds.obs.extend(add_group_attributes(obs_list, groups))
-        ds.obs.extend(add_group_attributes(values.get('obs', []), groups))
+        # Store groups
+        ds = DataSet(group={g: [] for g in values.pop('group', [])})
+
+        # Process series
+        for obs_list in values.pop('series', []):
+            obs_list = wrap(obs_list)
+            # Add observations under this key
+            ds.add_obs(obs_list, obs_list[0].series_key)
+
+        # Process bare observations
+        ds.add_obs(wrap(values.pop('obs', [])))
+
+        assert len(values) == 0
         return ds
 
     def parse_group(self, elem):
         values = self._parse(elem)
-        return (values['groupkey'], values['attributes'])
+        gk = values.pop('groupkey')
+        gk.attrib.update(values.pop('attributes', {}))
+        assert len(values) == 0
+        return gk
 
-    def parse_groupkey(self, elem):
-        return GroupKey({e.attrib['id']: e.attrib['value'] for e in
-                         elem.iterchildren()})
+    def parse_key(self, elem):
+        """SeriesKey, GroupKey, and observation dimensions."""
+        cls = _parse_class['key'][self._stack[-1]]
+        return cls({e.attrib['id']: e.attrib['value'] for e in
+                    elem.iterchildren()})
 
     def parse_obs(self, elem):
         # TODO handle key-values as attribs
@@ -397,54 +571,42 @@ class Reader(BaseReader):
             new_key[key.id] = key
             key = new_key
         result = Observation(dimension=key, value=values['obsvalue'],
-                             attrib=values.get('attributes', {}))
+                             attached_attribute=values.get('attributes', {}))
         return result
 
     def parse_obsdimension(self, elem):
-        return self._context['obs_dim_cls'](**elem.attrib)
-
-    def parse_obskey(self, elem):
-        result = Key()
-        for e in elem.iterchildren():
-            result[e.attrib['id']] = e.attrib['value']
-        return result
+        args = dict(value=elem.attrib.pop('value'))
+        args['id'] = elem.attrib.pop('id', self._obs_dim[0].id)
+        assert len(elem.attrib) == 0
+        return KeyValue(**args)
 
     def parse_obsvalue(self, elem):
         return elem.attrib['value']
 
     def parse_series(self, elem):
-        results = self._parse(elem)
-        for o in results['obs']:
-            o.series_key = results['serieskey']
-            o.attrib.update(results.get('attributes', {}))
-        return results['obs']
+        values = self._parse(elem)
+        series_key = values.pop('serieskey')
+        series_key.attrib.update(values.pop('attributes', {}))
+        for o in wrap(values['obs']):
+            o.series_key = series_key
+        assert len(values) == 1
+        return values['obs']
 
-    def parse_serieskey(self, elem):
-        return SeriesKey({e.attrib['id']: e.attrib['value'] for e in
-                          elem.iterchildren()})
+    # Parsers for elements appearing in structure messages
 
-    # Structure messages
-
-    def parse_international_string(self, elem):
-        locale = elem.attrib.get(QNAME['lang'], DEFAULT_LOCALE)
-        return (locale, elem.text)
+    def parse_structures(self, elem):
+        return self._parse(elem, unwrap=False)
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
         for target, source in [('type', 'annotationtype'),
                                ('text', 'annotationtext')]:
-            try:
-                values[target] = values.pop(source)
-            except KeyError:
-                continue
+            values[target] = values.pop(source)
         return Annotation(**values)
-
-    def parse_annotationtype(self, elem):
-        return elem.text
 
     def parse_code(self, elem):
         c, values = self._named(Code, elem)
-        assert len(values) == 0, values
+        assert len(values) == 0
         return c
 
     def parse_categorisation(self, elem):
@@ -561,11 +723,11 @@ class Reader(BaseReader):
 
     def parse_attributerelationship(self, elem):
         tags = set([el.tag for el in elem.iterchildren()])
-        if tags == {QNAME['Dimension']}:
+        if tags == {qname('str', 'Dimension')}:
             values = self._parse(elem)
             ar = DimensionRelationship(dimensions=values.pop('dimension'))
             assert len(values) == 0
-        elif tags == {QNAME['PrimaryMeasure']}:
+        elif tags == {qname('str', 'PrimaryMeasure')}:
             # Avoid recurive _parse() here, because it may contain a Ref to
             # a PrimaryMeasure that is not yet defined
             ar = PrimaryMeasureRelationship()
@@ -602,37 +764,3 @@ class Reader(BaseReader):
         for key, value in elem.attrib.items():
             setattr(f.type, key_map.get(key, key), value)
         return f
-
-    def parse_ref(self, elem):
-        """External and internal references MaintainableArtefacts."""
-        try:
-            # If the element has a 'class' attribute, this gives the class
-            # directly
-            cls = _parse_class['ref'][elem.attrib['class']]
-
-            # Instantiate the external reference
-            ref = cls(
-                id=elem.attrib['id'],
-                # is_external_reference=True,
-                # maintainer=Agency(id=elem.attrib['agencyID'])
-                )
-
-            # Store the version
-            try:
-                ref.version = elem.attrib['version']
-            except KeyError:
-                pass
-        except KeyError:
-            # Internal reference
-            # TODO sometimes this is -1; sometimes -2
-            for depth in -1, -2:
-                try:
-                    class_name = self._stack[depth].capitalize()
-                    ref = self._index[(class_name, elem.attrib['id'])]
-                    break
-                except KeyError:
-                    continue
-        return ref
-
-    def parse_structures(self, elem):
-        return self._parse(elem, unwrap=False)

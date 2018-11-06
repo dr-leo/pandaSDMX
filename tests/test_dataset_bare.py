@@ -36,16 +36,20 @@ def test_flat():
     obs_status = DataAttribute(id='OBS_STATUS')
     attr = {'OBS_STATUS': AttributeValue(value_for=obs_status, value='A')}
 
-    ds.obs.append(Observation(dimension=key, value=1.5931, attrib=attr))
+    ds.obs.append(Observation(dimension=key, value=1.5931,
+                  attached_attribute=attr))
 
     key = key.copy(TIME_PERIOD='2013-01-21')
-    ds.obs.append(Observation(dimension=key, value=1.5925, attrib=attr))
+    ds.obs.append(Observation(dimension=key, value=1.5925,
+                  attached_attribute=attr))
 
     key = key.copy(CURRENCY='RUB', TIME_PERIOD='2013-01-18')
-    ds.obs.append(Observation(dimension=key, value=40.3426, attrib=attr))
+    ds.obs.append(Observation(dimension=key, value=40.3426,
+                  attached_attribute=attr))
 
     key = key.copy(TIME_PERIOD='2013-01-21')
-    ds.obs.append(Observation(dimension=key, value=40.3000, attrib=attr))
+    ds.obs.append(Observation(dimension=key, value=40.3000,
+                  attached_attribute=attr))
 
     msg.data.append(ds)
 

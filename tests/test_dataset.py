@@ -14,25 +14,35 @@ from pandasdmx import model, Request
 from . import test_data_path
 
 
-class TestGenericFlatDataSet:
+class DataMessageTest:
+    path = test_data_path / 'exr' / 'ecb_exr_ng' / 'generic'
+    filename = None
+
     @pytest.fixture(scope='class')
     def resp(self):
-        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
-                             'generic' / 'ecb_exr_ng_flat.xml').msg
+        return Request().get(fromfile=self.path / self.filename)
 
-    def test_msg_type(self, resp):
-        assert isinstance(resp, model.DataMessage)
+    @pytest.fixture(scope='class')
+    def msg(self, resp):
+        return resp.msg
 
-    def test_header_attributes(self, resp):
+
+class TestGenericFlatDataSet(DataMessageTest):
+    filename = 'ecb_exr_ng_flat.xml'
+
+    def test_msg_type(self, msg):
+        assert isinstance(msg, model.DataMessage)
+
+    def test_header_attributes(self, msg):
         # CHANGED: the internal reference ID of the StructureUsage and the
         #          maintained ID of the DataStructureDefinition it references
         #          are both available
-        assert resp.dataflow.id == 'STR1'
-        assert resp.structure.id == 'ECB_EXR_NG'
-        assert resp.observation_dimension == model.AllDimensions
+        assert msg.dataflow.id == 'STR1'
+        assert msg.structure.id == 'ECB_EXR_NG'
+        assert msg.observation_dimension == model.AllDimensions
 
-    def test_generic_obs(self, resp):
-        data = resp.data[0]
+    def test_generic_obs(self, msg):
+        data = msg.data[0]
 
         # No series
         assert len(data.series) == 0
@@ -58,25 +68,21 @@ class TestGenericFlatDataSet:
         assert o0.attrib.OBS_STATUS == 'A'
         assert o0.attrib.DECIMALS == '4'
 
-    @pytest.mark.xfail(reason='refactoring: writer')
     def test_write2pandas(self, resp):
         data_series = resp.write(attributes='', asframe=False)
         assert isinstance(data_series, pandas.Series)
 
 
-class TestGenericSeriesDataSet:
-    @pytest.fixture(scope='class')
-    def resp(self):
-        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
-                             'generic' / 'ecb_exr_ng_ts_gf.xml').msg
+class TestGenericSeriesDataSet(DataMessageTest):
+    filename = 'ecb_exr_ng_ts_gf.xml'
 
-    def test_header_attributes(self, resp):
-        assert resp.dataflow.id == 'STR1'
-        assert resp.structure.id == 'ECB_EXR_NG'
-        assert resp.observation_dimension == ['TIME_PERIOD']
+    def test_header_attributes(self, msg):
+        assert msg.dataflow.id == 'STR1'
+        assert msg.structure.id == 'ECB_EXR_NG'
+        assert msg.observation_dimension == ['TIME_PERIOD']
 
-    def test_generic_obs(self, resp):
-        data = resp.data[0]
+    def test_generic_obs(self, msg):
+        data = msg.data[0]
 
         # Number of observations in the dataset
         # CHANGED: obs gives access to all observations in the data set
@@ -117,9 +123,8 @@ class TestGenericSeriesDataSet:
 
         assert o0.attrib.OBS_STATUS == 'A'
 
-    @pytest.mark.xfail(reason='refactoring: writer')
     def test_pandas(self, resp):
-        data = resp.data[0]
+        data = resp.msg.data[0]
         pd_series = [s.iloc[::-1] for s in resp.write(
                      data, attributes='', asframe=False)]
         assert len(pd_series) == 4
@@ -144,7 +149,6 @@ class TestGenericSeriesDataSet:
         # access an attribute of the first value
         assert a3[0].OBS_STATUS == 'A'
 
-    @pytest.mark.xfail(reason='refactoring: writer')
     def test_write2pandas(self, resp):
         df = resp.write(attributes='')
         assert isinstance(df, pandas.DataFrame)
@@ -155,21 +159,18 @@ class TestGenericSeriesDataSet:
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
 
-class TestGenericSeriesDataSet2:
-    @pytest.fixture(scope='class')
-    def resp(self):
-        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
-                             'generic' / 'ecb_exr_ng_ts.xml').msg
+class TestGenericSeriesDataSet2(DataMessageTest):
+    filename = 'ecb_exr_ng_ts.xml'
 
-    def test_header_attributes(self, resp):
-        assert resp.dataflow.id == 'STR1'
-        assert resp.structure.id == 'ECB_EXR_NG'
+    def test_header_attributes(self, msg):
+        assert msg.dataflow.id == 'STR1'
+        assert msg.structure.id == 'ECB_EXR_NG'
         # CHANGED: observation_dimension can be 1-or-more Dimensions; must
         #          compare with an iterable of Dimension or Dimension IDs.
-        assert resp.observation_dimension == ['TIME_PERIOD']
+        assert msg.observation_dimension == ['TIME_PERIOD']
 
-    def test_generic_obs(self, resp):
-        data = resp.data[0]
+    def test_generic_obs(self, msg):
+        data = msg.data[0]
 
         # CHANGED: obs gives access to all observations in the data set
         assert len(data.obs) == 12
@@ -203,22 +204,19 @@ class TestGenericSeriesDataSet2:
 
         assert o0.attrib.OBS_STATUS == 'A'
 
-    @pytest.mark.xfail(reason='refactoring: writer')
     def test_dataframe(self, resp):
-        data = resp.data[0]
+        data = resp.msg.data[0]
         df = resp.write(data, attributes='', asframe=True).iloc[::-1]
         assert isinstance(df, pandas.DataFrame)
         assert df.shape, (3 == 4)
 
 
-class TestGenericSeriesData_SiblingGroup_TS:
-    @pytest.fixture(scope='class')
-    def resp(self):
-        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_sg' /
-                             'generic' / 'ecb_exr_sg_ts.xml').msg
+class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
+    path = test_data_path / 'exr' / 'ecb_exr_sg' / 'generic'
+    filename = 'ecb_exr_sg_ts.xml'
 
-    def test_groups(self, resp):
-        data = resp.data[0]
+    def test_groups(self, msg):
+        data = msg.data[0]
 
         # CHANGED: groups → group; list() is no longer required
         assert len(data.group) == 4
@@ -239,14 +237,12 @@ class TestGenericSeriesData_SiblingGroup_TS:
         # assert isinstance(g_attrib, tuple)
 
 
-class TestGenericSeriesData_RateGroup_TS:
-    @pytest.fixture(scope='class')
-    def resp(self):
-        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_rg' /
-                             'generic' / 'ecb_exr_rg_ts.xml').msg
+class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
+    path = test_data_path / 'exr' / 'ecb_exr_rg' / 'generic'
+    filename = 'ecb_exr_rg_ts.xml'
 
-    def test_groups(self, resp):
-        data = resp.data[0]
+    def test_groups(self, msg):
+        data = msg.data[0]
 
         # CHANGED: groups → group; list() is no longer required
         assert len(data.group) == 5

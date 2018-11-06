@@ -34,7 +34,6 @@ class Test_ESTAT_dsd_apro_mk_cola(unittest.TestCase):
             self.assertIsInstance(
                 self.resp.codelist.CL_FREQ.D, model.Code)
 
-    @pytest.mark.xfail(reason='refactoring: writer')
     def test_writer(self):
         df = self.resp.write(rows='codelist')
         self.assertEqual(df.shape, (79, 2))

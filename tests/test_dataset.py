@@ -5,7 +5,6 @@
 
 @author: Dr. Leo
 '''
-import unittest
 import pytest
 
 import pandas
@@ -15,222 +14,260 @@ from pandasdmx import model, Request
 from . import test_data_path
 
 
-pytestmark = pytest.mark.skip('refactoring')
+class TestGenericFlatDataSet:
+    @pytest.fixture(scope='class')
+    def resp(self):
+        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
+                             'generic' / 'ecb_exr_ng_flat.xml').msg
 
+    def test_msg_type(self, resp):
+        assert isinstance(resp, model.DataMessage)
 
-class TestGenericFlatDataSet(unittest.TestCase):
-    def setUp(self):
-        self.estat = Request('ESTAT')
-        filepath = test_data_path.joinpath('exr', 'ecb_exr_ng', 'generic',
-                                           'ecb_exr_ng_flat.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+    def test_header_attributes(self, resp):
+        # CHANGED: the internal reference ID of the StructureUsage and the
+        #          maintained ID of the DataStructureDefinition it references
+        #          are both available
+        assert resp.dataflow.id == 'STR1'
+        assert resp.structure.id == 'ECB_EXR_NG'
+        assert resp.observation_dimension == model.AllDimensions
 
-    def test_msg_type(self):
-        self.assertIsInstance(self.resp.msg, model.DataMessage)
+    def test_generic_obs(self, resp):
+        data = resp.data[0]
 
-    def test_header_attributes(self):
-        self.assertEqual(self.resp.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.header.observation_dimension,
-                         model.AllDimensions)
+        # No series
+        assert len(data.series) == 0
 
-    def test_generic_obs(self):
-        data = self.resp.data[0]
-        # REMOVE: series are not in the data model
-        # # empty series list
-        # self.assertEqual(len(list(data.series)), 0)
-        obs_list = data.obs
-        self.assertEqual(len(obs_list), 12)
-        o0 = obs_list[0]
+        # Number of observations
+        assert len(data.obs) == 12
+
+        o0 = data.obs[0]
+
         # REMOVE? What is this measuring?
         # - Not the length of the Observation.key—that is 6.
         # - Something else?
-        # self.assertEqual(len(o0), 3)
-        self.assertIsInstance(o0.key, model.Key)
-        self.assertEqual(o0.key.FREQ, 'M')
-        self.assertEqual(o0.key.CURRENCY, 'CHF')
-        self.assertEqual(o0.value, '1.3413')
+        # assert len(o0) ==  3
+
+        assert isinstance(o0.key, model.Key)
+        assert o0.key.FREQ == 'M'
+        assert o0.key.CURRENCY == 'CHF'
+        assert o0.value == '1.3413'
+
         # REMOVE: duck typing → test for desired behaviour of attrib instead
-        # self.assertIsInstance(o0.attrib, tuple)
-        print(o0.attrib)
-        print('foo')
-        print(o0.attrib.OBS_STATUS)
-        print('bar')
+        # assert isinstance(o0.attrib, tuple)
+
         assert o0.attrib.OBS_STATUS == 'A'
-        self.assertEqual(o0.attrib.OBS_STATUS, 'A')
-        self.assertEqual(o0.attrib.DECIMALS, '4')
+        assert o0.attrib.DECIMALS == '4'
 
-    def test_write2pandas(self):
-        data_series = self.resp.write(attributes='', asframe=False)
-        self.assertIsInstance(data_series, pandas.Series)
+    @pytest.mark.xfail(reason='refactoring: writer')
+    def test_write2pandas(self, resp):
+        data_series = resp.write(attributes='', asframe=False)
+        assert isinstance(data_series, pandas.Series)
 
 
-class TestGenericSeriesDataSet(unittest.TestCase):
+class TestGenericSeriesDataSet:
+    @pytest.fixture(scope='class')
+    def resp(self):
+        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
+                             'generic' / 'ecb_exr_ng_ts_gf.xml').msg
 
-    def setUp(self):
-        self.estat = Request('ESTAT')
-        filepath = test_data_path.joinpath('exr', 'ecb_exr_ng', 'generic',
-                                           'ecb_exr_ng_ts_gf.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+    def test_header_attributes(self, resp):
+        assert resp.dataflow.id == 'STR1'
+        assert resp.structure.id == 'ECB_EXR_NG'
+        assert resp.observation_dimension == ['TIME_PERIOD']
 
-    def test_header_attributes(self):
-        self.assertEqual(self.resp.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
+    def test_generic_obs(self, resp):
+        data = resp.data[0]
 
-    def test_generic_obs(self):
-        data = self.resp.data[0]
-        # empty obs iterator
-        self.assertEqual(len(data.obs), 0)
-        series_list = list(data.series)
-        self.assertEqual(len(series_list), 4)
-        s3 = series_list[3]
-        self.assertIsInstance(s3, model.Series)
-        self.assertIsInstance(s3.key, model.Key)
-        self.assertEqual(len(s3.key), 5)
-        self.assertEqual(s3.key.CURRENCY, 'USD')
-        self.assertEqual(s3.attrib.DECIMALS, '4')
-        obs_list = list(reversed(s3.obs))
-        self.assertEqual(len(obs_list), 3)
-        o0 = obs_list[2]
-        # REMOVE? See line 46.
-        # self.assertEqual(len(o0), 3)
-        self.assertEqual(o0.dim, '2010-08')
-        self.assertEqual(o0.value, '1.2894')
-        # REMOVE: see line 54.
-        # self.assertIsInstance(o0.attrib, tuple)
-        self.assertEqual(o0.attrib.OBS_STATUS, 'A')
+        # Number of observations in the dataset
+        # CHANGED: obs gives access to all observations in the data set
+        assert len(data.obs) == 12
 
-    def test_pandas(self):
-        resp = self.resp
+        # Number of series in the dataset
+        assert len(data.series) == 4
+
+        # Access to series by index
+        s3 = data.series[3]
+
+        # REMOVE: Series is not in the IM
+        # assert isinstance(s3, model.Series)
+
+        # Observations in series have .series_key with correct length & values
+        assert isinstance(s3[0].series_key, model.Key)
+        assert len(s3[0].series_key) == 5
+        assert s3[0].series_key.CURRENCY == 'USD'
+
+        # Observations in series have attributes
+        assert s3[0].attrib.DECIMALS == '4'
+
+        # Number of observations in the series
+        assert len(s3) == 3
+
+        # Series observations can be reversed, and accessed by index
+        o0 = list(reversed(s3))[2]
+
+        # REMOVE? see TestGenericFlatDataSet.test_generic_obs
+        # assert len(o0) == 3
+
+        # Series observations have expected value
+        assert o0.dim == '2010-08'
+        assert o0.value == '1.2894'
+
+        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
+        # assert isinstance(o0.attrib, tuple)
+
+        assert o0.attrib.OBS_STATUS == 'A'
+
+    @pytest.mark.xfail(reason='refactoring: writer')
+    def test_pandas(self, resp):
         data = resp.data[0]
         pd_series = [s.iloc[::-1] for s in resp.write(
                      data, attributes='', asframe=False)]
-        self.assertEqual(len(pd_series), 4)
+        assert len(pd_series) == 4
         s3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
+        assert isinstance(s3, pandas.core.series.Series)
+        assert s3[2] == 1.2894
+        assert isinstance(s3.name, tuple)
+        assert len(s3.name) == 5
         # now with attributes
         pd_series = [s.iloc[::-1] for s in resp.write(
                      data, attributes='osgd', asframe=False)]
-        self.assertEqual(len(pd_series), 4)
-        self.assertIsInstance(pd_series[0], tuple)  # contains 2 series
-        self.assertEqual(len(pd_series[0]), 2)
+        assert len(pd_series) == 4
+        assert isinstance(pd_series[0], tuple)  # contains 2 series
+        assert len(pd_series[0]) == 2
         s3, a3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertIsInstance(a3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
-        self.assertEqual(len(a3), 3)
+        assert isinstance(s3, pandas.core.series.Series)
+        assert isinstance(a3, pandas.core.series.Series)
+        assert s3[2] == 1.2894
+        assert isinstance(s3.name, tuple)
+        assert len(s3.name) == 5
+        assert len(a3) == 3
         # access an attribute of the first value
-        self.assertEqual(a3[0].OBS_STATUS, 'A')
+        assert a3[0].OBS_STATUS == 'A'
 
-    def test_write2pandas(self):
-        df = self.resp.write(attributes='')
-        self.assertIsInstance(df, pandas.DataFrame)
+    @pytest.mark.xfail(reason='refactoring: writer')
+    def test_write2pandas(self, resp):
+        df = resp.write(attributes='')
+        assert isinstance(df, pandas.DataFrame)
         assert df.shape == (3, 4)
         # with metadata
-        df, mdf = self.resp.write(attributes='osgd')
+        df, mdf = resp.write(attributes='osgd')
         assert mdf.shape == (3, 4)
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
 
-class TestGenericSeriesDataSet2(unittest.TestCase):
+class TestGenericSeriesDataSet2:
+    @pytest.fixture(scope='class')
+    def resp(self):
+        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
+                             'generic' / 'ecb_exr_ng_ts.xml').msg
 
-    def setUp(self):
-        self.estat = Request('ESTAT')
-        filepath = test_data_path.joinpath('exr', 'ecb_exr_ng', 'generic',
-                                           'ecb_exr_ng_ts.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+    def test_header_attributes(self, resp):
+        assert resp.dataflow.id == 'STR1'
+        assert resp.structure.id == 'ECB_EXR_NG'
+        # CHANGED: observation_dimension can be 1-or-more Dimensions; must
+        #          compare with an iterable of Dimension or Dimension IDs.
+        assert resp.observation_dimension == ['TIME_PERIOD']
 
-    def test_header_attributes(self):
-        self.assertEqual(self.resp.header.structured_by, 'STR1')
-        self.assertEqual(self.resp.header.dim_at_obs, 'TIME_PERIOD')
+    def test_generic_obs(self, resp):
+        data = resp.data[0]
 
-    def test_generic_obs(self):
-        data = self.resp.data[0]
-        # empty obs iterator
-        self.assertEqual(len(data.obs), 0)
-        series_list = list(data.series)
-        self.assertEqual(len(series_list), 4)
+        # CHANGED: obs gives access to all observations in the data set
+        assert len(data.obs) == 12
+
+        assert len(data.series) == 4
+        series_list = list(data.series.values())
+        assert len(series_list) == 4
         s3 = series_list[3]
-        self.assertIsInstance(s3, model.Series)
-        self.assertIsInstance(s3.key, model.Key)
-        self.assertEqual(len(s3.key), 5)
-        self.assertEqual(s3.key.CURRENCY, 'USD')
-        self.assertEqual(s3.attrib.DECIMALS, '4')
-        obs_list = list(reversed(s3.obs))
-        self.assertEqual(len(obs_list), 3)
+
+        # REMOVE: Series is not in the IM
+        # assert isinstance(s3, model.Series)
+
+        # CHANGED: access SeriesKey from Observations in the series, or keys of
+        #          DataSet.series.
+        assert isinstance(s3[0].series_key, model.Key)
+        assert len(s3[0].series_key) == 5
+        assert s3[0].key.CURRENCY == 'USD'
+        assert s3[0].attrib.DECIMALS == '4'
+        obs_list = list(reversed(s3))
+        assert len(obs_list) == 3
         o0 = obs_list[2]
-        # REMOVE: see line 54.
-        # self.assertEqual(len(o0), 3)
-        self.assertEqual(o0.dim, '2010-08')
-        self.assertEqual(o0.value, '1.2894')
-        # REMOVE: see line 54.
-        # self.assertIsInstance(o0.attrib, tuple)
-        self.assertEqual(o0.attrib.OBS_STATUS, 'A')
 
-    def test_dataframe(self):
-        data = self.resp.data[0]
-        df = self.resp.write(data, attributes='', asframe=True).iloc[::-1]
-        self.assertIsInstance(df, pandas.DataFrame)
-        self.assertEqual(df.shape, (3, 4))
+        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
+        # assert len(o0) == 3
+
+        assert o0.dim == '2010-08'
+        assert o0.value == '1.2894'
+
+        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
+        # assert isinstance(o0.attrib, tuple)
+
+        assert o0.attrib.OBS_STATUS == 'A'
+
+    @pytest.mark.xfail(reason='refactoring: writer')
+    def test_dataframe(self, resp):
+        data = resp.data[0]
+        df = resp.write(data, attributes='', asframe=True).iloc[::-1]
+        assert isinstance(df, pandas.DataFrame)
+        assert df.shape, (3 == 4)
 
 
-class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
+class TestGenericSeriesData_SiblingGroup_TS:
+    @pytest.fixture(scope='class')
+    def resp(self):
+        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_sg' /
+                             'generic' / 'ecb_exr_sg_ts.xml').msg
 
-    def setUp(self):
-        self.estat = Request()
-        filepath = test_data_path.joinpath('exr', 'ecb_exr_sg', 'generic',
-                                           'ecb_exr_sg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+    def test_groups(self, resp):
+        data = resp.data[0]
 
-    def test_groups(self):
-        data = self.resp.data[0]
-        self.assertEqual(len(list(data.groups)), 4)
-        self.assertEqual(len(list(data.series)), 4)
-        g2 = list(data.groups)[2]
-        self.assertEqual(g2.key.CURRENCY, 'JPY')
-        self.assertEqual(
-            g2.attrib.TITLE, 'ECB reference exchange rate, Japanese yen/Euro')
+        # CHANGED: groups → group; list() is no longer required
+        assert len(data.group) == 4
+        assert len(data.series) == 4
+
+        # CHANGED: access GroupKeys from keys of DataSet.group
+        g2_key, g2 = list(data.group.items())[2]
+        assert g2_key.CURRENCY == 'JPY'
+        assert g2[0].attrib.TITLE == ('ECB reference exchange rate, Japanese '
+                                      'yen/Euro')
+
         # Check group attributes of a series
         s = list(data.series)[0]
         g_attrib = s.group_attrib
-        self.assertEqual(len(g_attrib), 1)
+        assert len(g_attrib) == 1
+
         # REMOVE: duck typing → test for desired behaviour of attrib instead
-        # self.assertIsInstance(g_attrib, tuple)
+        # assert isinstance(g_attrib, tuple)
 
 
-class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
+class TestGenericSeriesData_RateGroup_TS:
+    @pytest.fixture(scope='class')
+    def resp(self):
+        return Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_rg' /
+                             'generic' / 'ecb_exr_rg_ts.xml').msg
 
-    def setUp(self):
-        self.estat = Request()
-        filepath = test_data_path.joinpath('exr', 'ecb_exr_rg', 'generic',
-                                           'ecb_exr_rg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+    def test_groups(self, resp):
+        data = resp.data[0]
 
-    def test_groups(self):
-        data = self.resp.data[0]
-        self.assertEqual(len(list(data.groups)), 5)
-        self.assertEqual(len(list(data.series)), 4)
-        g2 = list(data.groups)[2]
-        self.assertEqual(g2.key.CURRENCY, 'GBP')
-        self.assertEqual(
-            g2.attrib.TITLE,
-            'ECB reference exchange rate, U.K. Pound sterling /Euro')
+        # CHANGED: groups → group; list() is no longer required
+        assert len(data.group) == 5
+        assert len(data.series) == 4
+
+        # CHANGED: .group is DictLike; retrieve the key and obs separately
+        g2_key, g2 = list(data.group.items())[2]
+        assert g2_key.CURRENCY == 'GBP'
+        assert g2_key.attrib.TITLE == ('ECB reference exchange rate, U.K. '
+                                       'Pound sterling /Euro')
         # Check group attributes of a series
         s = list(data.series)[0]
         g_attrib = s.group_attrib
-        self.assertEqual(len(g_attrib), 5)
-        # REMOVE: duck typing → test for desired behaviour of attrib instead
-        # self.assertIsInstance(g_attrib, tuple)
+        assert len(g_attrib) == 5
+
+        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
+        # assert isinstance(g_attrib, tuple)
 
     def test_footer(self):
-        filepath = test_data_path / 'estat' / 'footer.xml'
-        resp = self.estat.get(
-            fromfile=filepath, get_footer_url=None)
-        f = resp.footer
+        f = Request().get(fromfile=test_data_path / 'estat' / 'footer.xml',
+                          get_footer_url=None).footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

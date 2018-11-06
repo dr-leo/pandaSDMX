@@ -1,3 +1,5 @@
+# TODO test str() and repr() implementations
+
 from traitlets import TraitError
 
 from pandasdmx.model import (
@@ -93,7 +95,7 @@ def test_key():
     assert k1['foo'] == 1
 
     # __str__
-    assert str(k1) == '(foo: 1, bar: 2, baz: 3)'
+    assert str(k1) == '(foo=1, bar=2, baz=3)'
 
     # copying: returns a new object equal to the old one
     k2 = k1.copy()
@@ -123,10 +125,12 @@ def test_observation():
     obs = Observation()
 
     # Set by item name
-    obs.attrib['TIME_PERIOD'] = 3
+    obs.attached_attribute['TIME_PERIOD'] = 3
+    # NB the following does not work; see Observation.attrib()
+    # obs.attrib['TIME_PERIOD'] = 3
 
     # Set by attribute name
-    obs.attrib.CURRENCY = 'USD'
+    obs.attached_attribute.CURRENCY = 'USD'
 
     # Access by attribute name
     assert obs.attrib.TIME_PERIOD == 3
@@ -136,12 +140,12 @@ def test_observation():
     assert obs.attrib[1] == 'USD'
 
     # Add attributes
-    obs.add_attributes(('FOO', 'BAR'), ('1', '2'))
+    obs.attached_attribute['FOO'] = '1'
+    obs.attached_attribute['BAR'] = '2'
     assert obs.attrib.FOO == '1' and obs.attrib['BAR'] == '2'
 
     # Using classes
     da = DataAttribute(id='FOO')
     av = AttributeValue(value_for=da, value='baz')
-    obs.attrib[da.id] = av
-    print(obs.attrib.FOO, repr(obs.attrib.FOO))
+    obs.attached_attribute[da.id] = av
     assert obs.attrib[da.id] == 'baz'

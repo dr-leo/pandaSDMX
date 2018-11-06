@@ -10,10 +10,13 @@ specification ('spec'), which is available from:
 Details of the implementation:
 - the IPython traitlets package is used to enforce the types of attributes
   that reference instances of other classes. Two custom trait types are used:
-  - DictLikeTrait: a dict-like object with attribute and integer index access.
-    See pandasdmx.util.
+  - DictLikeTrait: a dict-like object that adds both attribute access by name,
+    and integer index access. See pandasdmx.util.
   - InternationalStringTrait.
-- class definitions are grouped by section of the spec, but these section
+- some classes have additional attributes not mentioned in the spec, to ease
+  navigation between related objects. These are marked with comments "pandaSDMX
+  extensions not in the IM".
+- class definitions are grouped by section of the spec, but these sections
   appear out of order so that dependent classes are defined first.
 
 The module also implements extra classes that are NOT described in the spec,
@@ -21,6 +24,10 @@ but are used in XML and JSON messages: Message, StructureMessage, DataMessage,
 Header, and Footer. These appear last.
 
 """
+# TODO for a complete implementation of the spec
+# - Enforce TimeKeyValue (instead of KeyValue) for {Generic,StructureSpecific}
+#   TimeSeriesDataSet.
+
 from copy import copy
 from datetime import date, datetime, timedelta
 from enum import Enum
@@ -45,7 +52,7 @@ from traitlets import (
     UseEnum,
     )
 
-from pandasdmx.util import DictLikeTrait
+from pandasdmx.util import DictLike, DictLikeTrait
 
 
 # TODO read this from the environment, or use any value set in the SDMX XML
@@ -74,9 +81,6 @@ class InternationalString(HasTraits):
             self.localizations.update(kwargs)
         else:
             raise ValueError
-
-    def set_label(self, value):
-        self.localizations[DEFAULT_LOCALE] = value
 
     # Convenience access
     def __getitem__(self, locale):
@@ -165,7 +169,16 @@ class IdentifiableArtefact(AnnotableArtefact):
     urn = Unicode()
 
     def __eq__(self, other):
-        return self.id == other.id and self.__class__ == other.__class__
+        """Equality comparison.
+
+        IdentifiableArtefacts can be compared to other instances. For
+        convenience, a string containing the object's ID is also equal to the
+        object.
+        """
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        elif isinstance(other, str):
+            return self.id == other
 
     def __hash__(self):
         return hash(self.id)
@@ -550,10 +563,6 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     measures = Instance(MeasureDescriptor)
     group_dimensions = Instance(GroupDimensionDescriptor)
 
-    @property
-    def grouping(self):
-        return
-
     # Convenience methods
     def attribute(self, id, **kwargs):
         return self.attributes.get(id, **kwargs)
@@ -563,7 +572,7 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):
-    structure = Instance(DataStructureDefinition)
+    structure = Instance(DataStructureDefinition, args=())
 
 
 # 5.4: Data Set
@@ -577,10 +586,51 @@ class KeyValue(HasTraits):
         return self.value == other
 
     def __str__(self):
-        return '{0.id}: {0.value}'.format(self)
+        return '{0.id}={0.value}'.format(self)
+
+    def __hash__(self):
+        # KeyValue instances with the same id & value hash identically
+        return hash(self.id + str(self.value))
 
 
 TimeKeyValue = KeyValue
+
+
+def value_for_dsd_ref(args, kwargs):
+    """Maybe replace a string 'value_for' in *kwargs* with a DSD reference."""
+    try:
+        dsd = kwargs.pop('dsd')
+        kwargs['value_for'] = dsd.attributes.get(kwargs['value_for'])
+    except KeyError:
+        pass
+    return args, kwargs
+
+
+class AttributeValue(HasTraits):
+    """SDMX-IM AttributeValue.
+
+    In the spec, AttributeValue is an abstract class. Here, it serves as both
+    the concrete subclasses CodedAttributeValue and UncodedAttributeValue.
+    """
+    # TODO separate and enforce properties of Coded- and UncodedAttributeValue
+    value = Union([Unicode(), Instance(Code)])
+    value_for = Instance(DataAttribute, allow_none=True)
+    start_date = Instance(date)
+
+    def __init__(self, *args, **kwargs):
+        args, kwargs = value_for_dsd_ref(args, kwargs)
+        super(AttributeValue, self).__init__(*args, **kwargs)
+
+    def __eq__(self, other):
+        """Compare the value to a Python built-in type, e.g. str."""
+        return self.value == other
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return '<{}: {}={}>'.format(self.__class__.__name__, self.value_for,
+                                    self.value)
 
 
 class Key(HasTraits):
@@ -598,6 +648,7 @@ class Key(HasTraits):
     1
 
     """
+    attrib = DictLikeTrait(Instance(AttributeValue))
     values = DictLikeTrait(Instance(KeyValue))
     described_by = Instance(DimensionDescriptor, allow_none=True)
 
@@ -612,10 +663,11 @@ class Key(HasTraits):
             self.values[id] = KeyValue(id=id, value=value)
 
     def __len__(self):
-        """The length of the key is the number of KeyValues it contains."""
+        """The length of the Key is the number of KeyValues it contains."""
         return len(self.values)
 
     def __contains__(self, other):
+        """A Key contains another if it is a superset."""
         try:
             return all([self.values[k] == v for k, v in other.values.items()])
         except KeyError:
@@ -639,9 +691,6 @@ class Key(HasTraits):
             return self._trait_values['values'][name]
         except KeyError:
             raise AttributeError
-
-    def __str__(self):
-        return '({})'.format(', '.join(map(str, self.values.values())))
 
     # Copying
     def __copy__(self):
@@ -673,7 +722,25 @@ class Key(HasTraits):
             raise NotImplementedError
 
     def __eq__(self, other):
-        return all([a == b for a, b in zip(self.values, other.values)])
+        if hasattr(other, 'values'):
+            return all([a == b for a, b in zip(self.values, other.values)])
+        elif isinstance(other, str) and len(self.values) == 1:
+            return self.values[0] == other
+        else:
+            raise ValueError(other)
+
+    def __hash__(self):
+        # Hash of the individual KeyValues, in order
+        return hash(tuple(hash(kv) for kv in self.values.values()))
+
+    # Representations
+
+    def __str__(self):
+        return '({})'.format(', '.join(map(str, self.values.values())))
+
+    def __repr__(self):
+        return '<{}: {}>'.format(self.__class__.__name__,
+                                 ', '.join(map(str, self.values.values())))
 
     def order(self, value=None):
         if value is None:
@@ -687,46 +754,23 @@ class Key(HasTraits):
         return tuple([kv.value for kv in self.values.values()])
 
 
-SeriesKey = Key
-
-
 class GroupKey(Key):
     id = Unicode()
     described_by = Instance(GroupDimensionDescriptor, allow_none=True)
 
 
-def value_for_dsd_ref(args, kwargs):
-    try:
-        dsd = kwargs.pop('dsd')
-        kwargs['value_for'] = dsd.attributes.get(kwargs['value_for'])
-    except KeyError:
-        pass
-    return args, kwargs
+class SeriesKey(Key):
+    # pandaSDMX extensions not in the IM
+    group_keys = Set(Instance(GroupKey))
 
-
-class AttributeValue(HasTraits):
-    """SDMX-IM AttributeValue.
-
-    In the spec, AttributeValue is an abstract class. Here, it serves as both
-    the concrete subclasses CodedAttributeValue and UncodedAttributeValue.
-    """
-    value = Union([Unicode(), Instance(Code)])
-    value_for = Instance(DataAttribute, allow_none=True)
-    start_date = Instance(date)
-
-    def __init__(self, *args, **kwargs):
-        args, kwargs = value_for_dsd_ref(args, kwargs)
-        super(AttributeValue, self).__init__(*args, **kwargs)
-
-    def __eq__(self, other):
-        return self.value == other
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return '<{}: {} for {}>'.format(self.__class__.__name__, self.value,
-                                        self.value_for)
+    @property
+    def group_attrib(self):
+        """Return a view of combined group attributes."""
+        # Needed to pass existing tests
+        view = DictLike()
+        for gk in self.group_keys:
+            view.update(gk.attrib)
+        return view
 
 
 class Observation(HasTraits):
@@ -735,45 +779,91 @@ class Observation(HasTraits):
     This class also implements the spec classes ObservationValue,
     UncodedObservationValue, and CodedObservation.
     """
-    attrib = DictLikeTrait(Instance(AttributeValue))
+    attached_attribute = DictLikeTrait(Instance(AttributeValue))
     series_key = Instance(SeriesKey, allow_none=True)
     dimension = Instance(Key, allow_none=True)
     value = Union([Any(), Instance(Code)])
     value_for = Instance(PrimaryMeasure, allow_none=True)
 
+    # pandaSDMX extensions not in the IM
+    group_keys = Set(Instance(GroupKey))
+
+    @property
+    def attrib(self):
+        """Return a view of combined observation, series & group attributes."""
+        view = self.attached_attribute.copy()
+        view.update(getattr(self.series_key, 'attrib', {}))
+        for gk in self.group_keys:
+            view.update(gk.attrib)
+        return view
+
     @property
     def dim(self):
-        if len(self.key) == 1:
-            return self.key.values[0]
-        else:
-            raise ValueError("Observations with keys of length > 1 have no "
-                             "dimension.")
+        return self.dimension
 
     @property
     def key(self):
+        """Return the entire key, including KeyValues at the series level."""
         return self.series_key + self.dimension
 
     def __len__(self):
+        # FIXME this is unintuitive; maybe deprecate/remove?
         return len(self.key)
 
     def __str__(self):
         return '{0.key}: {0.value}'.format(self)
 
-    def add_attributes(self, keys, values):
-        for k, v in zip(keys, values):
-            self.attrib[k] = AttributeValue(value=v)
-
 
 class DataSet(AnnotableArtefact):
+    # SDMX-IM features
     action = UseEnum(ActionType)
     attrib = DictLikeTrait(Instance(AttributeValue))
     valid_from = Unicode(allow_none=True)
     structured_by = Instance(DataStructureDefinition)
     obs = List(Instance(Observation))
 
-    def add_attributes(self, keys, values):
-        for k, v in zip(keys, values):
-            self.attrib[k] = AttributeValue(value=v)
+    # pandaSDMX extensions not in the IM
+    # Map of series key → list of observations
+    series = DictLikeTrait(List(Instance(Observation)))
+    # Map of group key → list of observations
+    group = DictLikeTrait(List(Instance(Observation)))
+
+    def _add_group_refs(self, target):
+        """Associate *target* with groups in this dataset.
+
+        *target* may be an instance of SeriesKey or Observation.
+        """
+        for group_key in self.group:
+            if group_key in (target if isinstance(target, SeriesKey) else
+                             target.key):
+                target.group_keys.add(group_key)
+                if isinstance(target, Observation):
+                    self.group[group_key].append(target)
+
+    def add_obs(self, observations, series_key=None):
+        """Add *observations* to a series with *series_key*.
+
+        Checks consistency and adds group associations."""
+        if series_key:
+            # Associate series_key with any GroupKeys that apply to it
+            self._add_group_refs(series_key)
+            if series_key not in self.series:
+                # Initialize empty series
+                self.series[series_key] = []
+
+        for obs in observations:
+            # Associate the observation with any GroupKeys that contain it
+            self._add_group_refs(obs)
+
+            # Store a reference to the observation
+            self.obs.append(obs)
+
+            if series_key:
+                # Check that the Observation is not associated with a different
+                # SeriesKey
+                assert obs.series_key is series_key
+                # Store a reference to the observation
+                self.series[series_key].append(obs)
 
 
 # Message-related classes (not part of the SDMX-IM)
@@ -799,12 +889,12 @@ class Message(HasTraits):
 
 
 class StructureMessage(Message):
+    category_scheme = DictLikeTrait(Instance(CategoryScheme))
     codelist = DictLikeTrait(Instance(Codelist))
-    concept_scheme = Instance(ConceptScheme, allow_none=True)
-    dataflow = Dict(Instance(DataflowDefinition))
-    structure = Instance(DataStructureDefinition, allow_none=True)
-    constraint = Instance(ContentConstraint)
-    category_scheme = Instance(CategoryScheme, allow_none=True)
+    concept_scheme = DictLikeTrait(Instance(ConceptScheme))
+    constraint = DictLikeTrait(Instance(ContentConstraint))
+    dataflow = DictLikeTrait(Instance(DataflowDefinition))
+    structure = DictLikeTrait(Instance(DataStructureDefinition))
 
 
 class _AllDimensions:
@@ -816,6 +906,15 @@ AllDimensions = _AllDimensions()
 
 class DataMessage(Message):
     data = List(Instance(DataSet))
-    structure = Instance(DataStructureDefinition, args=())
+    dataflow = Instance(DataflowDefinition, args=())
+    # TODO infer the observation dimension from the DSD, e.g.
+    # - If a *TimeSeriesDataSet, it's the TimeDimension,
+    # - etc.
     observation_dimension = Union([Instance(_AllDimensions),
                                    List(Instance(Dimension))], allow_none=True)
+
+    # Convenience access
+    @property
+    def structure(self):
+        """The DataStructureDefinition used in the DataMessage.dataflow."""
+        return self.dataflow.structure

@@ -84,10 +84,12 @@ class Reader(BaseReader):
         # Determine the dimension at the observation level
         if all([level == 'observation' for level in
                 self._dim_level.values()]):
-            msg.observation_dimension = AllDimensions
+            dim_at_obs = AllDimensions
         else:
-            msg.observation_dimension = [dim for dim in dimensions.values() if
-                                         self._dim_level[dim] == 'observation']
+            dim_at_obs = [dim for dim in dimensions.values() if
+                          self._dim_level[dim] == 'observation']
+
+        msg.observation_dimension = dim_at_obs
 
         # Read attributes and values
         self._attr_level = dict()
@@ -121,39 +123,43 @@ class Reader(BaseReader):
         ds = DataSet(action=root['action'].lower(),
                      valid_from=root.get('validFrom', None))
         for key, elem in root.get('series', {}).items():
-            series_key = ds_key + self._make_key('series', key)
-            ds.obs.extend(self.read_series_obs(elem, series_key))
+            series_key = self._make_key('series', key, base=ds_key)
+            series_key.attrib = self._make_attrs('series',
+                                                 root.get('attributes', []))
+            ds.add_obs(self.read_series_obs(elem, series_key), series_key)
         return ds
 
     def read_series_obs(self, root, series_key):
-        series_attrs = self._make_attrs('series', root.get('attributes', []))
         for key, elem in root['observations'].items():
             value = elem.pop(0) if len(elem) else None
-            o = Observation(series_key=series_key,
-                            dimension=self._make_key('observation', key),
-                            value=value,
-                            attrib=series_attrs)
-            o.attrib.update(self._make_attrs('observation', elem))
+            o = Observation(
+                series_key=series_key,
+                dimension=self._make_key('observation', key),
+                value=value,
+                attached_attribute=self._make_attrs('observation', elem))
             yield o
 
-    def _make_key(self, level, value):
-        """Convert a string observation key to a Key().
+    def _make_key(self, level, value, base=None):
+        """Convert a string observation key *value* to a Key or subclass.
 
         SDMXJSON observations have keys like '2' or '3:4', consisting of colon
         (':') separated indices. Each index refers to one of the values given
         in the DSD for an observation-level dimension.
+
+        KeyValues from any *base* Key are copied, and the new values appended.
+        *level* species whether a 'series' or 'observation' Key is returned.
         """
         # Instance of the proper class
-        key = {
-            'series': SeriesKey,
-            'observation': Key,
-            }[level]()
+        key = {'series': SeriesKey, 'observation': Key}[level]()
+
+        if base:
+            key.values.update(base.values)
+
         # Iterate over key indices and the corresponding dimensions
         dims = [d for d in self.msg.structure.dimensions if
                 self._dim_level[d] == level]
         for index, dim in zip(map(int, value.split(':')), dims):
             # Look up the value and assign to the Key
-            # FIXME should not need to explicitly cast here
             key[dim.id] = self._dim_values[dim][index]
         return key
 

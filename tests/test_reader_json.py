@@ -85,13 +85,13 @@ def _filepath(part):
 
 
 @pytest.mark.parametrize('name, data', sample_data)
-def test_json_read(empty_req, name, data):
+def test_json_read(req, name, data):
     """Test that the samples from the SDMX-JSON spec can be read."""
-    empty_req.get(fromfile=_filepath(name)).msg
+    req.get(fromfile=_filepath(name)).msg
 
 
-def test_header(empty_req):
-    resp = empty_req.get(fromfile=_filepath('flat'))
+def test_header(req):
+    resp = req.get(fromfile=_filepath('flat'))
     assert resp.header.id == '62b5f19d-f1c9-495d-8446-a3661ed24753'
 
 # DISABLED temporarily: relies on removed Message._reader

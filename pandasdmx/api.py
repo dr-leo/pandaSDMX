@@ -3,16 +3,18 @@
 
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this distribution.
+# This is notwithstanding any licenses of third-party software included in this
+# distribution.
 # (c) 2014-2017 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
 '''
-This module defines two classes: :class:`pandasdmx.api.Request` and :class:`pandasdmx.api.Response`.
-Together, these form the high-level API of :mod:`pandasdmx`. Requesting data and metadata from
-an SDMX server requires a good understanding of this API and a basic understanding of the SDMX web service guidelines
-only the chapters on REST services are relevant as pandasdmx does not support the
-SOAP interface.
+This module defines two classes: :class:`pandasdmx.api.Request` and
+:class:`pandasdmx.api.Response`. Together, these form the high-level API of
+:mod:`pandasdmx`. Requesting data and metadata from an SDMX server requires a
+good understanding of this API and a basic understanding of the SDMX web
+service guidelines (only the chapters on REST services are relevant as
+pandasdmx does not support the SOAP interface).
 
 '''
 from functools import partial, reduce
@@ -23,6 +25,7 @@ import logging
 from operator import and_
 from pathlib import Path
 from pkg_resources import resource_string
+import sys
 from time import sleep
 from zipfile import ZipFile, is_zipfile
 
@@ -32,6 +35,12 @@ from pandasdmx import remote
 
 
 logger = logging.getLogger(__name__)
+
+
+if sys.version_info[0] == 3:
+    str_type = str,
+else:
+    str_type = basestring,  # noqa: F821
 
 
 class SDMXException(Exception):
@@ -109,10 +118,12 @@ class Request(object):
                 defaults to '', i.e. no agency.
 
             cache(dict): args to be passed on to
-                ``requests_cache.install_cache()``. Default is None (no caching).
-            log_level(int): set log level for lib-wide logger as set up in pandasdmx.__init__.py.
-                For details see the docs on the
-                logging package from the standard lib. Default: None (= do nothing).
+                ``requests_cache.install_cache()``. Default is None (no
+                caching).
+            log_level(int): set log level for lib-wide logger as set up in
+                pandasdmx.__init__.py. For details see the docs on the
+                logging package from the standard lib. Default: None (= do
+                nothing).
             **http_cfg: used to configure http requests. E.g., you can
             specify proxies, authentication information and more.
             See also the docs of the ``requests`` package at
@@ -166,8 +177,8 @@ class Request(object):
         else:
             # download an empty dataset with all available series keys
             resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
-            l = list(s.key for s in resp.data.series)
-            df = PD.DataFrame(l, columns=l[0]._fields, dtype='category')
+            keys = list(s.key for s in resp.data.series)
+            df = PD.DataFrame(keys, columns=keys[0]._fields, dtype='category')
             if cache:
                 self.cache[cache_id] = df
             return df
@@ -177,66 +188,79 @@ class Request(object):
             params={}, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
             memcache=None, writer=None):
-        '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
+        """Get SDMX data or metadata and return it as a
+        :class:`pandasdmx.api.Response` instance.
 
-        While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
-        it can only construct URLs for the SDMX service set for this instance.
-        Hence, you have to instantiate a :class:`pandasdmx.api.Request` instance for each data provider you want to access, or
-        pass a pre-fabricated URL through the ``url`` parameter.
+        While 'get' can load any SDMX file (also as zip-file) specified by
+        'fromfile', it can only construct URLs for the SDMX service set for
+        this instance. Hence, you have to instantiate a
+        :class:`pandasdmx.api.Request` instance for each data provider you want
+        to access, or pass a pre-fabricated URL through the ``url`` parameter.
 
         Args:
-            resource_type(str): the type of resource to be requested. Values must be
-                one of the items in Request._resources such as 'data', 'dataflow', 'categoryscheme' etc.
-                It is used for URL construction, not to read the received SDMX file.
-                Hence, if `fromfile` is given, `resource_type` may be ''.
+            resource_type(str): the type of resource to be requested. Values
+                must be one of the items in Request._resources such as 'data',
+                'dataflow', 'categoryscheme' etc.
+                It is used for URL construction, not to read the received SDMX
+                file. Hence, if `fromfile` is given, `resource_type` may be ''.
                 Defaults to ''.
             resource_id(str): the id of the resource to be requested.
                 It is used for URL construction. Defaults to ''.
             agency(str): ID of the agency providing the data or metadata.
                 Used for URL construction only. It tells the SDMX web service
-                which agency the requested information originates from. Note that
-                an SDMX service may provide information from multiple data providers.
-                may be '' if `fromfile` is given. Not to be confused
+                which agency the requested information originates from. Note
+                that an SDMX service may provide information from multiple data
+                providers.
+                May be '' if `fromfile` is given. Not to be confused
                 with the agency ID passed to :meth:`__init__` which specifies
                 the SDMX web service to be accessed.
-            key(str, dict): select columns from a dataset by specifying dimension values.
-                If type is str, it must conform to the SDMX REST API, i.e. dot-separated dimension values.
-                If 'key' is of type 'dict', it must map dimension names to allowed dimension values. Two or more
-                values can be separated by '+' as in the str form. The DSD will be downloaded
-                and the items are validated against it before downloading the dataset.
+            key(str, dict): select columns from a dataset by specifying
+                dimension values.
+                If type is str, it must conform to the SDMX REST API, i.e.
+                dot-separated dimension values.
+                If 'key' is of type 'dict', it must map dimension names to
+                allowed dimension values. Two or more values can be separated
+                by '+' as in the str form. The DSD will be downloaded and the
+                items are validated against it before downloading the dataset.
             params(dict): defines the query part of the URL.
-                The SDMX web service guidelines (www.sdmx.org) explain the meaning of
-                permissible parameters. It can be used to restrict the
-                time range of the data to be delivered (startperiod, endperiod), whether parents, siblings or descendants of the specified
-                resource should be returned as well (e.g. references='parentsandsiblings'). Sensible defaults
-                are set automatically
-                depending on the values of other args such as `resource_type`.
+                The SDMX web service guidelines (www.sdmx.org) explain the
+                meaning of permissible parameters. It can be used to restrict
+                the time range of the data to be delivered (startperiod,
+                endperiod), whether parents, siblings or descendants of the
+                specified resource should be returned as well (e.g.
+                references='parentsandsiblings'). Sensible defaults are set
+                automatically depending on the values of other args such as
+                `resource_type`.
                 Defaults to {}.
-            headers(dict): http headers. Given headers will overwrite instance-wide headers passed to the
-                constructor. Defaults to None, i.e. use defaults
-                from agency configuration
-            fromfile(str): path to the file to be loaded instead of
-                accessing an SDMX web service. Defaults to None. If `fromfile` is
+            headers(dict): http headers. Given headers will overwrite
+                instance-wide headers passed to the constructor. Defaults to
+                None, i.e. use defaults from agency configuration.
+            fromfile(str): path to the file to be loaded instead of accessing
+                an SDMX web service. Defaults to None. If `fromfile` is
                 given, args relating to URL construction will be ignored.
-            tofile(str): file path to write the received SDMX file on the fly. This
-                is useful if you want to load data offline using
+            tofile(str): file path to write the received SDMX file on the fly.
+                This is useful if you want to load data offline using
                 `fromfile` or if you want to open an SDMX file in
                 an XML editor.
             url(str): URL of the resource to download.
-                If given, any other arguments such as
-                ``resource_type`` or ``resource_id`` are ignored. Default is None.
+                If given, any other arguments such as ``resource_type`` or
+                ``resource_id`` are ignored. Default is None.
             get_footer_url((int, int)):
                 tuple of the form (seconds, number_of_attempts). Determines the
                 behavior in case the received SDMX message has a footer where
-                one of its lines is a valid URL. ``get_footer_url`` defines how many attempts should be made to
-                request the resource at that URL after waiting so many seconds before each attempt.
-                This behavior is useful when requesting large datasets from Eurostat. Other agencies do not seem to
-                send such footers. Once an attempt to get the resource has been
-                successful, the original message containing the footer is dismissed and the dataset
-                is returned. The ``tofile`` argument is propagated. Note that the written file may be
-                a zip archive. pandaSDMX handles zip archives since version 0.2.1. Defaults to (30, 3).
-            memcache(str): If given, return Response instance if already in self.cache(dict),
-            otherwise download resource and cache Response instance.
+                one of its lines is a valid URL. ``get_footer_url`` defines how
+                many attempts should be made to request the resource at that
+                URL after waiting so many seconds before each attempt.
+                This behavior is useful when requesting large datasets from
+                Eurostat. Other agencies do not seem to send such footers. Once
+                an attempt to get the resource has been successful, the
+                original message containing the footer is dismissed and the
+                dataset is returned. The ``tofile`` argument is propagated.
+                Note that the written file may be a zip archive. pandaSDMX
+                handles zip archives since version 0.2.1. Defaults to (30, 3).
+            memcache(str): If given, return Response instance if already in
+                self.cache(dict), otherwise download resource and cache
+                Response instance.
         writer(str): optional custom writer class.
             Should inherit from pandasdmx.writer.BaseWriter. Defaults to None,
             i.e. one of the included writers is selected as appropriate.
@@ -245,7 +269,7 @@ class Request(object):
             pandasdmx.api.Response: instance containing the requested
                 SDMX Message.
 
-        '''
+        """
         # Try to get resource from memory cache if specified
         if memcache in self.cache:
             return self.cache[memcache]
@@ -274,7 +298,8 @@ class Request(object):
             # API spec.
             if resource_type == 'data' and isinstance(key, dict):
                 # select validation method based on agency capabilities
-                if self._agencies[self.agency].get('supports_series_keys_only'):
+                if self._agencies[self.agency].get(
+                        'supports_series_keys_only'):
                     key = self._make_key_from_series(resource_id, key)
                 else:
                     key = self._make_key_from_dsd(resource_id, key)
@@ -316,12 +341,12 @@ class Request(object):
             elif fromfile:
                 base_url = ''
             else:
-                raise ValueError(
-                    'If `` url`` is not specified, either agency or fromfile must be given.')
+                raise ValueError("If 'url' is not specified, either 'agency' "
+                                 "or 'fromfile' must be given.")
 
         # Now get the SDMX message either via http or as local file
-        logger.info(
-            'Requesting resource from URL/file %s', (base_url or fromfile))
+        logger.info('Requesting resource from URL/file %s',
+                    (base_url or fromfile))
         source, url, resp_headers, status_code = self.client.get(
             base_url, params=params, headers=headers, fromfile=fromfile)
         if source is None:
@@ -346,9 +371,10 @@ class Request(object):
                 # undo side effect of is_zipfile
                 source.seek(0)
             # select reader class
-            if ((fromfile and fromfile.suffix == '.json')
-                    or (self.agency and self._agencies[self.agency]['resources'].get(resource_type)
-                        and self._agencies[self.agency]['resources'][resource_type].get('json'))):
+            if ((fromfile and fromfile.suffix == '.json') or (self.agency and
+                self._agencies[self.agency]['resources'].get(resource_type) and
+                (self._agencies[self.agency]['resources'][resource_type]
+                 .get('json')))):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')
@@ -364,15 +390,16 @@ class Request(object):
                 # found an URL. Wait and try to request it
                 footer_url = url_l[0]
                 seconds, attempts = get_footer_url
-                logger.info(
-                    'Found URL in footer. Making %i requests, waiting %i seconds in between.', attempts, seconds)
+                logger.info("Found URL in footer. Making %i requests, waiting "
+                            " %i seconds in between.", attempts, seconds)
                 for a in range(attempts):
                     sleep(seconds)
                     try:
-                        return self.get(tofile=tofile, url=footer_url, headers=headers)
+                        return self.get(tofile=tofile, url=footer_url,
+                                        headers=headers)
                     except Exception as e:
-                        logger.info(
-                            'Attempt #%i raised the following exeption: %s', a, str(e))
+                        logger.info("Attempt #%i raised the following "
+                                    " exception: %s", a, str(e))
         # Select default writer
         if not writer:
             if hasattr(msg, 'data'):
@@ -399,8 +426,9 @@ class Request(object):
         dsd_resp = self.get('datastructure', dsd_id,
                             memcache='datastructure' + dsd_id)
         dsd = dsd_resp.msg.datastructure[dsd_id]
-        # Extract dimensions excluding the dimension at observation (time, time-period)
-        # as we are only interested in dimensions for columns, not rows.
+        # Extract dimensions excluding the dimension at observation (time,
+        # time-period) as we are only interested in dimensions for columns, not
+        # rows.
         dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
                       ['TIME', 'TIME_PERIOD']]
         dim_names = [d.id for d in dimensions]
@@ -417,14 +445,14 @@ class Request(object):
         invalid = [d for d in key.keys()
                    if d not in dim_names]
         if invalid:
-            raise ValueError(
-                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+            raise ValueError("Invalid dimension name %s, allowed are: %s",
+                             invalid, dim_names)
         # Check for each dimension name if values are correct and construct
         # string of the form 'value1.value2.value3+value4' etc.
         parts = []
         # Iterate over the dimensions. If the key dict
-        # contains a value for the dimension, append it to the 'parts' list. Otherwise
-        # append ''. Then join the parts to form the dotted str.
+        # contains a value for the dimension, append it to the 'parts' list.
+        # Otherwise append ''. Then join the parts to form the dotted str.
         for d in dimensions:
             try:
                 values = key[d.id]
@@ -434,16 +462,17 @@ class Request(object):
                 invalid = [v for v in values_l if v not in codes]
                 if invalid:
                     # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
-                                     format(invalid, d.id, codes))
+                    raise ValueError("'{0}' is not in codelist for dimension "
+                                     "'{1}: {2}'".format(invalid, d.id, codes))
                 # Check if values are in Contentconstraint if present
                 if constraint:
                     try:
                         invalid = [
                             v for v in values_l if (d.id, v) not in constraint]
                         if invalid:
-                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
-                                             format(invalid, d.id))
+                            raise ValueError("'{0}' out of content_constraint "
+                                             " for '{1}'.".format(invalid,
+                                                                  d.id))
                     except NotImplementedError:
                         pass
                 part = values
@@ -471,8 +500,8 @@ class Request(object):
         invalid = [d for d in key
                    if d not in dim_names]
         if invalid:
-            raise ValueError(
-                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
+            raise ValueError("Invalid dimension name {0}, allowed are: {1}"
+                             .format(invalid, dim_names))
         # Pre-process key by expanding multiple values as list
         key = {k: v.split('+') if '+' in v else v for k, v in key.items()}
         # Check for each dimension name if values are correct and construct
@@ -484,13 +513,14 @@ class Request(object):
         # Iterate over the dimensions. If the key dict
         # contains an allowed value for the dimension,
         # it will become part of the string.
-        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
+        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in
+                                             all_keys[k].values)
                                             for k, vl in key_l.items())))
         if invalid:
             raise ValueError("The following dimension values are invalid: {0}".
                              format(invalid))
-        # Generate the 'Val1+Val2' notation for multiple dim values and remove the
-        # lists
+        # Generate the 'Val1+Val2' notation for multiple dim values and remove
+        # the lists
         for k, v in key_l.items():
             key_l[k] = '+'.join(v)
         # assemble the key string which goes into the URL
@@ -498,10 +528,11 @@ class Request(object):
         return '.'.join(parts)
 
     def preview_data(self, flow_id, key=None, count=True, total=True):
-        '''
-        Get keys or number of series for a prospective dataset query allowing for
-        keys with multiple values per dimension.
-        It downloads the complete list of series keys for a dataflow rather than using constraints and DSD. This feature is,
+        """
+        Get keys or number of series for a prospective dataset query allowing
+        for keys with multiple values per dimension.
+        It downloads the complete list of series keys for a dataflow rather
+        than using constraints and DSD. This feature is,
         however, not supported by all data providers.
         ECB and UNSD are known to work.
 
@@ -509,23 +540,24 @@ class Request(object):
 
         flow_id(str): dataflow id
 
-        key(dict): optional key mapping dimension names to values or lists of values.
+        key(dict): optional key mapping dimension names to values or lists of
+            values.
             Must have been validated before. It is not checked if key values
             are actually valid dimension names and values. Default: {}
 
         count(bool): if True (default), return the number of series
             of the dataset designated by flow_id and key. If False,
-            the actual keys are returned as a pandas DataFrame or dict of dataframes, depending on
-            the value of 'total'.
+            the actual keys are returned as a pandas DataFrame or dict of
+            dataframes, depending on the value of 'total'.
 
         total(bool): if True (default), return the aggregate number
-            of series or a single dataframe (depending on the value of 'count'). If False,
-            return a dict mapping keys to dataframes of series keys.
-            E.g., if key={'COUNTRY':'IT+CA+AU'}, the dict will
+            of series or a single dataframe (depending on the value of
+            'count'). If False, return a dict mapping keys to dataframes of
+            series keys. E.g., if key={'COUNTRY':'IT+CA+AU'}, the dict will
             have 3 items describing the series keys for each country
-            respectively. If 'count' is True, dict values will be int rather than
-            PD.DataFrame.
-        '''
+            respectively. If 'count' is True, dict values will be int rather
+            than PD.DataFrame.
+        """
         all_keys = self.series_keys(flow_id)
         # Handle the special case that no key is provided
         if not key:
@@ -556,9 +588,9 @@ class Request(object):
             # Replace key tuples by namedtuples
             PartialKey = namedtuple_factory('PartialKey', dim_names)
 
-            matches = {PartialKey(k): reduce(and_, (key_df.isin({k1: [v1]
-                                                                 for k1, v1 in zip(dim_names, k)})[col]
-                                                    for col in dim_names))
+            matches = {PartialKey(k): reduce(and_,
+                       (key_df.isin({k1: [v1] for k1, v1 in zip(dim_names, k)}
+                                    )[col] for col in dim_names))
                        for k in key_product}
 
             if not count:
@@ -621,7 +653,7 @@ class Response(object):
             self._writer = None
 
     def write(self, source=None, **kwargs):
-        '''Wrappe    r to call the writer's write method if present.
+        """Wrapper to call the writer's write method if present.
 
         Args:
             source(pandasdmx.model.Message, iterable): stuff to be written.
@@ -629,12 +661,12 @@ class Response(object):
                 itself must determine what to write unless specified in the
                 keyword arguments. If an iterable is given,
                 the writer should write each item. Keyword arguments may
-                specify what to do with the output depending on the writer's API. Defaults to self.msg.
+                specify what to do with the output depending on the writer's
+                API. Defaults to self.msg.
 
         Returns:
             type: anything the writer returns.
-        '''
-
+        """
         if not source:
             source = self.msg
         return self._writer.write(source=source, **kwargs)

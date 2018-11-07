@@ -6,10 +6,10 @@
 
 
 '''
-This module contains a writer class that writes artefacts from a StructureMessage to
-pandas dataFrames. This is useful, e.g., to visualize
-codes from a codelist or concepts from a concept scheme. The writer is more general though: It can
-output any collection of nameable SDMX objects.
+This module contains a writer class that writes artefacts from a
+StructureMessage to pandas dataFrames. This is useful, e.g., to visualize
+codes from a codelist or concepts from a concept scheme. The writer is more
+general though: It can output any collection of nameable SDMX objects.
 '''
 from itertools import chain, repeat
 from operator import attrgetter
@@ -29,29 +29,33 @@ class Writer(BaseWriter):
     def write(self, source=None, rows=None, **kwargs):
         '''
         Transfform structural metadata, i.e. codelists, concept-schemes,
-        lists of dataflow definitions or category-schemes
-        from a :class:`pandasdmx.model.StructureMessage` instance into a pandas DataFrame.
-        This method is called by :meth:`pandasdmx.api.Response.write` . It is not
-        part of the public-facing API. Yet, certain kwargs are
-        propagated from there.
+        lists of dataflow definitions or category-schemes from a
+        :class:`pandasdmx.model.StructureMessage` instance into a pandas
+        DataFrame.
+
+        This method is called by :meth:`pandasdmx.api.Response.write`. It is
+        not part of the public-facing API. Yet, certain kwargs are propagated
+        from there.
 
         Args:
-            source(pandasdmx.model.StructureMessage): a :class:`pandasdmx.model.StructureMessage` instance.
+            source(pandasdmx.model.StructureMessage): a
+                :class:`pandasdmx.model.StructureMessage` instance.
 
-            rows(str): sets the desired content
-                to be extracted from the StructureMessage.
-                Must be a name of an attribute of the StructureMessage. The attribute must
-                be an instance of `dict` whose keys are strings. These will be
-                interpreted as ID's and used for the MultiIndex of the DataFrame
-                to be returned. Values can be either instances of `dict` such as for codelists and categoryscheme,
-                or simple nameable objects
-                such as for dataflows. In the latter case, the DataFrame will have a flat index.
-                (default: depends on content found in Message.
-                Common is 'codelist')
-            columns(str, list): if str, it denotes the attribute of attributes of the
-                values (nameable SDMX objects such as Code or ConceptScheme) that will be stored in the
-                DataFrame. If a list, it must contain strings
-                that are valid attibute values. Defaults to: ['name', 'description']
+            rows(str): sets the desired content to be extracted from the
+                StructureMessage. Must be a name of an attribute of the
+                StructureMessage. The attribute must be an instance of `dict`
+                whose keys are strings. These will be interpreted as ID's and
+                used for the MultiIndex of the DataFrame to be returned. Values
+                can be either instances of `dict` such as for codelists and
+                categoryscheme, or simple nameable objects such as for
+                dataflows. In the latter case, the DataFrame will have a flat
+                index. (default: depends on content found in Message. Common is
+                'codelist')
+            columns(str, list): if str, it denotes the attribute of attributes
+                of the values (nameable SDMX objects such as Code or
+                ConceptScheme) that will be stored in the DataFrame. If a list,
+                it must contain strings that are valid attibute values.
+                Defaults to: ['name', 'description']
             lang(str): locale identifier. Specifies the preferred
                 language for international strings such as names.
                 Default is 'en'.
@@ -92,7 +96,8 @@ class Writer(BaseWriter):
             raw = [getattr(item, s) for s in columns]
             # Select language for international strings represented as dict
             translated = [s[lang] if lang in s
-                          else (s.get('en') or ((s or None) and s.any())) for s in raw]
+                          else (s.get('en') or ((s or None) and s.any()))
+                          for s in raw]
             # for codelists, prepend dim_or_attr flag
             if codelist_and_dsd:
                 if dim_attr in dim2cl:
@@ -125,8 +130,8 @@ class Writer(BaseWriter):
 
         def container2id(container, item):
             if codelist_and_dsd:
-                # For first index level, get dimension or attribute ID instead of
-                # codelist ID
+                # For first index level, get dimension or attribute ID instead
+                # of codelist ID
                 container_id = container[0].id
                 # 2nd index col: first row
                 # contains the concept, all subsequent rows are codes.
@@ -150,12 +155,12 @@ class Writer(BaseWriter):
             # Assuming a msg contains only one DSD
             try:
                 dsd = source.datastructure.any()
-                # Relate dimensions and attributes to corresponding codelists to
-                # show this relation in the resulting dataframe
-                dim2cl = {d: d.local_repr.enum() for d in dsd.dimensions.values()
+                # Relate dimensions and attributes to corresponding codelists
+                # to show this relation in the resulting dataframe
+                dim2cl = {d: d.local_repr.enum for d in dsd.dimensions.values()
                           if d.local_repr.enum}
-                attr2cl = {a: a.local_repr.enum() for a in dsd.attributes.values()
-                           if a.local_repr.enum}
+                attr2cl = {a: a.local_repr.enum for a in
+                           dsd.attributes.values() if a.local_repr.enum}
             except:
                 dsd = None
 
@@ -169,8 +174,8 @@ class Writer(BaseWriter):
         # conceptscheme
         content = getattr(source, rows)  # 'source' is the SDMX message
         # Distinguish hierarchical content consisting of a dict of dicts, and
-        # flat content consisting of a dict of atomic model instances. In the former case,
-        # the resulting DataFrame will have 2 index levels.
+        # flat content consisting of a dict of atomic model instances. In the
+        # former case, the resulting DataFrame will have 2 index levels.
         if isinstance(content.any(), dict):
             # generate pairs of model instances, e.g. codelist
             # and code. Their structure resembles the multi-index
@@ -182,8 +187,8 @@ class Writer(BaseWriter):
                 # 1st index level eg ID of dimension
                 # represented by codelist, or ConceptScheme etc.
                 repeat(container),
-                # 2nd index level: first row in each codelist is the corresponding
-                # container id. The following rows are item ID's. .
+                # 2nd index level: first row in each codelist is the
+                # corresponding container id. The following rows are item ID's.
                 chain((row1_col2(container),), iter_keys(container)))
                 for container in iter_schemes())
             # Now actually generate the index and related data for the columns
@@ -197,8 +202,8 @@ class Writer(BaseWriter):
             raw_idx, data = zip(*((t.id, make_column(t, None))
                                   for t in raw_tuples))
             idx = pd.Index(raw_idx, name=rows)
-        # For codelists, if there is a dsd, prepend 'dim_or_attr' as synthetic column
-        # See corresponding insert in the make_columns function above
+        # For codelists, if there is a dsd, prepend 'dim_or_attr' as synthetic
+        # column. See corresponding insert in the make_columns function above
         if codelist_and_dsd:
             # make local copy to avoid side effect
             columns = columns[:]

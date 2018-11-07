@@ -3,7 +3,8 @@
 
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this distribution.
+# This is notwithstanding any licenses of third-party software included in this
+# distribution.
 # (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 '''
@@ -42,14 +43,16 @@ class REST:
     Query SDMX resources via REST or from a file
 
     The constructor accepts arbitrary keyword arguments that will be passed
-    to the requests.get function on each call. This makes the REST class somewhat similar to a requests.Session. E.g., proxies or
-    authorisation data needs only be provided once. The keyword arguments are
-    stored in self.config. Modify this dict to issue the next 'get' request with
+    to the requests.get function on each call. This makes the REST class
+    somewhat similar to a requests.Session. E.g., proxies or authorisation data
+    needs only be provided once. The keyword arguments are stored in
+    self.config. Modify this dict to issue the next 'get' request with
     changed arguments.
     """
 
+    # Upper bound for in-memory temp file. Larger files will be spooled from
+    # disk
     max_size = 2 ** 24
-    '''upper bound for in-memory temp file. Larger files will be spooled from disc'''
 
     def __init__(self, cache, http_cfg):
         default_cfg = dict(stream=True, timeout=30.1)
@@ -60,7 +63,7 @@ class REST:
             requests_cache.install_cache(**cache)
 
     def get(self, url, fromfile=None, params={}, headers={}):
-        '''Get SDMX message from REST service or local file
+        """Get SDMX message from REST service or local file.
 
         Args:
 
@@ -85,13 +88,13 @@ class REST:
             HTTPError if SDMX service responded with
                 status code 401. Otherwise, the status code
                 is returned
- '''
+        """
         if fromfile:
             fromfile = Path(fromfile)
             try:
                 # Load data from local file
-                # json files must be opened in text mode, all others in binary as
-                # they may be zip files or xml.
+                # json files must be opened in text mode, all others in binary
+                # as they may be zip files or xml.
                 if fromfile.suffix == '.json':
                     mode_str = 'r'
                 else:
@@ -123,7 +126,8 @@ class REST:
         else:
             cur_config['headers'] = headers
 
-        with closing(requests.get(url, params=params, **cur_config)) as response:
+        with closing(requests.get(url, params=params, **cur_config)) as \
+                response:
             if response.status_code == requests.codes.OK:
                 # Prepare the temp file. xml content will be
                 # stored in a binary file, json in a textfile.

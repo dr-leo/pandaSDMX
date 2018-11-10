@@ -10,13 +10,14 @@ import pandas as pd
 import pytest
 from pytest import raises
 
+import pandasdmx
 from pandasdmx.writer.data2pandas import Writer
 
 from . import assert_pd_equal, expected_data, test_files
 
 
 def test_write_arguments(req):
-    msg = req.get(fromfile=test_files(kind='data')['argvalues'][0]).msg
+    msg = pandasdmx.open_file(test_files(kind='data')['argvalues'][0])
 
     # Attributes must be a string
     with raises(TypeError):
@@ -28,8 +29,8 @@ def test_write_arguments(req):
 
 
 @pytest.mark.parametrize('path', **test_files(kind='data'))
-def test_write(req, path):
-    msg = req.get(fromfile=path).msg
+def test_write(path):
+    msg = pandasdmx.open_file(path)
 
     result = Writer(msg).write(msg)
 
@@ -43,8 +44,8 @@ def test_write(req, path):
 
 
 @pytest.mark.parametrize('path', **test_files(kind='data'))
-def test_write_attributes(req, path):
-    msg = req.get(fromfile=path).msg
+def test_write_attributes(path):
+    msg = pandasdmx.open_file(path)
 
     result = Writer(msg).write(msg, attributes='osgd')
     # TODO incomplete

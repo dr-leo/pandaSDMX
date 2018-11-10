@@ -32,7 +32,7 @@ from pandasdmx.reader import BaseReader
 
 class Reader(BaseReader):
     """Read SDMXJSON 2.1 and expose it as instances from pandasdmx.model."""
-    def initialize(self, source):
+    def read_message(self, source):
         # Initialize message instance
         msg = DataMessage()
 

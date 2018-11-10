@@ -1,6 +1,4 @@
-from traitlets import HasTraits, Instance
-
-from pandasdmx.util import DictLike, DictLikeTrait
+from pandasdmx.util import DictLike
 
 
 def test_dictlike():

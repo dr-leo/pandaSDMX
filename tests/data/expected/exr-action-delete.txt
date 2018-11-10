@@ -1,0 +1,7 @@
+FREQ                    D          D
+TIME_PERIOD    2013-01-18 2013-01-21
+CURRENCY_DENOM        EUR        EUR
+EXR_TYPE             SP00       SP00
+EXR_SUFFIX              A          A
+CURRENCY
+RUB               40.3426       40.3

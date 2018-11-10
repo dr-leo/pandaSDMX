@@ -38,7 +38,7 @@ setup(name='pandaSDMX',
       extras_require={
         'cache': ['requests_cache'],
         },
-      tests_require=['odo'],
+      tests_require=['odo', 'pytest-remotedata'],
       keywords='statistics SDMX pandas data economics science',
       zip_safe=True,
       provides=['pandasdmx'],

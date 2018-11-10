@@ -1,3 +1,4 @@
+from io import StringIO
 from json import JSONDecodeError
 import logging
 
@@ -24,6 +25,10 @@ def test_request():
     # load_agency_profile()
     with raises(JSONDecodeError):
         Request.load_agency_profile('FOO')
+
+    # with empty JSON
+    tmp = StringIO('{}')
+    Request.load_agency_profile(tmp)
 
     # Regular methods
     r.clear_cache()

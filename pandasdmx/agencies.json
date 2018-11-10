@@ -4,6 +4,7 @@
     },
     "ESTAT": {
         "id": "ESTAT",
+        "documentation": "http://data.un.org/Host.aspx?Content=API",
         "resources": {},
         "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
         "name": "Eurostat"
@@ -30,7 +31,7 @@
         "resources": {},
         "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
         "name": "International Monetary Fund - SDMXCentral"
-    },    
+    },
     "SGR": {
         "id": "SGR",
         "resources": {},
@@ -82,15 +83,14 @@
         "url": "http://stat.data.abs.gov.au/sdmx-json",
         "name": "Australian Bureau of Statistics"
     },
-    "WBG_WITS": { 
+    "WBG_WITS": {
         "name": "World Bank Integrated Trade Solution",
-        "id": "WBG_WITS", 
-        "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest", 
-        "resources": { 
-            "data": { 
-            "headers": {} 
-     } 
-     } 
+        "id": "WBG_WITS",
+        "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
+        "resources": {
+            "data": {
+            "headers": {}
+     }
+     }
      }
 }
-

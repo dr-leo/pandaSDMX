@@ -6,22 +6,17 @@
 # - parsetime
 # …for each type of input argument.
 
+import pandas as pd
 import pytest
 from pytest import raises
 
 from pandasdmx.writer.data2pandas import Writer
 
-from . import test_data_path
-
-
-# test_data_path = test_data_path / 'exr' / 'ecb_exr_ng' / 'generic'
-test_data_path = test_data_path / 'json'
-
-test_data = list(test_data_path.iterdir())
+from . import test_files
 
 
 def test_write_arguments(req):
-    msg = req.get(fromfile=test_data[0]).msg
+    msg = req.get(fromfile=next(test_files(kind='data'))).msg
 
     # Attributes must be a string
     with raises(TypeError):
@@ -32,15 +27,19 @@ def test_write_arguments(req):
         Writer(msg).write(msg, attributes='foobarbaz')
 
 
-@pytest.mark.parametrize('path', test_data)
+@pytest.mark.parametrize('path', test_files(kind='data'))
 def test_write_json(req, path):
     msg = req.get(fromfile=path).msg
 
-    Writer(msg).write(msg)
+    result = Writer(msg).write(msg)
+    # TODO incomplete
+    assert isinstance(result, (pd.Series, pd.DataFrame)), type(result)
 
 
-@pytest.mark.parametrize('path', test_data)
+@pytest.mark.parametrize('path', test_files(kind='data'))
 def test_write_json_attributes(req, path):
     msg = req.get(fromfile=path).msg
 
-    Writer(msg).write(msg, attributes='osgd')
+    result = Writer(msg).write(msg, attributes='osgd')
+    # TODO incomplete
+    assert isinstance(result, (pd.Series, pd.DataFrame)), type(result)

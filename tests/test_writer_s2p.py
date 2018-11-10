@@ -1,5 +1,5 @@
 import pytest
-from . import test_data_path
+from . import test_data_path, test_files
 
 from pandasdmx.writer.structure2pd import Writer
 
@@ -14,3 +14,9 @@ def dsd_common():
 @pytest.mark.xfail(reason='writer.structure2pd needs refactor')
 def test_writer(dsd_common):
     Writer(None).write(dsd_common)
+
+
+@pytest.mark.parametrize('path', test_files(kind='structure'))
+def test_writer_many(path):
+    msg = Reader(None).initialize(open(path))
+    Writer(None).write(msg)

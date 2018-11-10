@@ -7,10 +7,11 @@ import pytest
 
 from pandasdmx.api import Request
 
-from . import test_data_path
+from . import test_data_path, test_files
 
 
 # Construct the expected pandas representation of the sample data files
+# TODO convert the following to a load-from-CSV as in pandas tests
 sample_attrs = OrderedDict([
     ('FREQ', 'D'),
     ('CURRENCY_DENOM', 'EUR'),
@@ -88,10 +89,10 @@ def _filepath(part):
     return test_data_path / 'json' / 'exr-{}.json'.format(part)
 
 
-@pytest.mark.parametrize('name, data', sample_data)
-def test_json_read(req, name, data):
+@pytest.mark.parametrize('path', test_files(format='json'))
+def test_json_read(req, path):
     """Test that the samples from the SDMX-JSON spec can be read."""
-    req.get(fromfile=_filepath(name)).msg
+    req.get(fromfile=path).msg
 
 
 def test_header(req):

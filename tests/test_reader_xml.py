@@ -2,43 +2,27 @@ import warnings
 
 import pytest
 
-from . import test_data_path
+from . import test_data_path, test_files
 
 
 warnings.filterwarnings('error')
 
 
-# List all XML files in the 'generic' subdirectories
-test_data = []
-for part in 'ng', 'rg', 'sg':
-    path = test_data_path / 'exr' / 'ecb_exr_{}'.format(part) / 'generic'
-    test_data.extend(path.iterdir())
-
-
-# List structure files
-test_structure = [test_data_path.joinpath(*parts) for parts in [
-    ('common', 'common.xml'),
-    ('estat', 'apro_dsd.xml'),
-    ('insee', 'insee-bug-data-namedtuple-datastructure.xml'),
-    ('insee', 'insee-dataflow.xml'),
-    ('insee', 'insee-IPI-2010-A21-datastructure.xml'),
-    ]]
-
-
 # Read example data files
-@pytest.mark.parametrize('path', test_data)
+@pytest.mark.parametrize('path', test_files(format='xml', kind='data'))
 def test_read_xml(req, path):
     req.get(fromfile=path).msg
 
 
 # Read example structure files
-@pytest.mark.parametrize('path', test_structure)
+@pytest.mark.parametrize('path', test_files(format='xml', kind='structure'))
 def test_read_xml_structure(req, path):
     req.get(fromfile=path).msg
 
 
 def test_read_xml_structure_insee(req):
-    msg = req.get(fromfile=test_structure[4]).msg
+    msg = req.get(fromfile=test_data_path / 'insee' /
+                  'insee-IPI-2010-A21-datastructure.xml').msg
 
     # Same objects referenced
     assert (id(msg.dataflow['IPI-2010-A21'].structure) ==

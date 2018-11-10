@@ -67,19 +67,17 @@ class REST:
         if cache:
             install_cache(**cache)
 
-    def get(self, url, fromfile=None, params={}, headers={}):
+    def get(self, url=None, fromfile=None, params={}, headers={}):
         """Get SDMX message from REST service or local file.
 
         Args:
-
-            url(str): URL of the REST service without the query part
-                If None, fromfile must be set. Default is None
+            url(str): URL of the REST service without the query part.
+                If None (default), *fromfile* must be set.
             params(dict): will be appended as query part to the URL after a '?'
             fromfile(str): path to SDMX file containing an SDMX message.
-                It will be passed on to the
-                reader for parsing.
+                It will be passed on to the reader for parsing.
             headers(dict): http headers. Overwrite instance-wide headers.
-                Default is {}
+                Default is {}.
 
         Returns:
             tuple: three objects:
@@ -90,14 +88,13 @@ class REST:
                 2. the status code
 
         Raises:
-            HTTPError if SDMX service responded with
-                status code 401. Otherwise, the status code
-                is returned
+            HTTPError if SDMX service responded with status code 401.
+            Otherwise, the status code is returned.
         """
         if fromfile:
-            fromfile = Path(fromfile)
+            # Load data from local file
             try:
-                # Load data from local file
+                fromfile = Path(fromfile)
                 # json files must be opened in text mode, all others in binary
                 # as they may be zip files or xml.
                 if fromfile.suffix == '.json':

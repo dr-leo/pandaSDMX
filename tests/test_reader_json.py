@@ -3,19 +3,20 @@ import os
 
 import pytest
 
+import pandasdmx
 from pandasdmx.api import Request
 
 from . import test_data_path, test_files
 
 
-@pytest.mark.parametrize('path', test_files(format='json'))
-def test_json_read(req, path):
+@pytest.mark.parametrize('path', **test_files(format='json'))
+def test_json_read(path):
     """Test that the samples from the SDMX-JSON spec can be read."""
-    req.get(fromfile=path).msg
+    pandasdmx.open_file(path)
 
 
-def test_header(req):
-    resp = req.get(fromfile=test_data_path / 'json' / 'exr-flat.json')
+def test_header():
+    resp = pandasdmx.open_file(test_data_path / 'json' / 'exr-flat.json')
     assert resp.header.id == '62b5f19d-f1c9-495d-8446-a3661ed24753'
 
 

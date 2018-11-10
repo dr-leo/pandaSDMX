@@ -78,6 +78,16 @@ def assert_pd_equal(left, right):
     method(left, right)
 
 
+class MessageTest:
+    path = test_data_path
+    filename = None
+
+    @pytest.fixture(scope='class')
+    def msg(self):
+        import pandasdmx
+        return pandasdmx.open_file(self.path / self.filename)
+
+
 # thanks to xarray
 def _importorskip(modname, minversion=None):
     try:

@@ -379,7 +379,7 @@ class Request(object):
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
-            msg = reader_cls(self).initialize(source)
+            msg = reader_cls().initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and msg.footer is not None:
             logger.info('Footer found in SDMX message.')
@@ -684,3 +684,43 @@ class Response(object):
             whatever the LXML deserializer returns.
         '''
         return self.msg._reader.write_source(filename)
+
+
+def open_file(filename_or_obj):
+    """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
+
+    Parameters
+    ----------
+    filename_or_obj: str, Path, or file.
+    """
+    import pandasdmx.reader.sdmxml
+    import pandasdmx.reader.sdmxjson
+
+    readers = {
+        'XML': pandasdmx.reader.sdmxml.Reader,
+        'JSON': pandasdmx.reader.sdmxjson.Reader,
+        }
+
+    if isinstance(filename_or_obj, str):
+        filename_or_obj = Path(filename_or_obj)
+
+    try:
+        # Use the file extension to guess the reader
+        reader = readers[filename_or_obj.suffix.lstrip('.').upper()]
+
+        # Open the file
+        obj = open(filename_or_obj)
+    except AttributeError:
+        # File is already open
+        pos = filename_or_obj.tell()
+        first_line = filename_or_obj.readline().strip()
+        filename_or_obj.seek(pos)
+
+        if first_line.startswith('{'):
+            reader = readers['JSON']
+        elif first_line.startswith('<'):
+            reader = readers['XML']
+        else:
+            raise ValueError(first_line)
+
+    return reader().read_message(obj)

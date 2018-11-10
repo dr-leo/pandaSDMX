@@ -5,26 +5,16 @@
 
 @author: Dr. Leo
 '''
-import pytest
-
 import pandas
 
+import pandasdmx
 from pandasdmx import model, Request
 
-from . import test_data_path
+from . import MessageTest, test_data_path
 
 
-class DataMessageTest:
+class DataMessageTest(MessageTest):
     path = test_data_path / 'exr' / 'ecb_exr_ng' / 'generic'
-    filename = None
-
-    @pytest.fixture(scope='class')
-    def resp(self):
-        return Request().get(fromfile=self.path / self.filename)
-
-    @pytest.fixture(scope='class')
-    def msg(self, resp):
-        return resp.msg
 
 
 class TestGenericFlatDataSet(DataMessageTest):

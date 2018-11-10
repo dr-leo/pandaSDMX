@@ -16,14 +16,14 @@ from abc import ABC, abstractmethod
 
 
 class BaseReader(ABC):
-
-    def __init__(self, request, **kwargs):
-        self.request = request
-
     @abstractmethod
-    def initialize(self, source):
-        """Initialize the reader.
+    def read_message(self, source):
+        """Read message from *source*.
 
-        Must return an instance of model.Message or a subclass.
+        Must return an instance of a model.Message subclass.
         """
         pass  # pragma: no cover
+
+    # Backwards-compatibility
+    def initialize(self, source):
+        return self.read_message(source)

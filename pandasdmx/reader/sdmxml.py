@@ -217,7 +217,7 @@ class Reader(BaseReader):
     # Only IdentifiableArtefacts should be stored. See _maintained().
     _index = {}
 
-    def initialize(self, source):
+    def read_message(self, source):
         # Root XML element
         root = etree.parse(source).getroot()
 

@@ -48,7 +48,6 @@ class Reader(BaseReader):
         structure = tree['structure']
 
         # Read dimensions and values
-        dimensions = dict()
         self._dim_level = dict()
         self._dim_values = dict()
         for level_name, level in structure['dimensions'].items():
@@ -66,28 +65,18 @@ class Reader(BaseReader):
                     self._dim_values[d].append(
                         KeyValue(id=d.id, value=value['id']))
 
-                # Store
-                dimensions[d.order] = d
-
         # Assign an order to an implicit dimension
-        if -1 in dimensions:
-            dimensions[len(dimensions)] = dimensions.pop(-1)
-
-        # Make a SeriesKey for Observations in this DataSet
-        ds_key = SeriesKey(dsd=msg.structure)
-        for _, dim in sorted(dimensions.items()):
-            if self._dim_level[dim] != 'dataSet':
-                continue
-            assert len(self._dim_values[dim]) == 1
-            ds_key[dim.id] = self._dim_values[dim][0]
+        for d in msg.structure.dimensions:
+            if d.order == -1:
+                d.order = len(msg.structure.dimensions)
 
         # Determine the dimension at the observation level
         if all([level == 'observation' for level in
                 self._dim_level.values()]):
             dim_at_obs = AllDimensions
         else:
-            dim_at_obs = [dim for dim in dimensions.values() if
-                          self._dim_level[dim] == 'observation']
+            dim_at_obs = [dim for dim, level in self._dim_level.items()
+                          if level == 'observation']
 
         msg.observation_dimension = dim_at_obs
 
@@ -113,6 +102,9 @@ class Reader(BaseReader):
 
         self.msg = msg
 
+        # Make a SeriesKey for Observations in this DataSet
+        ds_key = self._make_key('dataSet')
+
         # Read DataSets
         for ds in tree['dataSets']:
             msg.data.append(self.read_dataset(ds, ds_key))
@@ -122,24 +114,30 @@ class Reader(BaseReader):
     def read_dataset(self, root, ds_key):
         ds = DataSet(action=root['action'].lower(),
                      valid_from=root.get('validFrom', None))
-        for key, elem in root.get('series', {}).items():
-            series_key = self._make_key('series', key, base=ds_key)
+
+        # Process series
+        for key_values, elem in root.get('series', {}).items():
+            series_key = self._make_key('series', key_values, base=ds_key)
             series_key.attrib = self._make_attrs('series',
                                                  root.get('attributes', []))
-            ds.add_obs(self.read_series_obs(elem, series_key), series_key)
+            ds.add_obs(self.read_obs(elem, series_key=series_key), series_key)
+
+        # Process bare observations
+        ds.add_obs(self.read_obs(root, base_key=ds_key))
+
         return ds
 
-    def read_series_obs(self, root, series_key):
-        for key, elem in root['observations'].items():
+    def read_obs(self, root, series_key=None, base_key=None):
+        for key, elem in root.get('observations', {}).items():
             value = elem.pop(0) if len(elem) else None
             o = Observation(
                 series_key=series_key,
-                dimension=self._make_key('observation', key),
+                dimension=self._make_key('observation', key, base=base_key),
                 value=value,
                 attached_attribute=self._make_attrs('observation', elem))
             yield o
 
-    def _make_key(self, level, value, base=None):
+    def _make_key(self, level, value=None, base=None):
         """Convert a string observation key *value* to a Key or subclass.
 
         SDMXJSON observations have keys like '2' or '3:4', consisting of colon
@@ -150,18 +148,30 @@ class Reader(BaseReader):
         *level* species whether a 'series' or 'observation' Key is returned.
         """
         # Instance of the proper class
-        key = {'series': SeriesKey, 'observation': Key}[level]()
+        key = {
+            'dataSet': Key,
+            'series': SeriesKey,
+            'observation': Key,
+            }[level]()
 
         if base:
             key.values.update(base.values)
 
-        # Iterate over key indices and the corresponding dimensions
+        # Dimensions at the appropriate level
         dims = [d for d in self.msg.structure.dimensions if
                 self._dim_level[d] == level]
+
+        # Dimensions specified at the dataSet level have only one value, so
+        # pre-fill this
+        value = ':'.join(['0'] * len(dims)) if value is None else value
+
+        # Iterate over key indices and the corresponding dimensions
         for index, dim in zip(map(int, value.split(':')), dims):
             # Look up the value and assign to the Key
             key[dim.id] = self._dim_values[dim][index]
-        return key
+
+        # Order the key
+        return self.msg.structure.dimensions.order_key(key)
 
     def _make_attrs(self, level, values):
         """Convert integer attribute indices to an iterable of AttributeValues.

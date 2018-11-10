@@ -58,7 +58,11 @@ def expected_data(path):
         args.update(_expected_read_args[path.name])
         expected_path = (test_data_path / 'expected' /
                          path.name).with_suffix('.txt')
-        return pd.read_table(expected_path, **args)
+        result = pd.read_table(expected_path, **args)
+        if set(result.columns) == {'value'}:
+            # A series; unwrap
+            result = result['value']
+        return result
     except KeyError:
         return None
 
@@ -89,8 +93,8 @@ def _importorskip(modname, minversion=None):
 
 
 def LooseVersion(vstring):
-    # Our development version is something like '0.10.9+aac7bfc'
-    # This function just ignored the git commit id.
+    # When the development version is something like '0.10.9+aac7bfc', this
+    # function will just discard the git commit id.
     vstring = vstring.split('+')[0]
     return version.LooseVersion(vstring)
 

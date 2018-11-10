@@ -45,9 +45,7 @@ def is_url(s):
 
 
 class REST:
-
-    """
-    Query SDMX resources via REST or from a file
+    """Query SDMX resources via REST or from a file.
 
     The constructor accepts arbitrary keyword arguments that will be passed
     to the requests.get function on each call. This makes the REST class
@@ -63,9 +61,9 @@ class REST:
 
     def __init__(self, cache=None, http_cfg={}):
         default_cfg = dict(stream=True, timeout=30.1)
-        for it in default_cfg.items():
-            http_cfg.setdefault(*it)
-        self.config = dict(http_cfg)
+        default_cfg.update(http_cfg)
+        self.config = default_cfg
+
         if cache:
             install_cache(**cache)
 

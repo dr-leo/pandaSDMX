@@ -14,3 +14,11 @@ def test_without_requests_cache():
 def test_REST_init_cache():
     # Instantiate a REST object with cache
     REST(cache=dict(cache_name='test'))
+
+
+def test_REST_init_default():
+    r = REST()
+    assert r.config['timeout'] == 30.1
+
+    r = REST(http_cfg=dict(timeout=10))
+    assert r.config['timeout'] == 10

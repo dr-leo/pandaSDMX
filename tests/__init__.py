@@ -1,7 +1,9 @@
 import importlib
+import json
 from pathlib import Path
 from distutils import version
 
+import pandas as pd
 import pytest
 
 test_data_path = Path(__file__).parent / 'data'
@@ -30,13 +32,46 @@ for fp in (test_data_path / 'json').iterdir():
 
 
 def test_files(format=None, kind=None):
-    """Generate a sequence of test file paths matching criteria."""
-    result = []
+    """Generate a sequence of test file paths matching criteria.
+
+    The return value should be passed as kwargs to pytest.mark.parametrize():
+
+        pytest.mark.parametrize('argname', **test_files(…))
+
+    """
+    result = dict(argvalues=[], ids=[])
     for path, f, k in _test_files:
         if (format and format != f) or (kind and kind != k):
             continue
-        result.append(path)
+        result['argvalues'].append(path)
+        result['ids'].append(path.name)
     return result
+
+
+_expected_read_args = json.load(open(test_data_path / 'expected.json'))
+
+
+def expected_data(path):
+    """Return the expected write() results for *path*."""
+    args = dict(sep="\s+", index_col=[0], header=[0])
+    try:
+        args.update(_expected_read_args[path.name])
+        expected_path = (test_data_path / 'expected' /
+                         path.name).with_suffix('.txt')
+        return pd.read_table(expected_path, **args)
+    except KeyError:
+        return None
+
+
+def assert_pd_equal(left, right):
+    """Assert equality of two pandas objects."""
+    if left is None:
+        return
+    method = {
+        pd.Series: pd.testing.assert_series_equal,
+        pd.DataFrame: pd.testing.assert_frame_equal,
+        }[left.__class__]
+    method(left, right)
 
 
 # thanks to xarray

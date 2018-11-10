@@ -12,11 +12,11 @@ from pytest import raises
 
 from pandasdmx.writer.data2pandas import Writer
 
-from . import test_files
+from . import assert_pd_equal, expected_data, test_files
 
 
 def test_write_arguments(req):
-    msg = req.get(fromfile=next(test_files(kind='data'))).msg
+    msg = req.get(fromfile=test_files(kind='data')['argvalues'][0]).msg
 
     # Attributes must be a string
     with raises(TypeError):
@@ -27,19 +27,25 @@ def test_write_arguments(req):
         Writer(msg).write(msg, attributes='foobarbaz')
 
 
-@pytest.mark.parametrize('path', test_files(kind='data'))
-def test_write_json(req, path):
+@pytest.mark.parametrize('path', **test_files(kind='data'))
+def test_write(req, path):
     msg = req.get(fromfile=path).msg
 
     result = Writer(msg).write(msg)
+
+    expected = expected_data(path)
+    if expected is not None:
+        print(expected, result, sep='\n')
+    assert_pd_equal(expected, result)
+
     # TODO incomplete
-    assert isinstance(result, (pd.Series, pd.DataFrame)), type(result)
+    assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
 
-@pytest.mark.parametrize('path', test_files(kind='data'))
-def test_write_json_attributes(req, path):
+@pytest.mark.parametrize('path', **test_files(kind='data'))
+def test_write_attributes(req, path):
     msg = req.get(fromfile=path).msg
 
     result = Writer(msg).write(msg, attributes='osgd')
     # TODO incomplete
-    assert isinstance(result, (pd.Series, pd.DataFrame)), type(result)
+    assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)

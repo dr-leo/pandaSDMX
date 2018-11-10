@@ -9,13 +9,13 @@ warnings.filterwarnings('error')
 
 
 # Read example data files
-@pytest.mark.parametrize('path', test_files(format='xml', kind='data'))
+@pytest.mark.parametrize('path', **test_files(format='xml', kind='data'))
 def test_read_xml(req, path):
     req.get(fromfile=path).msg
 
 
 # Read example structure files
-@pytest.mark.parametrize('path', test_files(format='xml', kind='structure'))
+@pytest.mark.parametrize('path', **test_files(format='xml', kind='structure'))
 def test_read_xml_structure(req, path):
     req.get(fromfile=path).msg
 

@@ -16,7 +16,8 @@ def test_writer(dsd_common):
     Writer(None).write(dsd_common)
 
 
-@pytest.mark.parametrize('path', test_files(kind='structure'))
+@pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_many(path):
+    from pandasdmx.reader.sdmxml import Reader
     msg = Reader(None).initialize(open(path))
     Writer(None).write(msg)

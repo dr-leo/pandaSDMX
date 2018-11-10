@@ -15,12 +15,9 @@ from contextlib import closing
 from pathlib import Path
 import sys
 from tempfile import SpooledTemporaryFile
+from warnings import warn
 
 import requests
-try:
-    import requests_cache
-except ImportError:
-    pass
 
 
 def STF(*args, **kwargs):
@@ -28,6 +25,16 @@ def STF(*args, **kwargs):
     if sys.version_info[0] < 3:
         kwargs.pop('encoding', None)
     return SpooledTemporaryFile(*args, **kwargs)
+
+
+def install_cache(**kwargs):
+    """Install cache, or raise a warning."""
+    try:
+        import requests_cache
+        requests_cache.install_cache(**kwargs)
+    except ImportError:
+        warn('optional dependency requests_cache is not installed; options '
+             'REST(…, cache=%r, …) have no effect' % kwargs, RuntimeWarning)
 
 
 def is_url(s):
@@ -54,13 +61,13 @@ class REST:
     # disk
     max_size = 2 ** 24
 
-    def __init__(self, cache, http_cfg):
+    def __init__(self, cache=None, http_cfg={}):
         default_cfg = dict(stream=True, timeout=30.1)
         for it in default_cfg.items():
             http_cfg.setdefault(*it)
         self.config = dict(http_cfg)
         if cache:
-            requests_cache.install_cache(**cache)
+            install_cache(**cache)
 
     def get(self, url, fromfile=None, params={}, headers={}):
         """Get SDMX message from REST service or local file.

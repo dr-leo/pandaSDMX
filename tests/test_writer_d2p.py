@@ -1,3 +1,11 @@
+"""Tests for pandasdmx/writer/data2pandas.py."""
+# TODO test all possible values of Writer.write() arguments
+# - asframe
+# - attribute
+# - fromfreq
+# - parsetime
+# …for each type of input argument.
+
 import pytest
 from pytest import raises
 
@@ -15,9 +23,11 @@ test_data = list(test_data_path.iterdir())
 def test_write_arguments(req):
     msg = req.get(fromfile=test_data[0]).msg
 
+    # Attributes must be a string
     with raises(TypeError):
         Writer(msg).write(msg, attributes=2)
 
+    # Attributes must contain only 'dgso'
     with raises(ValueError):
         Writer(msg).write(msg, attributes='foobarbaz')
 

@@ -1,5 +1,6 @@
 *.cache
 *.egg-info
+*.pdf
 .coverage
 .pytest_cache
 __pycache__

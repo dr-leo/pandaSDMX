@@ -27,9 +27,19 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_writer(self, msg):
-        df = pandasdmx.to_pandas(msg.codelist)
-        # TODO test the actual expected content
-        assert df.shape == (79, 2)
+        cls_as_dfs = pandasdmx.to_pandas(msg.codelist)
+
+        # Number of codes expected in each Codelist
+        count = {
+            'CL_FREQ': 6,
+            'CL_GEO': 41,
+            'CL_OBS_FLAG': 10,
+            'CL_OBS_STATUS': 3,
+            'CL_PRODMILK': 12,
+            'CL_UNIT': 1,
+            }
+
+        assert all(len(df) == count[id] for id, df in cls_as_dfs.items())
 
 
 class test_dsd_common(MessageTest):

@@ -25,8 +25,38 @@ class AgencyTest:
         req.get(endpoint)
 
 
+class TestABS(AgencyTest):
+    agency_id = 'ABS'
+
+
+class TestECB(AgencyTest):
+    agency_id = 'ECB'
+
+
 class TestESTAT(AgencyTest):
     agency_id = 'ESTAT'
+
+
+class TestIMF(AgencyTest):
+    agency_id = 'IMF_SDMXCENTRAL'
+
+
+class TestINSEE(AgencyTest):
+    agency_id = 'INSEE'
+
+
+@pytest.mark.xfail(reason='400 errors; JSON endpoints not correctly handled in'
+                          ' api.Request')
+class TestOECD(AgencyTest):
+    agency_id = 'OECD'
+
+
+class TestSGR(AgencyTest):
+    agency_id = 'SGR'
+
+
+class TestUNESCO(AgencyTest):
+    agency_id = 'UNESCO'
 
 
 class TestUNSD(AgencyTest):
@@ -37,7 +67,5 @@ class TestUNSD(AgencyTest):
     agency_id = 'UNSD'
 
 
-@pytest.mark.xfail(reason='400 errors; JSON endpoints not correctly handled in'
-                          ' api.Request')
-class TestOECD(AgencyTest):
-    agency_id = 'OECD'
+class TestWB(AgencyTest):
+    agency_id = 'WBG_WITS'

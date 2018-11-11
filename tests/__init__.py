@@ -21,6 +21,7 @@ _test_files.extend(
     (test_data_path.joinpath(*parts), 'xml', 'structure') for parts in [
         ('common', 'common.xml'),
         ('common', 'ecb_orgscheme.xml'),
+        ('common', 'unsd_partial.xml'),
         ('estat', 'apro_dsd.xml'),
         ('insee', 'insee-bug-data-namedtuple-datastructure.xml'),
         ('insee', 'insee-dataflow.xml'),

@@ -9,6 +9,7 @@ endpoints = [
 
 
 class AgencyTest:
+    """Fixture for agency tests."""
     agency_id = None
 
     @pytest.fixture

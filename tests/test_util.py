@@ -1,4 +1,6 @@
-from pandasdmx.util import DictLike
+from traitlets import HasTraits, Instance
+
+from pandasdmx.util import DictLike, DictLikeTrait
 
 
 def test_dictlike():
@@ -17,16 +19,16 @@ def test_dictlike():
     assert dl[1] == 'USD'
 
 
-# def test_dictliketrait():
-#     class Foo:
-#         id = None
-#
-#     class Bar(HasTraits):
-#         members = DictLikeTrait(Instance(Foo))
-#
-#     bar = Bar()
-#
-#     a1 = bar.members.get('a')
-#     a2 = bar.members.get('a')
-#
-#     assert a1 is a2
+def test_dictliketrait():
+    class Foo:
+        id = None
+
+    class Bar(HasTraits):
+        members = DictLikeTrait(Instance(Foo))
+
+    bar = Bar()
+
+    a1 = bar.members.get('a')
+    a2 = bar.members.get('a')
+
+    assert a1 is a2

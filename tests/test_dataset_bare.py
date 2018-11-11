@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from pandasdmx import Request
+import pandasdmx
 from pandasdmx.model import (
     AttributeValue,
     Header,
@@ -10,13 +8,11 @@ from pandasdmx.model import (
     Key,
     Observation,
     )
-from pandasdmx.writer import Writer
 
-test_data_path = Path(__file__).parent / 'data'
+from . import assert_pd_equal, test_data_path
 
 
 def test_flat():
-
     # Create a bare Message
     msg = DataMessage()
 
@@ -53,19 +49,17 @@ def test_flat():
 
     msg.data.append(ds)
 
-    # COMMENTED: refactoring
-    #
-    # # Write to pd.Dataframe
-    # df1 = Writer(msg).write(msg)
-    #
-    # ref = Request().get(fromfile=test_data_path / 'json' / 'exr-flat.json')
-    # df2 = Writer(ref).write(ref.msg)
-    #
-    # assert (df1 == df2).all()
+    # Write to pd.Dataframe
+    df1 = pandasdmx.to_pandas(msg)
+
+    ref = pandasdmx.open_file(test_data_path / 'json' / 'exr-flat.json')
+    df2 = pandasdmx.to_pandas(ref)
+
+    assert_pd_equal(df1, df2)
 
 
 def test_bare_series():
-    Request().get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' /
-                  'generic' / 'ecb_exr_ng_ts.xml').msg
+    ref = pandasdmx.open_file(test_data_path / 'exr' / 'ecb_exr_ng' /
+                              'generic' / 'ecb_exr_ng_ts.xml')
 
     # TODO generate the series and observations

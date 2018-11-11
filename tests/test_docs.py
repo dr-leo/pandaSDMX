@@ -78,38 +78,55 @@ def test_doc_index2():
 
 
 @pytest.mark.remote_data
-def test_usage_1():
+def test_doc_usage_structure():
     """Code examples in usage.rst."""
-    from pandasdmx import Request
-
     ecb = Request('ECB')
 
     ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
 
-    ecb_via_proxy.client.config
+    assert ecb_via_proxy.client.config == {
+        'proxies': {'http': 'http://1.2.3.4:5678'},
+        'stream': True,
+        'timeout': 30.1,
+        }
 
     cat_response = ecb.categoryscheme()
 
-    cat_response.url
+    # FIXME: the documentation shows 'references=all'
+    assert cat_response.url == ('http://sdw-wsrest.ecb.int/service/category'
+                                'scheme/latest?references=parentsandsiblings')
 
+    # TODO check specific headers
     cat_response.http_headers
 
-    cat_response.write().categoryscheme
+    print(pandasdmx.to_pandas(cat_response.category_scheme))
 
-    list(cat_response.categoryscheme.MOBILE_NAVI['07'])
+    # This currently produces an AttributeError in the compiled
+    #  documentation: https://pandasdmx.readthedocs.io/en/master/usage.html
+    # list(cat_response.category_scheme.MOBILE_NAVI['07'])
 
-    cat_response.write().dataflow.head()
+    print(pandasdmx.to_pandas(cat_response.dataflow))
 
-    flows = ecb.dataflow()
+    assert False
 
-    dsd_id = cat_response.dataflow.EXR.structure.id
-    dsd_id
-    refs = dict(references='all')
-    dsd_response = ecb.datastructure(resource_id=dsd_id, params=refs)
-    dsd = dsd_response.datastructure[dsd_id]
+    # This step is slow
+    # flows = ecb.dataflow()
 
-    dsd.dimensions.aslist()
-    dsd_response.write().codelist.loc['CURRENCY'].head()
+    # Also raising exceptions in the compiled documentation
+    # dsd_id = cat_response.dataflow.EXR.structure.id
+    # dsd_id
+    # refs = dict(references='all')
+    # dsd_response = ecb.datastructure(resource_id=dsd_id, params=refs)
+    # dsd = dsd_response.datastructure[dsd_id]
+
+    # dsd.dimensions.aslist()
+    # dsd_response.write().codelist.loc['CURRENCY'].head()
+
+
+@pytest.mark.remote_data
+def test_doc_usage_data():
+    """Code examples in usage.rst."""
+    ecb = Request('ECB')
 
     data_response = ecb.data(resource_id='EXR', key={'CURRENCY': 'USD+JPY'},
                              params={'startPeriod': '2016'})

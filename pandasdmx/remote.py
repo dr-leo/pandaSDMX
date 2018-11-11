@@ -12,12 +12,15 @@ This module is part of pandaSDMX. It contains
 a classes for http access.
 '''
 from contextlib import closing
+import logging
 from pathlib import Path
 import sys
 from tempfile import SpooledTemporaryFile
 from warnings import warn
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 def STF(*args, **kwargs):

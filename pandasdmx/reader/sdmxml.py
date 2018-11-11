@@ -138,6 +138,7 @@ _parse_alias = {
     'localrepresentation': 'representation',
     'annotationtype': 'text',
     'annotationtitle': 'text',
+    'annotationurl': 'text',
     'urn': 'text',
     'obskey': 'key',
     'serieskey': 'key',
@@ -616,11 +617,9 @@ class Reader(BaseReader):
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
-        for target, source in [('text', 'annotationtext'),
-                               ('title', 'annotationtitle'),
-                               ('type', 'annotationtype')]:
+        for attr in ('text', 'title', 'type', 'url'):
             try:
-                values[target] = values.pop(source)
+                values[attr] = values.pop('annotation' + attr)
             except KeyError:
                 pass
         return Annotation(**values)

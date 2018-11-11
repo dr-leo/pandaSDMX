@@ -256,13 +256,19 @@ class ItemScheme(MaintainableArtefact):
     is_partial = Bool()
     items = List(Instance(Item))
 
+    # Convenience access to items
     def __getattr__(self, name):
-        "Convenience attribute access to items."
         # Provided to pass test_dsd.py
         for i in self.items:
             if i.id == name:
                 return i
         raise AttributeError(name)
+
+    def __getitem__(self, name):
+        for i in self.items:
+            if i.id == name:
+                return i
+        raise KeyError(name)
 
     def __contains__(self, item):
         """Recursive containment."""

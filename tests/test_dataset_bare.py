@@ -1,10 +1,12 @@
 import pandasdmx
+from pandasdmx.message import (
+    Header,
+    DataMessage,
+    )
 from pandasdmx.model import (
     AttributeValue,
-    Header,
     DataAttribute,
     DataSet,
-    DataMessage,
     Key,
     Observation,
     )

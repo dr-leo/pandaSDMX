@@ -18,11 +18,17 @@ from inspect import isclass
 from lxml import etree
 from lxml.etree import QName, XPath
 
+from pandasdmx.message import (
+    DataMessage,
+    Footer,
+    Header,
+    StructureMessage,
+    )
 from pandasdmx.model import (
     DEFAULT_LOCALE,
-    AllDimensions,
     Agency,
     AgencyScheme,
+    AllDimensions,
     Annotation,
     AttributeDescriptor,
     # AttributeRelationship,
@@ -40,15 +46,12 @@ from pandasdmx.model import (
     ConceptScheme,
     DataAttribute,
     DataflowDefinition,
-    DataMessage,
     DataSet,
     DataStructureDefinition,
     Dimension,
     DimensionDescriptor,
     Facet,
-    Footer,
     GroupKey,
-    Header,
     IdentifiableArtefact,
     InternationalString,
     ItemScheme,
@@ -60,7 +63,6 @@ from pandasdmx.model import (
     PrimaryMeasure,
     Representation,
     SeriesKey,
-    StructureMessage,
     UsageStatus,
     )
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-import pytest
-
+import pandasdmx
 from pandasdmx import Request
+import pytest
 
 from . import test_data_path
 
@@ -43,20 +43,17 @@ class TestINSEE:
         dataset_code = 'IPI-2010-A21'
 
         '''load all dataflows'''
-        dataflows_response = req.get(
-            resource_type='dataflow', agency='FR1', fromfile=DATAFLOW_FP)
-        dataflows = dataflows_response.msg.dataflow
+        dataflows_response = pandasdmx.open_file(DATAFLOW_FP)
+        dataflows = dataflows_response.dataflow
 
         assert len(dataflows) == 663
         assert dataset_code in dataflows
 
         '''load datastructure for current dataset_code'''
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = req.get(
-            resource_type='datastructure', agency='FR1',
-            fromfile=fp_datastructure)
-        assert dataset_code in datastructure_response.msg.dataflow
-        dsd = datastructure_response.msg.dataflow[dataset_code].structure
+        datastructure_response = pandasdmx.open_file(fp_datastructure)
+        assert dataset_code in datastructure_response.dataflow
+        dsd = datastructure_response.dataflow[dataset_code].structure
 
         '''Verify dimensions list'''
         dimensions = OrderedDict([dim.id, dim] for dim in
@@ -67,12 +64,11 @@ class TestINSEE:
 
         '''load datas for the current dataset'''
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = req.get(
-            resource_type='data', agency='FR1', fromfile=fp_data)
+        data = pandasdmx.open_file(fp_data)
 
         '''Verify series count and values'''
         # CHANGED: dataset index added; list() not required
-        series = data.msg.data[0].series
+        series = data.data[0].series
         series_count = len(series)
         assert series_count == DATASETS[dataset_code]['series_count']
 
@@ -94,11 +90,9 @@ class TestINSEE:
         dataset_code = 'CNA-2010-CONSO-SI-A17'
 
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = req.get(
-            resource_type='datastructure', agency='FR1',
-            fromfile=fp_datastructure)
-        assert dataset_code in datastructure_response.msg.dataflow
-        dsd = datastructure_response.msg.dataflow[dataset_code].structure
+        datastructure_response = pandasdmx.open_file(fp_datastructure)
+        assert dataset_code in datastructure_response.dataflow
+        dsd = datastructure_response.dataflow[dataset_code].structure
 
         dimensions = OrderedDict([dim.id, dim] for dim in
                                  dsd.dimensions if dim.id not in
@@ -107,11 +101,10 @@ class TestINSEE:
         assert dim_keys == ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX']
 
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = req.get(
-            resource_type='data', agency='FR1', fromfile=fp_data)
+        data = pandasdmx.open_file(fp_data)
 
         # CHANGED: dataset index added; list() not required
-        series = data.msg.data[0].series
+        series = data.data[0].series
 
         series_key = list(series.keys())[0]
 
@@ -128,6 +121,6 @@ class TestINSEE:
         # INSEE time series provide the FREQ value as attribute on the series
         # instead of a dimension. This caused a runtime error when writing as
         # pandas dataframe.
-        data_response = req.data(
-            fromfile=SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
-        data_response.write()
+        data_response = pandasdmx.open_file(
+            SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
+        pandasdmx.to_pandas(data_response)

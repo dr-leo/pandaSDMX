@@ -6,8 +6,6 @@ from pytest import raises
 
 from pandasdmx.api import Request
 
-from . import test_data_path
-
 
 def test_request():
     # Constructor
@@ -35,13 +33,3 @@ def test_request():
 
     r.timeout = 300
     assert r.timeout == 300
-
-
-def test_response():
-    # Constructor
-    req = Request()
-    resp = req.get(fromfile=test_data_path / 'exr' / 'ecb_exr_ng' / 'generic' /
-                   'ecb_exr_ng_flat.xml')
-
-    # write() with no argument
-    resp.write()

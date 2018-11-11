@@ -400,13 +400,9 @@ class Request(object):
                     except Exception as e:
                         logger.info("Attempt #%i raised the following "
                                     " exception: %s", a, str(e))
-        # Select default writer
-        if not writer:
-            if hasattr(msg, 'data'):
-                writer = 'pandasdmx.writer.data2pandas'
-            else:
-                writer = 'pandasdmx.writer.structure2pd'
-        r = Response(msg, url, resp_headers, status_code, writer=writer)
+
+        r = Response(msg, url, resp_headers, status_code)
+
         # store in memory cache if needed
         if memcache and r.status_code == 200:
             self.cache[memcache] = r
@@ -619,7 +615,7 @@ class Response(object):
             Arguments are propagated to the writer.
     '''
 
-    def __init__(self, msg, url, headers, status_code, writer=None):
+    def __init__(self, msg, url, headers, status_code):
         '''
         Set the main attributes and instantiate the writer if given.
 
@@ -635,22 +631,12 @@ class Response(object):
         self.url = url
         self.http_headers = headers
         self.status_code = status_code
-        self._init_writer(writer)
 
     def __getattr__(self, name):
         '''
         Make Message attributes directly readable from Response instance
         '''
         return getattr(self.msg, name)
-
-    def _init_writer(self, writer):
-        # Initialize the writer if given
-        if writer:
-            writer_module = import_module(writer)
-            writer_cls = writer_module.Writer
-            self._writer = writer_cls(self.msg)
-        else:
-            self._writer = None
 
     def write(self, source=None, **kwargs):
         """Wrapper to call the writer's write method if present.
@@ -667,9 +653,7 @@ class Response(object):
         Returns:
             type: anything the writer returns.
         """
-        if not source:
-            source = self.msg
-        return self._writer.write(source=source, **kwargs)
+        return to_pandas(self.msg, **kwargs)
 
     def write_source(self, filename):
         '''
@@ -724,3 +708,9 @@ def open_file(filename_or_obj):
             raise ValueError(first_line)
 
     return reader().read_message(obj)
+
+
+def to_pandas(obj, *args, **kwargs):
+    from pandasdmx.writer import Writer
+
+    return Writer().write(obj, *args, **kwargs)

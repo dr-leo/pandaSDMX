@@ -17,70 +17,10 @@ from operator import attrgetter
 import pandas as pd
 import numpy as np
 
-from pandasdmx.util import DictLike
-from pandasdmx.writer import BaseWriter
 
-
-class Writer(BaseWriter):
-
+class Writer:
     _row_content = {'codelist', 'conceptscheme', 'dataflow',
                     'categoryscheme'}
-
-    def write(self, source=None, rows=None, **kwargs):
-        '''
-        Transfform structural metadata, i.e. codelists, concept-schemes,
-        lists of dataflow definitions or category-schemes from a
-        :class:`pandasdmx.model.StructureMessage` instance into a pandas
-        DataFrame.
-
-        This method is called by :meth:`pandasdmx.api.Response.write`. It is
-        not part of the public-facing API. Yet, certain kwargs are propagated
-        from there.
-
-        Args:
-            source(pandasdmx.model.StructureMessage): a
-                :class:`pandasdmx.model.StructureMessage` instance.
-
-            rows(str): sets the desired content to be extracted from the
-                StructureMessage. Must be a name of an attribute of the
-                StructureMessage. The attribute must be an instance of `dict`
-                whose keys are strings. These will be interpreted as ID's and
-                used for the MultiIndex of the DataFrame to be returned. Values
-                can be either instances of `dict` such as for codelists and
-                categoryscheme, or simple nameable objects such as for
-                dataflows. In the latter case, the DataFrame will have a flat
-                index. (default: depends on content found in Message. Common is
-                'codelist')
-            columns(str, list): if str, it denotes the attribute of attributes
-                of the values (nameable SDMX objects such as Code or
-                ConceptScheme) that will be stored in the DataFrame. If a list,
-                it must contain strings that are valid attibute values.
-                Defaults to: ['name', 'description']
-            lang(str): locale identifier. Specifies the preferred
-                language for international strings such as names.
-                Default is 'en'.
-        '''
-
-        # Set convenient default values for args
-        # is rows a string?
-        if rows is not None and not isinstance(rows, (list, tuple)):
-            rows = [rows]
-            return_df = True
-        elif isinstance(rows, (list, tuple)) and len(rows) == 1:
-            return_df = True
-        else:
-            return_df = False
-        if rows is None:
-            rows = [i for i in self._row_content if hasattr(source, i)]
-        # Generate the DataFrame or -Frames and store them in a DictLike with
-        # content-type names as keys
-        frames = DictLike(
-            {r: self._make_dataframe(source, r, **kwargs) for r in rows})
-        if return_df:
-            # There is only one item. So return the only value.
-            return frames.any()
-        else:
-            return frames
 
     def _make_dataframe(self, source, rows, constraint=None,
                         columns=['name'], lang='en'):

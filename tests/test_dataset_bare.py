@@ -10,7 +10,7 @@ from pandasdmx.model import (
     Key,
     Observation,
     )
-from pandasdmx.writer.data2pandas import Writer
+from pandasdmx.writer import Writer
 
 test_data_path = Path(__file__).parent / 'data'
 

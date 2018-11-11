@@ -58,8 +58,9 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert o0.attrib.OBS_STATUS == 'A'
         assert o0.attrib.DECIMALS == '4'
 
-    def test_write2pandas(self, resp):
-        data_series = resp.write(attributes='', asframe=False)
+    def test_write2pandas(self, msg):
+        data_series = pandasdmx.to_pandas(msg.data, attributes='',
+                                          asframe=False)
         assert isinstance(data_series, pandas.Series)
 
 
@@ -113,9 +114,9 @@ class TestGenericSeriesDataSet(DataMessageTest):
 
         assert o0.attrib.OBS_STATUS == 'A'
 
-    def test_pandas(self, resp):
-        data = resp.msg.data[0]
-        pd_series = [s.iloc[::-1] for s in resp.write(
+    def test_pandas(self, msg):
+        data = msg.data[0]
+        pd_series = [s.iloc[::-1] for s in pandasdmx.to_pandas(
                      data, attributes='', asframe=False)]
         assert len(pd_series) == 4
         s3 = pd_series[3]
@@ -124,7 +125,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert isinstance(s3.name, tuple)
         assert len(s3.name) == 5
         # now with attributes
-        pd_series = [s.iloc[::-1] for s in resp.write(
+        pd_series = [s.iloc[::-1] for s in pandasdmx.to_pandas(
                      data, attributes='osgd', asframe=False)]
         assert len(pd_series) == 4
         assert isinstance(pd_series[0], tuple)  # contains 2 series
@@ -139,12 +140,12 @@ class TestGenericSeriesDataSet(DataMessageTest):
         # access an attribute of the first value
         assert a3[0].OBS_STATUS == 'A'
 
-    def test_write2pandas(self, resp):
-        df = resp.write(attributes='')
+    def test_write2pandas(self, msg):
+        df = pandasdmx.to_pandas(msg, attributes='')
         assert isinstance(df, pandas.DataFrame)
         assert df.shape == (3, 4)
         # with metadata
-        df, mdf = resp.write(attributes='osgd')
+        df, mdf = pandasdmx.to_pandas(msg, attributes='osgd')
         assert mdf.shape == (3, 4)
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
@@ -194,9 +195,9 @@ class TestGenericSeriesDataSet2(DataMessageTest):
 
         assert o0.attrib.OBS_STATUS == 'A'
 
-    def test_dataframe(self, resp):
-        data = resp.msg.data[0]
-        df = resp.write(data, attributes='', asframe=True).iloc[::-1]
+    def test_dataframe(self, msg):
+        df = pandasdmx.to_pandas(msg.data[0], attributes='',
+                                 asframe=True).iloc[::-1]
         assert isinstance(df, pandas.DataFrame)
         assert df.shape, (3 == 4)
 

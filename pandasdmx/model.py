@@ -101,15 +101,19 @@ class InternationalString(HasTraits):
         result.localizations.update(other.localizations)
         return result
 
-    def __str__(self):
+    def localized_default(self, locale):
+        """Return the string in *locale*, or else the first defined."""
         try:
-            return self.localizations[DEFAULT_LOCALE]
+            return self.localizations[locale]
         except KeyError:
             if len(self.localizations):
                 # No label in the default locale; use the first stored value
                 return next(iter(self.localizations.values()))
             else:
                 return ''
+
+    def __str__(self):
+        return self.localized_default(DEFAULT_LOCALE)
 
     def __repr__(self):
         return '\n'.join(['{}: {}'.format(*kv) for kv in

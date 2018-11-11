@@ -203,6 +203,10 @@ def add_localizations(target, values):
     target.localizations.update({locale: label for locale, label in values})
 
 
+class ParseError(Exception):
+    pass
+
+
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model.
 
@@ -492,7 +496,9 @@ class Reader(BaseReader):
                 version=elem.attrib.pop('maintainableParentVersion'),
                 )
             parent = self._maintained(parent_cls, **parent_attrs)
-            assert obj in parent
+
+            if obj not in parent:
+                raise ParseError('%r not located in %r' % (obj, parent))
         except KeyError:
             pass
 
@@ -673,7 +679,7 @@ class Reader(BaseReader):
         return as_
 
     def parse_conceptscheme(self, elem):
-        cs, values = self._named(ConceptScheme, elem)
+        cs, values = self._named(ConceptScheme, elem, unwrap=False)
         cs.items = values.pop('concept')
         assert len(values) == 0
         return cs

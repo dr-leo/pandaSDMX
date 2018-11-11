@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--NSI Web Service v6.8.0-->
+<!-- Note: this file was retrieved from http://data.un.org/WS/rest/codelist/UNSD/latest?references=parentsandsiblings, but has been abbreviated to only include elements relevant to pandaSDMX test cases. -->
 <Structure xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message">
   <Header>
     <ID>IDREF5</ID>
@@ -74,5 +75,33 @@
         </Code>
       </Codelist>
     </Codelists>
+    <Concepts xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <ConceptScheme id="MDG_DATA_CONCEPTS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=IAEG:MDG_DATA_CONCEPTS(1.0)" agencyID="IAEG" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Data Concepts for MDG Indicators</Name>
+        <Concept id="TIME_DETAIL" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IAEG:MDG_DATA_CONCEPTS(1.0).TIME_DETAIL">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Time period details</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">When TIME_PERIOD refers to a date range, this attribute is used to provide METADATA on the actual range the observation refers to (e.g. for period '2001-2003' TIME_PERIOD would be 2002 but the actual dates --2001-2003-- would be expressed here).</Description>
+        </Concept>
+      </ConceptScheme>
+    </Concepts>
+    <DataStructures xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <DataStructure id="CountryData" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=UNSD:CountryData(1.4)" agencyID="UNSD" version="1.4" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">SDMX-CountryData</Name>
+        <DataStructureComponents>
+          <AttributeList id="AttributeDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.AttributeDescriptor=UNSD:CountryData(1.4).AttributeDescriptor">
+            <Attribute id="TIME_DETAIL" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=UNSD:CountryData(1.4).TIME_DETAIL" assignmentStatus="Conditional">
+              <ConceptIdentity>
+                <Ref id="TIME_DETAIL" maintainableParentID="MDG_DATA_CONCEPTS" maintainableParentVersion="1.0" agencyID="IAEG" package="conceptscheme" class="Concept" xmlns="" />
+              </ConceptIdentity>
+              <AttributeRelationship>
+                <PrimaryMeasure>
+                  <Ref id="OBS_VALUE" xmlns="" />
+                </PrimaryMeasure>
+              </AttributeRelationship>
+            </Attribute>
+          </AttributeList>
+        </DataStructureComponents>
+      </DataStructure>
+    </DataStructures>
   </Structures>
 </Structure>

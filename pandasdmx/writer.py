@@ -3,6 +3,7 @@ import pandas as pd
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
+    CategoryScheme,
     Codelist,
     ItemScheme,
     )
@@ -11,6 +12,7 @@ from pandasdmx.util import DictLike
 
 class Writer:
     _write_alias = {
+        CategoryScheme: ItemScheme,
         Codelist: ItemScheme,
         }
 

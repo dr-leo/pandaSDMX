@@ -88,6 +88,7 @@
       <DataStructure id="CountryData" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=UNSD:CountryData(1.4)" agencyID="UNSD" version="1.4" isFinal="true">
         <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">SDMX-CountryData</Name>
         <DataStructureComponents>
+          <DimensionList id="DimensionDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DimensionDescriptor=UNSD:CountryData(1.4).DimensionDescriptor"/>
           <AttributeList id="AttributeDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.AttributeDescriptor=UNSD:CountryData(1.4).AttributeDescriptor">
             <Attribute id="TIME_DETAIL" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=UNSD:CountryData(1.4).TIME_DETAIL" assignmentStatus="Conditional">
               <ConceptIdentity>
@@ -100,6 +101,7 @@
               </AttributeRelationship>
             </Attribute>
           </AttributeList>
+          <MeasureList id="MeasureDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.MeasureDescriptor=UNSD:CountryData(1.4).MeasureDescriptor"/>
         </DataStructureComponents>
       </DataStructure>
     </DataStructures>

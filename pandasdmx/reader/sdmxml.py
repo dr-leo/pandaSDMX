@@ -137,6 +137,7 @@ _parse_alias = {
     'corerepresentation': 'representation',
     'localrepresentation': 'representation',
     'annotationtype': 'text',
+    'annotationtitle': 'text',
     'urn': 'text',
     'obskey': 'key',
     'serieskey': 'key',
@@ -609,14 +610,23 @@ class Reader(BaseReader):
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
-        for target, source in [('type', 'annotationtype'),
-                               ('text', 'annotationtext')]:
-            values[target] = values.pop(source)
+        for target, source in [('text', 'annotationtext'),
+                               ('title', 'annotationtitle'),
+                               ('type', 'annotationtype')]:
+            try:
+                values[target] = values.pop(source)
+            except KeyError:
+                pass
         return Annotation(**values)
 
     def parse_code(self, elem):
         c, values = self._named(Code, elem)
-        assert len(values) == 0
+        try:
+            c.parent = values.pop('parent')
+            c.parent.child.append(c)
+        except KeyError:
+            pass
+        assert len(values) == 0, values
         return c
 
     def parse_categorisation(self, elem):

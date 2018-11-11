@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--NSI Web Service v6.8.0-->
+<Structure xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message">
+  <Header>
+    <ID>IDREF5</ID>
+    <Test>false</Test>
+    <Prepared>2018-11-11T15:00:35.9328895+01:00</Prepared>
+    <Sender id="Unknown" />
+    <Receiver id="Unknown" />
+  </Header>
+  <Structures>
+    <Codelists xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <Codelist id="CL_AGE_GROUP_SDG" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=UNSD:CL_AGE_GROUP_SDG(1.0)" agencyID="UNSD" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Age group code list</Name>
+        <Code id="NA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AGE_GROUP_SDG(1.0).NA">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not applicable (deprecated)</Name>
+        </Code>
+        <Code id="000_099_Y" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AGE_GROUP_SDG(1.0).000_099_Y">
+          <Annotations xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">
+            <Annotation>
+              <AnnotationTitle>PresentationTitle</AnnotationTitle>
+              <AnnotationText xml:lang="en">Total</AnnotationText>
+            </Annotation>
+          </Annotations>
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">All age ranges or no breakdown by age</Name>
+        </Code>
+      </Codelist>
+      <Codelist id="CL_AREA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=UNSD:CL_AREA(1.0)" agencyID="UNSD" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Reference area code list</Name>
+        <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Represents a combination of reference area codes in M49 and ISO-3611 classifications.</Description>
+        <Code id="000" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).000">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Total</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active other code</Description>
+        </Code>
+        <Code id="001" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).001">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">World</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">World</Description>
+        </Code>
+        <Code id="002" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).002">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Africa</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Africa (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="006" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).006">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Asia [former]</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active region code</Description>
+        </Code>
+        <Code id="007" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).007">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Europe [former]</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active region code</Description>
+        </Code>
+        <Code id="009" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).009">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Oceania</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Oceania (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="010" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).010">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Antarctica</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Antarctica (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="015" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).015">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Northern Africa</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Northern Africa (M49)</Description>
+          <Parent>
+            <Ref id="002" xmlns="" />
+          </Parent>
+        </Code>
+      </Codelist>
+    </Codelists>
+  </Structures>
+</Structure>

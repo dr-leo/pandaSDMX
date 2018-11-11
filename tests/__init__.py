@@ -54,7 +54,7 @@ _expected_read_args = json.load(open(test_data_path / 'expected.json'))
 
 def expected_data(path):
     """Return the expected write() results for *path*."""
-    args = dict(sep="\s+", index_col=[0], header=[0])
+    args = dict(sep=r'\s+', index_col=[0], header=[0])
     try:
         args.update(_expected_read_args[path.name])
         expected_path = (test_data_path / 'expected' /

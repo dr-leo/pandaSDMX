@@ -29,7 +29,7 @@ import sys
 from time import sleep
 from zipfile import ZipFile, is_zipfile
 
-import pandas as PD
+import pandas as pd
 
 from pandasdmx import remote
 
@@ -178,7 +178,7 @@ class Request(object):
             # download an empty dataset with all available series keys
             resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
             keys = list(s.key for s in resp.data.series)
-            df = PD.DataFrame(keys, columns=keys[0]._fields, dtype='category')
+            df = pd.DataFrame(keys, columns=keys[0]._fields, dtype='category')
             if cache:
                 self.cache[cache_id] = df
             return df
@@ -552,7 +552,7 @@ class Request(object):
             series keys. E.g., if key={'COUNTRY':'IT+CA+AU'}, the dict will
             have 3 items describing the series keys for each country
             respectively. If 'count' is True, dict values will be int rather
-            than PD.DataFrame.
+            than pd.DataFrame.
         """
         all_keys = self.series_keys(flow_id)
         # Handle the special case that no key is provided

@@ -26,7 +26,7 @@ from pandasdmx.model import (
     Annotation,
     AttributeDescriptor,
     # AttributeRelationship,
-    # NoSpecifiedRelationship,
+    NoSpecifiedRelationship,
     PrimaryMeasureRelationship,
     # GroupRelationship,
     DimensionRelationship,
@@ -736,7 +736,7 @@ class Reader(BaseReader):
         values = self._parse(elem)
         da = DataAttribute(
             concept_identity=values.pop('conceptidentity'),
-            local_representation=values.pop('localrepresentation'),
+            local_representation=values.pop('localrepresentation', None),
             related_to=values.pop('attributerelationship'),
             **attrs,
             )
@@ -763,8 +763,10 @@ class Reader(BaseReader):
             # Avoid recurive _parse() here, because it may contain a Ref to
             # a PrimaryMeasure that is not yet defined
             ar = PrimaryMeasureRelationship()
+        elif tags == {qname('str', 'None')}:
+            ar = NoSpecifiedRelationship()
         else:
-            raise NotImplementedError
+            raise NotImplementedError('cannot parse %s' % etree.tostring(elem))
         return ar
 
     def parse_representation(self, elem):

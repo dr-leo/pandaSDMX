@@ -410,6 +410,10 @@ class Agency(Organisation):
     pass
 
 
+class AgencyScheme(ItemScheme):
+    items = List(Instance(Agency))
+
+
 # 10.2: Constraint inheritance
 
 class ConstrainableArtefact:
@@ -1116,6 +1120,7 @@ class StructureMessage(Message):
     constraint = DictLikeTrait(Instance(ContentConstraint))
     dataflow = DictLikeTrait(Instance(DataflowDefinition))
     structure = DictLikeTrait(Instance(DataStructureDefinition))
+    organisation_scheme = DictLikeTrait(Instance(AgencyScheme))
 
 
 class _AllDimensions:

@@ -22,6 +22,7 @@ from pandasdmx.model import (
     DEFAULT_LOCALE,
     AllDimensions,
     Agency,
+    AgencyScheme,
     Annotation,
     AttributeDescriptor,
     # AttributeRelationship,
@@ -175,6 +176,7 @@ _parse_skip = [
     'DataStructures',
     'DataStructureComponents',
     'Footer',
+    'OrganisationSchemes',
     # Tag names that only ever contain references
     'Source',
     'Structure',  # str:Structure, not mes:Structure
@@ -266,6 +268,7 @@ class Reader(BaseReader):
                     ('structure', 'datastructures'),
                     ('category_scheme', 'categoryschemes'),
                     ('concept_scheme', 'concepts'),
+                    ('organisation_scheme', 'organisationschemes'),
                     ):
                 for obj in structures.pop(name, []):
                     getattr(msg, attr)[obj.id] = obj
@@ -372,6 +375,7 @@ class Reader(BaseReader):
                                 % cls)
             # Create a new object. A reference to a MaintainableArtefact
             # without it being fully defined is necessarily external
+            assert kwargs.pop('is_external_reference', True)
             self._index[key] = cls(id=id, is_external_reference=True,
                                    **kwargs)
 
@@ -391,6 +395,7 @@ class Reader(BaseReader):
         # Apply conversions to attributes
         convert_attrs = {
             'agencyID': ('maintainer', lambda value: Agency(id=value)),
+            'isExternalReference': ('is_external_reference', bool),
             'isFinal': ('is_final', bool),
             'isPartial': ('is_partial', bool),
             }
@@ -597,6 +602,11 @@ class Reader(BaseReader):
     def parse_structures(self, elem):
         return self._parse(elem, unwrap=False)
 
+    def parse_agency(self, elem):
+        a, values = self._named(Agency, elem)
+        assert len(values) == 0
+        return a
+
     def parse_annotation(self, elem):
         values = self._parse(elem)
         for target, source in [('type', 'annotationtype'),
@@ -645,6 +655,12 @@ class Reader(BaseReader):
             pass
         assert len(values) == 0
         return c
+
+    def parse_agencyscheme(self, elem):
+        as_, values = self._named(AgencyScheme, elem, unwrap=False)
+        as_.items = values.pop('agency')
+        assert len(values) == 0
+        return as_
 
     def parse_conceptscheme(self, elem):
         cs, values = self._named(ConceptScheme, elem)

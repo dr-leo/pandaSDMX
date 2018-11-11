@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mes:Structure xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:mes="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:str="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:com="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message https://registry.sdmx.org/schemas/v2_1/SDMXMessage.xsd">
+  <mes:Header>
+    <mes:ID>IDREF8689</mes:ID>
+    <mes:Test>false</mes:Test>
+    <mes:Prepared>2018-11-11T11:27:33</mes:Prepared>
+    <mes:Sender id="ECB" />
+    <mes:Receiver id="not_supplied" />
+  </mes:Header>
+  <mes:Structures>
+    <str:OrganisationSchemes>
+      <str:AgencyScheme urn="urn:sdmx:org.sdmx.infomodel.base.AgencyScheme=ECB:AGENCIES(1.0)" isExternalReference="false" agencyID="ECB" id="AGENCIES" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Agencies</com:Name>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=ECB.DISS" id="DISS">
+          <com:Name xml:lang="en">ECB Dissemination</com:Name>
+        </str:Agency>
+      </str:AgencyScheme>
+      <str:AgencyScheme urn="urn:sdmx:org.sdmx.infomodel.base.AgencyScheme=SDMX:AGENCIES(1.0)" isExternalReference="false" agencyID="SDMX" id="AGENCIES" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">SDMX Agency Scheme</com:Name>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=SDMX" id="SDMX">
+          <com:Name xml:lang="en">SDMX</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=ECB" id="ECB">
+          <com:Name xml:lang="en">European Central Bank</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=IMF" id="IMF">
+          <com:Name xml:lang="en">International Monetary Fund</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=ESTAT" id="ESTAT">
+          <com:Name xml:lang="en">Eurostat</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=EUROSTAT" id="EUROSTAT">
+          <com:Name xml:lang="en">Eurostat</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=BIS" id="BIS">
+          <com:Name xml:lang="en">Bank for International Settlements</com:Name>
+        </str:Agency>
+        <str:Agency urn="urn:sdmx:org.sdmx.infomodel.base.Agency=OECD" id="OECD">
+          <com:Name xml:lang="en">Organisation for Economic Co-operation and Development</com:Name>
+        </str:Agency>
+      </str:AgencyScheme>
+    </str:OrganisationSchemes>
+  </mes:Structures>
+</mes:Structure>

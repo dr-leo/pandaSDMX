@@ -19,10 +19,6 @@ Details of the implementation:
 - class definitions are grouped by section of the spec, but these sections
   appear out of order so that dependent classes are defined first.
 
-The module also implements extra classes that are NOT described in the spec,
-but are used in XML and JSON messages: Message, StructureMessage, DataMessage,
-Header, and Footer. These appear last.
-
 """
 # TODO for a complete implementation of the spec
 # - Enforce TimeKeyValue (instead of KeyValue) for {Generic,StructureSpecific}
@@ -1101,56 +1097,8 @@ class DataSet(AnnotableArtefact):
                 self.series[series_key].append(obs)
 
 
-# Message-related classes (not part of the SDMX-IM)
-
-class Header(HasTraits):
-    error = Unicode()
-    id = Unicode()
-    prepared = Unicode()
-    receiver = Unicode()
-    sender = Union([Instance(Item), Unicode()])
-
-
-class Footer(HasTraits):
-    severity = Unicode()
-    text = List(Instance(InternationalString))
-    code = CInt()
-
-
-class Message(HasTraits):
-    """Message."""
-    header = Instance(Header)
-    footer = Instance(Footer, allow_none=True)
-
-
-class StructureMessage(Message):
-    category_scheme = DictLikeTrait(Instance(CategoryScheme))
-    codelist = DictLikeTrait(Instance(Codelist))
-    concept_scheme = DictLikeTrait(Instance(ConceptScheme))
-    constraint = DictLikeTrait(Instance(ContentConstraint))
-    dataflow = DictLikeTrait(Instance(DataflowDefinition))
-    structure = DictLikeTrait(Instance(DataStructureDefinition))
-    organisation_scheme = DictLikeTrait(Instance(AgencyScheme))
-
-
 class _AllDimensions:
     pass
 
 
 AllDimensions = _AllDimensions()
-
-
-class DataMessage(Message):
-    data = List(Instance(DataSet))
-    dataflow = Instance(DataflowDefinition, args=())
-    # TODO infer the observation dimension from the DSD, e.g.
-    # - If a *TimeSeriesDataSet, it's the TimeDimension,
-    # - etc.
-    observation_dimension = Union([Instance(_AllDimensions),
-                                   List(Instance(Dimension))], allow_none=True)
-
-    # Convenience access
-    @property
-    def structure(self):
-        """The DataStructureDefinition used in the DataMessage.dataflow."""
-        return self.dataflow.structure

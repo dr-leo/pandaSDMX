@@ -191,17 +191,14 @@ class Request(object):
                 self.cache[cache_id] = df
             return df
 
-    def get(self, resource_type='', resource_id='', agency='',
-            version=None, key='',
-            params={}, headers={},
-            fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None, writer=None):
+    def get(self, resource_type='', resource_id='', agency='', version=None,
+            key='', params={}, headers={}, tofile=None, url=None,
+            get_footer_url=(30, 3), memcache=None):
         """Get SDMX data or metadata and return it as a
         :class:`pandasdmx.api.Response` instance.
 
-        While 'get' can load any SDMX file (also as zip-file) specified by
-        'fromfile', it can only construct URLs for the SDMX service set for
-        this instance. Hence, you have to instantiate a
+        get() can only construct URLs for the SDMX service set for this
+        instance. Hence, you have to instantiate a
         :class:`pandasdmx.api.Request` instance for each data provider you want
         to access, or pass a pre-fabricated URL through the ``url`` parameter.
 
@@ -210,8 +207,7 @@ class Request(object):
                 must be one of the items in Request._resources such as 'data',
                 'dataflow', 'categoryscheme' etc.
                 It is used for URL construction, not to read the received SDMX
-                file. Hence, if `fromfile` is given, `resource_type` may be ''.
-                Defaults to ''.
+                file. Defaults to ''.
             resource_id(str): the id of the resource to be requested.
                 It is used for URL construction. Defaults to ''.
             agency(str): ID of the agency providing the data or metadata.
@@ -219,9 +215,9 @@ class Request(object):
                 which agency the requested information originates from. Note
                 that an SDMX service may provide information from multiple data
                 providers.
-                May be '' if `fromfile` is given. Not to be confused
-                with the agency ID passed to :meth:`__init__` which specifies
-                the SDMX web service to be accessed.
+                Not to be confused with the agency ID passed to
+                :meth:`__init__` which specifies the SDMX web service to be
+                accessed.
             key(str, dict): select columns from a dataset by specifying
                 dimension values.
                 If type is str, it must conform to the SDMX REST API, i.e.
@@ -243,12 +239,9 @@ class Request(object):
             headers(dict): http headers. Given headers will overwrite
                 instance-wide headers passed to the constructor. Defaults to
                 None, i.e. use defaults from agency configuration.
-            fromfile(str): path to the file to be loaded instead of accessing
-                an SDMX web service. Defaults to None. If `fromfile` is
-                given, args relating to URL construction will be ignored.
             tofile(str): file path to write the received SDMX file on the fly.
                 This is useful if you want to load data offline using
-                `fromfile` or if you want to open an SDMX file in
+                `open_file()` or if you want to open an SDMX file in
                 an XML editor.
             url(str): URL of the resource to download.
                 If given, any other arguments such as ``resource_type`` or
@@ -269,20 +262,14 @@ class Request(object):
             memcache(str): If given, return Response instance if already in
                 self.cache(dict), otherwise download resource and cache
                 Response instance.
-        writer(str): optional custom writer class.
-            Should inherit from pandasdmx.writer.BaseWriter. Defaults to None,
-            i.e. one of the included writers is selected as appropriate.
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
                 SDMX Message.
-
         """
         # Try to get resource from memory cache if specified
         if memcache in self.cache:
             return self.cache[memcache]
-
-        fromfile = Path(fromfile) if fromfile else None
 
         if url:
             base_url = url
@@ -291,7 +278,7 @@ class Request(object):
             # Validate args
             agency = agency or self._agencies[self.agency].get('id')
             # Validate resource if no filename is specified
-            if not (fromfile or resource_type in self._resources):
+            if resource_type not in self._resources:
                 raise ValueError(
                     'resource must be one of {0}'.format(self._resources))
             # resource_id: if it is not a str or unicode type,
@@ -332,7 +319,7 @@ class Request(object):
                                for i in val_msg._dim_ids)
 
             # Get http headers from agency config if not given by the caller
-            if not (fromfile or headers):
+            if not headers:
                 # Check for default headers
                 resource_cfg = self._agencies[self.agency][
                     'resources'].get(resource_type)
@@ -365,22 +352,21 @@ class Request(object):
                         params['references'] = 'all'
                     elif resource_type == 'categoryscheme':
                         params['references'] = 'parentsandsiblings'
-
-            elif fromfile:
-                base_url = ''
             else:
-                raise ValueError("If 'url' is not specified, either 'agency' "
-                                 "or 'fromfile' must be given.")
+                raise ValueError("If 'url' is not specified, 'agency' must be "
+                                 "given.")
 
-        # Now get the SDMX message either via http or as local file
-        logger.info('Requesting resource from URL/file %s',
-                    (base_url or fromfile))
+        # Now get the SDMX message via HTTP
+        logger.info('Requesting resource from %s', base_url)
+
         source, url, resp_headers, status_code = self.client.get(
-            base_url, params=params, headers=headers, fromfile=fromfile)
+            base_url, params=params, headers=headers)
+
         if source is None:
             raise SDMXException('Server error:', status_code, url)
-        logger.info(
-            'Loaded file into memory from URL/file: %s', (url or fromfile))
+
+        logger.info('Loaded file into memory from %s', url)
+
         # write msg to file and unzip it as required, then parse it
         with source:
             if tofile:
@@ -399,7 +385,7 @@ class Request(object):
                 # undo side effect of is_zipfile
                 source.seek(0)
             # select reader class
-            if ((fromfile and fromfile.suffix == '.json') or (self.agency and
+            if ((self.agency and
                 self._agencies[self.agency]['resources'].get(resource_type) and
                 (self._agencies[self.agency]['resources'][resource_type]
                  .get('json')))):
@@ -408,6 +394,7 @@ class Request(object):
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
             msg = reader_cls().initialize(source)
+
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and msg.footer is not None:
             logger.info('Footer found in SDMX message.')
@@ -625,75 +612,15 @@ class Request(object):
 
 
 class Response(object):
-
-    '''Container class for SDMX messages.
-
-    It is instantiated by  .
-
-    Attributes:
-        msg(pandasdmx.model.Message): a pythonic representation
-            of the SDMX message
-        status_code(int): the status code from the http response, if any
-        url(str): the URL, if any, that was sent to the SDMX server
-        headers(dict): http response headers returned by ''requests''
-
-    Methods:
-        write: wrapper around the writer's write method.
-            Arguments are propagated to the writer.
-    '''
-
     def __init__(self, msg, url, headers, status_code):
-        '''
-        Set the main attributes and instantiate the writer if given.
-
-        Args:
-            msg(pandasdmx.model.Message): the SDMX message
-            url(str): the URL, if any, that had been sent to the SDMX server
-            headers(dict): http headers
-            status_code(int): the status code returned by the server
-            writer(str): the module path for the writer class
-        '''
         self.msg = msg
         self.url = url
         self.http_headers = headers
         self.status_code = status_code
 
-    def __getattr__(self, name):
-        '''
-        Make Message attributes directly readable from Response instance
-        '''
-        return getattr(self.msg, name)
-
-    def write(self, source=None, **kwargs):
-        """Wrapper to call the writer's write method if present.
-
-        Args:
-            source(pandasdmx.model.Message, iterable): stuff to be written.
-                If a :class:`pandasdmx.model.Message` is given, the writer
-                itself must determine what to write unless specified in the
-                keyword arguments. If an iterable is given,
-                the writer should write each item. Keyword arguments may
-                specify what to do with the output depending on the writer's
-                API. Defaults to self.msg.
-
-        Returns:
-            type: anything the writer returns.
-        """
-        return to_pandas(self.msg, **kwargs)
-
-    def write_source(self, filename):
-        '''
-        write xml file by calling the 'write' method of lxml root element.
-        Useful to save the xml source file for offline use.
-        Similar to passing `tofile` arg to :meth:`Request.get`
-
-        Args:
-            filename(str): name/path of target file
-
-        Returns:
-            whatever the LXML deserializer returns.
-        '''
-        return self.msg._reader.write_source(filename)
+    def write(self, *args, **kwargs):
+        """Return the Response.msg contents converted to pandas objects."""
+        return to_pandas(self.msg, *args, **kwargs)
 
 
 def open_file(filename_or_obj):
@@ -737,6 +664,7 @@ def open_file(filename_or_obj):
 
 
 def to_pandas(obj, *args, **kwargs):
+    """Convert an SDMX-IM *obj* to a pandas object."""
     from pandasdmx.writer import Writer
 
     return Writer().write(obj, *args, **kwargs)

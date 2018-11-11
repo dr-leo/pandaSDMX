@@ -7,7 +7,7 @@
 '''
 import pandas as pd
 import pandasdmx
-from pandasdmx import model, Request
+from pandasdmx import message, model
 import pytest
 
 from . import MessageTest, test_data_path
@@ -21,7 +21,7 @@ class TestGenericFlatDataSet(DataMessageTest):
     filename = 'ecb_exr_ng_flat.xml'
 
     def test_msg_type(self, msg):
-        assert isinstance(msg, model.DataMessage)
+        assert isinstance(msg, message.DataMessage)
 
     def test_header_attributes(self, msg):
         # CHANGED: the internal reference ID of the StructureUsage and the
@@ -273,8 +273,7 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         # assert isinstance(g_attrib, tuple)
 
     def test_footer(self):
-        f = Request().get(fromfile=test_data_path / 'estat' / 'footer.xml',
-                          get_footer_url=None).footer
+        f = pandasdmx.open_file(test_data_path / 'estat' / 'footer.xml').footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

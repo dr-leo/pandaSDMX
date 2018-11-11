@@ -14,13 +14,15 @@ This module contains a reader for SDMX-JSON v2.1.
 '''
 import json
 
+from pandasdmx.message import (
+    DataMessage,
+    Header,
+    )
 from pandasdmx.model import (
     AllDimensions,
     AttributeValue,
     Concept,
-    DataMessage,
     DataSet,
-    Header,
     Item,
     Key,
     KeyValue,

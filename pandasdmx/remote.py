@@ -13,7 +13,6 @@ a classes for http access.
 '''
 from contextlib import closing
 import logging
-from pathlib import Path
 import sys
 from tempfile import SpooledTemporaryFile
 from warnings import warn
@@ -70,15 +69,13 @@ class REST:
         if cache:
             install_cache(**cache)
 
-    def get(self, url=None, fromfile=None, params={}, headers={}):
+    def get(self, url=None, params={}, headers={}):
         """Get SDMX message from REST service or local file.
 
         Args:
             url(str): URL of the REST service without the query part.
                 If None (default), *fromfile* must be set.
             params(dict): will be appended as query part to the URL after a '?'
-            fromfile(str): path to SDMX file containing an SDMX message.
-                It will be passed on to the reader for parsing.
             headers(dict): http headers. Overwrite instance-wide headers.
                 Default is {}.
 
@@ -94,25 +91,7 @@ class REST:
             HTTPError if SDMX service responded with status code 401.
             Otherwise, the status code is returned.
         """
-        if fromfile:
-            # Load data from local file
-            try:
-                fromfile = Path(fromfile)
-                # json files must be opened in text mode, all others in binary
-                # as they may be zip files or xml.
-                if fromfile.suffix == '.json':
-                    mode_str = 'r'
-                else:
-                    mode_str = 'rb'
-                source = open(fromfile, mode_str)
-            except TypeError:
-                # so fromfile must be file-like
-                source = fromfile
-            final_url = resp_headers = status_code = None
-        else:
-            source, final_url, resp_headers, status_code = self.request(
-                url, params=params, headers=headers)
-        return source, final_url, resp_headers, status_code
+        return self.request(url, params=params, headers=headers)
 
     def request(self, url, params={}, headers={}):
         """

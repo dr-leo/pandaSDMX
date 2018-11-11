@@ -9,12 +9,16 @@ $ py.test --remote-data [...]
 """
 import pytest
 
+import pandas as pd
+import pandasdmx
 from pandasdmx import Request
+
+from . import assert_pd_equal
 
 
 @pytest.mark.remote_data
 def test_doc_index1():
-    """First code box in index.rst."""
+    """First code example in index.rst."""
     estat = Request('ESTAT')
     flow_response = estat.dataflow('une_rt_a')
 
@@ -31,14 +35,28 @@ def test_doc_index1():
     # Even better: Request.get(…) should examine the class and ID of the object
     # structure = estat.get(flow_response.dataflow.une_rt_a.structure)
 
-    pytest.xfail('writer.structure2pd needs refactor')
     # Show some codelists
-    structure_response.write().codelist.loc['GEO'].head()
+    s = pandasdmx.to_pandas(structure_response)
+    expected = pd.Series({
+        'AT': 'Austria',
+        'BE': 'Belgium',
+        'BG': 'Bulgaria',
+        'CY': 'Cyprus',
+        'CZ': 'Czechia',
+        }, name='CL_GEO')
+
+    with pytest.raises(AttributeError):
+        # Codelists returned as a single pd.Series with a pd.MultiIndex
+        s.codelist.loc['GEO'].head()
+
+    # Same effect
+    assert_pd_equal(s.codelist['CL_GEO'].sort_index().head(), expected)
 
 
 @pytest.mark.remote_data
 @pytest.mark.xfail(reason='api.Request._make_key_from_dsd() needs refactor')
 def test_doc_index2():
+    """Second code example in index.rst."""
     estat = Request('ESTAT')
 
     resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
@@ -57,3 +75,54 @@ def test_doc_index2():
     # Show aggregate unemployment rates across ages and sexes as
     # percentage of active population
     data.loc[:, ('PC_ACT', 'TOTAL', 'T')]
+
+
+@pytest.mark.remote_data
+def test_usage_1():
+    """Code examples in usage.rst."""
+    from pandasdmx import Request
+
+    ecb = Request('ECB')
+
+    ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
+
+    ecb_via_proxy.client.config
+
+    cat_response = ecb.categoryscheme()
+
+    cat_response.url
+
+    cat_response.http_headers
+
+    cat_response.write().categoryscheme
+
+    list(cat_response.categoryscheme.MOBILE_NAVI['07'])
+
+    cat_response.write().dataflow.head()
+
+    flows = ecb.dataflow()
+
+    dsd_id = cat_response.dataflow.EXR.structure.id
+    dsd_id
+    refs = dict(references='all')
+    dsd_response = ecb.datastructure(resource_id=dsd_id, params=refs)
+    dsd = dsd_response.datastructure[dsd_id]
+
+    dsd.dimensions.aslist()
+    dsd_response.write().codelist.loc['CURRENCY'].head()
+
+    data_response = ecb.data(resource_id='EXR', key={'CURRENCY': 'USD+JPY'},
+                             params={'startPeriod': '2016'})
+    data = data_response.data
+    type(data)
+
+    data.dim_at_obs
+    series_l = list(data.series)
+    len(series_l)
+    series_l[5].key
+    set(s.key.FREQ for s in data.series)
+
+    daily = (s for s in data.series if s.key.FREQ == 'D')
+    cur_df = data_response.write(daily)
+    cur_df.shape
+    cur_df.tail()

@@ -33,8 +33,9 @@ setup(name='pandaSDMX',
           'lxml',
           'requests',
           'jsonpath-rw',
-          'setuptools'
-      ],
+          'setuptools',
+          'traitlets',
+          ],
       extras_require={
         'cache': ['requests_cache'],
         },

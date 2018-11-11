@@ -1,25 +1,41 @@
 import numpy as np
 import pandas as pd
 
-from pandasdmx.model import DEFAULT_LOCALE
+from pandasdmx.model import (
+    DEFAULT_LOCALE,
+    Codelist,
+    ItemScheme,
+    )
 from pandasdmx.util import DictLike
 
 
 class Writer:
     _write_alias = {
-        'codelist': 'itemscheme',
+        Codelist: ItemScheme,
         }
 
     def write(self, obj, *args, **kwargs):
         """Dispatch pattern."""
-        method = obj.__class__.__name__.lower()
+        cls = obj.__class__
 
-        # Handle an attempt to 'write' a pandasdmx.api.Response object
-        if method == 'response':
+        # Convenience unwrapping of objects
+        # TODO consider deprecating some or all of these
+        # Note: can't import/compare api.Response; would be circular
+        if cls.__name__ == 'Response':
+            # Handle an attempt to 'write' a pandasdmx.api.Response object
             obj = obj.msg
-            method = obj.__class__.__name__.lower()
+            cls = obj.__class__
+        elif cls is 'list':
+            # List of objects
+            return [self.write(item, *args, **kwargs) for item in obj]
+        elif cls in (dict, DictLike):
+            # dict or DictLike of objects
+            result = cls()
+            for k, v in obj.items():
+                result[k] = self.write(v, *args, **kwargs)
+            return result
 
-        method = self._write_alias.get(method, method)
+        method = self._write_alias.get(cls, cls).__name__.lower()
         return getattr(self, 'write_' + method)(obj, *args, **kwargs)
 
     def write_datamessage(self, obj, *args, **kwargs):

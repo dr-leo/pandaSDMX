@@ -12,7 +12,6 @@ This module is part of pandaSDMX. It contains
 a classes for http access.
 '''
 from contextlib import closing
-from http import HTTPStatus
 from io import BufferedIOBase
 import logging
 import sys
@@ -91,7 +90,7 @@ class Session(MaybeCachedSession):
 
     def get(self, url, **kwargs):
         response = super(Session, self).get(url, **kwargs)
-        if response.status_code == HTTPStatus.NOT_IMPLEMENTED:
+        if response.status_code is requests.codes.not_implemented:
             raise NotImplementedError
         else:
             response.raise_for_status()

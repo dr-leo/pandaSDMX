@@ -44,6 +44,7 @@ from pandasdmx.model import (
     Codelist,
     Concept,
     ConceptScheme,
+    Contact,
     DataAttribute,
     DataflowDefinition,
     DataSet,
@@ -131,7 +132,9 @@ for group, vals in _collect_paths.items():
 _parse_alias = {
     'annotationtext': 'international_string',
     'name': 'international_string',
+    'department': 'international_string',
     'description': 'international_string',
+    'role': 'international_string',
     'text': 'international_string',
     'dimensionlist': 'grouping',
     'attributelist': 'grouping',
@@ -141,6 +144,9 @@ _parse_alias = {
     'annotationtype': 'text',
     'annotationtitle': 'text',
     'annotationurl': 'text',
+    'email': 'text',
+    'telephone': 'text',
+    'uri': 'text',
     'urn': 'text',
     'obskey': 'key',
     'serieskey': 'key',
@@ -617,8 +623,18 @@ class Reader(BaseReader):
 
     def parse_agency(self, elem):
         a, values = self._named(Agency, elem)
+        a.contact = wrap(values.pop('contact', []))
         assert len(values) == 0
         return a
+
+    def parse_contact(self, elem):
+        values = self._parse(elem, unwrap=False)
+        # Map XML element names to the class attributes in the SDMX-IM spec
+        values['name'] = values.pop('name')[0]
+        values['telephone'] = values.pop('telephone', [None])[0]
+        values['org_unit'] = values.pop('department')[0]
+        values['responsibility'] = values.pop('role')[0]
+        return Contact(**values)
 
     def parse_annotation(self, elem):
         values = self._parse(elem)

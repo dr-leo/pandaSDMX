@@ -176,7 +176,3 @@ class TestUNSD(AgencyTest):
 
 class TestWB(AgencyTest):
     agency_id = 'WBG_WITS'
-    xfail = {
-        # KeyError 'concept' in reader.sdmxml.parse_conceptscheme()
-        'conceptscheme': ParseError,
-        }

@@ -1,12 +1,10 @@
 {
     "": {
-    "id": "NO_AGENCY",
-    "resources": {}
+        "id": "NO_AGENCY"
     },
     "ESTAT_S": {
         "id": "ESTAT",
         "documentation": "http://data.un.org/Host.aspx?Content=API",
-        "resources": {},
         "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
         "name": "Eurostat - structure-specific data format"
     },
@@ -20,7 +18,6 @@
     "UNSD": {
         "id": "UNSD",
         "supports_series_keys_only": true,
-        "resources": {},
         "url": "http://data.un.org/WS/rest",
         "name": "United Nations Statistics Division"
     },
@@ -30,21 +27,17 @@
         "headers": {
             "accept": "application/vnd.sdmx.structure+xml;version=2.1"
         },
-        "resources": {},
         "url": "http://api.uis.unesco.org/sdmx",
         "name": "UNESCO (subscription key required)"
     },
     "IMF_SDMXCENTRAL": {
         "id": "IMF",
-        "supports_series_keys_only": true,
-        "resources": {},
         "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
         "name": "International Monetary Fund - SDMXCentral"
     },
     "SGR": {
         "id": "SGR",
-        "resources": {},
-        "url": "https://registry.sdmx.org/FusionRegistry/ws/rest",
+        "url": "https://registry.sdmx.org/ws/rest",
         "name": "SDMX Global Registry"
     },
     "INSEE": {
@@ -111,11 +104,6 @@
     "WBG_WITS": {
         "name": "World Bank Integrated Trade Solution",
         "id": "WBG_WITS",
-        "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
-        "resources": {
-            "data": {
-            "headers": {}
-     }
-     }
-     }
+        "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest"
+    }
 }

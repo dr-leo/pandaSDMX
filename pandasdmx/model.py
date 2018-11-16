@@ -490,221 +490,19 @@ class ConstraintRole(HasTraits):
     role = UseEnum(ConstraintRoleType)
 
 
-class KeyValidatorMixin(object):
-    '''
-    Mix-in class with methods for key validation. Relies on properties computing
-    code sets, constrained codes etc. Subclasses are DataMessage and
-    CodelistHandler which is, in turn, inherited by StructureMessage.
-    '''
-
-    def _in_codes(self, key, raise_error=True):
-        '''
-        key: a prepared key, i.e. multiple values within a dimension
-        must be represented as list of strings.
-
-        This method is called by self._in_constraints. Thus it does not
-        be called from application code.
-
-args:
-    key(dict): normalized key, i.e. values must be lists of str
-    raises_error(bool): if True (default),
-        ValueError is raised if at least one value within key
-        is not in the (unconstrained) codes. Otherwise, False is returned.
-        If all values from key are in the respective code list,
-        True is returned
-
-        '''
-        # First, check keys against dim IDs
-        invalid = [k for k in key if k not in self._dim_ids]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension ID(s) {0}, allowed are: {1}'.format(invalid, self._dim_ids))
-        # Raise error if some value is not of type list
-        if [k for k in key.values() if not isinstance(k, list)]:
-            raise TypeError(
-                'All values of the key-dict must be of type ``list``.')
-        # Check values against codelists
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self._dim_codes[k]:
-                    invalid[k].append(v)
-        if invalid:
-            if raise_error:
-                raise ValueError(
-                    'Value(s) not in codelists.', invalid)
-            else:
-                return False
-        return True
-
-    def _in_constraints(self, key, raise_error=True):
-        '''
-        check key against all constraints, i.e. the constrained
-        code lists.
-
-        args:
-    key(dict): normalized key, i.e. values must be lists of str
-    raises_error(bool): if True (default),
-        ValueError is raised if at least one value within key
-        is not in the (unconstrained) codes. Otherwise, False is returned.
-        If all values from key are in the respective code list,
-        True is returned
-
-        return True if key satisfies all constraints. Otherwise, return False or
-        raise ValueError, depending on the value of ``raise_error``
-        '''
-        # validate key against unconstrained codelists
-        self._in_codes(key, raise_error)
-        # Validate key against constraints if any
-        invalid = defaultdict(list)
-        for k, values in key.items():
-            for v in values:
-                if v not in self._constrained_codes[k]:
-                    invalid[k].append(v)
-        if invalid:
-            if raise_error:
-                raise ValueError(
-                    'Value(s) not in constrained codelists.', invalid)
-            else:
-                return False
-        return True
-
-
-class CodelistHandler(KeyValidatorMixin):
-    '''
-    High-level API implementing the
-    application of content constraints to codelists. It is primarily
-    used as a mixin to StructureMessage instances containing codelists,
-    a DSD, Dataflow and related constraints. However, it
-    may also be used stand-online. It computes
-    the constrained codelists in collaboration with
-    Constrainable, ContentConstraint and Cube Region classes.
-    '''
-
-    def __init__(self, *args, **kwargs):
-        '''
-        Prepare computation of constrained codelists using the
-        cascading mechanism described in Chap. 8 of the Technical Guideline (Part 6 of the SDMX 2.1 standard)
-
-        args:
-
-            constrainables(list of model.Constrainable instances):
-                Constrainable artefacts in descending order sorted by
-                cascading level (e.g., `[DSD, Dataflow]`). At position 0
-                there must be the DSD. Defaults to [].
-                If not given, try to
-                collect the constrainables from the StructureMessage.
-                this will be the most common use case.
-        '''
-        super(CodelistHandler, self).__init__(*args, **kwargs)
-        constrainables = kwargs.get('constrainables', [])
-        if constrainables:
-            self.__constrainables = constrainables
-        elif (hasattr(self, 'datastructure')
-              and hasattr(self, 'codelist')):
-            self.in_codes = self._in_codes
-            if hasattr(self, 'constraint'):
-                self.in_constraints = self._in_constraints
-            else:
-                self.in_constraints = self.in_codes
-
-    @property
-    def _constrainables(self):
-        if not hasattr(self, '__constrainables'):
-            self.__constrainables = []
-            # Collecting any constrainables from the StructureMessage
-            # is only meaningful if the Message contains but one DataFlow and
-            # DSD.
-            if (hasattr(self, 'datastructure') and len(self.datastructure) == 1):
-                dsd = self.datastructure.aslist()[0]
-                self.__constrainables.append(dsd)
-                if hasattr(self, 'dataflow'):
-                    flow = self.dataflow.aslist()[0]
-                    self.__constrainables.append(flow)
-                if hasattr(self, 'provisionagreement'):
-                    for p in self.provisionagreement.values():
-                        if flow in p.constrained_by:
-                            self.__constrainables.append(p)
-                            break
-        return self.__constrainables
-
-    @property
-    def _dim_ids(self):
-        '''
-        Collect the IDs of dimensions which are
-        represented by codelists (this excludes TIME_PERIOD etc.)
-        '''
-        if not hasattr(self, '__dim_ids'):
-            self.__dim_ids = tuple(d.id for d in self._constrainables[0].dimensions.aslist()
-                                   if d.local_repr.enum)
-        return self.__dim_ids
-
-    @property
-    def _attr_ids(self):
-        '''
-        Collect the IDs of attributes which are
-        represented by codelists
-        '''
-        if not hasattr(self, '__attr_ids'):
-            self.__attr_ids = tuple(d.id for d in self._constrainables[0].attributes.aslist()
-                                    if d.local_repr.enum)
-        return self.__attr_ids
-
-    @property
-    def _dim_codes(self):
-        '''
-        Cached property returning a DictLike mapping dim ID's from the DSD to
-        frozensets containing all code IDs from the codelist
-        referenced by the Concept describing the respective dimensions.
-        '''
-        if not hasattr(self, '__dim_codes'):
-            if self._constrainables:
-                enum_components = [d for d in self._constrainables[0].dimensions.aslist()
-                                   if d.local_repr.enum]
-                self.__dim_codes = DictLike({d.id: frozenset(d.local_repr.enum())
-                                             for d in enum_components})
-            else:
-                self.__dim_codes = {}
-        return self.__dim_codes
-
-    @property
-    def _attr_codes(self):
-        '''
-        Cached property returning a DictLike mapping attribute ID's from the DSD to
-        frozensets containing all code IDs from the codelist
-        referenced by the Concept describing the respective attributes.
-        '''
-        if not hasattr(self, '__attr_codes'):
-            if self._constrainables:
-                enum_components = [d for d in self._constrainables[0].attributes.aslist()
-                                   if d.local_repr.enum]
-                self.__attr_codes = DictLike({d.id: frozenset(d.local_repr.enum())
-                                              for d in enum_components})
-            else:
-                self.__attr_codes = {}
-        return self.__attr_codes
-
-    @property
-    def _constrained_codes(self):
-        '''
-        Cached property returning a DictLike mapping dim ID's from the DSD to
-        frozensets containing the code IDs from the codelist
-        referenced by the Concept for the dimension after applying
-        all content constraints to the codelists. Those contenten constraints are
-        retrieved pursuant to an implementation of the algorithm described in the
-        SDMX 2.1 Technical Guidelines (Part 6) Chap. 9. Hence, constraints
-        may constrain the DSD, dataflow definition or provision-agreement.
-        '''
-        if not hasattr(self, '__constrained_codes'):
-            # Run the cascadation mechanism from Chap. 8 of the SDMX 2.1
-            # Technical Guidelines.
-            cur_dim_codes, cur_attr_codes = self._dim_codes, self._attr_codes
-            for c in self._constrainables:
-                cur_dim_codes, cur_attr_codes = c.apply(
-                    cur_dim_codes, cur_attr_codes)
-            self.__constrained_codes = DictLike(cur_dim_codes)
-            self.__constrained_codes.update(cur_attr_codes)
-        return self.__constrained_codes
+# class ComponentValue(HasTraits):
+#     value_for = Instance(Component)
+#     value = Unicode()
+#
+#
+# class DataKey(HasTraits):
+#     is_included = Bool()
+#     key_value = List(Instance(ComponentValue))
+#
+#
+# class DataKeySet(HasTraits):
+#     is_included = Bool()
+#     keys = List(Instance(DataKey))
 
 
 class Constraint(MaintainableArtefact):
@@ -713,19 +511,24 @@ class Constraint(MaintainableArtefact):
     role = Set(Instance(ConstraintRole))
 
 
-class SelectionValue:
+class SelectionValue(HasTraits):
     pass
+
+
+class MemberValue(SelectionValue):
+    value = Unicode()
+    cascade_values = Bool()
 
 
 class MemberSelection(HasTraits):
     included = Bool()
     values_for = Instance(Component)
-    values = Set(Instance(SelectionValue))
+    values = Set(Instance(MemberValue))
 
 
 class CubeRegion(HasTraits):
     included = Bool()
-    member = Set(Instance(MemberSelection))
+    member = Dict(Instance(MemberSelection))
 
     def __contains__(self, v):
         key, value = v
@@ -736,29 +539,41 @@ class CubeRegion(HasTraits):
                     key, list(kv.keys())))
         return (value in kv[key]) == self.include
 
+    def to_query_string(self, structure):
+        all_values = []
+        for dim in structure.dimensions:
+            ms = self.member.get(dim, None)
+            values = sorted(mv.value for mv in ms.values) if ms else []
+            all_values.append('+'.join(values))
+
+        return '.'.join(all_values)
+
 
 class ContentConstraint(Constraint):
     data_content_region = Instance(CubeRegion, allow_none=True)
     # metadata_content_region = Instance(MetadataTargetRegion, allow_none=True)
 
-    def apply(self, dim_codes=None, attr_codes=None):
-        '''
-        Compute the constrained code lists as frozensets by
-        merging the constraints resulting from all cube regions into a dict of sets of valid codes
-        for dimensions and attributes respectively.
-        We assume that each codelist is constrained by at most one cube
-        region so that no set operations are required.
+    def __contains__(self, v):
+        if self.data_content_region:
+            result = [v in c for c in self.data_content_region]
+            # Remove all cubes where v passed. The remaining ones indicate
+            # fails.
+            if True in result:
+                result.remove(True)
+            if result == []:
+                return True
+            else:
+                raise ValueError('Key outside cube region(s).', v, result)
+        else:
+            raise NotImplementedError(
+                'ContentConstraint does not contain a CubeRegion.')
 
-        Return tuple of constrained_dimension_codes(dict), constrained_attribute_codes(dict)
-        '''
-        dimension, attribute = {}, {}
-        for c in self.cube_region:
-            d, a = c.apply(dim_codes, attr_codes)
-            if d:
-                dimension.update(d)
-            if a:
-                attribute.update(a)
-        return dimension, attribute
+    def to_query_string(self, structure):
+        try:
+            return self.data_content_region.to_query_string(structure)
+        except AttributeError as e:
+            raise NotImplementedError(
+                'ContentConstraint does not contain a CubeRegion.')
 
 
 # 5.2: Data Structure Defintion
@@ -855,6 +670,22 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
     def dimension(self, id, **kwargs):
         return self.dimensions.get(id, **kwargs)
+
+    def make_cube(self, keys):
+        """Return a ContentConstraint for a dict of *keys*."""
+        # TODO validate values
+        cr = CubeRegion()
+        for dim in self.dimensions:
+            try:
+                values = keys.pop(dim.id)
+            except KeyError:
+                continue
+            ms = MemberSelection(included=True, values_for=dim)
+            for value in values.split('+'):
+                ms.values.add(MemberValue(value=value))
+            cr.member[dim] = ms
+        assert len(keys) == 0
+        return ContentConstraint(data_content_region=cr)
 
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):

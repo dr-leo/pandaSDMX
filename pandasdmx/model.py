@@ -26,6 +26,9 @@ Details of the implementation:
 # TODO for a complete implementation of the spec
 # - Enforce TimeKeyValue (instead of KeyValue) for {Generic,StructureSpecific}
 #   TimeSeriesDataSet.
+#
+# TODO for convenience
+# - Guess URNs using the standard format.
 
 from copy import copy
 from datetime import date, datetime, timedelta
@@ -281,6 +284,27 @@ class ItemScheme(MaintainableArtefact):
             self.__class__.__name__,
             self.id,
             len(self.items))
+
+    def setdefault(self, obj=None, **kwargs):
+        """Retrieve the item *name*, or add it with *kwargs* and return it.
+
+        The returned object is a reference to an object in the ItemScheme, and
+        is of the appropriate class.
+        """
+        if obj:
+            assert not len(kwargs), ValueError('cannot give both *obj* and '
+                                               'keyword arguments to '
+                                               'setdefault()')
+        else:
+            # Instantiate an object of the correct class by introspecting
+            # the items trait
+            obj = self.__class__.items._trait.klass(**kwargs)
+
+        if obj not in self.items:
+            # Add the object to the ItemScheme
+            self.items.append(obj)
+
+        return obj
 
 
 # 3.6: Structure

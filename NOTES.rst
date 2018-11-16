@@ -1,3 +1,19 @@
+Pending TODOs
+-------------
+
+- Harmonize handling of API errors. Currently at least four things can happen:
+  - requests.Response.raise_for_status() produces an HTTPError.
+  - a 501 error gets translated to a Python NotImplementedError.
+  - a message.ErrorMessage is parsed and returned.
+  - some other form of return value (e.g. an HTML error page, for ABS, or a
+    plain text error page, for some others) is returned which isn't parsed or
+    handled.
+- pandasdmx.api.Request._resources only contains a small subset of:
+  https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT
+  SUPPORTED OPERATIONS")
+
+Future
+------
 The work in this branch has Observations as object instances. Once the implementation is complete, and fully conforms to the spec, the package can be refactored again to use pandas objects for internal storage, as follows:
 
 - Each DataSet will be a pd.DataFrame with:

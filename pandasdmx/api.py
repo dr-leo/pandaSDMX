@@ -210,7 +210,7 @@ class Request(object):
                 resource_id = resource.id
 
         assert resource_type in self._resources, ValueError(
-            'resource type %s not in must be one of %r' %
+            "resource_type ('%s') must be in %r" %
             (resource_type, self._resources))
         url_parts.append(resource_type)
 
@@ -353,10 +353,21 @@ class Request(object):
 
         response = self.session.send(req)
 
+        # Maybe copy the response to file as it's received
+        arg = [tofile] if tofile else []
+        response_content = remote.ResponseIO(response, *arg)
+
         # Select reader class
-        if 'xml' in response.headers['content-type']:
+        content_type = response.headers.get('content-type', None)
+        if not content_type:
+            # TODO detect content_type by peeking at response_content
+            content_type = 'xml'
+            # raise ValueError("can't determine a reader for response content "
+            #                  "beginning: %s" % response_content.read()[:30])
+
+        if 'xml' in content_type:
             reader_module = import_module('pandasdmx.reader.sdmxml')
-        elif 'json' in response.headers['content-type']:
+        elif 'json' in content_type:
             reader_module = import_module('pandasdmx.reader.sdmjson')
         else:
             raise ValueError("can't determine a reader for response content "
@@ -365,11 +376,8 @@ class Request(object):
         # Instantiate reader
         reader = reader_module.Reader()
 
-        # Maybe also copy the response to file as it's received
-        arg = [tofile] if tofile else []
-
         # Parse the message
-        msg = reader.read_message(remote.ResponseIO(response, *arg))
+        msg = reader.read_message(response_content)
 
         # Store the HTTP response with the message
         msg.response = response

@@ -53,6 +53,7 @@ class Message(HasTraits):
 class ErrorMessage(Message):
     pass
 
+
 class StructureMessage(Message):
     category_scheme = DictLikeTrait(Instance(CategoryScheme))
     codelist = DictLikeTrait(Instance(Codelist))

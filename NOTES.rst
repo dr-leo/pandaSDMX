@@ -1,16 +1,20 @@
 Pending TODOs
 -------------
 
+- Refactor Request._make_key_from_series(): generate a DSD from the list of
+  series keys, and then call make_cube() on that.
 - Harmonize handling of API errors. Currently at least four things can happen:
   - requests.Response.raise_for_status() produces an HTTPError.
   - a 501 error gets translated to a Python NotImplementedError.
   - a message.ErrorMessage is parsed and returned.
   - some other form of return value (e.g. an HTML error page, for ABS, or a
     plain text error page, for some others) is returned which isn't parsed or
-    handled.
+    handled; a ValueError or something else gets raised.
 - pandasdmx.api.Request._resources only contains a small subset of:
   https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT
   SUPPORTED OPERATIONS")
+- Get a set of API keys for testing UNESCO and encrypt them for use in CI:
+  https://docs.travis-ci.com/user/encryption-keys/
 
 Future
 ------

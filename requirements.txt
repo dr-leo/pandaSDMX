@@ -3,5 +3,5 @@ lxml>=3.3.0
 pandas>=0.20.0
 requests>=2.7
 setuptools>19.0
-Sphinx>=1.5
-pytest>=3.3
+Sphinx>=1.4.1
+traitlets>=4.3

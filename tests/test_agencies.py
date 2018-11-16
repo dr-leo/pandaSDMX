@@ -88,9 +88,6 @@ class TestECB(AgencyTest):
     xfail = {
         # KeyError: 'code' in reader.sdmxml.parse_codelist()
         'codelist': ParseError,
-
-        # AttributeError: parse_groupdimension
-        'datastructure': ParseError,
         }
 
 

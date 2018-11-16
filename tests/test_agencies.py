@@ -85,10 +85,6 @@ class TestABS(AgencyTest):
 
 class TestECB(AgencyTest):
     agency_id = 'ECB'
-    xfail = {
-        # KeyError: 'code' in reader.sdmxml.parse_codelist()
-        'codelist': ParseError,
-        }
 
 
 class TestESTAT(AgencyTest):

@@ -720,7 +720,7 @@ class Reader(BaseReader):
 
     def parse_codelist(self, elem):
         cl, values = self._named(Codelist, elem, unwrap=False)
-        cl.items.extend(values.pop('code'))
+        cl.items.extend(values.pop('code', []))
         assert len(values) == 0
         return cl
 

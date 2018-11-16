@@ -490,25 +490,45 @@ class ConstraintRole(HasTraits):
     role = UseEnum(ConstraintRoleType)
 
 
+# class ComponentValue(HasTraits):
+#     value_for = Instance(Component)
+#     value = Unicode()
+#
+#
+# class DataKey(HasTraits):
+#     is_included = Bool()
+#     key_value = List(Instance(ComponentValue))
+#
+#
+# class DataKeySet(HasTraits):
+#     is_included = Bool()
+#     keys = List(Instance(DataKey))
+
+
 class Constraint(MaintainableArtefact):
     # data_content_keys = Instance(DataKeySet, allow_none=True)
     # metadata_content_keys = Instance(MetadataKeySet, allow_none=True)
     role = Set(Instance(ConstraintRole))
 
 
-class SelectionValue:
+class SelectionValue(HasTraits):
     pass
+
+
+class MemberValue(SelectionValue):
+    value = Unicode()
+    cascade_values = Bool()
 
 
 class MemberSelection(HasTraits):
     included = Bool()
     values_for = Instance(Component)
-    values = Set(Instance(SelectionValue))
+    values = Set(Instance(MemberValue))
 
 
 class CubeRegion(HasTraits):
     included = Bool()
-    member = Set(Instance(MemberSelection))
+    member = Dict(Instance(MemberSelection))
 
     def __contains__(self, v):
         key, value = v
@@ -519,14 +539,23 @@ class CubeRegion(HasTraits):
                     key, list(kv.keys())))
         return (value in kv[key]) == self.include
 
+    def to_query_string(self, structure):
+        all_values = []
+        for dim in structure.dimensions:
+            ms = self.member.get(dim, None)
+            values = sorted(mv.value for mv in ms.values) if ms else []
+            all_values.append('+'.join(values))
+
+        return '.'.join(all_values)
+
 
 class ContentConstraint(Constraint):
     data_content_region = Instance(CubeRegion, allow_none=True)
     # metadata_content_region = Instance(MetadataTargetRegion, allow_none=True)
 
     def __contains__(self, v):
-        if self.cube_region:
-            result = [v in c for c in self.cube_region]
+        if self.data_content_region:
+            result = [v in c for c in self.data_content_region]
             # Remove all cubes where v passed. The remaining ones indicate
             # fails.
             if True in result:
@@ -537,7 +566,14 @@ class ContentConstraint(Constraint):
                 raise ValueError('Key outside cube region(s).', v, result)
         else:
             raise NotImplementedError(
-                'ContentConstraint does not contain any CubeRegion.')
+                'ContentConstraint does not contain a CubeRegion.')
+
+    def to_query_string(self, structure):
+        try:
+            return self.data_content_region.to_query_string(structure)
+        except AttributeError as e:
+            raise NotImplementedError(
+                'ContentConstraint does not contain a CubeRegion.')
 
 
 # 5.2: Data Structure Defintion
@@ -634,6 +670,22 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
     def dimension(self, id, **kwargs):
         return self.dimensions.get(id, **kwargs)
+
+    def make_cube(self, keys):
+        """Return a ContentConstraint for a dict of *keys*."""
+        # TODO validate values
+        cr = CubeRegion()
+        for dim in self.dimensions:
+            try:
+                values = keys.pop(dim.id)
+            except KeyError:
+                continue
+            ms = MemberSelection(included=True, values_for=dim)
+            for value in values.split('+'):
+                ms.values.add(MemberValue(value=value))
+            cr.member[dim] = ms
+        assert len(keys) == 0
+        return ContentConstraint(data_content_region=cr)
 
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):

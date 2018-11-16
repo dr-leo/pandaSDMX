@@ -95,6 +95,8 @@ class TestESTAT(AgencyTest):
         'conceptscheme': NotImplementedError,
 
         # 404 Client Error: Not Found
+        # NOTE the ESTAT service does not give a general response that contains
+        #      all datastructures; this is really more of a 501.
         'datastructure': HTTPError,
         }
 

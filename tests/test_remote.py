@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from . import has_requests_cache, requires_requests_cache
+from . import has_requests_cache
 import pytest
 
-from pandasdmx.remote import REST, Session
+from pandasdmx.remote import Session
 
 
 @pytest.fixture(params=['xml', 'json'])
@@ -34,11 +34,3 @@ def test_session_init_cache(tmpdir):
 
     # Test for existence of cache file
     assert cache_name.with_suffix('.sqlite').exists()
-
-
-def test_REST_init_default():
-    r = REST()
-    assert r.config['timeout'] == 30.1
-
-    r = REST(http_cfg=dict(timeout=10))
-    assert r.config['timeout'] == 10

@@ -24,8 +24,7 @@ setup(name='pandaSDMX',
       long_description=long_descr,
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
-      packages=['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer',
-                'pandasdmx.utils'],
+      packages=['pandasdmx'],
       package_data={'pandasdmx': ['agencies.json']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[
@@ -58,6 +57,5 @@ setup(name='pandaSDMX',
           'Programming Language :: Python :: 3.5',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis'
-      ]
-
+          ]
       )

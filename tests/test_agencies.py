@@ -90,10 +90,9 @@ class TestECB(AgencyTest):
 class TestESTAT(AgencyTest):
     agency_id = 'ESTAT'
     xfail = {
-        # 501 Server Error: Not Implemented
-        'categoryscheme': HTTPError,
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
+        'categoryscheme': NotImplementedError,
+        'codelist': NotImplementedError,
+        'conceptscheme': NotImplementedError,
 
         # 404 Client Error: Not Found
         'datastructure': HTTPError,

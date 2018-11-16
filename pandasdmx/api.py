@@ -160,7 +160,6 @@ class Request(object):
         # download an empty dataset with all available series keys
         resp = self.data(flow_id, params={'detail': 'serieskeysonly'},
                          use_cache=True)
-        print(resp.data[0].series)
         keys = list(s.key for s in resp.data[0].series.items())
         df = pd.DataFrame(keys, columns=keys[0]._fields, dtype='category')
         return df

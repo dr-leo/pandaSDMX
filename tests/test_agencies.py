@@ -4,11 +4,11 @@ HTTP responses from the agency APIs are cached in tests/data/cache.
 To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
-
-import pytest
+from json import JSONDecodeError
 
 from pandasdmx.api import Request
 from pandasdmx.reader.sdmxml import ParseError
+import pytest
 from requests.exceptions import HTTPError
 
 from . import test_data_path
@@ -122,24 +122,21 @@ class TestIMF(AgencyTest):
 
 class TestINSEE(AgencyTest):
     agency_id = 'INSEE'
-    xfail = {
-        # 400 Client Error
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
-        'dataflow': HTTPError,
-        'datastructure': HTTPError,
-        }
 
 
 class TestOECD(AgencyTest):
     agency_id = 'OECD'
     xfail = {
-        # 404 Client Error: Not Found
-        'categoryscheme': HTTPError,
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
-        'dataflow': HTTPError,
-        'datastructure': HTTPError,
+        # can't determine a reader for response content type: text/html
+        # NOTE these are Microsoft IIS HTML error pages for 404 errors
+        'categoryscheme': ValueError,
+        'codelist': ValueError,
+        'conceptscheme': ValueError,
+        'datastructure': ValueError,
+
+        # Expecting value: line 1 column 1 (char 0)
+        # NOTE this is actually a plain-text error response
+        'dataflow': JSONDecodeError,
         }
 
 

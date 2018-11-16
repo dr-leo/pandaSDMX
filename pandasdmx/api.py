@@ -368,7 +368,7 @@ class Request(object):
         if 'xml' in content_type:
             reader_module = import_module('pandasdmx.reader.sdmxml')
         elif 'json' in content_type:
-            reader_module = import_module('pandasdmx.reader.sdmjson')
+            reader_module = import_module('pandasdmx.reader.sdmxjson')
         else:
             raise ValueError("can't determine a reader for response content "
                              "type: %s" % response.headers['content-type'])

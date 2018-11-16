@@ -13,7 +13,7 @@ install:
   - pip install -r requirements.txt
   - pip install coverage codecov pytest-cov
 
-script: pytest --cov=./
+script: pytest --cov=./ --remote-data
 
 after_success:
   - coverage combine

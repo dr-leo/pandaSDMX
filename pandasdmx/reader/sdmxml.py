@@ -178,6 +178,10 @@ _parse_class = {
         'datastructure.Dataflow': DataflowDefinition,
         'datastructure.DataStructure': DataStructureDefinition,
         },
+    'ref_parent': {
+        Category: CategoryScheme,
+        Concept: ConceptScheme,
+        },
     'orgscheme': {
         'agencyscheme': AgencyScheme,
         'dataproviderscheme': DataProviderScheme,
@@ -498,6 +502,8 @@ class Reader(BaseReader):
             pass
 
         ref_id = elem.attrib.pop('id')
+
+        # Determine the class of the reference
         try:
             # If the element has 'package' and 'class' attributes, these give
             # the class directly
@@ -511,23 +517,24 @@ class Reader(BaseReader):
                 # the Item
                 cls = self._stack[-2].capitalize()
 
-        obj = self._maintained(cls, id=ref_id)
-
         try:
-            parent_cls = {
-                Category: CategoryScheme,
-                Concept: ConceptScheme,
-                }[cls]
+            # Class of the maintainable parent object
+            parent_cls = _parse_class['ref_parent'][cls]
+
+            # Attributes of the maintainable parent
             parent_attrs = dict(
                 id=elem.attrib.pop('maintainableParentID'),
                 version=elem.attrib.pop('maintainableParentVersion'),
                 )
+
+            # Retrieve or create the parent
             parent = self._maintained(parent_cls, **parent_attrs)
 
-            if obj not in parent:
-                raise ParseError('%r not located in %r' % (obj, parent))
+            # Retrieve or create the referenced object
+            obj = parent.setdefault(id=ref_id, **elem.attrib)
         except KeyError:
-            pass
+            # No parent object
+            obj = self._maintained(cls, id=ref_id)
 
         assert len(elem.attrib) == 0
         return obj

@@ -91,9 +91,6 @@ class TestECB(AgencyTest):
 
         # AttributeError: parse_groupdimension
         'conceptscheme': ParseError,
-
-        # ParseError: <Concept: 'FREQ'=''> not located in
-        #             <ConceptScheme: 'ECB_CONCEPTS', 0 items>
         'dataflow': ParseError,
         'datastructure': ParseError,
         }
@@ -117,6 +114,8 @@ class TestIMF(AgencyTest):
     xfail = {
         # ParseError: <Category: 'ESA2010MA.A'=''> not located in
         #             <CategoryScheme: 'ESA2010TP', 7 items>
+        # NB this object exists, but its ID is understood as simply 'A', rather
+        #    than '{parent_id}.A'.
         'categoryscheme': ParseError,
 
         # TypeError: cannot instantiate from string class name: Code
@@ -178,11 +177,6 @@ class TestUNESCO(AgencyTest):
 
 class TestUNSD(AgencyTest):
     agency_id = 'UNSD'
-    xfail = {
-        # ParseError: <Concept: 'FREQ'=''> not located in
-        #             <ConceptScheme: 'MDG_DATA_CONCEPTS', 0 items>
-        'datastructure': ParseError,
-        }
 
 
 class TestWB(AgencyTest):
@@ -190,8 +184,4 @@ class TestWB(AgencyTest):
     xfail = {
         # KeyError 'concept' in reader.sdmxml.parse_conceptscheme()
         'conceptscheme': ParseError,
-
-        # ParseError: <Concept: 'FREQ'=''> not located in
-        #             <ConceptScheme: 'TARIFF_CONCEPTS', 0 items>
-        'datastructure': ParseError,
         }

@@ -743,7 +743,7 @@ class Reader(BaseReader):
 
     def parse_conceptscheme(self, elem):
         cs, values = self._named(ConceptScheme, elem, unwrap=False)
-        cs.items = values.pop('concept')
+        cs.items = values.pop('concept', [])
         assert len(values) == 0
         return cs
 

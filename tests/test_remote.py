@@ -3,7 +3,7 @@ from pathlib import Path
 from . import has_requests_cache, requires_requests_cache
 import pytest
 
-from pandasdmx.remote import REST
+from pandasdmx.remote import REST, Session
 
 
 @pytest.fixture(params=['xml', 'json'])
@@ -15,17 +15,25 @@ def tmpfile(tmpdir, request):
 
 
 @pytest.mark.skipif(has_requests_cache, reason='test without requests_cache')
-def test_without_requests_cache():
+def test_session_without_requests_cache():
     # Passing cache= arguments when requests_cache is not installed triggers a
     # warning
     with pytest.warns(RuntimeWarning):
-        REST(cache=dict(cache_name='test'))
+        Session(cache_name='test')
 
 
-@requires_requests_cache
-def test_REST_init_cache():
+@pytest.mark.remote_data
+# @requires_requests_cache
+def test_session_init_cache(tmpdir):
     # Instantiate a REST object with cache
-    REST(cache=dict(cache_name='test'))
+    cache_name = Path(tmpdir.join('pandasdmx_cache'))
+    s = Session(cache_name=str(cache_name), backend='sqlite')
+
+    # Get a resource
+    s.get('https://registry.sdmx.org/ws/rest/dataflow')
+
+    # Test for existence of cache file
+    assert cache_name.with_suffix('.sqlite').exists()
 
 
 def test_REST_init_default():

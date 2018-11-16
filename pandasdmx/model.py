@@ -8,11 +8,14 @@ specification ('spec'), which is available from:
     SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
 
 Details of the implementation:
+
 - the IPython traitlets package is used to enforce the types of attributes
   that reference instances of other classes. Two custom trait types are used:
+
   - DictLikeTrait: a dict-like object that adds both attribute access by name,
     and integer index access. See pandasdmx.util.
   - InternationalStringTrait.
+
 - some classes have additional attributes not mentioned in the spec, to ease
   navigation between related objects. These are marked with comments "pandaSDMX
   extensions not in the IM".
@@ -63,6 +66,7 @@ class InternationalString(HasTraits):
 
     SDMX-IM LocalisedString is not implemented. Instead, the 'localizations' is
     a mapping where:
+
      - keys correspond to the 'locale' property of LocalisedString.
      - values correspond to the 'label' property of LocalisedString.
     """

@@ -4,4 +4,6 @@
 .coverage
 .pytest_cache
 __pycache__
+doc/_build
+tests/data/cache
 htmlcov

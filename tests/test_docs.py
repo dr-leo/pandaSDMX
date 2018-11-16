@@ -84,20 +84,21 @@ def test_doc_usage_structure():
 
     ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
 
-    assert ecb_via_proxy.client.config == {
-        'proxies': {'http': 'http://1.2.3.4:5678'},
-        'stream': True,
-        'timeout': 30.1,
-        }
+    assert all(getattr(ecb_via_proxy.session, k) == v for k, v in (
+        ('proxies', {'http': 'http://1.2.3.4:5678'}),
+        ('stream', True),
+        ('timeout', 30.1),
+        ))
 
     cat_response = ecb.categoryscheme()
 
     # FIXME: the documentation shows 'references=all'
-    assert cat_response.url == ('http://sdw-wsrest.ecb.int/service/category'
-                                'scheme/latest?references=parentsandsiblings')
+    assert cat_response.response.url == ('http://sdw-wsrest.ecb.int/service/'
+                                         'categoryscheme/latest?references='
+                                         'parentsandsiblings')
 
     # TODO check specific headers
-    cat_response.http_headers
+    cat_response.response.headers
 
     print(pandasdmx.to_pandas(cat_response.category_scheme))
 
@@ -106,8 +107,6 @@ def test_doc_usage_structure():
     # list(cat_response.category_scheme.MOBILE_NAVI['07'])
 
     print(pandasdmx.to_pandas(cat_response.dataflow))
-
-    assert False
 
     # This step is slow
     # flows = ecb.dataflow()

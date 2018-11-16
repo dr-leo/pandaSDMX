@@ -241,10 +241,13 @@ class Reader(BaseReader):
         try:
             # Parse the tree
             values = self._parse(root)
-        except Exception:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             # For debugging: print the stack
             print(' > '.join(self._stack))
-            raise
+            if isinstance(e, ParseError):
+                raise
+            else:
+                raise ParseError from e
 
         # Instantiate the message object
         msg = cls()
@@ -552,10 +555,9 @@ class Reader(BaseReader):
         ds = DataSet(group={g: [] for g in values.pop('group', [])})
 
         # Process series
-        for obs_list in values.pop('series', []):
-            obs_list = wrap(obs_list)
+        for series_key, obs_list in values.pop('series', []):
             # Add observations under this key
-            ds.add_obs(obs_list, obs_list[0].series_key)
+            ds.add_obs(obs_list, series_key)
 
         # Process bare observations
         ds.add_obs(wrap(values.pop('obs', [])))
@@ -602,10 +604,11 @@ class Reader(BaseReader):
         values = self._parse(elem)
         series_key = values.pop('serieskey')
         series_key.attrib.update(values.pop('attributes', {}))
-        for o in wrap(values['obs']):
+        obs_list = wrap(values.pop('obs', []))
+        for o in obs_list:
             o.series_key = series_key
-        assert len(values) == 1
-        return values['obs']
+        assert len(values) == 0
+        return (series_key, obs_list)
 
     # Parsers for elements appearing in structure messages
 

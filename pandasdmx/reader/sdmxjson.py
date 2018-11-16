@@ -42,6 +42,7 @@ class Reader(BaseReader):
         tree = json.load(source)
 
         # Read the header
+        # FIXME KeyError: 'header'
         elem = tree['header']
         msg.header = Header(id=elem['id'], prepared=elem['prepared'],
                             sender=Item(**elem['sender']))

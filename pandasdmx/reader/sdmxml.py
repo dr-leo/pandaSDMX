@@ -619,7 +619,6 @@ class Reader(BaseReader):
             # structure → GroupDimensionDescriptor
             args = dict(components=values.pop('groupdimension'))
             gdd = GroupDimensionDescriptor(**args)
-            print(values)
             result = gdd
         else:
             raise NotImplementedError(elem.tag)

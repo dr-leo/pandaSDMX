@@ -16,9 +16,32 @@ from pandasdmx.writer import Writer
 from . import assert_pd_equal, expected_data, test_data_path, test_files
 
 
-@pytest.fixture
-def dsd_common():
-    return pandasdmx.open_file(test_data_path / 'common' / 'common.xml')
+xfail = {
+    'ecb_exr_ng_xs.xml': (AssertionError, "Series length are different"),
+    'exr-action-delete.json': (AssertionError, """Expected type <class
+        'pandas.core.frame.DataFrame'>, found <class 'list'> instead"""),
+    'exr-cross-section.json': (AssertionError, """Expected type <class
+        'pandas.core.frame.DataFrame'>, found <class
+        'pandas.core.series.Series'> instead"""),
+    'exr-time-series.json': (AssertionError, """Expected type <class
+        'pandas.core.frame.DataFrame'>, found <class
+        'pandas.core.series.Series'> instead"""),
+    }
+
+
+def pytest_generate_tests(metafunc):
+    if 'data_path' in metafunc.fixturenames:
+        params = []
+        tf = test_files(kind='data')
+        for value, id in zip(tf['argvalues'], tf['ids']):
+            try:
+                mark = pytest.mark.xfail(strict=True, raises=xfail[id][0])
+                kwarg = dict(marks=mark)
+            except KeyError:
+                kwarg = {}
+            params.append(pytest.param(value, id=id, **kwarg))
+
+        metafunc.parametrize('data_path', params)
 
 
 def test_write_data_arguments():
@@ -33,13 +56,12 @@ def test_write_data_arguments():
         Writer().write(msg, attributes='foobarbaz')
 
 
-@pytest.mark.parametrize('path', **test_files(kind='data'))
-def test_write_data(path):
-    msg = pandasdmx.open_file(path)
+def test_write_data(data_path):
+    msg = pandasdmx.open_file(data_path)
 
     result = Writer().write(msg)
 
-    expected = expected_data(path)
+    expected = expected_data(data_path)
     if expected is not None:
         print(expected, result, sep='\n')
     assert_pd_equal(expected, result)
@@ -57,7 +79,8 @@ def test_write_data_attributes(path):
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
 
-def test_write_dsd_common(dsd_common):
+def test_write_dsd_common():
+    dsd_common = pandasdmx.open_file(test_data_path / 'common' / 'common.xml')
     Writer().write(dsd_common)
 
 

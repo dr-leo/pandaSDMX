@@ -111,9 +111,10 @@ class TestIMF(AgencyTest):
 
         # TypeError: cannot instantiate from string class name: Code
         # structure > structures > codelists (skip) > codelist > code > parent
-        'conceptscheme': ParseError,
         'codelist': ParseError,
-        'dataflow': ParseError,
+
+        # AttributeError: 'Reader' object has no attribute
+        #                 'parse_enumerationformat'
         'datastructure': ParseError,
         }
 
@@ -158,6 +159,7 @@ class TestSGR(AgencyTest):
 class TestUNESCO(AgencyTest):
     agency_id = 'UNESCO'
     xfail = {
+        # Requires registration
         'categoryscheme': HTTPError,
         'codelist': HTTPError,
         'conceptscheme': HTTPError,

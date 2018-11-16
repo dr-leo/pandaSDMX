@@ -47,6 +47,8 @@ from pandasdmx.model import (
     Contact,
     DataAttribute,
     DataflowDefinition,
+    DataProvider,
+    DataProviderScheme,
     DataSet,
     DataStructureDefinition,
     Dimension,
@@ -151,6 +153,10 @@ _parse_alias = {
     'obskey': 'key',
     'serieskey': 'key',
     'groupkey': 'key',
+    'agencyscheme': 'orgscheme',
+    'dataproviderscheme': 'orgscheme',
+    'agency': 'organisation',
+    'dataprovider': 'organisation',
     }
 
 # Class names stored as strings in XML attributes -> pandasdmx.model classes
@@ -171,6 +177,14 @@ _parse_class = {
         'conceptscheme.Concept': Concept,
         'datastructure.Dataflow': DataflowDefinition,
         'datastructure.DataStructure': DataStructureDefinition,
+        },
+    'orgscheme': {
+        'agencyscheme': AgencyScheme,
+        'dataproviderscheme': DataProviderScheme,
+        },
+    'organisation': {
+        'agency': Agency,
+        'dataprovider': DataProvider,
         },
     }
 
@@ -415,6 +429,7 @@ class Reader(BaseReader):
             'isExternalReference': ('is_external_reference', bool),
             'isFinal': ('is_final', bool),
             'isPartial': ('is_partial', bool),
+            'structureURL': ('structure_url', lambda value: value),
             }
 
         attrs = {}
@@ -621,11 +636,12 @@ class Reader(BaseReader):
     def parse_structures(self, elem):
         return self._parse(elem, unwrap=False)
 
-    def parse_agency(self, elem):
-        a, values = self._named(Agency, elem)
-        a.contact = wrap(values.pop('contact', []))
+    def parse_organisation(self, elem):
+        cls = _parse_class['organisation'][self._stack[-1]]
+        o, values = self._named(cls, elem)
+        o.contact = wrap(values.pop('contact', []))
         assert len(values) == 0
-        return a
+        return o
 
     def parse_contact(self, elem):
         values = self._parse(elem, unwrap=False)
@@ -633,7 +649,7 @@ class Reader(BaseReader):
         values['name'] = values.pop('name')[0]
         values['telephone'] = values.pop('telephone', [None])[0]
         values['org_unit'] = values.pop('department')[0]
-        values['responsibility'] = values.pop('role')[0]
+        values['responsibility'] = values.pop('role', [None])[0]
         return Contact(**values)
 
     def parse_annotation(self, elem):
@@ -692,11 +708,12 @@ class Reader(BaseReader):
         assert len(values) == 0
         return c
 
-    def parse_agencyscheme(self, elem):
-        as_, values = self._named(AgencyScheme, elem, unwrap=False)
-        as_.items = values.pop('agency')
+    def parse_orgscheme(self, elem):
+        cls = _parse_class['orgscheme'][self._stack[-1]]
+        os, values = self._named(cls, elem, unwrap=False)
+        _, os.items = values.popitem()
         assert len(values) == 0
-        return as_
+        return os
 
     def parse_conceptscheme(self, elem):
         cs, values = self._named(ConceptScheme, elem, unwrap=False)

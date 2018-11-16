@@ -74,8 +74,10 @@ class TestABS(AgencyTest):
         'categoryscheme': ValueError,
         'codelist': ValueError,
         'conceptscheme': ValueError,
+
         # 400 Client Error: Semantic Error
         'dataflow': HTTPError,
+
         # 404 Client Error: Not Found
         'datastructure': HTTPError,
         }
@@ -86,8 +88,10 @@ class TestECB(AgencyTest):
     xfail = {
         # KeyError: 'code' in reader.sdmxml.parse_codelist()
         'codelist': ParseError,
+
         # AttributeError: parse_groupdimension
         'conceptscheme': ParseError,
+
         # ParseError: <Concept: 'FREQ'=''> not located in
         #             <ConceptScheme: 'ECB_CONCEPTS', 0 items>
         'dataflow': ParseError,
@@ -102,6 +106,7 @@ class TestESTAT(AgencyTest):
         'categoryscheme': HTTPError,
         'codelist': HTTPError,
         'conceptscheme': HTTPError,
+
         # 404 Client Error: Not Found
         'datastructure': HTTPError,
         }
@@ -117,9 +122,6 @@ class TestIMF(AgencyTest):
         # TypeError: cannot instantiate from string class name: Code
         # structure > structures > codelists (skip) > codelist > code > parent
         'conceptscheme': ParseError,
-
-        # AttributeError: 'Reader' object has no attribute
-        #                 'parse_dataproviderscheme'
         'codelist': ParseError,
         'dataflow': ParseError,
         'datastructure': ParseError,
@@ -154,6 +156,7 @@ class TestSGR(AgencyTest):
     xfail = {
         # Missing content-type header in response
         'categoryscheme': KeyError,
+
         # 404 Client Error: Not Found
         'codelist': HTTPError,
         'conceptscheme': HTTPError,
@@ -187,6 +190,7 @@ class TestWB(AgencyTest):
     xfail = {
         # KeyError 'concept' in reader.sdmxml.parse_conceptscheme()
         'conceptscheme': ParseError,
+
         # ParseError: <Concept: 'FREQ'=''> not located in
         #             <ConceptScheme: 'TARIFF_CONCEPTS', 0 items>
         'datastructure': ParseError,

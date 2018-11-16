@@ -436,12 +436,19 @@ class Organisation(Item):
     pass
 
 
-class Agency(Organisation):
-    pass
+Agency = Organisation
+DataProvider = Organisation
 
+
+# Skip the abstract OrganisationScheme class, since it has no particular
+# functionality
 
 class AgencyScheme(ItemScheme):
     items = List(Instance(Agency))
+
+
+class DataProviderScheme(ItemScheme):
+    items = List(Instance(DataProvider))
 
 
 # 10.2: Constraint inheritance

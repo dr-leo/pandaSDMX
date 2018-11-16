@@ -61,8 +61,19 @@ class ResourceGetter(object):
 
 
 class Request(object):
+    """Interface to an SDMX data provider.
 
-    """Get SDMX data and metadata from remote servers or local files.
+    Parameters
+    ----------
+    agency (str): identifier of a data provider. Must be one of the dict keys
+        in Request._agencies such as 'ESTAT', 'ECB', ''GSR' or ''. If '', the
+        instance can only retrieve data or metadata from pre-fabricated URLs
+        provided to :meth:`get`.
+    log_level (int): override the package-wide logger with one of the
+        :ref:`standard logging levels <py:levels>`. Default: None.
+    session_opts: additional keyword arguments are passed to
+        :class:`pandasdmx.remote.Session`.
+
     """
     # Load built-in agency metadata
     s = resource_string('pandasdmx', 'agencies.json').decode('utf8')
@@ -103,37 +114,16 @@ class Request(object):
         for r in cls._resources:
             setattr(cls, r, ResourceGetter(r))
 
-    def __init__(self, agency='', cache=None, log_level=None,
-                 **http_cfg):
-        '''
-        Set the SDMX agency, and configure http requests for this instance.
-
-        Args:
-
-            agency(str): identifier of a data provider.
-                Must be one of the dict keys in Request._agencies such as
-                'ESTAT', 'ECB', ''GSR' or ''.
-                An empty string has the effect that the instance can only
-                load data or metadata from files or a pre-fabricated URL. .
-                defaults to '', i.e. no agency.
-
-            cache(dict): args to be passed on to
-                ``requests_cache.install_cache()``. Default is None (no
-                caching).
-            log_level(int): set log level for lib-wide logger as set up in
-                pandasdmx.__init__.py. For details see the docs on the
-                logging package from the standard lib. Default: None (= do
-                nothing).
-            **http_cfg: used to configure http requests. E.g., you can
-            specify proxies, authentication information and more.
-            See also the docs of the ``requests`` package at
-            http://www.python-requests.org/en/latest/.
-        '''
+    def __init__(self, agency='', log_level=None, **session_opts):
+        """Constructor."""
         # If needed, generate wrapper properties for get method
         if not hasattr(self, 'data'):
             self._make_get_wrappers()
-        self.client = remote.REST(cache, http_cfg)
+
         self.agency = agency.upper()
+
+        self.session = remote.Session(**session_opts)
+
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)
 
@@ -163,11 +153,11 @@ class Request(object):
 
     @property
     def timeout(self):
-        return self.client.config['timeout']
+        return self.session.timeout
 
     @timeout.setter
     def timeout(self, value):
-        self.client.config['timeout'] = value
+        self.session.timeout = value
 
     def series_keys(self, flow_id, cache=True, dsd=None):
         '''
@@ -185,7 +175,8 @@ class Request(object):
         else:
             # download an empty dataset with all available series keys
             resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
-            keys = list(s.key for s in resp.data.series)
+            print(resp.data[0].series)
+            keys = list(s.key for s in resp.data[0].series.items())
             df = pd.DataFrame(keys, columns=keys[0]._fields, dtype='category')
             if cache:
                 self.cache[cache_id] = df
@@ -358,17 +349,34 @@ class Request(object):
 
         # Now get the SDMX message via HTTP
         logger.info('Requesting resource from %s', base_url)
+        logger.info('with params %s' % params)
 
-        source, url, resp_headers, status_code = self.client.get(
-            base_url, params=params, headers=headers)
+        response = self.session.get(base_url, params=params, headers=headers)
 
-        if source is None:
-            raise SDMXException('Server error:', status_code, url)
+        # Select reader class
+        if 'xml' in response.headers['content-type']:
+            reader_module = import_module('pandasdmx.reader.sdmxml')
+        elif 'json' in response.headers['content-type']:
+            reader_module = import_module('pandasdmx.reader.sdmjson')
+        else:
+            raise ValueError("can't determine a reader for response content "
+                             "type: %s" % response.headers['content-type'])
 
-        logger.info('Loaded file into memory from %s', url)
+        # Instantiate reader
+        reader = reader_module.Reader()
 
-        # write msg to file and unzip it as required, then parse it
-        with source:
+        # Maybe also copy the response to file as it's received
+        arg = [tofile] if tofile else []
+
+        # Parse the message
+        msg = reader.read_message(remote.ResponseIO(response, *arg))
+
+        # Store the HTTP response with the message
+        msg.response = response
+
+        # Disabled (refactoring)
+        if False:
+            # write msg to file and unzip it as required, then parse it
             if tofile:
                 logger.info('Writing to file %s', tofile)
                 with open(tofile, 'wb') as dest:
@@ -384,16 +392,6 @@ class Request(object):
             else:
                 # undo side effect of is_zipfile
                 source.seek(0)
-            # select reader class
-            if ((self.agency and
-                self._agencies[self.agency]['resources'].get(resource_type) and
-                (self._agencies[self.agency]['resources'][resource_type]
-                 .get('json')))):
-                reader_module = import_module('pandasdmx.reader.sdmxjson')
-            else:
-                reader_module = import_module('pandasdmx.reader.sdmxml')
-            reader_cls = reader_module.Reader
-            msg = reader_cls().initialize(source)
 
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and msg.footer is not None:
@@ -416,12 +414,11 @@ class Request(object):
                         logger.info("Attempt #%i raised the following "
                                     " exception: %s", a, str(e))
 
-        r = Response(msg, url, resp_headers, status_code)
-
         # store in memory cache if needed
-        if memcache and r.status_code == 200:
-            self.cache[memcache] = r
-        return r
+        if memcache and msg.response.status_code == 200:
+            self.cache[memcache] = msg
+
+        return msg
 
     def prepare_key(self, key):
         '''

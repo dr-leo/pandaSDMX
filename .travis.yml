@@ -4,9 +4,7 @@ dist: xenial
 
 python:
   - "2.7"
-  - "2.7-dev"
   - "3.4"
-  - "3.4-dev"
   - "3.5"
   - "3.6"
   - "3.6-dev"
@@ -21,7 +19,7 @@ install:
   - pip install coverage codecov pytest-cov
   - pip install --no-deps -e .
 
-script: pytest pandasdmx --cov=pandasdmx --cov-report=term-missing --remote-data
+script: pytest --cov=pandasdmx --cov-report=term-missing --remote-data
 
 after_success:
   - coverage combine

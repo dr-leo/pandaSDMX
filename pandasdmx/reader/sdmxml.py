@@ -582,7 +582,7 @@ class Reader(BaseReader):
         return f
 
     def parse_dataset(self, elem):
-        values = self._parse(elem)
+        values = self._parse(elem, unwrap=False)
         # Store groups
         ds = DataSet(group={g: [] for g in values.pop('group', [])})
 
@@ -592,7 +592,7 @@ class Reader(BaseReader):
             ds.add_obs(obs_list, series_key)
 
         # Process bare observations
-        ds.add_obs(wrap(values.pop('obs', [])))
+        ds.add_obs(values.pop('obs', []))
 
         assert len(values) == 0
         return ds

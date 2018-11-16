@@ -146,15 +146,19 @@ class TestOECD(AgencyTest):
 class TestSGR(AgencyTest):
     agency_id = 'SGR'
     xfail = {
-        # Missing content-type header in response
-        'categoryscheme': KeyError,
-
-        # 404 Client Error: Not Found
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
-        'dataflow': HTTPError,
-        'datastructure': HTTPError,
+        # See IMF xfail for categoryscheme; same issue, this time with key
+        # ESA2010MA.Q
+        'categoryscheme': ParseError,
         }
+
+    # Based on query builder at
+    # https://registry.sdmx.org/FusionRegistry/rest-get.html
+    @pytest.mark.remote_data
+    def test_structure_codelist(self, req):
+        req.get(resource_type='codelist',
+                resource_id='all',
+                agency='all',
+                tofile=self._cache_path.with_suffix('.codelist2'))
 
 
 class TestUNESCO(AgencyTest):

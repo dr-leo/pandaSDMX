@@ -20,6 +20,7 @@ from lxml.etree import QName, XPath
 
 from pandasdmx.message import (
     DataMessage,
+    ErrorMessage,
     Footer,
     Header,
     StructureMessage,
@@ -94,6 +95,7 @@ _message_class = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
     ('GenericData', DataMessage),
     ('GenericTimeSeriesData', DataMessage),
+    ('Error', ErrorMessage),
     )}
 
 
@@ -279,8 +281,14 @@ class Reader(BaseReader):
         msg = cls()
 
         # Store the header
-        header = values.pop('header')
-        if len(header) == 2:
+        header = values.pop('header', None)
+        if header is None and 'errormessage' in values:
+            # An error message
+            msg.header = Header()
+
+            # Error message attributes resemble footer attributes
+            values['footer'] = Footer(**values.pop('errormessage'))
+        elif len(header) == 2:
             # Length-2 list includes DFD/DSD reference
             msg.header, msg.dataflow = header
             msg.observation_dimension = self._obs_dim
@@ -868,3 +876,11 @@ class Reader(BaseReader):
         for key, value in elem.attrib.items():
             setattr(f.type, key_map.get(key, key), value)
         return f
+
+    # Parsers for elements appearing in error messages
+
+    def parse_errormessage(self, elem):
+        values = self._parse(elem)
+        values['text'] = [InternationalString(values['text'])]
+        values['code'] = elem.attrib['code']
+        return values

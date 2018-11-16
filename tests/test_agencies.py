@@ -90,8 +90,6 @@ class TestECB(AgencyTest):
         'codelist': ParseError,
 
         # AttributeError: parse_groupdimension
-        'conceptscheme': ParseError,
-        'dataflow': ParseError,
         'datastructure': ParseError,
         }
 

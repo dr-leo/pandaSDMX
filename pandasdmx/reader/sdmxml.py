@@ -54,6 +54,7 @@ from pandasdmx.model import (
     Dimension,
     DimensionDescriptor,
     Facet,
+    GroupDimensionDescriptor,
     GroupKey,
     IdentifiableArtefact,
     InternationalString,
@@ -206,6 +207,7 @@ _parse_skip = [
     'Footer',
     'OrganisationSchemes',
     # Tag names that only ever contain references
+    'DimensionReference',
     'Source',
     'Structure',  # str:Structure, not mes:Structure
     'Target',
@@ -516,6 +518,8 @@ class Reader(BaseReader):
                 # The parent of an Item in an ItemScheme has the same class as
                 # the Item
                 cls = self._stack[-2].capitalize()
+            elif cls == 'Ref' and 'dimensionreference' in self._stack[-2]:
+                return self._index[('Dimension', ref_id)]
 
         try:
             # Class of the maintainable parent object
@@ -594,11 +598,26 @@ class Reader(BaseReader):
         return ds
 
     def parse_group(self, elem):
+        """Both <generic:Group> and <structure:Group>."""
         values = self._parse(elem)
-        gk = values.pop('groupkey')
-        gk.attrib.update(values.pop('attributes', {}))
+
+        # Check which namespace this Group tag is part of
+        if elem.tag == qname('gen', 'Group'):
+            # generic → GroupKey in a DataMessage
+            gk = values.pop('groupkey')
+            gk.attrib.update(values.pop('attributes', {}))
+            result = gk
+        elif elem.tag == qname('str', 'Group'):
+            # structure → GroupDimensionDescriptor
+            args = dict(components=values.pop('groupdimension'))
+            gdd = GroupDimensionDescriptor(**args)
+            print(values)
+            result = gdd
+        else:
+            raise NotImplementedError(elem.tag)
+
         assert len(values) == 0
-        return gk
+        return result
 
     def parse_key(self, elem):
         """SeriesKey, GroupKey, and observation dimensions."""
@@ -740,6 +759,7 @@ class Reader(BaseReader):
             DimensionDescriptor: 'dimensions',
             AttributeDescriptor: 'attributes',
             MeasureDescriptor: 'measures',
+            GroupDimensionDescriptor: 'group_dimensions',
             }
         for c in values.pop('datastructurecomponents'):
             setattr(dsd, _target[type(c)], c)
@@ -772,6 +792,12 @@ class Reader(BaseReader):
 
     # TODO should return a TimeDimension
     parse_timedimension = parse_dimension
+
+    def parse_groupdimension(self, elem):
+        values = self._parse(elem)
+        d = values.pop('dimensionreference')
+        assert len(values) == 0
+        return d
 
     def parse_attribute(self, elem):
         attrs = {k: elem.attrib[k] for k in ('id', 'urn')}

@@ -405,8 +405,9 @@ class Request(object):
         if get_footer_url and msg.footer is not None:
             logger.info('Footer found in SDMX message.')
             # Retrieve the first URL in the footer, if any
-            url_l = [
-                i for i in msg.footer.text if remote.is_url(i)]
+            url_l = False  # FIXME
+            # url_l = [
+                # i for i in msg.footer.text if remote.is_url(i)]
             if url_l:
                 # found an URL. Wait and try to request it
                 footer_url = url_l[0]

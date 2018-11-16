@@ -412,7 +412,27 @@ class Categorisation(MaintainableArtefact):
 
 # 4.6: Organisations
 
+class Contact(HasTraits):
+    """Organization contact information.
+
+    IMF is the only data provider that returns messages with :class:`Contact`
+    information. These differ from the IM in several ways. This class reflects
+    these differences:
+
+    - 'name' and 'org_unit' are InternationalString, instead of strings.
+    - 'email' may be a list of e-mail addresses, rather than a single address.
+    - 'uri' may be a list of URIs, rather than a single URI.
+    """
+    name = InternationalStringTrait()
+    org_unit = InternationalStringTrait()
+    telephone = Unicode(allow_none=True)
+    responsibility = InternationalStringTrait()
+    email = List(Unicode())
+    uri = List(Unicode())
+
+
 class Organisation(Item):
+    contact = List(Instance(Contact))
     pass
 
 

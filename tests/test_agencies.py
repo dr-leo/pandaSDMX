@@ -110,13 +110,20 @@ class TestESTAT(AgencyTest):
 class TestIMF(AgencyTest):
     agency_id = 'IMF_SDMXCENTRAL'
     xfail = {
-        # AttributeError: parse_contact
+        # ParseError: <Category: 'ESA2010MA.A'=''> not located in
+        #             <CategoryScheme: 'ESA2010TP', 7 items>
         'categoryscheme': ParseError,
-        'codelist': ParseError,
+
+        # TypeError: cannot instantiate from string class name: Code
+        # structure > structures > codelists (skip) > codelist > code > parent
         'conceptscheme': ParseError,
+
+        # AttributeError: 'Reader' object has no attribute
+        #                 'parse_dataproviderscheme'
+        'codelist': ParseError,
         'dataflow': ParseError,
         'datastructure': ParseError,
-    }
+        }
 
 
 class TestINSEE(AgencyTest):

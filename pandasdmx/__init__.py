@@ -15,10 +15,12 @@ pandaSDMX - a Python package for SDMX - Statistical Data and Metadata eXchange
 
 
 from pandasdmx.api import Request, open_file, to_pandas
+from pandasdmx.source import add_source
 import logging
 
 __all__ = [
     'Request',
+    'add_source',
     'open_file',
     'to_pandas',
     ]

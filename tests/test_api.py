@@ -1,5 +1,3 @@
-from io import StringIO
-from json import JSONDecodeError
 import logging
 
 from pandasdmx import Request
@@ -13,19 +11,6 @@ def test_request():
     # Invalid agency name (replaces former test_request.py)
     with pytest.raises(ValueError):
         Request('noagency')
-
-    # Class methods
-
-    # list_agencies()
-    Request.list_agencies()
-
-    # load_agency_profile()
-    with pytest.raises(JSONDecodeError):
-        Request.load_agency_profile('FOO')
-
-    # with empty JSON
-    tmp = StringIO('{}')
-    Request.load_agency_profile(tmp)
 
     # Regular methods
     r.clear_cache()

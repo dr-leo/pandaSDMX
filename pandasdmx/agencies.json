@@ -1,27 +1,25 @@
 {
-    "": {
-        "id": "NO_AGENCY"
-    },
     "ESTAT": {
         "id": "ESTAT",
         "documentation": "http://data.un.org/Host.aspx?Content=API",
         "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
-        "name": "Eurostat"
-    },
+        "name": "Eurostat",
+        "unsupported": ["categoryscheme", "codelist", "conceptscheme"]
+        },
     "UNSD": {
         "id": "UNSD",
-        "supports_series_keys_only": true,
         "url": "http://data.un.org/WS/rest",
-        "name": "United Nations Statistics Division"
+        "name": "United Nations Statistics Division",
+        "unsupported": ["datastructure"]
     },
     "UNESCO": {
         "id": "UNESCO",
-        "supports_series_keys_only": true,
         "headers": {
             "accept": "application/vnd.sdmx.structure+xml;version=2.1"
         },
         "url": "http://api.uis.unesco.org/sdmx",
-        "name": "UNESCO (subscription key required)"
+        "name": "UNESCO (subscription key required)",
+        "unsupported": ["datastructure"]
     },
     "IMF_SDMXCENTRAL": {
         "id": "IMF",
@@ -35,11 +33,9 @@
     },
     "INSEE": {
         "id": "INSEE",
-        "resources": {
+        "headers": {
             "data": {
-                "headers": {
-                    "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
-                }
+                "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
             }
         },
         "url": "http://www.bdm.insee.fr/series/sdmx",
@@ -47,34 +43,24 @@
     },
     "OECD": {
         "id": "OECD",
-        "resources": {
-            "data": {
-                "headers": {},
-                "json": true
-            }
-        },
+        "data_content_type": "JSON",
         "url": "http://stats.oecd.org/SDMX-JSON",
         "name": "Organisation for Economic Co-operation and Development"
     },
     "ECB": {
         "id": "ECB",
-        "supports_series_keys_only": true,
         "resources": {
             "data": {
                 "headers": {}
             }
         },
         "url": "http://sdw-wsrest.ecb.int/service",
-        "name": "European Central Bank"
+        "name": "European Central Bank",
+        "unsupported": ["datastructure"]
     },
     "ABS": {
         "id": "ABS",
-        "resources": {
-            "data": {
-                "headers": {},
-                "json": true
-            }
-        },
+        "data_content_type": "JSON",
         "url": "http://stat.data.abs.gov.au/sdmx-json",
         "name": "Australian Bureau of Statistics"
     },

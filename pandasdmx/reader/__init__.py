@@ -27,3 +27,17 @@ class BaseReader(ABC):
     # Backwards-compatibility
     def initialize(self, source):
         return self.read_message(source)
+
+
+def get_reader_for_content_type(ctype):
+    ctype = ctype.split(';')[0]
+    if ctype in ['text/xml',
+                 'application/vnd.sdmx.genericdata+xml',
+                 'application/vnd.sdmx.structure+xml']:
+        from .sdmxml import Reader
+        return Reader
+    elif ctype in ['text/json']:
+        from .sdmxjson import Reader
+        return Reader
+    else:
+        raise ValueError(ctype)

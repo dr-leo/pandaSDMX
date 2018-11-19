@@ -20,11 +20,9 @@ pandasdmx does not support the SOAP interface).
 from functools import partial, reduce
 from importlib import import_module
 from itertools import chain, product
-import json
 import logging
 from operator import and_
 from pathlib import Path
-from pkg_resources import resource_string
 import sys
 from time import sleep
 from zipfile import ZipFile, is_zipfile
@@ -32,6 +30,8 @@ from zipfile import ZipFile, is_zipfile
 import pandas as pd
 from pandasdmx import remote
 from pandasdmx.model import IdentifiableArtefact
+from pandasdmx.reader import get_reader_for_content_type
+from pandasdmx.source import list_sources, sources
 import requests
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ class Request(object):
 
     Parameters
     ----------
-    agency (str): identifier of a data provider. Must be one of the dict keys
+    source (str): identifier of a data source. Must be one of the dict keys
         in Request._agencies such as 'ESTAT', 'ECB', ''GSR' or ''. If '', the
         instance can only retrieve data or metadata from pre-fabricated URLs
         provided to :meth:`get`.
@@ -75,37 +75,7 @@ class Request(object):
         :class:`pandasdmx.remote.Session`.
 
     """
-    # Load built-in agency metadata
-    s = resource_string('pandasdmx', 'agencies.json').decode('utf8')
-    _agencies = json.loads(s)
-    del s
-
-    @classmethod
-    def load_agency_profile(cls, source):
-        """Load metadata about a data provider.
-
-        *source* must be a JSON-formated string or file-like object describing
-        one or more data providers (URL of the SDMX web API, resource types,
-        etc.).``Request._agencies`` is updated with the metadata from the
-        source.
-
-        Returns None
-        """
-        try:
-            source = source.read()
-        except AttributeError:
-            pass
-        new_agencies = json.loads(source)
-        cls._agencies.update(new_agencies)
-
-    @classmethod
-    def list_agencies(cls):
-        """eturn a sorted list of valid agency IDs.
-
-        These can be used to create Request instances.
-        """
-        return sorted(list(cls._agencies))
-
+    cache = {}
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
                   'codelist', 'conceptscheme', 'contentconstraint']
 
@@ -114,42 +84,25 @@ class Request(object):
         for r in cls._resources:
             setattr(cls, r, ResourceGetter(r))
 
-    def __init__(self, agency='', log_level=None, **session_opts):
+    def __init__(self, source=None, log_level=None, **session_opts):
         """Constructor."""
         # If needed, generate wrapper properties for get method
         if not hasattr(self, 'data'):
             self._make_get_wrappers()
 
-        self.agency = agency.upper()
+        try:
+            self.source = source if source is None else sources[source]
+        except KeyError:
+            raise ValueError('source must be None or one of: %s' %
+                             ' '.join(list_sources()))
 
         self.session = remote.Session(**session_opts)
 
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)
 
-    @property
-    def agency(self):
-        return self._agency
-
-    @agency.setter
-    def agency(self, value):
-        if value in self._agencies:
-            self._agency = value
-        else:
-            raise ValueError('If given, agency must be one of {0}'.format(
-                list(self._agencies)))
-        self.cache = {}  # for SDMX messages and other stuff.
-
-    def clear_cache(self, key=None):
-        '''
-        If key is Non (default), remove the item if it exists.
-        Otherwise, clear the entire cache.
-        '''
-        if key:
-            if key in self.cache:
-                del self.cache[key]
-        else:
-            self.cache.clear()
+    def clear_cache(self):
+        self.cache.clear()
 
     @property
     def timeout(self):
@@ -179,11 +132,10 @@ class Request(object):
         # API spec.
         if resource_type == 'data' and isinstance(key, dict):
             # select validation method based on agency capabilities
-            if self._agencies[self.agency].get(
-                    'supports_series_keys_only'):
-                return self._make_key_from_series(resource_id, key)
-            else:
+            if self.source.supports['datastructure']:
                 return self._make_key_from_dsd(resource_id, key)
+            else:
+                return self._make_key_from_series(resource_id, key)
         else:
             return None
 
@@ -195,7 +147,7 @@ class Request(object):
         # Base URL
         direct_url = kwargs.pop('url', None)
         if not direct_url:
-            url_parts = [self._agencies[self.agency]['url']]
+            url_parts = [self.source.url]
         else:
             url_parts = [direct_url]
 
@@ -216,9 +168,16 @@ class Request(object):
             else:
                 resource_id = resource.id
 
-        assert resource_type in self._resources, ValueError(
-            "resource_type ('%s') must be in %r" %
-            (resource_type, self._resources))
+        force = kwargs.pop('force', False)
+        try:
+            supported = self.source.supports[resource_type]
+        except KeyError:
+            raise ValueError("resource_type ('%s') must be in %r" %
+                             (resource_type, self._resources))
+        if not (force or supported):
+            raise NotImplementedError("%s does not support %s queries; try "
+                                      "force=True" % (self.source.id,
+                                                      resource_type))
         url_parts.append(resource_type)
 
         # Agency ID to use in the URL
@@ -230,7 +189,7 @@ class Request(object):
                 "agency argument is redundant for resource type '%s'" %
                 resource_type)
         else:
-            agency_id = agency if agency else self.agency
+            agency_id = agency if agency else self.source.id
         url_parts.extend([agency_id, resource_id])
 
         version = kwargs.pop('version', None)
@@ -253,10 +212,7 @@ class Request(object):
 
         # Headers: use headers from agency config if not given by the caller
         if not headers:
-            headers = self._agencies[self.agency] \
-                          .get('resources', {}) \
-                          .get(resource_type, {}) \
-                          .get('headers', {})
+            headers = self.source.headers.get(resource_type, {})
 
         assert len(kwargs) == 0, ValueError('unrecognized arguments: %r' %
                                             kwargs)
@@ -287,7 +243,7 @@ class Request(object):
             which agency the requested information originates from. Note
             that an SDMX service may provide information from multiple data
             providers.
-            Not to be confused with the agency ID passed to
+            Not to be confused with the data source ID passed to
             :meth:`__init__` which specifies the SDMX web service to be
             accessed.
         key(str, dict): select columns from a dataset by specifying
@@ -359,6 +315,7 @@ class Request(object):
             return req
 
         response = self.session.send(req)
+        response.raise_for_status()
 
         # Maybe copy the response to file as it's received
         arg = [tofile] if tofile else []
@@ -366,22 +323,21 @@ class Request(object):
 
         # Select reader class
         content_type = response.headers.get('content-type', None)
-        if not content_type:
-            # TODO detect content_type by peeking at response_content
-            content_type = 'xml'
-            # raise ValueError("can't determine a reader for response content "
-            #                  "beginning: %s" % response_content.read()[:30])
-
-        if 'xml' in content_type:
-            reader_module = import_module('pandasdmx.reader.sdmxml')
-        elif 'json' in content_type:
-            reader_module = import_module('pandasdmx.reader.sdmxjson')
-        else:
-            raise ValueError("can't determine a reader for response content "
-                             "type: %s" % response.headers['content-type'])
+        try:
+            Reader = get_reader_for_content_type(content_type)
+        except KeyError:
+            try:
+                content_type = self.source.handle_response(response,
+                                                           response_content)
+            except NotImplementedError:
+                raise ValueError("can't determine a reader for response "
+                                 "content type: %s" %
+                                 response.headers['content-type'])
+            else:
+                Reader = get_reader_for_content_type(content_type)
 
         # Instantiate reader
-        reader = reader_module.Reader()
+        reader = Reader()
 
         # Parse the message
         msg = reader.read_message(response_content)

@@ -11,11 +11,8 @@
 This module is part of pandaSDMX. It contains
 a classes for http access.
 '''
-from contextlib import closing
 from io import BufferedIOBase
 import logging
-import sys
-from tempfile import SpooledTemporaryFile
 from warnings import warn
 
 import requests
@@ -70,14 +67,6 @@ class Session(MaybeCachedSession):
         # Overwrite values from requests.Session.__init__()
         self.stream = stream
         self.proxies = proxies
-
-    def get(self, url, **kwargs):
-        response = super(Session, self).get(url, **kwargs)
-        if response.status_code is requests.codes.not_implemented:
-            raise NotImplementedError
-        else:
-            response.raise_for_status()
-        return response
 
 
 class ResponseIO(BufferedIOBase):

@@ -69,17 +69,11 @@ class AgencyTest:
 class TestABS(AgencyTest):
     agency_id = 'ABS'
     xfail = {
-        # These 3 endpoints return a content-type: text/html response saying
-        # the endpoint is not implemented
-        'categoryscheme': ValueError,
-        'codelist': ValueError,
-        'conceptscheme': ValueError,
-
-        # 400 Client Error: Semantic Error
-        'dataflow': HTTPError,
-
-        # 404 Client Error: Not Found
-        'datastructure': HTTPError,
+        'categoryscheme': HTTPError,  # 500 'An error has occurred'
+        'codelist': HTTPError,  # 500 'An error has occurred'
+        'conceptscheme': HTTPError,  # 500 'An error has occurred'
+        'dataflow': HTTPError,  # 400 'Semantic error'
+        'datastructure': HTTPError,  # 404 'Not found'
         }
 
 

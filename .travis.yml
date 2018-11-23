@@ -1,7 +1,5 @@
 language: python
-
-dist: xenial
-
+cache: pip
 python:
   - "2.7"
   - "3.4"
@@ -19,7 +17,7 @@ install:
   - pip install coverage codecov pytest-cov
   - pip install --no-deps -e .
 
-script: pytest --cov=pandasdmx --cov-report=term-missing --remote-data
+script: pytest --cov=pandasdmx --cov-report=term-missing --remote-data --verbose
 
 after_success:
   - coverage combine

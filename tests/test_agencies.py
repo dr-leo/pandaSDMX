@@ -200,7 +200,10 @@ class TestUNESCO(AgencyTest):
         'codelist': HTTPError,
         'conceptscheme': HTTPError,
         'dataflow': HTTPError,
-        'datastructure': HTTPError,
+
+        # Because 'supports_series_keys_only' was set
+        # TODO check
+        'datastructure': NotImplementedError,
         }
 
 

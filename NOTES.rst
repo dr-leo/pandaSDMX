@@ -27,12 +27,14 @@ Using pd.DataFrame for internal storage
 
 The work in this branch handles Observations as object instances. Once the implementation is complete and fully conforms to the spec, the package might
 be refactored again to use pandas objects for internal storage. See:
+
 - pandasdmx/experimental.py for a partial mock-up of such code, and
 - tests/test_experimental.py for tests.
 
 Choosing either the current or experimental DataSet as a default should be
 based on detailed performance (memory and time) evaluation under a variety of
 use-cases. To that end, note that the experimental DataSet involves three conversions:
+
 1. a reader parses the XML or JSON source, creates Observation instances, and
    adds them using DataSet.add_obs()
 2. experimental.DataSet.add_obs() populates a pd.DataFrame from these

@@ -31,9 +31,11 @@ class BaseReader(ABC):
 
 def get_reader_for_content_type(ctype):
     ctype = ctype.split(';')[0]
-    if ctype in ['text/xml',
+    if ctype in ['application/xml',
                  'application/vnd.sdmx.genericdata+xml',
-                 'application/vnd.sdmx.structure+xml']:
+                 'application/vnd.sdmx.structure+xml',
+                 'text/xml',
+                 ]:
         from .sdmxml import Reader
         return Reader
     elif ctype in ['text/json']:

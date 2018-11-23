@@ -28,6 +28,4 @@ class Source(BaseSource):
                     response.status_code = 500
                     response.raise_for_status()
 
-            print(buf, response.status_code)
-
         raise NotImplementedError

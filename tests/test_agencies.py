@@ -10,6 +10,7 @@ from pandasdmx.api import Request
 from pandasdmx.reader.sdmxml import ParseError
 import pytest
 from requests.exceptions import HTTPError
+import requests_mock
 
 from . import test_data_path
 
@@ -81,6 +82,26 @@ class TestECB(AgencyTest):
     agency_id = 'ECB'
 
 
+estat_mock = {
+    ('http://ec.europa.eu/eurostat/SDMX/diss-web/rest/data/nama_10_gdp/'
+     '..B1GQ+P3.'): {
+        'body': test_data_path / 'estat' / 'footer2.xml',
+        'headers': {
+            'Content-Type':
+                'application/vnd.sdmx.genericdata+xml; version=2.1',
+            },
+        },
+    'http://ec.europa.eu/eurostat/SDMX/diss-web/file/7JUdWyAy4fmjBSWT': {
+        # This file is a trimmed version of the actual response for the above
+        # query
+        'body': test_data_path / 'estat' / 'footer2.zip',
+        'headers': {
+            'Content-Type': 'application/octet-stream',
+            },
+        },
+    }
+
+
 class TestESTAT(AgencyTest):
     agency_id = 'ESTAT'
     xfail = {
@@ -93,6 +114,25 @@ class TestESTAT(AgencyTest):
         #      all datastructures; this is really more of a 501.
         'datastructure': HTTPError,
         }
+
+    @pytest.fixture
+    def mock(self):
+        # Prepare the mock requests
+        fixture = requests_mock.Mocker()
+        for url, args in estat_mock.items():
+            args['body'] = open(args['body'], 'rb')
+            fixture.get(url, **args)
+
+        return fixture
+
+    def test_xml_footer(self, mock):
+        req = Request(self.agency_id)
+
+        with mock:
+            msg = req.get(url=list(estat_mock.keys())[0],
+                          get_footer_url=(1, 1))
+
+        assert len(msg.data[0].obs) == 43
 
 
 class TestIMF(AgencyTest):

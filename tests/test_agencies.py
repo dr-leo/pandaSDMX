@@ -180,6 +180,14 @@ class TestSGR(AgencyTest):
         # See IMF xfail for categoryscheme; same issue, this time with key
         # ESA2010MA.Q
         'categoryscheme': ParseError,
+
+        # TODO these are automatically constructed using 'SGR' as the
+        # agency_id; this gives 404, as SGR itself is not a data *provider*.
+        # However, with 'all', each works. Write tests for these.
+        'codelist': HTTPError,
+        'conceptscheme': HTTPError,
+        'dataflow': HTTPError,
+        'datastructure': HTTPError,
         }
 
     # Based on query builder at

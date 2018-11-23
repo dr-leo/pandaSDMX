@@ -30,7 +30,7 @@ class BaseReader(ABC):
 
 
 def get_reader_for_content_type(ctype):
-    ctype = ctype.split(';')[0]
+    ctype = str(ctype).split(';')[0].strip()
     if ctype in ['application/xml',
                  'application/vnd.sdmx.genericdata+xml',
                  'application/vnd.sdmx.structure+xml',

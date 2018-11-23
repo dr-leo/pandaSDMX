@@ -339,20 +339,18 @@ class Request(object):
         response_content = remote.ResponseIO(response, *arg)
 
         # Select reader class
-        content_type = response.headers.get('content-type', '') \
-                                       .split(';')[0].strip()
+        content_type = response.headers.get('content-type', None)
         try:
             Reader = get_reader_for_content_type(content_type)
         except ValueError:
             try:
                 response, response_content = self.source.handle_response(
                     response, response_content)
-                Reader = get_reader_for_content_type(
-                    response.headers['content-type'])
+                content_type = response.headers.get('content-type', None)
+                Reader = get_reader_for_content_type(content_type)
             except ValueError:
                 raise ValueError("can't determine a reader for response "
-                                 "content type: %s" %
-                                 response.headers['content-type'])
+                                 "content type: %s" % content_type)
 
         # Instantiate reader
         reader = Reader()

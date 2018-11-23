@@ -332,7 +332,7 @@ class Facet(HasTraits):
 
 
 class Representation(HasTraits):
-    enumerated = List(Instance(ItemScheme))
+    enumerated = Instance(ItemScheme)
     non_enumerated = Set(Instance(Facet))
 
 
@@ -357,7 +357,7 @@ class ConceptScheme(ItemScheme):
 
 class Component(IdentifiableArtefact):
     concept_identity = Instance(Concept)
-    local_representation = Instance(Representation, allow_none=True)
+    local_representation = Instance(Representation, args=(), allow_none=True)
 
 
 class ComponentList(IdentifiableArtefact):
@@ -642,6 +642,10 @@ class DimensionDescriptor(ComponentList):
         Instance(TimeDimension),
         ]))
 
+    def __getitem__(self, key):
+        """Convenience access to components."""
+        return self.components[key]
+
     def order_key(self, key):
         """Return a key ordered according to the DSD."""
         result = key.__class__()
@@ -651,6 +655,23 @@ class DimensionDescriptor(ComponentList):
             except KeyError:
                 continue
         return result
+
+    @classmethod
+    def from_key(cls, key):
+        """Create a new DimensionDescriptor from a *key*.
+
+        For each KeyValue in the *key*:
+        - A new Dimension is created.
+        - A new Codelist is created, containing the KeyValue.value.
+        """
+        dd = cls()
+        for id, kv in key.values.items():
+            d = Dimension(id=id)
+            cl = Codelist(id=id)
+            d.local_representation.enumerated = cl
+            cl.items.append(Code(id=kv.value))
+            dd.components.append(d)
+        return dd
 
 
 class GroupDimensionDescriptor(DimensionDescriptor):
@@ -687,6 +708,21 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
         assert len(keys) == 0
         return ContentConstraint(data_content_region=cr)
 
+    @classmethod
+    def from_keys(cls, keys):
+        """Create a new DataStructureDefinition from some *keys*.
+
+        The DSD.dimensions refers to a set of Concepts and Codelists, each
+        containing all the values observed across *keys* for that dimension.
+        """
+        iter_keys = iter(keys)
+        dd = DimensionDescriptor.from_key(next(iter_keys))
+        for k in iter_keys:
+            for i, (id, kv) in enumerate(k.values.items()):
+                dd[i].local_representation.enumerated.items.append(
+                    Code(id=kv.value))
+        return cls(dimensions=dd)
+
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):
     structure = Instance(DataStructureDefinition, args=())
@@ -704,6 +740,9 @@ class KeyValue(HasTraits):
 
     def __str__(self):
         return '{0.id}={0.value}'.format(self)
+
+    def __repr__(self):
+        return '<{0.__class__.__name__}: {0.id}={0.value}>'.format(self)
 
     def __hash__(self):
         # KeyValue instances with the same id & value hash identically

@@ -9,9 +9,11 @@ $ py.test --remote-data [...]
 """
 import pytest
 
+import numpy as np
 import pandas as pd
 import pandasdmx
 from pandasdmx import Request
+from pandasdmx.model import DataSet
 
 from . import assert_pd_equal
 
@@ -54,7 +56,6 @@ def test_doc_index1():
 
 
 @pytest.mark.remote_data
-@pytest.mark.xfail(reason='api.Request._make_key_from_dsd() needs refactor')
 def test_doc_index2():
     """Second code example in index.rst."""
     estat = Request('ESTAT')
@@ -62,19 +63,22 @@ def test_doc_index2():
     resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
                       params={'startPeriod': '2007'})
 
-    # We use a generator expression to select some columns
-    # and write them to a pandas DataFrame
-    data = resp.write(s for s in resp.data.series if s.key.AGE == 'TOTAL')
+    # Convert to a pd.DataFrame and use stock pandas methods on the index to
+    # select a subset
+    data = pandasdmx.to_pandas(resp.data[0]).xs('TOTAL', level='AGE',
+                                                drop_level=False)
 
     # Explore the data set. First, show dimension names
-    data.columns.names
+    data.index.names
 
     # and corresponding dimension values
-    data.columns.levels
+    data.index.levels
 
     # Show aggregate unemployment rates across ages and sexes as
     # percentage of active population
-    data.loc[:, ('PC_ACT', 'TOTAL', 'T')]
+    idx = pd.IndexSlice
+    subset = data[idx['PC_ACT', 'TOTAL', 'T']]
+    assert len(subset) == 33
 
 
 @pytest.mark.remote_data
@@ -128,17 +132,33 @@ def test_doc_usage_data():
     ecb = Request('ECB')
 
     data_response = ecb.data(resource_id='EXR', key={'CURRENCY': 'USD+JPY'},
-                             params={'startPeriod': '2016'})
-    data = data_response.data
-    type(data)
+                             params={'startPeriod': '2016',
+                                     'endPeriod': '2016-12-31'})
+    # # Commented: do the same without triggering requests for validation
+    # data_response = ecb.data(resource_id='EXR', key='.JPY+USD...',
+    #                          params={'startPeriod': '2016',
+    #                                  'endPeriod': '2016-12-31'})
+    data = data_response.data[0]
 
-    data.dim_at_obs
-    series_l = list(data.series)
-    len(series_l)
-    series_l[5].key
-    set(s.key.FREQ for s in data.series)
+    assert type(data) is DataSet
 
-    daily = (s for s in data.series if s.key.FREQ == 'D')
-    cur_df = data_response.write(daily)
-    cur_df.shape
-    cur_df.tail()
+    # This message doesn't explicitly specify the remaining dimensions; unless
+    # they are inferred from the SeriesKeys, then the DimensionDescriptor is
+    # not complete
+    # assert data.structured_by.dimensions[-1] == 'TIME_PERIOD'
+    # data.dim_at_obs
+
+    series_keys = list(data.series)
+
+    assert len(series_keys) == 16
+
+    series_keys[5]
+
+    assert (sorted(set(sk.FREQ.value for sk in data.series))
+            == 'A D H M Q'.split())
+
+    daily = pandasdmx.to_pandas(data).xs('D', level='FREQ')
+    assert len(daily) == 514
+
+    assert_pd_equal(daily.tail().values,
+                    np.array([1.0446, 1.0445, 1.0401, 1.0453, 1.0541]))

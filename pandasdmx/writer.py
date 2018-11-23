@@ -27,7 +27,7 @@ class Writer:
             # Handle an attempt to 'write' a pandasdmx.api.Response object
             obj = obj.msg
             cls = obj.__class__
-        elif cls is 'list':
+        elif cls is list:
             # List of objects
             return [self.write(item, *args, **kwargs) for item in obj]
         elif cls in (dict, DictLike):

@@ -9,9 +9,8 @@
     "UNSD": {
         "id": "UNSD",
         "url": "http://data.un.org/WS/rest",
-        "name": "United Nations Statistics Division",
-        "unsupported": ["datastructure"]
-    },
+        "name": "United Nations Statistics Division"
+        },
     "UNESCO": {
         "id": "UNESCO",
         "headers": {

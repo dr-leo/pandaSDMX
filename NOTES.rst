@@ -2,8 +2,6 @@ Pending TODOs
 -------------
 In rough order of priority:
 
-- Use requests_mock (https://requests-mock.readthedocs.io) to test the ESTAT
-  zipfile mechanism for providing large datasets.
 - Harmonize handling of API errors. Currently at least four things can happen:
 
   - requests.Response.raise_for_status() produces an HTTPError.
@@ -18,6 +16,7 @@ In rough order of priority:
   SUPPORTED OPERATIONS")
 - Get a set of API keys for testing UNESCO and encrypt them for use in CI:
   https://docs.travis-ci.com/user/encryption-keys/
+- Add tests for Request.preview_data().
 
 Future
 ------

@@ -23,8 +23,6 @@ import logging
 from operator import and_
 from pathlib import Path
 import sys
-from time import sleep
-from zipfile import ZipFile, is_zipfile
 
 from pandasdmx import remote
 from pandasdmx.model import DataStructureDefinition, IdentifiableArtefact
@@ -182,7 +180,7 @@ class Request(object):
 
         force = kwargs.pop('force', False)
         try:
-            supported = self.source.supports[resource_type]
+            supported = direct_url or self.source.supports[resource_type]
         except KeyError:
             raise ValueError("resource_type ('%s') must be in %r" %
                              (resource_type, self._resources))
@@ -190,7 +188,9 @@ class Request(object):
             raise NotImplementedError("%s does not support %s queries; try "
                                       "force=True" % (self.source.id,
                                                       resource_type))
-        url_parts.append(resource_type)
+
+        if not direct_url:
+            url_parts.append(resource_type)
 
         # Agency ID to use in the URL
         agency = kwargs.pop('agency', None)
@@ -202,10 +202,12 @@ class Request(object):
                 resource_type)
         else:
             agency_id = agency if agency else self.source.id
-        url_parts.extend([agency_id, resource_id])
+
+        if not direct_url:
+            url_parts.extend([agency_id, resource_id])
 
         version = kwargs.pop('version', None)
-        if not version and resource_type != 'data':
+        if not version and resource_type != 'data' and not direct_url:
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
@@ -337,19 +339,20 @@ class Request(object):
         response_content = remote.ResponseIO(response, *arg)
 
         # Select reader class
-        content_type = response.headers.get('content-type', None)
+        content_type = response.headers.get('content-type', '') \
+                                       .split(';')[0].strip()
         try:
             Reader = get_reader_for_content_type(content_type)
         except ValueError:
             try:
-                content_type = self.source.handle_response(response,
-                                                           response_content)
-            except NotImplementedError:
+                response, response_content = self.source.handle_response(
+                    response, response_content)
+                Reader = get_reader_for_content_type(
+                    response.headers['content-type'])
+            except ValueError:
                 raise ValueError("can't determine a reader for response "
                                  "content type: %s" %
                                  response.headers['content-type'])
-            else:
-                Reader = get_reader_for_content_type(content_type)
 
         # Instantiate reader
         reader = Reader()
@@ -360,46 +363,8 @@ class Request(object):
         # Store the HTTP response with the message
         msg.response = response
 
-        # Disabled (refactoring)
-        if False:
-            # write msg to file and unzip it as required, then parse it
-            if tofile:
-                logger.info('Writing to file %s', tofile)
-                with open(tofile, 'wb') as dest:
-                    source.seek(0)
-                    dest.write(source.read())
-                    source.seek(0)
-            # handle zip files
-            if is_zipfile(source):
-                temp = source
-                with ZipFile(temp, mode='r') as zf:
-                    info = zf.infolist()[0]
-                    source = zf.open(info)
-            else:
-                # undo side effect of is_zipfile
-                source.seek(0)
-
-        # Check for URL in a footer and get the real data if so configured
-        if get_footer_url and msg.footer is not None:
-            logger.info('Footer found in SDMX message.')
-            # Retrieve the first URL in the footer, if any
-            url_l = False  # FIXME
-            # url_l = [
-                # i for i in msg.footer.text if remote.is_url(i)]
-            if url_l:
-                # found an URL. Wait and try to request it
-                footer_url = url_l[0]
-                seconds, attempts = get_footer_url
-                logger.info("Found URL in footer. Making %i requests, waiting "
-                            " %i seconds in between.", attempts, seconds)
-                for a in range(attempts):
-                    sleep(seconds)
-                    try:
-                        return self.get(tofile=tofile, url=footer_url,
-                                        headers=headers)
-                    except Exception as e:
-                        logger.info("Attempt #%i raised the following "
-                                    " exception: %s", a, str(e))
+        msg = self.source.finish_message(msg, self,
+                                         get_footer_url=get_footer_url)
 
         # store in memory cache if needed
         if use_cache:

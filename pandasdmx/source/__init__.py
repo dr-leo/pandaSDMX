@@ -47,7 +47,10 @@ class Source(HasTraits):
 
     # Hooks
     def handle_response(self, response, content):
-        raise NotImplementedError
+        return response, content
+
+    def finish_message(self, message, request, **kwargs):
+        return message
 
 
 def add_source(info, id=None, override=False):

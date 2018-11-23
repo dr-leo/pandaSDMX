@@ -28,13 +28,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def is_url(s):
-    '''
-    return True if s (str) is a valid URL, False otherwise.
-    '''
-    return bool(requests.utils.urlparse(s).scheme)
-
-
 class Session(MaybeCachedSession):
     """Simpler REST, built as a requests.Session subclass."""
     def __init__(self, **kwargs):
@@ -47,7 +40,7 @@ class Session(MaybeCachedSession):
             # Using requests_cache.CachedSession
 
             # No cache keyword arguments supplied = don't use the cache
-            disabled = len(kwargs) == 0
+            disabled = set(kwargs.keys()) <= {'get_footer_url'}
 
             if disabled:
                 # Avoid creating any file
@@ -84,6 +77,7 @@ class ResponseIO(BufferedIOBase):
         self.response = response
         self.chunks = response.iter_content(ITER_CHUNK_SIZE)
         self.pending = bytes()
+        self.tee_filename = tee
         self.tee = open(tee, 'wb') if tee else None
 
     def read(self, size=ITER_CHUNK_SIZE):
@@ -106,4 +100,8 @@ class ResponseIO(BufferedIOBase):
 
         if self.tee:
             self.tee.write(result)
+            if len(result) == 0:
+                # Also close the results file
+                self.tee.close()
+
         return result

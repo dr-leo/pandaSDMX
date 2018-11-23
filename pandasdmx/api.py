@@ -340,7 +340,7 @@ class Request(object):
         content_type = response.headers.get('content-type', None)
         try:
             Reader = get_reader_for_content_type(content_type)
-        except KeyError:
+        except ValueError:
             try:
                 content_type = self.source.handle_response(response,
                                                            response_content)

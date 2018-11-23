@@ -1,8 +1,6 @@
 Pending TODOs
 -------------
 
-- Refactor Request._make_key_from_series(): generate a DSD from the list of
-  series keys, and then call make_cube() on that.
 - Harmonize handling of API errors. Currently at least four things can happen:
   - requests.Response.raise_for_status() produces an HTTPError.
   - a 501 error gets translated to a Python NotImplementedError.

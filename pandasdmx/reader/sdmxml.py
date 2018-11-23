@@ -118,6 +118,7 @@ _collect_paths = {
         'structure_ref_version':
             ('(mes:Structure/com:Structure/Ref/@version | '
              'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
+        'structure_ref_urn': 'mes:Structure/com:Structure/URN/text()',
         },
     'obs': {
         'dimension': 'gen:ObsDimension/@value',
@@ -563,12 +564,22 @@ class Reader(BaseReader):
 
     def parse_header(self, elem):
         values = self._collect('header', elem)
-        try:  # Handle a reference to a DataStructureDefinition
-            attrs = {k: values.pop('structure_ref_' + k) for k in
-                     ['id', 'agencyid', 'version']}
-            if 'agencyid' in attrs:
-                attrs['maintainer'] = Agency(id=attrs.pop('agencyid'))
 
+        # Handle a reference to a DataStructureDefinition
+        attrs = {}
+        for k in ['id', 'agencyid', 'version', 'urn']:
+            value = values.pop('structure_ref_' + k, None)
+            if not value:
+                continue
+            elif k == 'agencyid':
+                attrs['maintainer'] = Agency(id=value)
+            else:
+                attrs[k] = value
+
+        if set(attrs.keys()) == {'urn'}:
+            attrs['id'] = values['structure_id']
+
+        if 'id' in attrs:
             # Create the DSD and DFD
             dsd = self._maintained(DataStructureDefinition, **attrs)
             dfd = DataflowDefinition(id=values.pop('structure_id'),
@@ -577,7 +588,7 @@ class Reader(BaseReader):
             # Also store the dimension at observation
             self._set_obs_dim(values.pop('dim_at_obs'))
             extra = [dfd]
-        except KeyError:
+        else:
             extra = []
 
         # Maybe return the DFD; see .initialize()
@@ -593,6 +604,10 @@ class Reader(BaseReader):
         values = self._parse(elem, unwrap=False)
         # Store groups
         ds = DataSet(group={g: [] for g in values.pop('group', [])})
+
+        # Attributes
+        ds.structured_by = self._maintained(DataStructureDefinition,
+                                            elem.attrib['structureRef'])
 
         # Process series
         for series_key, obs_list in values.pop('series', []):
@@ -853,7 +868,7 @@ class Reader(BaseReader):
             for e in values.pop('enumeration'):
                 if isinstance(e, str):
                     e = ItemScheme(urn=e)
-                r.enumerated.append(e)
+                r.enumerated = e
         elif 'textformat' in values:
             r.non_enumerated = set(values.pop('textformat'))
         assert len(values) == 0

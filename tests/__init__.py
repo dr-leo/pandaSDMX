@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from distutils import version
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -76,6 +77,7 @@ def assert_pd_equal(left, right):
     method = {
         pd.Series: pd.testing.assert_series_equal,
         pd.DataFrame: pd.testing.assert_frame_equal,
+        np.ndarray: np.testing.assert_array_equal,
         }[left.__class__]
     method(left, right)
 

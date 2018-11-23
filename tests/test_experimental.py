@@ -12,6 +12,8 @@ from pandasdmx.model import (
     )
 import pytest
 
+pytestmark = pytest.mark.experimental
+
 
 # Run the tests on both the standard DataSet class, and the experimental,
 # PandasDataSet version

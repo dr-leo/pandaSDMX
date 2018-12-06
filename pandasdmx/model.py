@@ -262,7 +262,7 @@ class ItemScheme(MaintainableArtefact):
     # Convenience access to items
     def __getattr__(self, name):
         # Provided to pass test_dsd.py
-        for i in self.items:
+        for i in self._trait_values.get('items', []):
             if i.id == name:
                 return i
         raise AttributeError(name)

@@ -5,6 +5,7 @@ from traitlets import TraitError
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeValue,
+    ConceptScheme,
     DataAttribute,
     DataStructureDefinition,
     Dimension,
@@ -14,6 +15,12 @@ from pandasdmx.model import (
     )
 
 from pytest import raises
+
+
+def test_itemscheme_setdefault():
+    # Setting works even if the 'items' trait has not been initialized
+    cs = ConceptScheme()
+    cs.setdefault(id='FOO')
 
 
 def test_datastructuredefinition():

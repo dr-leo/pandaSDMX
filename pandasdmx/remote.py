@@ -29,7 +29,10 @@ logger = logging.getLogger(__name__)
 
 
 class Session(MaybeCachedSession):
-    """Simpler REST, built as a requests.Session subclass."""
+    """:class:`requests.Session` subclass with optional caching.
+
+    If requests_cache is installed, this class caches responses.
+    """
     def __init__(self, **kwargs):
         # pandaSDMX-specific defaults
         stream = kwargs.pop('stream', True)
@@ -63,14 +66,20 @@ class Session(MaybeCachedSession):
 
 
 class ResponseIO(BufferedIOBase):
-    """Pipe data from a requests.Response object.
+    """Pipe data from a :class:`requests.Response` object, with echo to file.
 
-    ResponseIO acts as a file-like object from which bytes can be read().
-    Theses are received from the requests.Response object passed to the
-    constructor as *response*.
+    :class:`ResponseIO` wraps a :class:`requests.Response` object's 'content'
+    attribute, providing a file-like object from which bytes can be
+    :meth:`read` incrementally.
 
-    If *tee* is a filename, the contents of *response* are also written to this
-    file as they are received.
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response to wrap.
+    tee : :py:class:`os.PathLike`, optional
+        If provided, the contents of the response are also written to this file
+        as they are received. The file is closed automatically when *response*
+        reaches EOF.
     """
 
     def __init__(self, response, tee=None):
@@ -81,6 +90,19 @@ class ResponseIO(BufferedIOBase):
         self.tee = open(tee, 'wb') if tee else None
 
     def read(self, size=ITER_CHUNK_SIZE):
+        """Read and return up to *size* bytes.
+
+        If the argument is omitted, :py:obj:`None`, or negative, reads and
+        returns all data until EOF. If *tee* was provided to the constructor,
+        data is echoed to file.
+
+        If the argument is positive, and the underlying raw stream is not
+        ‘interactive’, multiple raw reads may be issued to satisfy the byte
+        count (unless EOF is reached first).
+
+        Returns an empty bytes object on EOF.
+
+        """
         try:
             # Accumulate chunks until the requested size is reached
             while len(self.pending) < size:

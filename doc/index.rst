@@ -112,23 +112,32 @@ pandaSDMX Links
 * `Official SDMX website <http://www.sdmx.org>`_
 
 Table of contents
----------------------
-
+-----------------
 
 .. toctree::
     :maxdepth: 2
     :numbered:
 
-    whatsnew
-    faq
-    intro
-    sdmx_tour
-    usage
-    agencies
-    advanced
-    API documentation <api/modules>
+    im
+    api
+    api_readers
     contributing
     license
+
+Original documentation
+----------------------
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+
+   whatsnew
+   faq
+   intro
+   sdmx_tour
+   usage
+   agencies
+   advanced
 
 Indices and tables
 ==================

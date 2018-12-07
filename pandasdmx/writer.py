@@ -102,7 +102,8 @@ class Writer:
                 row['value'] = observation.value
             if attributes:
                 row.update(observation.attrib)
-            result[observation.key.order().get_values()] = row
+            key = tuple(map(str, observation.key.order().get_values()))
+            result[key] = row
 
         result = pd.DataFrame.from_dict(result, orient='index')
 

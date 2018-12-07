@@ -76,6 +76,7 @@ HTTP request parameters are exposed through a dict. It may be
 modified between requests.
 
 .. ipython:: python
+    :okexcept:
 
     ecb_via_proxy.client.config
 
@@ -151,12 +152,14 @@ This is because the ``get`` method has conveniently set the ``references`` param
 to a default value. We can see this from the URL:
 
 .. ipython:: python
+    :okexcept:
 
     cat_response.url
 
 The HTTP headers returned by the SDMX server are availble as well (new in version 0.2.2):
 
 .. ipython:: python
+    :okexcept:
 
     cat_response.http_headers
 
@@ -164,6 +167,7 @@ Now let's export our
 category scheme to a pandas DataFrame and see what's in there:
 
 .. ipython:: python
+    :okexcept:
 
     cat_response.write().categoryscheme
 
@@ -194,6 +198,7 @@ To display the categorised items, in our case the dataflow definitions contained
 on exchange rates, we iterate over the `Category` instance (new in version 0.5):
 
 .. ipython:: python
+    :okexcept:
 
     list(cat_response.categoryscheme.MOBILE_NAVI['07'])
 
@@ -217,6 +222,7 @@ Passing a dataflow ID prompts pandaSDMX to set the
 server to return any metadata related to the dataflow definition as well.
 
 .. ipython:: python
+    :okexcept:
 
     cat_response.write().dataflow.head()
 
@@ -256,6 +262,7 @@ that it refers to and that refer to it. We set the ``params`` keyword argument
 explicitly to the default value to show how it works.
 
 .. ipython:: python
+    :okexcept:
 
     dsd_id = cat_response.dataflow.EXR.structure.id
     dsd_id
@@ -288,6 +295,7 @@ also at the allowed values
 as contained in the potentially constrained codelists. We now use pandas:
 
 .. ipython:: python
+    :okexcept:
 
     dsd.dimensions.aslist()
     dsd_response.write().codelist.loc['CURRENCY'].head()
@@ -426,6 +434,7 @@ groups
     Note that groups are merely attachment points for attributes.
 
 .. ipython:: python
+    :okexcept:
 
     data.dim_at_obs
     series_l = list(data.series)
@@ -455,6 +464,7 @@ of the series contained in the dataset. Thus we can now
 generate our pandas DataFrame from daily exchange rate data only:
 
 .. ipython:: python
+    :okexcept:
 
     daily = (s for s in data.series if s.key.FREQ == 'D')
     cur_df = data_response.write(daily)

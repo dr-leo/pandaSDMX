@@ -1,4 +1,3 @@
-pandasdmx.utils package
 =======================
 
 Submodules
@@ -25,6 +24,11 @@ Module contents
 ---------------
 
 .. automodule:: pandasdmx.utils
+=======
+pandasdmx\.util package
+========================
+
+.. automodule:: pandasdmx.util
     :members:
     :undoc-members:
     :show-inheritance:

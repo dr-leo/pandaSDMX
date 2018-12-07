@@ -263,7 +263,7 @@ class Request(object):
             Not to be confused with the data source ID passed to
             :meth:`__init__` which specifies the SDMX web service to be
             accessed.
-        key(str, dict): select columns from a dataset by specifying
+        key (str, dict): select columns from a dataset by specifying
             dimension values.
             If type is str, it must conform to the SDMX REST API, i.e.
             dot-separated dimension values.
@@ -271,7 +271,7 @@ class Request(object):
             allowed dimension values. Two or more values can be separated
             by '+' as in the str form. The DSD will be downloaded and the
             items are validated against it before downloading the dataset.
-        params(dict): defines the query part of the URL.
+        params (dict): defines the query part of the URL.
             The SDMX web service guidelines (www.sdmx.org) explain the
             meaning of permissible parameters. It can be used to restrict
             the time range of the data to be delivered (startperiod,
@@ -279,17 +279,17 @@ class Request(object):
             specified resource should be returned as well (e.g.
             references='parentsandsiblings'). Sensible defaults are set
             automatically depending on the values of other args such as
-            `resource_type`.
-            Defaults to {}.
-        headers(dict): http headers. Given headers will overwrite
+            `resource_type`. Defaults to {}.
+        headers (dict): HTTP headers. Given headers will overwrite
             instance-wide headers passed to the constructor. Defaults to
-            None, i.e. use defaults from agency configuration.
-        tofile (str or :py:`Path`): file path to write the received SDMX file
-            on the fly. This is useful if you want to load data offline using
-            `open_file()` or if you want to open an SDMX file in an XML editor.
+            `None`, i.e. use defaults from agency configuration.
+        tofile (path-like): file path to write the
+            received SDMX file on the fly. This is useful if you want to load
+            data offline using `open_file()` or if you want to open an SDMX
+            file in an XML editor. May be a :py:class:`pathlib.Path`.
         url (str): URL of the resource to download.
-            If given, any other arguments such as ``resource_type`` or
-            ``resource_id`` are ignored. Default is None.
+            If given, any other arguments such as `resource_type` or
+            `resource_id` are ignored. Default is None.
         get_footer_url ((int, int)):
             tuple of the form (seconds, number_of_attempts). Determines the
             behavior in case the received SDMX message has a footer where
@@ -303,7 +303,7 @@ class Request(object):
             dataset is returned. The ``tofile`` argument is propagated.
             Note that the written file may be a zip archive. pandaSDMX
             handles zip archives since version 0.2.1. Defaults to (30, 3).
-        memcache (str): If given, return Response instance if already in
+        memcache(str): If given, return Response instance if already in
             self.cache(dict), otherwise download resource and cache
             Response instance.
 
@@ -311,6 +311,7 @@ class Request(object):
         -------
         pandasdmx.api.Response: instance containing the requested
             SDMX Message.
+
         """
         req = self._request_args(resource_type=resource_type,
                                  resource_id=resource_id, **kwargs)

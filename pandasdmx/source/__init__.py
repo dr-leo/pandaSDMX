@@ -22,7 +22,7 @@ class Source(HasTraits):
     """SDMX-IM Datasource.
 
     This class describes the location and features supported by an SDMX
-    endpoint. Subclasses can override :method:`handle_response` to handle
+    endpoint. Subclasses can override :meth:`handle_response` to handle
     specific types of responses only provided by one endpoint.
 
     This class roughly conforms to the SDMX-IM RESTDatasource.

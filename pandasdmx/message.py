@@ -67,6 +67,7 @@ class StructureMessage(Message):
 class DataMessage(Message):
     data = List(Instance(DataSet))
     dataflow = Instance(DataflowDefinition, args=())
+
     # TODO infer the observation dimension from the DSD, e.g.
     # - If a *TimeSeriesDataSet, it's the TimeDimension,
     # - etc.

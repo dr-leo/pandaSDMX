@@ -36,6 +36,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
 ]
 
 # avoid importing matplotlib by ipython directive
@@ -267,3 +268,9 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
+intersphinx_mapping = {
+    'py': ('https://docs.python.org/3/', None),
+    'pd': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+}

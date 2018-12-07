@@ -26,7 +26,7 @@ v0.7.0 (2017-06-10)
 * new feature: load metadata on data providers from json file; allow the user to
   add new agencies on the fly by specifying an appropriate
   JSON file using the :meth:`pandasdmx.api.Request.load_agency_profile`.
-* new :method:`pandasdmx.api.Request.preview_data` providing a
+* new :meth:`pandasdmx.api.Request.preview_data` providing a
   powerful fine-grain key validation algorithm by downloading all series-keys of a dataset and
   exposing them as a pandas DataFrame which is then mapped to the cartesian product
   of the given dimension values. Works only with

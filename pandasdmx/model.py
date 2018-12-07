@@ -171,6 +171,7 @@ class AnnotableArtefact(HasTraits):
 
 
 class IdentifiableArtefact(AnnotableArtefact):
+    """SDMX-IM IdentifiableArtefact."""
     id = Unicode()
     uri = Unicode()
     urn = Unicode()
@@ -243,16 +244,33 @@ FacetValueType = Enum(
 # 3.5: Item Scheme
 
 class Item(NameableArtefact):
-    # TODO debug this. Doesn't work on subclasses
-    # parent = Instance(This)
-    parent = Any()
+    parent = Instance('pandasdmx.model.Item', allow_none=True)
     child = List(Instance(This))
+
+    def __init__(self, *args, **kwargs):
+        super(Item, self).__init__(*args, **kwargs)
+
+        # Add this Item as a child of its parent
+        parent = kwargs.get('parent', None)
+        if parent and self not in parent:
+            parent.child.append(self)
+
+        # Add this Item as a parent of its children
+        for c in kwargs.get('child', []):
+            c.parent = self
 
     def __contains__(self, item):
         """Recursive containment."""
         for c in self.child:
             if item == c or item in c:
                 return True
+
+    def get_child(self, id):
+        """Return the child with the given *id*."""
+        for c in self.child:
+            if c.id == id:
+                return c
+        raise ValueError(id)
 
 
 class ItemScheme(MaintainableArtefact):
@@ -296,6 +314,11 @@ class ItemScheme(MaintainableArtefact):
                                                'keyword arguments to '
                                                'setdefault()')
         else:
+            # Replace a string 'parent' ID with a reference to the object
+            parent = kwargs.pop('parent', None)
+            if isinstance(parent, str):
+                kwargs['parent'] = self[parent]
+
             # Instantiate an object of the correct class by introspecting
             # the items trait
             obj = self.__class__.items._trait.klass(**kwargs)
@@ -406,7 +429,7 @@ class ComponentList(IdentifiableArtefact):
 
     def __repr__(self):
         return '<{}: {}>'.format(self.__class__.__name__,
-                                 '; '.join(map(str, self.components)))
+                                 '; '.join(map(repr, self.components)))
 
 
 # 4.3: Codelist

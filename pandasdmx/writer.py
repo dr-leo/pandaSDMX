@@ -204,3 +204,8 @@ class Writer:
             # TODO return parent information
 
         return pd.Series(items, name=obj.id)
+
+
+def to_pandas(obj, *args, **kwargs):
+    """Convert an SDMX-IM *obj* to a pandas object."""
+    return Writer().write(obj, *args, **kwargs)

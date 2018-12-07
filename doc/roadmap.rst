@@ -1,4 +1,7 @@
-Pending TODOs
+Development roadmap
+===================
+
+Towards v1.0
 -------------
 In rough order of priority:
 
@@ -67,3 +70,14 @@ There are some ways this performance could be improved:
 
 - Parallelize parsing, e.g. at the level of Series or other mostly-separate
   collections of objects.
+
+SDMX features
+~~~~~~~~~~~~~
+
+- SOAP APIs; currently only REST APIs are supported. This would allow access
+  to, e.g., a broader set of :ref:`IMF` data.
+
+Inline TODOs
+~~~~~~~~~~~~
+
+.. todolist::

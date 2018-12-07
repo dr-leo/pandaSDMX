@@ -7,10 +7,10 @@ re_500 = re.compile(r"(An error has occurred)\.")
 
 
 class Source(BaseSource):
-    """Handle ABS' own error page for some endpoints."""
     _id = 'ABS'
 
     def handle_response(self, response, content):
+        """Handle ABS' own text/html error page for some endpoints."""
         ctype = response.headers.get('content-type', '')
         if 'text/html' in ctype:
             buf = ''

@@ -37,6 +37,7 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
 ]
 
 # avoid importing matplotlib by ipython directive
@@ -273,4 +274,8 @@ texinfo_documents = [
 intersphinx_mapping = {
     'py': ('https://docs.python.org/3/', None),
     'pd': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'np': ('https://docs.scipy.org/doc/numpy/', None),
 }
+
+
+todo_include_todos = True

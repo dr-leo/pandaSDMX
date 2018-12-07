@@ -19,13 +19,13 @@ endpoints = [
 
 
 class Source(HasTraits):
-    """SDMX-IM Datasource.
+    """SDMX-IM RESTDatasource.
 
-    This class describes the location and features supported by an SDMX
-    endpoint. Subclasses can override :meth:`handle_response` to handle
-    specific types of responses only provided by one endpoint.
+    This class describes the location and features supported by an SDMX data
+    source. Subclasses can override :meth:`handle_response` and
+    :meth:`finish_message` to handle specific types of responses only provided
+    by one data source.
 
-    This class roughly conforms to the SDMX-IM RESTDatasource.
     """
     id = Unicode()
     url = Unicode()
@@ -53,20 +53,44 @@ class Source(HasTraits):
         return message
 
 
-def add_source(info, id=None, override=False):
-    """Add a new datasource.
+def add_source(info, id=None, override=False, **kwargs):
+    """Add a new data source.
 
-    *info* is a dict-like, or a string containing JSON information, about a
-    data source. *id* is the short ID string of the data source; if `None`
-    (default), then `info['id']` is used.
+    The *info* expected is in JSON format:
 
-    Adding a datasource with an existing *id* raises `ValueError`, unless
-    *override* is `True` (default: `False`).
+    .. code-block:: json
+
+        "ESTAT": {
+            "id": "ESTAT",
+            "documentation": "http://data.un.org/Host.aspx?Content=API",
+            "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+            "name": "Eurostat",
+            "unsupported": ["categoryscheme", "codelist", "conceptscheme"]
+            },
+
+    …with unspecified values using the defaults; see
+    :class:`pandasdmx.source.Source`.
+
+    Parameters
+    ----------
+    info : dict-like
+        String containing JSON information about a data source.
+    id : str
+        Identifier for the new datasource. If :obj:`None` (default), then
+        `info['id']` is used.
+    override : bool
+        If :obj:`True`, replace any existing data source with *id*.
+        Otherwise, raise :class:`ValueError`.
+    **kwargs
+        Optional callbacks for *handle_response* and *finish_message* hooks.
+
     """
     if isinstance(info, str):
         info = json.loads(info)
 
     id = info['id'] if id is None else id
+
+    info.update(kwargs)
 
     if id in sources:
         raise ValueError("Data source '%s' already defined; use override=True",

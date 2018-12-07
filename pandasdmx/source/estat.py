@@ -9,19 +9,21 @@ from . import Source as BaseSource
 
 
 class Source(BaseSource):
-    """Handle ESTAT's mechanism for large datasets."""
+    """Handle Eurostat's mechanism for large datasets.
+
+    To some requests, ESTAT returns a DataMessage that has no content, except a
+    <footer:Footer> element that gives a URL where the data will be made
+    available as a ZIP file.
+
+    """
     _id = 'ESTAT'
 
     def finish_message(self, message, request, get_footer_url=(30, 3)):
         """Handle the initial response.
 
-        To some requests, ESTAT returns a DataMessage that has no content,
-        except a <footer:Footer> element that gives a URL where the data will
-        be made available.
-
-        This hook identifies that URL, makes a second request (polling as
-        indicated by *get_footer_url*), and returns a new DataMessage with the
-        parsed content.
+        This hook identifies the URL in the footer of the initial response,
+        makes a second request (polling as indicated by *get_footer_url*), and
+        returns a new DataMessage with the parsed content.
         """
         # Check the message footer for a text element that is a valid URL
         url = None
@@ -57,6 +59,7 @@ class Source(BaseSource):
         The request for the indicated ZIP file URL returns an octet-stream;
         this handler saves it, opens it, and returns the content of the single
         contained XML file.
+
         """
         if response.headers['content-type'] != 'application/octet-stream':
             return response, content

@@ -491,10 +491,3 @@ def open_file(filename_or_obj):
             raise ValueError(first_line)
 
     return reader().read_message(obj)
-
-
-def to_pandas(obj, *args, **kwargs):
-    """Convert an SDMX-IM *obj* to a pandas object."""
-    from pandasdmx.writer import Writer
-
-    return Writer().write(obj, *args, **kwargs)

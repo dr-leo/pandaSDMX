@@ -1,11 +1,15 @@
 :tocdepth: 1
 
-What's new?
-==============
+What's New?
+===========
 
-Unreleased changes
+v0.99 (unreleased)
 ------------------
 
+
+Breaking changes
+::::::::::::::::
+* Numerous!
 
 Migrating
 :::::::::
@@ -68,7 +72,7 @@ v0.8 (2017-12-12)
 
 
 v0.7.0 (2017-06-10)
-----------------------------
+-------------------
 
 * add new data providers:
 
@@ -245,8 +249,8 @@ v0.2.1
   request are configurable via the ``get_footer_url`` argument.
 
 
-v0.2 (2015-04-13)
------------------------
+v0.2.0 (2015-04-13)
+-------------------
 
 This version is a quantum leap. The whole project has been redesigned and rewritten from
 scratch to provide robust support for many SDMX features. The new architecture is centered around
@@ -255,7 +259,14 @@ for alternative input and output formats.
 Export to pandas has been dramatically improved. Sphinx documentation
 has been added.
 
-v0.1 (2014-09)
-----------------
+v0.1.2 (2014-09-17)
+-------------------
 
-Initial release
+* fix xml encoding. This brings dramatic speedups when downloading and parsing data
+* extend description.rst
+
+
+v0.1 (2014-09)
+--------------
+
+* Initial release

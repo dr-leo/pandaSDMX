@@ -19,9 +19,6 @@ from . import assert_pd_equal, expected_data, test_data_path, test_files
 xfail = {
     'exr-action-delete.json': (AssertionError, """Expected type <class
         'pandas.core.frame.DataFrame'>, found <class 'list'> instead"""),
-    'exr-time-series.json': (AssertionError, """Expected type <class
-        'pandas.core.frame.DataFrame'>, found <class
-        'pandas.core.series.Series'> instead"""),
     }
 
 

@@ -1,13 +1,13 @@
-"""Tests of data from specific agencies.
+"""Tests against the actual APIs for specific data sources.
 
-HTTP responses from the agency APIs are cached in tests/data/cache.
+HTTP responses from the data sources are cached in tests/data/cache.
 To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
 from json import JSONDecodeError
 
 from pandasdmx.api import Request
-from pandasdmx.reader.sdmxml import ParseError
+from pandasdmx.reader import ParseError
 import pytest
 from requests.exceptions import HTTPError
 import requests_mock
@@ -44,10 +44,10 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('endpoint', endpoints)
 
 
-class AgencyTest:
-    """Base class for agency tests."""
+class DataSourceTest:
+    """Base class for data source tests."""
     # Must be one of the IDs in agencies.json
-    agency_id = None
+    source_id = None
 
     # Mapping of endpoint → Exception subclass.
     # Tests of these endpoints are expected to fail.
@@ -57,8 +57,8 @@ class AgencyTest:
     def req(self):
         # Use a common cache file for all agency tests
         (test_data_path / 'cache').mkdir(exist_ok=True)
-        self._cache_path = test_data_path / 'cache' / self.agency_id
-        return Request(self.agency_id, cache_name=str(self._cache_path),
+        self._cache_path = test_data_path / 'cache' / self.source_id
+        return Request(self.source_id, cache_name=str(self._cache_path),
                        backend='sqlite')
 
     @pytest.mark.remote_data
@@ -67,8 +67,8 @@ class AgencyTest:
         req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
 
 
-class TestABS(AgencyTest):
-    agency_id = 'ABS'
+class TestABS(DataSourceTest):
+    source_id = 'ABS'
     xfail = {
         'categoryscheme': HTTPError,  # 500 'An error has occurred'
         'codelist': HTTPError,  # 500 'An error has occurred'
@@ -78,10 +78,11 @@ class TestABS(AgencyTest):
         }
 
 
-class TestECB(AgencyTest):
-    agency_id = 'ECB'
+class TestECB(DataSourceTest):
+    source_id = 'ECB'
 
 
+# Data for requests_mock; see TestESTAT.mock()
 estat_mock = {
     ('http://ec.europa.eu/eurostat/SDMX/diss-web/rest/data/nama_10_gdp/'
      '..B1GQ+P3.'): {
@@ -102,8 +103,8 @@ estat_mock = {
     }
 
 
-class TestESTAT(AgencyTest):
-    agency_id = 'ESTAT'
+class TestESTAT(DataSourceTest):
+    source_id = 'ESTAT'
     xfail = {
         'categoryscheme': NotImplementedError,
         'codelist': NotImplementedError,
@@ -126,7 +127,7 @@ class TestESTAT(AgencyTest):
         return fixture
 
     def test_xml_footer(self, mock):
-        req = Request(self.agency_id)
+        req = Request(self.source_id)
 
         with mock:
             msg = req.get(url=list(estat_mock.keys())[0],
@@ -135,8 +136,8 @@ class TestESTAT(AgencyTest):
         assert len(msg.data[0].obs) == 43
 
 
-class TestIMF(AgencyTest):
-    agency_id = 'IMF_SDMXCENTRAL'
+class TestIMF(DataSourceTest):
+    source_id = 'IMF_SDMXCENTRAL'
     xfail = {
         # ParseError: <Category: 'ESA2010MA.A'=''> not located in
         #             <CategoryScheme: 'ESA2010TP', 7 items>
@@ -154,12 +155,12 @@ class TestIMF(AgencyTest):
         }
 
 
-class TestINSEE(AgencyTest):
-    agency_id = 'INSEE'
+class TestINSEE(DataSourceTest):
+    source_id = 'INSEE'
 
 
-class TestOECD(AgencyTest):
-    agency_id = 'OECD'
+class TestOECD(DataSourceTest):
+    source_id = 'OECD'
     xfail = {
         # can't determine a reader for response content type: text/html
         # NOTE these are Microsoft IIS HTML error pages for 404 errors
@@ -174,8 +175,8 @@ class TestOECD(AgencyTest):
         }
 
 
-class TestSGR(AgencyTest):
-    agency_id = 'SGR'
+class TestSGR(DataSourceTest):
+    source_id = 'SGR'
     xfail = {
         # See IMF xfail for categoryscheme; same issue, this time with key
         # ESA2010MA.Q
@@ -200,8 +201,8 @@ class TestSGR(AgencyTest):
                 tofile=self._cache_path.with_suffix('.codelist2'))
 
 
-class TestUNESCO(AgencyTest):
-    agency_id = 'UNESCO'
+class TestUNESCO(DataSourceTest):
+    source_id = 'UNESCO'
     xfail = {
         # Requires registration
         'categoryscheme': HTTPError,
@@ -215,9 +216,9 @@ class TestUNESCO(AgencyTest):
         }
 
 
-class TestUNSD(AgencyTest):
-    agency_id = 'UNSD'
+class TestUNSD(DataSourceTest):
+    source_id = 'UNSD'
 
 
-class TestWB(AgencyTest):
-    agency_id = 'WBG_WITS'
+class TestWB(DataSourceTest):
+    source_id = 'WBG_WITS'

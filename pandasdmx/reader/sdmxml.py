@@ -71,7 +71,7 @@ from pandasdmx.model import (
     UsageStatus,
     )
 
-from pandasdmx.reader import BaseReader
+from pandasdmx.reader import BaseReader, ParseError
 
 # XML namespaces
 _ns = {
@@ -233,10 +233,6 @@ def add_localizations(target, values):
     if isinstance(values, tuple) and len(values) == 2:
         values = [values]
     target.localizations.update({locale: label for locale, label in values})
-
-
-class ParseError(Exception):
-    pass
 
 
 class Reader(BaseReader):

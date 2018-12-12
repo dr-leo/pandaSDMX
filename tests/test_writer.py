@@ -1,4 +1,4 @@
-"""Tests for pandasdmx/writer/data2pandas.py."""
+"""Tests for pandasdmx/writer.py."""
 # TODO test all possible values of Writer.write() arguments
 # - asframe
 # - attribute
@@ -16,9 +16,14 @@ from pandasdmx.writer import Writer
 from . import assert_pd_equal, expected_data, test_data_path, test_files
 
 
-xfail = {
-    'exr-action-delete.json': (AssertionError, """Expected type <class
-        'pandas.core.frame.DataFrame'>, found <class 'list'> instead"""),
+# file name → (exception raised, exception message, comment/reason)
+file_marks = {
+    'exr-action-delete.json': (
+        AssertionError,
+        "Expected type <class 'pandas.core.frame.DataFrame'>, found <class "
+        " 'list'> instead",
+        'Message contains two DataSets; test infrastructure currently handles '
+        'only messages with a single DataSet.'),
     }
 
 
@@ -28,7 +33,7 @@ def pytest_generate_tests(metafunc):
         tf = test_files(kind='data')
         for value, id in zip(tf['argvalues'], tf['ids']):
             try:
-                mark = pytest.mark.xfail(strict=True, raises=xfail[id][0])
+                mark = pytest.mark.skip(file_marks[id][2])
                 kwarg = dict(marks=mark)
             except KeyError:
                 kwarg = {}

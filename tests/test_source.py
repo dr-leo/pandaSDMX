@@ -3,7 +3,9 @@ from pandasdmx.source import add_source, list_sources
 
 def test_list_sources():
     source_ids = list_sources()
-    assert len(source_ids) == 10
+    assert len(source_ids) == 17
+
+    # Listed alphabetically
     assert source_ids[0] == 'ABS'
     assert source_ids[-1] == 'WBG_WITS'
 

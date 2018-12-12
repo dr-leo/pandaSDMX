@@ -155,8 +155,27 @@ class TestIMF(DataSourceTest):
         }
 
 
+class TestILO(DataSourceTest):
+    source_id = 'ILO'
+
+
+class TestINEGI(DataSourceTest):
+    # TODO also test INEGI_S
+    source_id = 'INEGI'
+
+
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
+
+
+class TestISTAT(DataSourceTest):
+    # TODO also test ISTAT_S
+    source_id = 'ISTAT'
+
+
+class TestNB(DataSourceTest):
+    # TODO also test NB_S
+    source_id = 'NB'
 
 
 class TestOECD(DataSourceTest):

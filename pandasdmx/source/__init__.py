@@ -118,7 +118,7 @@ def list_sources():
 
 def load_package_sources():
     """Discover all sources listed in agencies.json."""
-    with resource_stream('pandasdmx', 'agencies.json') as f:
+    with resource_stream('pandasdmx', 'sources.json') as f:
         for id, info in json.load(f).items():
             add_source(info, id)
 

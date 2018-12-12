@@ -6,6 +6,7 @@ from pandasdmx.model import (
     CategoryScheme,
     Codelist,
     ItemScheme,
+    Observation,
     )
 from pandasdmx.util import DictLike
 
@@ -36,7 +37,10 @@ class Writer:
             cls = obj.__class__
         elif cls is list:
             # List of objects
-            return [self.write(item, *args, **kwargs) for item in obj]
+            if isinstance(obj[0], Observation):
+                return self.write_dataset(obj, *args, **kwargs)
+            else:
+                return [self.write(item, *args, **kwargs) for item in obj]
         elif cls in (dict, DictLike):
             # dict or DictLike of objects
             result = cls()
@@ -109,7 +113,7 @@ class Writer:
 
         # Convert observations
         result = {}
-        for observation in source.obs:
+        for observation in getattr(source, 'obs', source):
             row = {}
             if dtype:
                 row['value'] = observation.value

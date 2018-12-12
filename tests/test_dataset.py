@@ -8,7 +8,6 @@
 import pandas as pd
 import pandasdmx
 from pandasdmx import message, model
-import pytest
 
 from . import MessageTest, test_data_path
 
@@ -117,43 +116,60 @@ class TestGenericSeriesDataSet(DataMessageTest):
     def test_pandas(self, msg):
         data = msg.data[0]
 
-        pytest.xfail('new Writer() always returns pd.Series')
-        pd_series = [s.iloc[::-1] for s in pandasdmx.to_pandas(
-                     data, attributes='', asframe=False)]
+        series_keys = list(data.series.keys())
 
-        assert len(pd_series) == 4
-        s3 = pd_series[3]
+        # Number of series in dataframe
+        assert len(series_keys) == 4
+
+        # Convert the observations for one SeriesKey to a pd.Series
+        s3_key = series_keys[3]
+        s3 = pandasdmx.to_pandas(data.series[s3_key])
         assert isinstance(s3, pd.Series)
-        assert s3[2] == 1.2894
-        assert isinstance(s3.name, tuple)
-        assert len(s3.name) == 5
-        # now with attributes
-        pd_series = [s.iloc[::-1] for s in pandasdmx.to_pandas(
-                     data, attributes='osgd', asframe=False)]
-        assert len(pd_series) == 4
-        assert isinstance(pd_series[0], tuple)  # contains 2 series
-        assert len(pd_series[0]) == 2
-        s3, a3 = pd_series[3]
-        assert isinstance(s3, pd.Series)
-        assert isinstance(a3, pd.Series)
-        assert s3[2] == 1.2894
-        assert isinstance(s3.name, tuple)
-        assert len(s3.name) == 5
-        assert len(a3) == 3
-        # access an attribute of the first value
-        assert a3[0].OBS_STATUS == 'A'
+
+        # Test a particular value
+        assert s3[0] == 1.2894
+
+        # Length of index
+        assert len(s3.index.names) == 6
+
+        # Convert again, with attributes
+        pd_data = pandasdmx.to_pandas(data, attributes='osgd')
+
+        # Select one SeriesKey's data out of the DataFrame
+        keys, levels = zip(*[(kv.value, kv.id) for kv in s3_key])
+        s3 = pd_data.xs(keys, level=levels, drop_level=False)
+
+        # Get the value of the first observation
+        assert s3.iloc[0].value == 1.2894
+
+        # Length of index
+        assert len(s3.index.names) == 6
+
+        # Number of attributes available
+        assert len(set(s3.columns) - {'value'}) == 7
+
+        # Access an attribute of the first value.
+        # NB that this uses…
+        # 1. the *pandas* attribute access shorthand, NOT DictLike:
+        #    "s3.iloc[0]" is a single row of s3, i.e. a pd.Series; and
+        #    ".OBS_STATUS" accesses the ps.Series element associated with that
+        #    key in the index
+        # 2. the AttributeValue.__eq__() comparison operator;
+        #    s3.iloc[0].OBS_STATUS is a full AttributeValue, rather than a str.
+        assert s3.iloc[0].OBS_STATUS == 'A'
+        assert s3.iloc[0].OBS_STATUS.value_for == 'OBS_STATUS'  # consistency!
 
     def test_write2pandas(self, msg):
         df = pandasdmx.to_pandas(msg, attributes='')
 
-        pytest.xfail('new Writer() always returns pd.Series')
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, pd.Series)
 
-        assert df.shape == (3, 4)
+        assert df.shape == (12,)
         # with metadata
-        df, mdf = pandasdmx.to_pandas(msg, attributes='osgd')
-        assert mdf.shape == (3, 4)
-        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
+        df = pandasdmx.to_pandas(msg, attributes='osgd')
+        df, mdf = df.iloc[:, 0], df.iloc[:, 1:]
+        assert mdf.shape == (12, 7)
+        assert mdf.iloc[1].OBS_STATUS == 'A'
 
     def test_write2pandas_with_freq(self):
         df = self.resp.write(attributes='',
@@ -216,10 +232,9 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         df = pandasdmx.to_pandas(msg.data[0], attributes='',
                                  asframe=True).iloc[::-1]
 
-        pytest.xfail('new Writer() always returns pd.Series')
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, pd.Series)
 
-        assert df.shape, (3 == 4)
+        assert df.shape == (12,)
 
 
 class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):

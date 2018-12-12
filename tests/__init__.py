@@ -62,9 +62,12 @@ def expected_data(path):
         expected_path = (test_data_path / 'expected' /
                          path.name).with_suffix('.txt')
         result = pd.read_table(expected_path, **args)
+
+        # A series; unwrap
         if set(result.columns) == {'value'}:
-            # A series; unwrap
             result = result['value']
+
+
         return result
     except KeyError:
         return None

@@ -85,7 +85,7 @@
 			</generic:Attributes>
 			<generic:Obs>
 				<generic:ObsDimension id="CURRENCY" value="CHF"/>
-				<generic:ObsValue value="1.3809"/>
+				<generic:ObsValue value="1.3089"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
 					<generic:Value value="F" id="CONF_STATUS_OBS"/>

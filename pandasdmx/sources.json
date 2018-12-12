@@ -1,0 +1,127 @@
+{
+    "ABS": {
+        "id": "ABS",
+        "data_content_type": "JSON",
+        "url": "http://stat.data.abs.gov.au/sdmx-json",
+        "name": "Australian Bureau of Statistics"
+    },
+    "ECB": {
+        "id": "ECB",
+        "resources": {
+            "data": {
+                "headers": {}
+            }
+        },
+        "url": "http://sdw-wsrest.ecb.int/service",
+        "name": "European Central Bank",
+        "unsupported": ["datastructure"]
+    },
+    "ESTAT": {
+        "id": "ESTAT",
+        "documentation": "http://data.un.org/Host.aspx?Content=API",
+        "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+        "name": "Eurostat",
+        "unsupported": ["categoryscheme", "codelist", "conceptscheme"]
+    },
+    "ILO": {
+        "id": "NB",
+        "name": "International Labor Organization",
+        "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
+        "headers": {
+            "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+        }
+    },
+    "IMF": {
+        "id": "IMF",
+        "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
+        "name": "International Monetary Fund - SDMXCentral"
+    },
+    "INEGI": {
+        "id": "INEGI",
+        "url": "http://sdmx.snieg.mx/service/rest",
+        "name": "Instituto Nacional de estatistica y geografìa - generic datasets"
+    },
+    "INEGI_S": {
+        "id": "INEGI_S",
+        "name": "Instituto Nacional de estatistica y geografìa - structure-specific datasets",
+        "url": "http://sdmx.snieg.mx/service/rest",
+        "headers": {
+           "accept": "application/vnd.sdmx.structurespecificdata+xml"
+        }
+    },
+    "INSEE": {
+        "id": "INSEE",
+        "name": "Institut national de la statistique et des Études Économiques",
+        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "headers": {
+            "data": {
+                "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+            }
+        }
+    },
+    "ISTAT": {
+        "id": "ISTAT",
+        "name": "Italian Statistics Office - generic data",
+        "url": "http://sdmx.istat.it/SDMXWS/rest"
+    },
+    "ISTAT_S": {
+        "id": "ISTAT_S",
+        "name": "Italian Statistics Office - structure-specific data",
+        "url": "http://sdmx.istat.it/SDMXWS/rest",
+        "headers": {
+            "data" : {
+                "accept": "application/vnd.sdmx.structurespecificdata+xml"
+            }
+        }
+    },
+    "OECD": {
+        "id": "OECD",
+        "data_content_type": "JSON",
+        "url": "http://stats.oecd.org/SDMX-JSON",
+        "name": "Organisation for Economic Co-operation and Development"
+    },
+    "NORGES_BANK": {
+        "id": "NB",
+        "name": "Norges Bank - generic data format",
+        "url": "https://data.norges-bank.no/api",
+        "headers": {
+            "data": {
+                "accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+            }
+        }
+    },
+    "NORGES_BANK_S": {
+        "id": "NB_S",
+        "name": "Norges Bank - structure-specific data format",
+        "url": "https://data.norges-bank.no/api",
+        "headers": {
+            "data": {
+                "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+            }
+        }
+    },
+    "SGR": {
+        "id": "SGR",
+        "url": "https://registry.sdmx.org/ws/rest",
+        "name": "SDMX Global Registry"
+    },
+    "UNESCO": {
+        "id": "UNESCO",
+        "name": "UN Educational, Scientific and Cultural Organization",
+        "url": "http://api.uis.unesco.org/sdmx",
+        "headers": {
+            "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+        },
+        "unsupported": ["datastructure"]
+    },
+    "UNSD": {
+        "id": "UNSD",
+        "name": "United Nations Statistics Division",
+        "url": "http://data.un.org/WS/rest"
+    },
+    "WBG_WITS": {
+        "id": "WBG_WITS",
+        "name": "World Bank Integrated Trade Solution",
+        "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest"
+    }
+}

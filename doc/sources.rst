@@ -16,7 +16,7 @@ information provided by the same agency.
 
 pandaSDMX identifies each data source using a string such as ``ABS``, and has
 built-in support for a number of data sources. Use :meth:`list_sources` to list
-these. Read the following sections, or the file ``agencies.json`` in the
+these. Read the following sections, or the file ``sources.json`` in the
 package source code, for more details.
 
 pandaSDMX also supports adding other data sources; see :meth:`add_source` and :class:`pandasdmx.source.Source`.

@@ -17,7 +17,6 @@ from . import assert_pd_equal, expected_data, test_data_path, test_files
 
 
 xfail = {
-    'ecb_exr_ng_xs.xml': (AssertionError, "Series length are different"),
     'exr-action-delete.json': (AssertionError, """Expected type <class
         'pandas.core.frame.DataFrame'>, found <class 'list'> instead"""),
     'exr-cross-section.json': (AssertionError, """Expected type <class

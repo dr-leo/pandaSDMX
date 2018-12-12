@@ -5,6 +5,8 @@ Towards v1.0
 -------------
 In rough order of priority:
 
+- Replace and add tests for old writer.structure2pd.
+- Update and add tests for Request.preview_data().
 - Harmonize handling of API errors. Currently at least four things can happen:
 
   - requests.Response.raise_for_status() produces an HTTPError.
@@ -19,7 +21,6 @@ In rough order of priority:
   SUPPORTED OPERATIONS")
 - Get a set of API keys for testing UNESCO and encrypt them for use in CI:
   https://docs.travis-ci.com/user/encryption-keys/
-- Add tests for Request.preview_data().
 
 Future
 ------

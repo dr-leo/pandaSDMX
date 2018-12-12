@@ -70,7 +70,7 @@ def expected_data(path):
         return None
 
 
-def assert_pd_equal(left, right):
+def assert_pd_equal(left, right, **kwargs):
     """Assert equality of two pandas objects."""
     if left is None:
         return
@@ -79,7 +79,7 @@ def assert_pd_equal(left, right):
         pd.DataFrame: pd.testing.assert_frame_equal,
         np.ndarray: np.testing.assert_array_equal,
         }[left.__class__]
-    method(left, right)
+    method(left, right, **kwargs)
 
 
 class MessageTest:

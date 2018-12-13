@@ -1,12 +1,12 @@
 jsonpath-rw>=1.4.0
-lxml>=3.3.0
+lxml>=3.6.0
 odo>=0.5
-pandas>=0.18.0
-pytest>=3.0.5
+pandas>=0.20.0
+pytest>=3.3
 pytest-remotedata>=0.3.1
-requests>=2.7
 requests-cache>=0.4.13
 requests-mock>=1.4
+requests>=2.7
 setuptools>19.0
-Sphinx>=1.4.1
+Sphinx>=1.5
 traitlets>=4.3

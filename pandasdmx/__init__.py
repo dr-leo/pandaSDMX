@@ -27,7 +27,7 @@ __all__ = [
     'to_pandas',
     ]
 
-__version__ = '0.7.0'
+__version__ = '0.9.0'
 
 
 def _init_logger():

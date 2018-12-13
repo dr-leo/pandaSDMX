@@ -5,6 +5,22 @@ Towards v1.0
 -------------
 In rough order of priority:
 
+- Some recent work has happened in a branch called ``default/master``, not
+  merged to ``master``. Merge any `changes <https://github.com/dr-leo/pandaSDMX/compare/default/master>`_ from the remaining files::
+
+  - ``doc/agencies.rst``, ``doc/index.rst``, ``doc/intro.rst``,
+    ``doc/sdmx_tour.rst``, ``doc/usage.rst``.
+  - ``pandasdmx/api.py``: dsd and series_key args to get().
+  - ``pandasdmx/model.py``: Constrainable, KeyValidatorMixin, CodelistHandler,
+    CubeRegion, ProvisionAgreement,
+  - ``pandasdmx/reader/sdmxml.py``: handling of structure specific messages.
+  - ``pandasdmx/writer/data2pandas.py``: frequency/time series indices.
+  - ``pandasdmx/writer/structure2pd.py``: constrained writing.
+  - ``tests/test_dataset.py``: test_pandas_with_freq(),
+    test_write2pandas_with_freq()
+  - ``tests/test_dsd.py``: test_exr_constraints().
+
+
 - Replace and add tests for old writer.structure2pd.
 - Update and add tests for Request.preview_data().
 - Harmonize handling of API errors. Currently at least four things can happen:

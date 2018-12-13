@@ -12,7 +12,9 @@ pandaSDMX: Statistical Data and Metadata eXchange
 
 | Author: Dr. Leo <fhaxbox66@gmail.com>
 | License: Apache 2.0
-| Development website: https://github.com/dr-leo/pandasdmx
+| Documentation: http://pandasdmx.readthedocs.io
+| Development website: https://github.com/dr-leo/pandasdmx/
+| PyPI: https://pypi.org/project/pandaSDMX/
 
 Purpose of this project
 -----------------------

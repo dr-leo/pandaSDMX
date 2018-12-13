@@ -52,7 +52,7 @@
     "INSEE": {
         "id": "INSEE",
         "name": "Institut national de la statistique et des Études Économiques",
-        "url": "http://www.bdm.insee.fr/series/sdmx",
+        "url": "https://www.bdm.insee.fr/series/sdmx",
         "headers": {
             "data": {
                 "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"

@@ -1,6 +1,6 @@
 ipython>=4.0.0
 jsonpath-rw>=1.4.0
-lxml>=3.6.0
+lxml>=3.3.0
 pandas>=0.20.1
 requests>=2.7
 setuptools>19.0

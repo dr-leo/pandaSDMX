@@ -90,7 +90,7 @@ class Request(object):
             self._make_get_wrappers()
 
         try:
-            self.source = source if source is None else sources[source]
+            self.source = source if source is None else sources[source.upper()]
         except KeyError:
             raise ValueError('source must be None or one of: %s' %
                              ' '.join(list_sources()))

@@ -99,6 +99,7 @@ To display the categorised items, in our case the dataflow definitions contained
 on exchange rates, we iterate over the `Category` instance (new in version 0.5):
 
 .. ipython:: python
+    :okexcept:
 
     cat_response.categoryscheme.keys()
     list(cat_response.categoryscheme.MOBILE_NAVI['07'])

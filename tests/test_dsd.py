@@ -64,3 +64,41 @@ class test_dsd_common(MessageTest):
         assert isinstance(a, model.Annotation)
         assert a.text.en.startswith('It is')
         assert a.type == 'NOTE'
+
+
+class test_exr_constraints(unittest.TestCase):
+
+    def setUp(self):
+        self.ecb = Request('ecb')
+        filepath = os.path.join(test_path, 'data/exr_flow.xml')
+        self.resp = self.ecb.get(fromfile=filepath)
+
+    def test_constrained_codes(self):
+        m = self.resp.msg
+        self.assertEqual(m._dim_ids[0], 'FREQ')
+        self.assertEqual(len(m._dim_ids), 5)
+        self.assertEqual(len(m._dim_ids), 5)
+        self.assertEqual(len(m._dim_codes), 5)
+        self.assertEqual(len(m._attr_ids), 9)
+        self.assertEqual(len(m._attr_codes), 9)
+        self.assertEqual(m._attr_ids[-1], 'UNIT_MULT')
+        self.assertIn('5', m._attr_codes.UNIT_MULT)
+        self.assertIn('W', m._dim_codes.FREQ)
+        self.assertIn('W', m._dim_codes.FREQ)
+        self.assertEqual(len(m._constrained_codes), 14)
+        self.assertNotIn('W', m._constrained_codes.FREQ)
+        key = {'FREQ': ['W']}
+        self.assertTrue(m.in_codes(key))
+        self.assertFalse(m.in_constraints(key, raise_error=False))
+        self.assertRaises(ValueError, m.in_constraints, key)
+        self.assertTrue(m.in_constraints({'CURRENCY': ['CHF']}))
+        # test with invalid key
+        self.assertRaises(TypeError, m._in_constraints, {'FREQ': 'A'})
+        # structure writer with constraints
+        out = self.resp.write()
+        cl = out.codelist
+        self.assertEqual(cl.shape, (3555, 2))
+        # unconstrained codelists
+        out = self.resp.write(constraint=False)
+        cl = out.codelist
+        self.assertEqual(cl.shape, (4177, 2))

@@ -31,13 +31,14 @@ import os
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autodoc',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
 ]
 
 # avoid importing matplotlib by ipython directive
@@ -57,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pandaSDMX'
-copyright = '2015, Dr. Leo'
+copyright = '2018 pandaSDMX developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

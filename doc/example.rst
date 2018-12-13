@@ -7,8 +7,8 @@ All we need to know in advance is the data provider: Eurostat.
 pandaSDMX makes it easy to search the directory of dataflows, and the complete
 structural metadata about the datasets available through the selected dataflow.
 We will skip this step here; the impatient reader may directly jump to
-:ref:`basic-usage`. The dataflow with the ID "une_rt_a" contains the data we
-want; this dataflow references a data structure with the ID "DSD_une_rt_a".
+:doc:`walkthrough`. The dataflow with the ID ``une_rt_a`` contains the data we
+want; this dataflow references a data structure with the ID ``DSD_une_rt_a``.
 
 It contains or references all the metadata describing data sets available
 through this dataflow: the dimensions, concept schemes, and corresponding code

@@ -3,7 +3,7 @@
 What's New?
 ===========
 
-v0.99 (unreleased)
+v1.0 (unreleased)
 ------------------
 
 
@@ -70,6 +70,12 @@ v0.8 (2017-12-12)
   come with bimonthly or semestrial frequencies cannot be rendered as PeriodIndex. Pass
   ``parse_time=False`` to the .write method to prevent errors.
 
+
+v0.9.0 (2017-06-10)
+-------------------
+
+v0.8.0 (2017-06-10)
+-------------------
 
 v0.7.0 (2017-06-10)
 -------------------

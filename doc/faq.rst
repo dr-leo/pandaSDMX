@@ -1,4 +1,4 @@
-Frequently Asked Questions
+Frequently asked questions
 ==========================
 
 Can pandaSDMX connect to SDMX providers other than INSEE, ECB and Eurostat?

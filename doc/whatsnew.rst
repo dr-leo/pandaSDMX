@@ -3,7 +3,7 @@
 What's New?
 ===========
 
-v0.99 (unreleased)
+v1.0 (unreleased)
 ------------------
 
 
@@ -15,6 +15,12 @@ Migrating
 :::::::::
 * Writer.write(…, reverse_obs=True): use s.iloc[::-1] to reverse a pd.Series.
 
+
+v0.9.0 (2017-06-10)
+-------------------
+
+v0.8.0 (2017-06-10)
+-------------------
 
 v0.7.0 (2017-06-10)
 -------------------

@@ -1,5 +1,5 @@
 API reference
-=================
+=============
 
 Top-level methods and classes
 -----------------------------
@@ -11,6 +11,16 @@ Top-level methods and classes
 ------------------------------------
 
 .. automodule:: pandasdmx.message
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+``pandasdmx.model``: SDMX Information Model
+-------------------------------------------
+
+See :doc:`im`.
+
+.. automodule:: pandasdmx.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -55,11 +65,12 @@ Built-in subclasses of :class:`pandasdmx.source.Source` are described at
 :doc:`sources`.
 
 .. autoclass:: pandasdmx.source.Source
+   :members: finish_message, handle_response
 
 ``pandasdmx.util``: Utilities
 -----------------------------
 
 .. automodule:: pandasdmx.util
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

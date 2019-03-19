@@ -7,7 +7,7 @@
 # (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
-from setuptools import setup
+from setuptools import find_pacakges, setup
 from codecs import open
 # import re
 
@@ -24,7 +24,7 @@ setup(name='pandaSDMX',
       long_description=long_descr,
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
-      packages=['pandasdmx'],
+      packages=find_packages(),
       package_data={'pandasdmx': ['agencies.json']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[

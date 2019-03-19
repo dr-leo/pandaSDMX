@@ -10,6 +10,8 @@ from pandasdmx import model
 
 from . import MessageTest, test_data_path
 
+import pytest
+
 
 class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
     path = test_data_path / 'estat'
@@ -66,8 +68,8 @@ class test_dsd_common(MessageTest):
         assert a.type == 'NOTE'
 
 
-class test_exr_constraints(unittest.TestCase):
-
+@pytest.mark.skip(reason='needs refactor')
+def test_exr_constraints():
     def setUp(self):
         self.ecb = Request('ecb')
         filepath = os.path.join(test_path, 'data/exr_flow.xml')

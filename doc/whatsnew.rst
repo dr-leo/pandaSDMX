@@ -4,12 +4,14 @@ What's new?
 ===========
 
 v1.0 (unreleased)
-------------------
+-----------------
+
 
 
 Breaking changes
 ::::::::::::::::
-* Numerous!
+* Python 2.7 and earlier are not supported.
+* Numerous others!
 
 Migrating
 :::::::::
@@ -72,7 +74,7 @@ v0.8 (2017-12-12)
 
 
 v0.9 (2018-04)
-----------------------------
+--------------
 
 This version is the last tested on Python 2.x. Future versions
 will be tested on Python 3.5+ only

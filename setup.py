@@ -13,7 +13,7 @@ from codecs import open
 
 
 # Get version
-ver = '0.9.0'
+ver = '1.0.0-dev'
 
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r', encoding='utf8').read()
@@ -50,11 +50,10 @@ setup(name='pandaSDMX',
           'License :: OSI Approved :: Apache Software License',
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis'
           ]

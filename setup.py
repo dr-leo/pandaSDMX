@@ -25,7 +25,7 @@ setup(name='pandaSDMX',
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
       packages=find_packages(),
-      package_data={'pandasdmx': ['agencies.json']},
+      package_data={'pandasdmx': ['sources.json']},
       url='https://github.com/dr-leo/pandasdmx',
       install_requires=[
           'pandas',

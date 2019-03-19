@@ -7,7 +7,7 @@
 # (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
 
 
-from setuptools import find_pacakges, setup
+from setuptools import find_packages, setup
 from codecs import open
 # import re
 

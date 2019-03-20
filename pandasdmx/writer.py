@@ -57,45 +57,47 @@ class Writer:
         else:
             return [self.write(ds, *args, **kwargs) for ds in obj.data]
 
-    def write_dataset(self, source=None, asframe=True, dtype=np.float64,
-                      attributes='', fromfreq=False, parse_time=True):
+    def write_dataset(self, source=None, attributes='', dtype=np.float64,
+                      fromfreq=False, parse_time=True):
         """Transform a :class:`pandasdmx.model.DataMessage` instance to a
         pandas DataFrame or iterator over pandas Series.
 
         Parameters
         ----------
-        source : :class:`pandasdmx.model.DataSet`
-        asframe : bool
-            If True, merge the series of values and/or
-            attributes into one or two multi-indexed pandas.DataFrame(s),
-            otherwise return an iterator of pandas.Series. (default: True)
-        dtype : str or np.dtype or None
-            Datatype for values. Defaults to
-            np.float64. If None, do not return the values of a series. In
-            this case, attributes must not be an empty string so that some
-            attribute is returned.
+        source : :class:`pandasdmx.model.DataSet` or iterable of
+                 :class:`pandasdmx.model.Observation`
         attributes : str
-            String determining which attributes, if any,
-            should be returned in separate series or a separate DataFrame.
-            Allowed values: '', 'o', 's', 'g', 'd' or any combination
-            thereof such as 'os', 'go'. Defaults to 'osgd'. Where 'o', 's',
-            'g', and 'd' mean that attributes at observation, series, group
-            and dataset level will be returned as members of
-            per-observation namedtuples.
+            Types of attributes to return with the data. A string containing
+            zero or more of:
+
+            - 'o': attributes attached to each :class`Observation`.
+            - 's': attributes attached to any (0 or 1) :class:`SeriesKey`
+              associated with each Observation.
+            - 'g': attributes attached to any (0 or more) :class:`GroupKey`s
+              associated with each Observation.
+            - 'd': attributes attached to the :class:`DataSet` containing the
+              Observations.
+
+        dtype : str or np.dtype or None
+            Datatype for values. If None, do not return the values of a series.
+            In this case, `attributes` must not be an empty string so that some
+            attribute is returned.
         fromfreq : bool
-            If True, extrapolate time periods from the first
-            item and FREQ dimension. Default: False
+            If True, extrapolate time periods from the first item and FREQ
+            dimension.
         parse_time : bool
-            If True (default), try to generate datetime
-            index, provided that dim_at_obs is 'TIME' or 'TIME_PERIOD'.
-            Otherwise, ``parse_time`` is ignored. If False, always generate
-            index of strings. Set it to False to increase performance and
-            avoid parsing errors for exotic date-time formats unsupported
-            by pandas.
+            If True (default), try to generate datetime index, provided that
+            dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_time`` is
+            ignored. If False, always generate index of strings. Set it to
+            False to increase performance and avoid parsing errors for exotic
+            date-time formats unsupported by pandas.
 
         Returns
         -------
-        :class:`pandas.Series`
+        :class:`pandas.Series` or :class:`pandas.DataFrame`
+            If `attributes` is not ``''``, a :class:`pandas.DataFrame` is
+            returned with ``value`` as the first column, and additional
+            columns for each attribute.
         """
         # source will now be a DataSet
 
@@ -138,7 +140,7 @@ class Writer:
 
     def write_structuremessage(self, obj, rows=None, **kwargs):
         '''
-        Transfform structural metadata, i.e. codelists, concept-schemes,
+        Transform structural metadata, i.e. codelists, concept-schemes,
         lists of dataflow definitions or category-schemes from a
         :class:`pandasdmx.model.StructureMessage` instance into a pandas
         DataFrame.

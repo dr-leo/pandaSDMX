@@ -61,7 +61,7 @@ def test_doc_index2():
     estat = Request('ESTAT')
 
     resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
-                      params={'startPeriod': '2007'})
+                      params={'startPeriod': '2007', 'endPeriod': '2018'})
 
     # Convert to a pd.DataFrame and use stock pandas methods on the index to
     # select a subset
@@ -78,7 +78,7 @@ def test_doc_index2():
     # percentage of active population
     idx = pd.IndexSlice
     subset = data[idx['PC_ACT', 'TOTAL', 'T']]
-    assert len(subset) == 33
+    assert len(subset) == 3 * 12  # GEO, TIME_PERIOD
 
 
 @pytest.mark.remote_data

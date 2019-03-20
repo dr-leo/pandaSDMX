@@ -160,6 +160,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0].OBS_STATUS.value_for == 'OBS_STATUS'  # consistency!
 
     def test_pandas_with_freq(self, msg):
+        # TODO actually use the fromfreq and parse_time options
         data = msg.data[0]
 
         # Dataset has 4 series keys
@@ -201,22 +202,12 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert isinstance(df, pd.Series)
 
         assert df.shape == (12,)
+
         # with metadata
         df = pandasdmx.to_pandas(msg, attributes='osgd')
         df, mdf = df.iloc[:, 0], df.iloc[:, 1:]
         assert mdf.shape == (12, 7)
         assert mdf.iloc[1].OBS_STATUS == 'A'
-
-    def test_write2pandas_with_freq(self):
-        df = self.resp.write(attributes='',
-                             reverse_obs=False, fromfreq=True)
-        self.assertIsInstance(df, pandas.DataFrame)
-        assert df.shape == (3, 4)
-        # with metadata
-        df, mdf = self.resp.write(attributes='osgd',
-                                  reverse_obs=False, fromfreq=True)
-        assert mdf.shape == (3, 4)
-        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
 
 class TestGenericSeriesDataSet2(DataMessageTest):

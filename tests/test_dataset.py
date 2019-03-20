@@ -159,32 +159,41 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0].OBS_STATUS == 'A'
         assert s3.iloc[0].OBS_STATUS.value_for == 'OBS_STATUS'  # consistency!
 
-    def test_pandas_with_freq(self):
-        resp = self.resp
-        data = resp.data
-        pd_series = [s for s in resp.write(
-            data, attributes='', reverse_obs=True, asframe=False, fromfreq=True)]
-        self.assertEqual(len(pd_series), 4)
-        s3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
-        # now with attributes
-        pd_series = [s for s in resp.write(
-            data, attributes='osgd', reverse_obs=True, asframe=False, fromfreq=True)]
-        self.assertEqual(len(pd_series), 4)
-        self.assertIsInstance(pd_series[0], tuple)  # contains 2 series
-        self.assertEqual(len(pd_series[0]), 2)
-        s3, a3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertIsInstance(a3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
-        self.assertEqual(len(a3), 3)
-        # access an attribute of the first value
-        self.assertEqual(a3[0].OBS_STATUS, 'A')
+    def test_pandas_with_freq(self, msg):
+        data = msg.data[0]
+
+        # Dataset has 4 series keys
+        assert len(data.series) == 4
+
+        # Conversion without attributes gives a Series with a MultiIndex
+        s_all = pandasdmx.to_pandas(data, attributes='')
+        assert isinstance(s_all, pd.Series)
+        assert isinstance(s_all.index, pd.MultiIndex)
+
+        # Single series can be converted
+        s3 = pandasdmx.to_pandas(data.series[3], attributes='')
+        assert isinstance(s3, pd.Series)
+        assert s3[0] == 1.2894
+
+        # Conversion with attribute gives a DataFrame with attribute columns
+        # and a MultiIndex
+        df = pandasdmx.to_pandas(data, attributes='ogsd')
+        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df.index, pd.MultiIndex)
+        assert all(df.columns == ['value', 'OBS_STATUS', 'CONF_STATUS_OBS',
+                                  'DECIMALS', 'UNIT_MEASURE', 'UNIT_MULT',
+                                  'COLL_METHOD', 'TITLE'])
+
+        # Single series can be converted with attributes
+        s3 = pandasdmx.to_pandas(data.series[3], attributes='ogsd')
+        assert isinstance(s3, pd.DataFrame)
+        assert isinstance(s3.index, pd.MultiIndex)
+
+        # Values are in the first column
+        assert s3.iloc[0, 0] == 1.2894
+
+        # Access an attribute of the first value
+        assert s3.iloc[0, :]['OBS_STATUS'] == 'A'
 
     def test_write2pandas(self, msg):
         df = pandasdmx.to_pandas(msg, attributes='')

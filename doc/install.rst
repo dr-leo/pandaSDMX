@@ -6,20 +6,18 @@ Required dependencies
 ---------------------
 
 pandaSDMX is a pure `Python <http://www.python.org>`_ package.
-As such it should run on any platform.
-It requires Python 2.7, 3.4 or higher.
+It requires Python 3.5 or higher.
 
-It is recommended to use one of the common Python distributions
-for scientific data analysis such as
+It is recommended to use one of the common Python distributions for scientific
+data analysis such as:
 
 * `Anaconda <https://store.continuum.io/cshop/anaconda/>`_, or
 * `Canopy <https://www.enthought.com/products/canopy/>`_.
 
-Along with a current Python interpreter these Python distributions include
-lots of
-useful packages for data analysis.
-For other Python distributions (not only scientific) see
-`here <https://wiki.python.org/moin/PythonDistributions>`_.
+Along with a current Python interpreter, these Python distributions include
+lots of useful packages for data analysis. For other Python distributions (not
+only scientific) see
+`the Python wiki <https://wiki.python.org/moin/PythonDistributions>`_.
 
 pandaSDMX has the following dependencies:
 

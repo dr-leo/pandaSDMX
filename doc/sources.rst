@@ -63,7 +63,7 @@ Built-in data sources
 
 .. todo::
 
-   The snippets of text for each source are not current with ``agencies.json``. Update, or generate automatically.
+   The snippets of text for each source are not current with ``sources.json``. Update, or generate automatically.
 
 .. contents::
    :local:

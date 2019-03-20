@@ -80,7 +80,7 @@
         "url": "http://stats.oecd.org/SDMX-JSON",
         "name": "Organisation for Economic Co-operation and Development"
     },
-    "NORGES_BANK": {
+    "NB": {
         "id": "NB",
         "name": "Norges Bank - generic data format",
         "url": "https://data.norges-bank.no/api",
@@ -90,7 +90,7 @@
             }
         }
     },
-    "NORGES_BANK_S": {
+    "NB_S": {
         "id": "NB_S",
         "name": "Norges Bank - structure-specific data format",
         "url": "https://data.norges-bank.no/api",

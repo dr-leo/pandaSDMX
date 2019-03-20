@@ -137,7 +137,7 @@ class TestESTAT(DataSourceTest):
 
 
 class TestIMF(DataSourceTest):
-    source_id = 'IMF_SDMXCENTRAL'
+    source_id = 'IMF'
     xfail = {
         # ParseError: <Category: 'ESA2010MA.A'=''> not located in
         #             <CategoryScheme: 'ESA2010TP', 7 items>

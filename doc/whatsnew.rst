@@ -7,7 +7,6 @@ v1.0 (unreleased)
 -----------------
 
 
-
 Breaking changes
 ::::::::::::::::
 * Python 2.7 and earlier are not supported.
@@ -24,7 +23,7 @@ This version is the last tested on Python 2.x. Future versions
 will be tested on Python 3.5+ only
 
 New features
-:::::::::::::::
+::::::::::::
 
 * four new data providers INEGI (Mexico), Norges Bank (Norway),
   International Labour Organization (ILO) and

@@ -2,22 +2,8 @@ Development roadmap
 ===================
 
 Towards v1.0
--------------
+------------
 In rough order of priority:
-
-- The upstream ``master`` branch has not been updated since v0.7; most
-  development seems to have happened in a branch named ``default/master``.
-  Merge any `changes <https://github.com/dr-leo/pandaSDMX/compare/default/master>`_
-  from the remaining files on ``default/master``:
-
-  - ``doc/agencies.rst``, ``doc/index.rst``, ``doc/intro.rst``,
-    ``doc/sdmx_tour.rst``, ``doc/usage.rst``.
-  - ``pandasdmx/api.py``: dsd and series_key args to get().
-  - ``pandasdmx/model.py``: Constrainable, KeyValidatorMixin, CodelistHandler,
-    CubeRegion, ProvisionAgreement,
-  - ``pandasdmx/reader/sdmxml.py``: handle structure specific messages.
-  - ``pandasdmx/writer/data2pandas.py``: frequency/time series indices.
-  - ``pandasdmx/writer/structure2pd.py``: constrained writing.
 
 - Replace and add tests for old writer.structure2pd.
 - Update and add tests for Request.preview_data().

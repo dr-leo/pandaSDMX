@@ -2,9 +2,10 @@ pandaSDMX: Statistical Data and Metadata eXchange in Python
 ===========================================================
 
 pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ library
-that implements `SDMX <http://www.sdmx.org>`_ 2.1, an ISO-standard format
-widely used by national statistical agencies, central banks, and international
-organisations.
+that implements `SDMX <http://www.sdmx.org>`_ 2.1
+(`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_) a format for
+exchange of **statistical data and metadata** used by national statistical
+agencies, central banks, and international organisations.
 
 pandaSDMX can be used to:
 

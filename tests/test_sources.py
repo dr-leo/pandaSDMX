@@ -4,8 +4,6 @@ HTTP responses from the data sources are cached in tests/data/cache.
 To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
-from json import JSONDecodeError
-
 from pandasdmx.api import Request
 from pandasdmx.reader import ParseError
 import pytest
@@ -206,6 +204,13 @@ class TestINEGI(DataSourceTest):
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
 
+    @pytest.mark.remote_data
+    def test_common_structure_endpoints(self, req, endpoint):
+        # Using the default 'INSEE' agency in the URL gives a response "La
+        # syntaxe de la requête est invalide."
+        req.get(endpoint, agency='all',
+                tofile=self._cache_path.with_suffix('.' + endpoint))
+
 
 class TestISTAT(DataSourceTest):
     # TODO also test ISTAT_S
@@ -220,16 +225,16 @@ class TestNB(DataSourceTest):
 class TestOECD(DataSourceTest):
     source_id = 'OECD'
     xfail = {
-        # can't determine a reader for response content type: text/html
-        # NOTE these are Microsoft IIS HTML error pages for 404 errors
+        # pandasdmx.Request._request_args() raises ValueError for this JSON
+        # service
+        #
+        # NOTE actually requesting these URLs gives Microsoft IIS HTML error
+        # pages for 404 errors.
         'categoryscheme': ValueError,
         'codelist': ValueError,
         'conceptscheme': ValueError,
+        'dataflow': ValueError,
         'datastructure': ValueError,
-
-        # Expecting value: line 1 column 1 (char 0)
-        # NOTE this is actually a plain-text error response
-        'dataflow': JSONDecodeError,
         }
 
 

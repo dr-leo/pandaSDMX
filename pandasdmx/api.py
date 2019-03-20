@@ -23,6 +23,7 @@ import logging
 from operator import and_
 from pathlib import Path
 import sys
+from warnings import warn
 
 from pandasdmx import remote
 from pandasdmx.model import DataStructureDefinition, IdentifiableArtefact
@@ -181,6 +182,11 @@ class Request(object):
             else:
                 resource_id = resource.id
 
+        if self.source.data_content_type == 'JSON' and resource_type != 'data':
+            raise ValueError(("invalid resource type '{}'; only 'data' "
+                              "supported for SDMX-JSON sources").format(
+                              resource_type))
+
         force = kwargs.pop('force', False)
         try:
             supported = direct_url or self.source.supports[resource_type]
@@ -197,12 +203,12 @@ class Request(object):
 
         # Agency ID to use in the URL
         agency = kwargs.pop('agency', None)
-        if resource_type in ['data', 'categoryscheme']:
-            # Requests for these resources do not specific an agency in the URL
+        if resource_type == 'data':
+            # Requests for data do not specific an agency in the URL
+            if agency is not None:
+                warn("agency argument is redundant for resource type '{}'"
+                     .format(resource_type))
             agency_id = None
-            assert agency is None, ValueError(
-                "agency argument is redundant for resource type '%s'" %
-                resource_type)
         else:
             agency_id = agency if agency else self.source.id
 

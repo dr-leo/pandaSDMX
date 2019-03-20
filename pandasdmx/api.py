@@ -490,4 +490,6 @@ def open_file(filename_or_obj):
         else:
             raise ValueError(first_line)
 
+        obj = filename_or_obj
+
     return reader().read_message(obj)

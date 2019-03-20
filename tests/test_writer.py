@@ -13,7 +13,13 @@ from pytest import raises
 import pandasdmx
 from pandasdmx.writer import Writer
 
-from . import assert_pd_equal, expected_data, test_data_path, test_files
+from . import (
+    assert_pd_equal,
+    expected_data,
+    test_data_path,
+    test_files,
+    specimen,
+    )
 
 
 # file name → (exception raised, exception message, comment/reason)
@@ -77,12 +83,40 @@ def test_write_data_attributes(path):
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
 
-def test_write_dsd_common():
+def test_write_codelist():
+    # Retrieve codelists from a test specimen
     dsd_common = pandasdmx.open_file(test_data_path / 'common' / 'common.xml')
-    Writer().write(dsd_common)
+    codelists = pandasdmx.to_pandas(dsd_common)['codelist']
+
+    # File contains 5 code lists
+    assert len(codelists) == 5
+
+    # Code lists have expected number of items
+    assert len(codelists['CL_FREQ']) == 8
+
+    # Items names can be retrieved by ID
+    freq = codelists['CL_FREQ']
+    assert freq['A'] == 'Annual'
+
+
+@pytest.mark.xfail(reason='TODO: iterable of DataflowDefinition not converted'
+                          'to pd.Series')
+def test_write_dataflow():
+    # Read the INSEE dataflow definition
+    with specimen('insee-dataflow') as f:
+        msg = pandasdmx.open_file(f)
+
+    # Convert to pandas
+    result = pandasdmx.to_pandas(msg)
+
+    assert len(result['dataflow']) == 663
+    assert isinstance(result['dataflow'], pd.Series)
 
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_structure(path):
     msg = pandasdmx.open_file(path)
-    Writer().write(msg)
+
+    pandasdmx.to_pandas(msg)
+
+    # TODO test contents

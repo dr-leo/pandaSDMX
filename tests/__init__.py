@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import importlib
 import json
 from pathlib import Path
@@ -51,6 +52,15 @@ def test_files(format=None, kind=None):
     return result
 
 
+@contextmanager
+def specimen(pattern=''):
+    """Open the test specimen file with *match* in the name."""
+    for path, f, k in _test_files:
+        if path.match('*' + pattern + '*'):
+            yield open(path)
+            break
+
+
 _expected_read_args = json.load(open(test_data_path / 'expected.json'))
 
 
@@ -66,7 +76,6 @@ def expected_data(path):
         # A series; unwrap
         if set(result.columns) == {'value'}:
             result = result['value']
-
 
         return result
     except KeyError:

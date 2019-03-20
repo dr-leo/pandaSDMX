@@ -5,7 +5,6 @@ Towards v1.0
 ------------
 In rough order of priority:
 
-- Replace and add tests for old writer.structure2pd.
 - Update and add tests for Request.preview_data().
 - Harmonize handling of API errors. Currently at least four things can happen:
 

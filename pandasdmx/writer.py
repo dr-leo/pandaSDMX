@@ -3,8 +3,10 @@ import pandas as pd
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
+    AgencyScheme,
     CategoryScheme,
     Codelist,
+    ConceptScheme,
     ItemScheme,
     Observation,
     )
@@ -14,7 +16,9 @@ from pandasdmx.util import DictLike
 class Writer:
     """Converter from :mod:`model` objects to :mod:`pandas` objects."""
     _write_alias = {
+        AgencyScheme: ItemScheme,
         CategoryScheme: ItemScheme,
+        ConceptScheme: ItemScheme,
         Codelist: ItemScheme,
         }
 
@@ -135,8 +139,8 @@ class Writer:
 
         return result
 
-    _row_content = {'codelist', 'conceptscheme', 'dataflow',
-                    'categoryscheme'}
+    _row_content = {'codelist', 'concept_scheme', 'dataflow',
+                    'category_scheme', 'organisation_scheme'}
 
     def write_structuremessage(self, obj, rows=None, **kwargs):
         '''
@@ -186,7 +190,7 @@ class Writer:
 
         # Generate the DataFrame or -Frames and store them in a DictLike with
         # content-type names as keys
-        frames = DictLike()
+        frames = dict()
         for r in rows:
             frames[r] = {k: self.write(child, **kwargs) for k, child in
                          getattr(obj, r).items()}
@@ -205,11 +209,42 @@ class Writer:
         Names from *locale* are serialized.
         """
         items = {}
-        for item in obj.items:
-            items[item.id] = item.name.localized_default(locale)
-            # TODO return parent information
+        seen = set()
 
-        return pd.Series(items, name=obj.id)
+        def add_item(item):
+            """Recursive helper for adding items."""
+            # Track seen items
+            if item in seen:
+                return
+            else:
+                seen.add(item)
+
+            # Localized name
+            row = {'name': item.name.localized_default(locale)}
+            try:
+                # Parent ID
+                row['parent'] = item.parent.id
+            except AttributeError:
+                row['parent'] = ''
+
+            items[item.id] = row
+
+            # Add this item's children, recursively
+            for child in item.child:
+                add_item(child)
+
+        for item in obj.items:
+            add_item(item)
+
+        # Convert to DataFrame
+        result = pd.DataFrame.from_dict(items, orient='index', dtype=object) \
+                   .rename_axis(obj.id, axis='index')
+
+        if not result['parent'].str.len().any():
+            # 'parent' column is empty; convert to pd.Series and rename
+            result = result['name'].rename(obj.name.localized_default(locale))
+
+        return result
 
 
 def to_pandas(obj, *args, **kwargs):

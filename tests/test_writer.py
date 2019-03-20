@@ -83,8 +83,32 @@ def test_write_data_attributes(path):
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
 
+def test_write_agencyscheme():
+    # Convert an agency scheme
+    with specimen('ecb_orgscheme.xml') as f:
+        msg = pandasdmx.open_file(f)
+        data = pandasdmx.to_pandas(msg)
+
+    assert data['organisation_scheme']['AGENCIES']['ESTAT'] == 'Eurostat'
+
+
+def test_write_categoryscheme():
+    with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
+        msg = pandasdmx.open_file(f)
+        print(msg.category_scheme)
+        data = pandasdmx.to_pandas(msg)
+
+    cs = data['category_scheme']['CLASSEMENT_DATAFLOWS']
+
+    assert (cs.loc['COMPTA-NAT', 'name']
+            == 'National accounts (GDP, consumption...)')
+
+    # Children appear
+    assert cs.loc['CNA-PIB-2005', 'parent'] == 'CNA-PIB'
+
+
 def test_write_codelist():
-    # Retrieve codelists from a test specimen
+    # Retrieve codelists from a test specimen and convert to pandas
     dsd_common = pandasdmx.open_file(test_data_path / 'common' / 'common.xml')
     codelists = pandasdmx.to_pandas(dsd_common)['codelist']
 
@@ -97,6 +121,34 @@ def test_write_codelist():
     # Items names can be retrieved by ID
     freq = codelists['CL_FREQ']
     assert freq['A'] == 'Annual'
+
+    # Non-hierarchical code list has a string name
+    assert freq.name == 'Code list for Frequency (FREQ)'
+
+    # Hierarchical code list
+    with specimen('unsd_codelist_partial.xml') as f:
+        msg = pandasdmx.open_file(f)
+
+    # Convert single codelist
+    CL_AREA = pandasdmx.to_pandas(msg.codelist['CL_AREA'])
+
+    # Hierichical list has a 'parent' column; parent of Africa is the World
+    assert CL_AREA.loc['002', 'parent'] == '001'
+
+    # Pandas features can be used to merge parent names
+    area_hierarchy = pd.merge(CL_AREA, CL_AREA,
+                              how='left', left_on='parent', right_index=True,
+                              suffixes=('', '_parent'))
+    assert area_hierarchy.loc['002', 'name_parent'] == 'World'
+
+
+def test_write_conceptscheme():
+    with specimen('common.xml') as f:
+        msg = pandasdmx.open_file(f)
+        data = pandasdmx.to_pandas(msg)
+
+    cdc = data['concept_scheme']['CROSS_DOMAIN_CONCEPTS']
+    assert cdc.loc['UNIT_MEASURE', 'name'] == 'Unit of Measure'
 
 
 @pytest.mark.xfail(reason='TODO: iterable of DataflowDefinition not converted'

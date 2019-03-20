@@ -190,7 +190,7 @@ class Writer:
 
         # Generate the DataFrame or -Frames and store them in a DictLike with
         # content-type names as keys
-        frames = dict()
+        frames = DictLike()
         for r in rows:
             frames[r] = {k: self.write(child, **kwargs) for k, child in
                          getattr(obj, r).items()}

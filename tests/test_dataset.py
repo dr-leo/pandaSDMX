@@ -58,8 +58,7 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert o0.attrib.DECIMALS == '4'
 
     def test_write2pandas(self, msg):
-        data_series = pandasdmx.to_pandas(msg.data[0], attributes='',
-                                          asframe=False)
+        data_series = pandasdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
 
 
@@ -256,8 +255,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert o0.attrib.OBS_STATUS == 'A'
 
     def test_dataframe(self, msg):
-        df = pandasdmx.to_pandas(msg.data[0], attributes='',
-                                 asframe=True).iloc[::-1]
+        df = pandasdmx.to_pandas(msg.data[0]).iloc[::-1]
 
         assert isinstance(df, pd.Series)
 

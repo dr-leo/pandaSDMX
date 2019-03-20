@@ -342,7 +342,11 @@ class Request(object):
         if dry_run:
             return req
 
-        response = self.session.send(req)
+        try:
+            response = self.session.send(req)
+        except requests.exceptions.ConnectionError as e:
+            raise e from None
+
         response.raise_for_status()
 
         # Maybe copy the response to file as it's received

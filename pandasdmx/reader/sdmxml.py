@@ -76,12 +76,15 @@ from pandasdmx.reader import BaseReader, ParseError
 # XML namespaces
 _ns = {
     'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
+    'data': ('http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/'
+             'structurespecific'),
     'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
     'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
     'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
     'footer':
         'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer',
     'xml': 'http://www.w3.org/XML/1998/namespace',
+    'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     }
 
 
@@ -95,6 +98,8 @@ _message_class = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
     ('GenericData', DataMessage),
     ('GenericTimeSeriesData', DataMessage),
+    ('StructureSpecificData', DataMessage),
+    ('StructureSpecificTimeSeriesData', DataMessage),
     ('Error', ErrorMessage),
     )}
 
@@ -242,6 +247,9 @@ class Reader(BaseReader):
     - Methods _parse(), _collect(), _named() and _maintained().
     - State variables _stack, _index.
     """
+    # TODO subclass the main reader for StructureSpecific*Data messages to
+    #      avoid branching
+
     # State variables for reader
 
     # Stack (0 = top) of tag names being parsed by _parse().
@@ -606,8 +614,12 @@ class Reader(BaseReader):
         ds = DataSet(group={g: [] for g in values.pop('group', [])})
 
         # Attributes
+        for attr in ['structureRef', qname('data', 'structureRef')]:
+            if attr in elem.attrib:
+                structure_ref = elem.attrib[attr]
+                break
         ds.structured_by = self._maintained(DataStructureDefinition,
-                                            elem.attrib['structureRef'])
+                                            structure_ref)
 
         # Process series
         for series_key, obs_list in values.pop('series', []):
@@ -621,7 +633,7 @@ class Reader(BaseReader):
         return ds
 
     def parse_group(self, elem):
-        """Both <generic:Group> and <structure:Group>."""
+        """<generic:Group>, <structure:Group>, or <Group>."""
         values = self._parse(elem)
 
         # Check which namespace this Group tag is part of
@@ -636,7 +648,22 @@ class Reader(BaseReader):
             gdd = GroupDimensionDescriptor(**args)
             result = gdd
         else:
-            raise NotImplementedError(elem.tag)
+            # no namespace → GroupKey in a StructureSpecificData message
+
+            # Discard XML Schema attribute
+            elem.attrib.pop(qname('xsi', 'type'))
+
+            # the 'TITLE' XML attribute is an SDMX Attribute
+            try:
+                da = DataAttribute(id='TITLE')
+                av = AttributeValue(value_for=da,
+                                    value=elem.attrib.pop('TITLE'))
+                attrs = {da: av}
+            except KeyError:
+                attrs = {}
+
+            # Remaining attributes are the KeyValues
+            result = GroupKey(**elem.attrib, attrib=attrs)
 
         assert len(values) == 0
         return result
@@ -650,14 +677,41 @@ class Reader(BaseReader):
     def parse_obs(self, elem):
         # TODO handle key-values as attribs
         values = self._parse(elem)
-        key = (values['obskey'] if 'obskey' in values else
-               values['obsdimension'])
-        if 'obsdimension' in values:
-            new_key = Key()
-            new_key[key.id] = key
-            key = new_key
-        result = Observation(dimension=key, value=values['obsvalue'],
-                             attached_attribute=values.get('attributes', {}))
+        if len(values):
+            key = (values['obskey'] if 'obskey' in values else
+                   values['obsdimension'])
+            if 'obsdimension' in values:
+                new_key = Key()
+                new_key[key.id] = key
+                key = new_key
+            result = Observation(dimension=key, value=values['obsvalue'],
+                                 attached_attribute=values.get('attributes',
+                                                               {}))
+        else:
+            # StructureSpecificData message
+
+            # Pop the value
+            value = elem.attrib.pop('OBS_VALUE')
+
+            key = Key()
+            if self._obs_dim is AllDimensions:
+                dims = elem.attrib.keys()
+            else:
+                # Retrieve the key using the 'dimension at observation'
+                # specified for the message
+                dims = map(lambda d: d.id, self._obs_dim)
+            for dim in dims:
+                key[dim] = elem.attrib.pop(dim)
+
+            # Create the observation
+            result = Observation(dimension=key, value=value)
+
+            # Remaining XML attributes are SDMX DataAttributes
+            for id, value in elem.attrib.items():
+                da = DataAttribute(id=id)
+                av = AttributeValue(value_for=da, value=value)
+                result.attached_attribute[da.id] = av
+
         return result
 
     def parse_obsdimension(self, elem):
@@ -671,8 +725,13 @@ class Reader(BaseReader):
 
     def parse_series(self, elem):
         values = self._parse(elem)
-        series_key = values.pop('serieskey')
-        series_key.attrib.update(values.pop('attributes', {}))
+        try:
+            series_key = values.pop('serieskey')
+            series_key.attrib.update(values.pop('attributes', {}))
+        except KeyError:
+            # StructureSpecificData message; treat all attributes as dimensions
+            # TODO prefetch the structure or used a prefetched structure
+            series_key = SeriesKey(**elem.attrib)
         obs_list = wrap(values.pop('obs', []))
         for o in obs_list:
             o.series_key = series_key

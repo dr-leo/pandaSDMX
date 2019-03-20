@@ -15,8 +15,9 @@ _test_files = []
 
 # XML data files
 for part in 'ng', 'rg', 'sg':
-    path = test_data_path / 'exr' / 'ecb_exr_{}'.format(part) / 'generic'
-    _test_files.extend((p, 'xml', 'data') for p in path.iterdir())
+    for struct in 'generic', 'structured':
+        path = test_data_path / 'exr' / 'ecb_exr_{}'.format(part) / struct
+        _test_files.extend((p, 'xml', 'data') for p in path.iterdir())
 
 # XML structure files
 _test_files.extend(

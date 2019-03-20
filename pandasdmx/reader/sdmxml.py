@@ -257,7 +257,11 @@ class Reader(BaseReader):
         root = etree.parse(source).getroot()
 
         # Message class
-        cls = _message_class[root.tag]
+        try:
+            cls = _message_class[root.tag]
+        except KeyError as e:
+            msg = 'Unrecognized message root element {!r}'.format(root.tag)
+            raise ParseError(msg) from None
 
         # Reset state
         self._stack = [QName(root).localname.lower()]

@@ -24,7 +24,7 @@
         "unsupported": ["categoryscheme", "codelist", "conceptscheme"]
     },
     "ILO": {
-        "id": "NB",
+        "id": "ILO",
         "name": "International Labor Organization",
         "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
         "headers": {

@@ -157,6 +157,37 @@ class TestIMF(DataSourceTest):
 
 class TestILO(DataSourceTest):
     source_id = 'ILO'
+    xfail = {
+        'categoryscheme': HTTPError,  # 501 'Resolve parents not supported'
+
+        # 413 'Too many results, please specify codelist ID'
+        'codelist': HTTPError,
+
+        # Returns SDMXML v2.0 messages
+        'conceptscheme': ParseError,
+        'dataflow': ParseError,
+        'datastructure': ParseError,
+        }
+
+    @pytest.mark.xfail(reason='ILO returns SDMXML v2.0 messages.')
+    @pytest.mark.remote_data
+    def test_categoryscheme(self, req):
+        # Identical to DataSourceTest.test_common_structure_endpoints, except
+        # params={} is passed to suppress the automatic addition of
+        # ?references=parentsandsiblings
+        #
+        # Valid values are: none, parents, parentsandsiblings, children,
+        # descendants, all, or a specific structure reference such as
+        # 'codelist'
+        req.get('categoryscheme',
+                tofile=self._cache_path.with_suffix('.' + 'categoryscheme'),
+                params={'references': 'children'})
+
+    @pytest.mark.xfail(reason='ILO returns SDMXML v2.0 messages.')
+    @pytest.mark.remote_data
+    def test_codelist(self, req):
+        req.get('codelist', 'CL_ECO',
+                tofile=self._cache_path.with_suffix('.' + 'codelist-CL_ECO'))
 
 
 class TestINEGI(DataSourceTest):

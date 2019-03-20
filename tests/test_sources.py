@@ -194,6 +194,14 @@ class TestINEGI(DataSourceTest):
     # TODO also test INEGI_S
     source_id = 'INEGI'
 
+    @pytest.mark.remote_data
+    def test_common_structure_endpoints(self, req, endpoint):
+        # SSL certificate verification currently fails for this server; works
+        # in Google Chrome
+        req.session.verify = False
+        # Otherwise identical
+        req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
+
 
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'

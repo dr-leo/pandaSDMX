@@ -60,20 +60,24 @@ class DataSourceTest:
                        backend='sqlite')
 
     @pytest.mark.remote_data
-    def test_common_structure_endpoints(self, req, endpoint):
+    def test_endpoints(self, req, endpoint):
         # See pytest_generate_tests() for values of 'endpoint'
         req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
 
 
-class TestABS(DataSourceTest):
-    source_id = 'ABS'
+class JSONDataSourceTest(DataSourceTest):
+    # SDMX-JSON sources do not provide structure endpoints
     xfail = {
-        'categoryscheme': HTTPError,  # 500 'An error has occurred'
-        'codelist': HTTPError,  # 500 'An error has occurred'
-        'conceptscheme': HTTPError,  # 500 'An error has occurred'
-        'dataflow': HTTPError,  # 400 'Semantic error'
-        'datastructure': HTTPError,  # 404 'Not found'
+        'categoryscheme': ValueError,
+        'codelist': ValueError,
+        'conceptscheme': ValueError,
+        'dataflow': ValueError,
+        'datastructure': ValueError,
         }
+
+
+class TestABS(JSONDataSourceTest):
+    source_id = 'ABS'
 
 
 class TestECB(DataSourceTest):
@@ -170,7 +174,7 @@ class TestILO(DataSourceTest):
     @pytest.mark.xfail(reason='ILO returns SDMXML v2.0 messages.')
     @pytest.mark.remote_data
     def test_categoryscheme(self, req):
-        # Identical to DataSourceTest.test_common_structure_endpoints, except
+        # Identical to DataSourceTest.test_endpoints, except
         # params={} is passed to suppress the automatic addition of
         # ?references=parentsandsiblings
         #
@@ -193,7 +197,7 @@ class TestINEGI(DataSourceTest):
     source_id = 'INEGI'
 
     @pytest.mark.remote_data
-    def test_common_structure_endpoints(self, req, endpoint):
+    def test_endpoints(self, req, endpoint):
         # SSL certificate verification currently fails for this server; works
         # in Google Chrome
         req.session.verify = False
@@ -205,7 +209,7 @@ class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
 
     @pytest.mark.remote_data
-    def test_common_structure_endpoints(self, req, endpoint):
+    def test_endpoints(self, req, endpoint):
         # Using the default 'INSEE' agency in the URL gives a response "La
         # syntaxe de la requête est invalide."
         req.get(endpoint, agency='all',
@@ -216,6 +220,13 @@ class TestISTAT(DataSourceTest):
     # TODO also test ISTAT_S
     source_id = 'ISTAT'
 
+    @pytest.mark.remote_data
+    def test_endpoints(self, req, endpoint):
+        # Using the default 'ISTAT' agency in the URL gives a response "No
+        # structures found for the specific query"
+        req.get(endpoint, agency='all',
+                tofile=self._cache_path.with_suffix('.' + endpoint))
+
 
 class TestNB(DataSourceTest):
     # TODO also test NB_S
@@ -224,18 +235,6 @@ class TestNB(DataSourceTest):
 
 class TestOECD(DataSourceTest):
     source_id = 'OECD'
-    xfail = {
-        # pandasdmx.Request._request_args() raises ValueError for this JSON
-        # service
-        #
-        # NOTE actually requesting these URLs gives Microsoft IIS HTML error
-        # pages for 404 errors.
-        'categoryscheme': ValueError,
-        'codelist': ValueError,
-        'conceptscheme': ValueError,
-        'dataflow': ValueError,
-        'datastructure': ValueError,
-        }
 
 
 class TestSGR(DataSourceTest):

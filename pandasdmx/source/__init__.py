@@ -37,8 +37,9 @@ class Source(HasTraits):
 
     @classmethod
     def from_dict(cls, info):
+        supports = info.pop('supports', {})
         result = cls(**info)
-        result.supports.update(info.pop('supports', {}))
+        result.supports.update(supports)
         return result
 
     def __init__(self, **kwargs):
@@ -60,13 +61,13 @@ def add_source(info, id=None, override=False, **kwargs):
 
     .. code-block:: json
 
-        "ESTAT": {
-            "id": "ESTAT",
-            "documentation": "http://data.un.org/Host.aspx?Content=API",
-            "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
-            "name": "Eurostat",
-            "unsupported": ["categoryscheme", "codelist", "conceptscheme"]
-            },
+        {
+          "id": "ESTAT",
+          "documentation": "http://data.un.org/Host.aspx?Content=API",
+          "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+          "name": "Eurostat",
+          "supported": {"codelist": false, "preview": true}
+        }
 
     …with unspecified values using the defaults; see
     :class:`pandasdmx.source.Source`.

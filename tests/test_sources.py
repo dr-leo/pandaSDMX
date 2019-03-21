@@ -4,8 +4,11 @@ HTTP responses from the data sources are cached in tests/data/cache.
 To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
+from warnings import warn
+
 from pandasdmx.api import Request
 from pandasdmx.reader import ParseError
+from pandasdmx.source import sources
 import pytest
 from requests.exceptions import HTTPError
 import requests_mock
@@ -27,6 +30,17 @@ def pytest_generate_tests(metafunc):
     if 'endpoint' in metafunc.fixturenames:
         endpoints = []
         for ep in structure_endpoints:
+            # Check if the associated source supports the endpoint
+            source = sources[metafunc.cls.source_id]
+            supported = source.supports[ep]
+            if not supported:
+                if ep in metafunc.cls.xfail:
+                    warn("tests for '{}' mention unsupported endpoint '{}'"
+                         .format(metafunc.cls.source_id, ep))
+                continue
+            elif source.data_content_type == 'JSON':
+                continue
+
             # Check if the test function's class contains an expected failure
             # for this endpoint
             exc_class = metafunc.cls.xfail.get(ep, None)
@@ -68,18 +82,7 @@ class DataSourceTest:
         req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
 
 
-class JSONDataSourceTest(DataSourceTest):
-    # SDMX-JSON sources do not provide structure endpoints
-    xfail = {
-        'categoryscheme': ValueError,
-        'codelist': ValueError,
-        'conceptscheme': ValueError,
-        'dataflow': ValueError,
-        'datastructure': ValueError,
-        }
-
-
-class TestABS(JSONDataSourceTest):
+class TestABS(DataSourceTest):
     source_id = 'ABS'
 
 
@@ -111,10 +114,6 @@ estat_mock = {
 class TestESTAT(DataSourceTest):
     source_id = 'ESTAT'
     xfail = {
-        'categoryscheme': NotImplementedError,
-        'codelist': NotImplementedError,
-        'conceptscheme': NotImplementedError,
-
         # 404 Client Error: Not Found
         # NOTE the ESTAT service does not give a general response that contains
         #      all datastructures; this is really more of a 501.
@@ -274,7 +273,7 @@ class TestUNESCO(DataSourceTest):
 
         # Because 'supports_series_keys_only' was set
         # TODO check
-        'datastructure': NotImplementedError,
+        # 'datastructure': NotImplementedError,
         }
 
 

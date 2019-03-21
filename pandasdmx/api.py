@@ -182,10 +182,9 @@ class Request(object):
             else:
                 resource_id = resource.id
 
-        if self.source.data_content_type == 'JSON' and resource_type != 'data':
-            raise ValueError(("invalid resource type '{}'; only 'data' "
-                              "supported for SDMX-JSON sources").format(
-                              resource_type))
+        if resource_type and not self.source.supports[resource_type]:
+            raise ValueError("{} does not support the '{}' API endpoint"
+                             .format(self.source.id, resource_type))
 
         force = kwargs.pop('force', False)
         try:

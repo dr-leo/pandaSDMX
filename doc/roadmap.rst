@@ -21,7 +21,6 @@ In rough order of priority:
 - Get a set of API keys for testing UNESCO and encrypt them for use in CI:
   https://docs.travis-ci.com/user/encryption-keys/
 - Remove `odo` as a dependency; suggest its use in the documentation.
-- Tidy logging infrastructure.
 
 Future
 ------

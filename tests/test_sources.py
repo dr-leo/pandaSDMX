@@ -44,7 +44,10 @@ def pytest_generate_tests(metafunc):
 
 class DataSourceTest:
     """Base class for data source tests."""
-    # Must be one of the IDs in agencies.json
+    # TODO also test data endpoints
+    # TODO also test structure-specific data
+
+    # Must be one of the IDs in sources.json
     source_id = None
 
     # Mapping of endpoint → Exception subclass.
@@ -193,7 +196,6 @@ class TestILO(DataSourceTest):
 
 
 class TestINEGI(DataSourceTest):
-    # TODO also test INEGI_S
     source_id = 'INEGI'
 
     @pytest.mark.remote_data
@@ -217,7 +219,6 @@ class TestINSEE(DataSourceTest):
 
 
 class TestISTAT(DataSourceTest):
-    # TODO also test ISTAT_S
     source_id = 'ISTAT'
 
     @pytest.mark.remote_data
@@ -229,7 +230,6 @@ class TestISTAT(DataSourceTest):
 
 
 class TestNB(DataSourceTest):
-    # TODO also test NB_S
     source_id = 'NB'
 
 
@@ -283,4 +283,4 @@ class TestUNSD(DataSourceTest):
 
 
 class TestWB(DataSourceTest):
-    source_id = 'WBG_WITS'
+    source_id = 'WB'

@@ -37,9 +37,9 @@ class Source(HasTraits):
 
     @classmethod
     def from_dict(cls, info):
-        unsupported = info.pop('unsupported', [])
-        info['supports'] = {ep: ep not in unsupported for ep in endpoints}
-        return cls(**info)
+        result = cls(**info)
+        result.supports.update(info.pop('supports', {}))
+        return result
 
     def __init__(self, **kwargs):
         assert getattr(self, '_id', kwargs['id']) == kwargs['id']
@@ -119,8 +119,8 @@ def list_sources():
 def load_package_sources():
     """Discover all sources listed in agencies.json."""
     with resource_stream('pandasdmx', 'sources.json') as f:
-        for id, info in json.load(f).items():
-            add_source(info, id)
+        for info in json.load(f):
+            add_source(info)
 
 
 load_package_sources()

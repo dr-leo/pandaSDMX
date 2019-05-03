@@ -45,7 +45,8 @@ def test_doc_index1():
         'BG': 'Bulgaria',
         'CY': 'Cyprus',
         'CZ': 'Czechia',
-        }, name='CL_GEO')
+        }, name='GEO') \
+        .rename_axis('CL_GEO')
 
     with pytest.raises(AttributeError):
         # Codelists returned as a single pd.Series with a pd.MultiIndex

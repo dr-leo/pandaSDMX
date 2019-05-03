@@ -14,7 +14,7 @@
     },
     "url": "http://sdw-wsrest.ecb.int/service",
     "name": "European Central Bank",
-    "supports": {"datastructure": false, "preview": true}
+    "supports": {"preview": true}
   },
   {
     "id": "ESTAT",

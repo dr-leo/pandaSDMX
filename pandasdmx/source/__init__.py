@@ -53,6 +53,9 @@ class Source(HasTraits):
     def finish_message(self, message, request, **kwargs):
         return message
 
+    def modify_request_args(self, kwargs):
+        pass
+
 
 def add_source(info, id=None, override=False, **kwargs):
     """Add a new data source.

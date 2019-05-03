@@ -153,8 +153,13 @@ class Request(object):
 
         return cc.to_query_string(dsd)
 
-    def _request_args(self, **kwargs):
+    def _request_from_args(self, **kwargs):
         """Validate arguments and prepare pieces for a request."""
+        # Allow sources to modify request args
+        # TODO this should occur after most processing, defaults, checking etc.
+        #      are performed, so that core code does most of the work.
+        self.source.modify_request_args(kwargs)
+
         parameters = kwargs.pop('params', {})
         headers = kwargs.pop('headers', {})
 
@@ -328,8 +333,10 @@ class Request(object):
             The requested SDMX message.
 
         """
-        req = self._request_args(resource_type=resource_type,
-                                 resource_id=resource_id, **kwargs)
+        req = self._request_from_args(
+            resource_type=resource_type,
+            resource_id=resource_id,
+            **kwargs)
         req = self.session.prepare_request(req)
 
         # Now get the SDMX message via HTTP

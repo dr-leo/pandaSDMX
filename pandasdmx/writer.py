@@ -4,10 +4,15 @@ import pandas as pd
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AgencyScheme,
+    DataflowDefinition,
+    Dimension,
+    DimensionDescriptor,
     CategoryScheme,
     Codelist,
+    Component,
     ConceptScheme,
     ItemScheme,
+    NameableArtefact,
     Observation,
     )
 from pandasdmx.util import DictLike
@@ -20,6 +25,8 @@ class Writer:
         CategoryScheme: ItemScheme,
         ConceptScheme: ItemScheme,
         Codelist: ItemScheme,
+        DataflowDefinition: NameableArtefact,
+        Dimension: Component,
         }
 
     def write(self, obj, *args, **kwargs):
@@ -50,6 +57,7 @@ class Writer:
             result = cls()
             for k, v in obj.items():
                 result[k] = self.write(v, *args, **kwargs)
+            result = pd.Series(result)
             return result
 
         method = self._write_alias.get(cls, cls).__name__.lower()
@@ -200,8 +208,14 @@ class Writer:
         else:
             return frames
 
-    def write_dataflowdefinition(self, obj):
-        return repr(obj)
+    def write_dimensiondescriptor(self, obj):
+        return self.write(obj.components)
+
+    def write_nameableartefact(self, obj):
+        return str(obj.name)
+
+    def write_component(self, obj):
+        return str(obj.concept_identity.id)
 
     def write_itemscheme(self, obj, locale=DEFAULT_LOCALE):
         """Convert a model.ItemScheme object to a pd.Series.

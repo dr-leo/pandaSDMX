@@ -11,7 +11,7 @@ import pytest
 
 import numpy as np
 import pandas as pd
-import pandasdmx
+import pandasdmx as sdmx
 from pandasdmx import Request
 from pandasdmx.model import DataSet
 
@@ -38,7 +38,7 @@ def test_doc_index1():
     # structure = estat.get(flow_response.dataflow.une_rt_a.structure)
 
     # Show some codelists
-    s = pandasdmx.to_pandas(structure_response)
+    s = sdmx.to_pandas(structure_response)
     expected = pd.Series({
         'AT': 'Austria',
         'BE': 'Belgium',
@@ -66,8 +66,8 @@ def test_doc_index2():
 
     # Convert to a pd.DataFrame and use stock pandas methods on the index to
     # select a subset
-    data = pandasdmx.to_pandas(resp.data[0]).xs('TOTAL', level='AGE',
-                                                drop_level=False)
+    data = sdmx.to_pandas(resp.data[0]) \
+               .xs('TOTAL', level='AGE', drop_level=False)
 
     # Explore the data set. First, show dimension names
     data.index.names
@@ -84,7 +84,7 @@ def test_doc_index2():
 
 @pytest.mark.remote_data
 def test_doc_usage_structure():
-    """Code examples in usage.rst."""
+    """Code examples in walkthrough.rst."""
     ecb = Request('ECB')
 
     ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
@@ -95,36 +95,58 @@ def test_doc_usage_structure():
         ('timeout', 30.1),
         ))
 
-    cat_response = ecb.categoryscheme()
+    msg1 = ecb.categoryscheme()
 
-    # FIXME: the documentation shows 'references=all'
-    assert cat_response.response.url == ('http://sdw-wsrest.ecb.int/service/'
-                                         'categoryscheme/latest?references='
-                                         'parentsandsiblings')
+    assert msg1.response.url == (
+        'http://sdw-wsrest.ecb.int/service/categoryscheme/ECB/latest'
+        '?references=parentsandsiblings')
 
-    # TODO check specific headers
-    cat_response.response.headers
+    # Check specific headers
+    headers = msg1.response.headers
+    assert headers['Content-Type'] == ('application/vnd.sdmx.structure+xml; '
+                                       'version=2.1')
+    assert all(k in headers for k in ['Connection', 'Date', 'Server'])
 
-    print(pandasdmx.to_pandas(cat_response.category_scheme))
+    # Removed: in pandaSDMX 0.x this was a convenience method that (for this
+    # structure message) returned two DataStructureDefinitions. Contra the
+    # spec, that assumes:
+    # - There is 1 Categorization using the CategoryScheme; there could be many.
+    # - The Categorization maps DataStructureDefintions to Categories, when
+    #   there could be many.
+    # list(cat_response.category_scheme['MOBILE_NAVI']['07'])
 
-    # This currently produces an AttributeError in the compiled
-    #  documentation: https://pandasdmx.readthedocs.io/en/master/usage.html
-    # list(cat_response.category_scheme.MOBILE_NAVI['07'])
+    dfs = sdmx.to_pandas(msg1.dataflow).head()
+    expected = pd.Series({
+        'AME': 'AMECO',
+        'BKN': 'Banknotes statistics',
+        'BLS': 'Bank Lending Survey Statistics',
+        'BOP': ('Euro Area Balance of Payments and International Investment '
+                'Position Statistics'),
+        'BSI': 'Balance Sheet Items',
+        })
+    assert_pd_equal(dfs, expected)
 
-    print(pandasdmx.to_pandas(cat_response.dataflow))
+    flows = ecb.dataflow()
+    dsd_id = msg1.dataflow.EXR.structure.id
+    assert dsd_id == 'ECB_EXR1'
 
-    # This step is slow
-    # flows = ecb.dataflow()
+    refs = dict(references='all')
+    msg2 = ecb.datastructure(resource_id=dsd_id, params=refs)
+    dsd = msg2.structure[dsd_id]
 
-    # Also raising exceptions in the compiled documentation
-    # dsd_id = cat_response.dataflow.EXR.structure.id
-    # dsd_id
-    # refs = dict(references='all')
-    # dsd_response = ecb.datastructure(resource_id=dsd_id, params=refs)
-    # dsd = dsd_response.datastructure[dsd_id]
+    assert sdmx.to_pandas(dsd.dimensions) == ['FREQ', 'CURRENCY',
+        'CURRENCY_DENOM', 'EXR_TYPE', 'EXR_SUFFIX', 'TIME_PERIOD']
 
-    # dsd.dimensions.aslist()
-    # dsd_response.write().codelist.loc['CURRENCY'].head()
+    cl = sdmx.to_pandas(msg2.codelist['CL_CURRENCY']).head()
+    expected = pd.Series({
+        'ADF': 'Andorran Franc (1-1 peg to the French franc)',
+        'ADP': 'Andorran Peseta (1-1 peg to the Spanish peseta)',
+        'AED': 'United Arab Emirates dirham',
+        'AFA': 'Afghanistan afghani (old)',
+        'AFN': 'Afghanistan, Afghanis',
+        }, name='Currency code list') \
+        .rename_axis('CL_CURRENCY')
+    assert_pd_equal(cl, expected)
 
 
 @pytest.mark.remote_data
@@ -158,7 +180,7 @@ def test_doc_usage_data():
     assert (sorted(set(sk.FREQ.value for sk in data.series))
             == 'A D H M Q'.split())
 
-    daily = pandasdmx.to_pandas(data).xs('D', level='FREQ')
+    daily = sdmx.to_pandas(data).xs('D', level='FREQ')
     assert len(daily) == 514
 
     assert_pd_equal(daily.tail().values,

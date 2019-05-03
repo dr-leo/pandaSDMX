@@ -43,11 +43,17 @@ from pandasdmx.model import (
     CategoryScheme,
     Code,
     Codelist,
+    Component,
     Concept,
     ConceptScheme,
     Contact,
+    ContentConstraint,
+    ConstraintRole,
+    CubeRegion,
     DataAttribute,
     DataflowDefinition,
+    DataKey,
+    DataKeySet,
     DataProvider,
     DataProviderScheme,
     DataSet,
@@ -62,6 +68,8 @@ from pandasdmx.model import (
     ItemScheme,
     MaintainableArtefact,
     MeasureDescriptor,
+    MemberSelection,
+    MemberValue,
     Key,
     KeyValue,
     Observation,
@@ -159,6 +167,7 @@ _parse_alias = {
     'telephone': 'text',
     'uri': 'text',
     'urn': 'text',
+    'value': 'text',
     'obskey': 'key',
     'serieskey': 'key',
     'groupkey': 'key',
@@ -166,6 +175,8 @@ _parse_alias = {
     'dataproviderscheme': 'orgscheme',
     'agency': 'organisation',
     'dataprovider': 'organisation',
+    'textformat': 'facet',
+    'enumerationformat': 'facet',
     }
 
 # Class names stored as strings in XML attributes -> pandasdmx.model classes
@@ -179,6 +190,7 @@ _parse_class = {
         'groupkey': GroupKey,
         'obskey': Key,
         'serieskey': SeriesKey,
+        'key': DataKey,  # for DataKeySet
         },
     'ref': {  # Keys here are concatenated 'package' and 'class' attributes
         'categoryscheme.Category': Category,
@@ -209,6 +221,7 @@ _parse_skip = [
     'Categorisations',
     'Codelists',
     'Concepts',
+    'Constraints',
     'Dataflows',
     'DataStructures',
     'DataStructureComponents',
@@ -220,6 +233,7 @@ _parse_skip = [
     'Structure',  # str:Structure, not mes:Structure
     'Target',
     'ConceptIdentity',
+    'ConstraintAttachment',
     'Enumeration',
     ]
 
@@ -319,6 +333,7 @@ class Reader(BaseReader):
             for attr, name in (
                     ('dataflow', 'dataflows'),
                     ('codelist', 'codelists'),
+                    ('constraint', 'constraints'),
                     ('structure', 'datastructures'),
                     ('category_scheme', 'categoryschemes'),
                     ('concept_scheme', 'concepts'),
@@ -387,7 +402,10 @@ class Reader(BaseReader):
             else:
                 # Parse the element, maybe using an alias
                 method = 'parse_' + _parse_alias.get(tag_name, tag_name)
-                result = [getattr(self, method)(child)]
+                try:
+                    result = [getattr(self, method)(child)]
+                except AttributeError:
+                    raise NotImplementedError(child)
 
             # Add objects with IDs to the index
             for r in result:
@@ -414,13 +432,24 @@ class Reader(BaseReader):
 
         return results
 
-    def _maintained(self, cls, id, **kwargs):
+    def _maintained(self, cls, id, match_subclass=False, **kwargs):
         """Retrieve or instantiate a MaintainableArtefact of *cls*.
 
-        *cls* may either be a string or a class. *id* is the ID of the
-        MaintainableArtefact. If the object has not been parsed yet, it is
-        instantiated as an external reference.
+        If *match_subclass* is False, *cls* may either be a string or a class
+        for a subclass of MaintainableArtefact. If an object with a matching
+        *cls* and *id* has been parsed, it is returned; if not, it is
+        instantiated with `is_external_reference=True`.
+
+        If *match_subclass* is True, *cls* must be a class. If an object of
+        class *cls* _or a subclass_, with *id*, has been parsed, it is
+        returned; if not, ValueError is raised.
         """
+        if match_subclass:
+            for key, obj in self._index.items():
+                if isinstance(obj, cls) and obj.id == id:
+                    return obj
+            raise ValueError(cls, id)
+
         key = (cls.__name__, id) if isclass(cls) else (cls, id)
 
         if key not in self._index:
@@ -453,6 +482,7 @@ class Reader(BaseReader):
             'isFinal': ('is_final', bool),
             'isPartial': ('is_partial', bool),
             'structureURL': ('structure_url', lambda value: value),
+            'role': ('role', lambda value: ConstraintRole(role=value)),
             }
 
         attrs = {}
@@ -671,8 +701,20 @@ class Reader(BaseReader):
     def parse_key(self, elem):
         """SeriesKey, GroupKey, and observation dimensions."""
         cls = _parse_class['key'][self._stack[-1]]
-        return cls({e.attrib['id']: e.attrib['value'] for e in
-                    elem.iterchildren()})
+        if cls is not DataKey:
+            # Most data: the value is specified as an XML attribute
+            kv = {e.attrib['id']: e.attrib['value'] for e in
+                  elem.iterchildren()}
+            return cls(**kv)
+        else:
+            # Some structure messages: the value is specified with a
+            # <com:Value>...</com:Value> element.
+            kv = []
+            for e in elem.iterchildren():
+                kv.append((self._maintained(Component, e.attrib['id'],
+                                            match_subclass=True),
+                           self._parse(e)['value']))
+            return cls(*kv)
 
     def parse_obs(self, elem):
         # TODO handle key-values as attribs
@@ -928,13 +970,14 @@ class Reader(BaseReader):
                 if isinstance(e, str):
                     e = ItemScheme(urn=e)
                 r.enumerated = e
+            if 'enumerationformat' in values:
+                r.non_enumerated = set(values.pop('enumerationformat'))
         elif 'textformat' in values:
             r.non_enumerated = set(values.pop('textformat'))
         assert len(values) == 0
         return r
 
-    def parse_textformat(self, elem):
-        """<str:TextFormat> tag defines an SDMX-IM Facet."""
+    def parse_facet(self, elem):
         # Convert case of the value_type. In XML, first letter is uppercase;
         # in the spec, lowercase.
         value_type = elem.attrib.pop('textType', None)
@@ -944,11 +987,52 @@ class Reader(BaseReader):
         key_map = {
             'minValue': 'min_value',
             'maxValue': 'max_value',
+            'minLength': 'min_length',
             'maxLength': 'max_length',
             }
         for key, value in elem.attrib.items():
             setattr(f.type, key_map.get(key, key), value)
         return f
+
+    # Parsers for constraints etc.
+    def parse_contentconstraint(self, elem):
+        # Munge
+        role = elem.attrib.pop('type').lower()
+        elem.attrib['role'] = 'allowable' if role == 'allowed' else role
+        cc, values = self._named(ContentConstraint, elem)
+        ca = values.pop('constraintattachment')
+        cc.content.update(ca if isinstance(ca, list) else [ca])
+        try:
+            cc.data_content_region = values.pop('cuberegion')
+        except KeyError:
+            pass
+        try:
+            cc.data_content_keys = values.pop('datakeyset')
+        except KeyError:
+            pass
+        assert len(values) == 0, values
+        return cc
+
+    def parse_cuberegion(self, elem):
+        values = self._parse(elem)
+        cr = CubeRegion(included=elem.attrib.pop('include'))
+        cr.member = {ms.values_for: ms for ms in values.pop('keyvalue')}
+        assert len(values) == 0
+        return cr
+
+    def parse_keyvalue(self, elem):
+        """<com:KeyValue> specifies a MemberSelection."""
+        values = self._parse(elem)
+        values = list(map(lambda v: MemberValue(value=v), values['value']))
+        values_for = self._index['Dimension', elem.attrib.pop('id')]
+        return MemberSelection(values_for=values_for, values=values)
+
+    def parse_datakeyset(self, elem):
+        values = self._parse(elem)
+        dks = DataKeySet(included=elem.attrib.pop('isIncluded'),
+                         keys=values.pop('key'))
+        assert len(values) == 0
+        return dks
 
     # Parsers for elements appearing in error messages
 

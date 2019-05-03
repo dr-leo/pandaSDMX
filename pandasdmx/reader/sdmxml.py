@@ -679,7 +679,7 @@ class Reader(BaseReader):
 
     def parse_group(self, elem):
         """<generic:Group>, <structure:Group>, or <Group>."""
-        values = self._parse(elem, unwrap=False)
+        values = self._parse(elem)
 
         # Check which namespace this Group tag is part of
         if elem.tag == qname('gen', 'Group'):
@@ -689,7 +689,7 @@ class Reader(BaseReader):
             result = gk
         elif elem.tag == qname('str', 'Group'):
             # structure → GroupDimensionDescriptor
-            args = dict(components=values.pop('groupdimension'))
+            args = dict(components=wrap(values.pop('groupdimension')))
             gdd = GroupDimensionDescriptor(**args)
             result = gdd
         else:

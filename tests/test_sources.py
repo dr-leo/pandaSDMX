@@ -198,6 +198,12 @@ class TestINEGI(DataSourceTest):
 
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
+    xfail = {
+        # Code lists contain <Code>…<Parent><Ref id="foo"/</Parent></Code> that
+        # precede the appearance of "foo" itself. Requires a promise pattern/
+        # delayed lookup
+        'codelist': ParseError,
+        }
 
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):
@@ -209,6 +215,11 @@ class TestINSEE(DataSourceTest):
 
 class TestISTAT(DataSourceTest):
     source_id = 'ISTAT'
+    xfail = {
+        # References to parent Codes in a hierarchical CodeList are not
+        # implemented. This is distinct from the INSEE/codelist xfail, above.
+        'codelist': ParseError,
+        }
 
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):

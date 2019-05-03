@@ -679,7 +679,7 @@ class Reader(BaseReader):
 
     def parse_group(self, elem):
         """<generic:Group>, <structure:Group>, or <Group>."""
-        values = self._parse(elem)
+        values = self._parse(elem, unwrap=False)
 
         # Check which namespace this Group tag is part of
         if elem.tag == qname('gen', 'Group'):
@@ -964,7 +964,7 @@ class Reader(BaseReader):
     def parse_attributerelationship(self, elem):
         tags = set([el.tag for el in elem.iterchildren()])
         if tags == {qname('str', 'Dimension')}:
-            values = self._parse(elem)
+            values = self._parse(elem, unwrap=False)
             ar = DimensionRelationship(dimensions=values.pop('dimension'))
             assert len(values) == 0
         elif tags == {qname('str', 'PrimaryMeasure')}:

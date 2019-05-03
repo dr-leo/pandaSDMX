@@ -336,7 +336,7 @@ class ItemScheme(MaintainableArtefact):
 # 3.6: Structure
 
 class FacetType(HasTraits):
-    isSequence = Bool()
+    is_sequence = CBool()
     min_length = CInt()
     max_length = CInt()
     min_value = CFloat()

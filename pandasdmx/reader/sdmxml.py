@@ -483,6 +483,8 @@ class Reader(BaseReader):
             'isPartial': ('is_partial', bool),
             'structureURL': ('structure_url', lambda value: value),
             'role': ('role', lambda value: ConstraintRole(role=value)),
+            'validFrom': ('valid_from', str),
+            'validTo': ('valid_to', str),
             }
 
         attrs = {}

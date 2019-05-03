@@ -72,7 +72,7 @@ def expected_data(path):
         args.update(_expected_read_args[path.name])
         expected_path = (test_data_path / 'expected' /
                          path.name).with_suffix('.txt')
-        result = pd.read_table(expected_path, **args)
+        result = pd.read_csv(expected_path, **args)
 
         # A series; unwrap
         if set(result.columns) == {'value'}:

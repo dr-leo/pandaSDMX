@@ -54,7 +54,7 @@ class Writer:
                 return [self.write(item, *args, **kwargs) for item in obj]
         elif cls in (dict, DictLike):
             # dict or DictLike of objects
-            result = cls()
+            result = dict()
             for k, v in obj.items():
                 result[k] = self.write(v, *args, **kwargs)
             result = pd.Series(result)

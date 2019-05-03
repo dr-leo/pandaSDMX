@@ -143,19 +143,9 @@ class TestESTAT(DataSourceTest):
 class TestIMF(DataSourceTest):
     source_id = 'IMF'
     xfail = {
-        # ParseError: <Category: 'ESA2010MA.A'=''> not located in
-        #             <CategoryScheme: 'ESA2010TP', 7 items>
-        # NB this object exists, but its ID is understood as simply 'A', rather
-        #    than '{parent_id}.A'.
-        'categoryscheme': ParseError,
-
         # TypeError: cannot instantiate from string class name: Code
         # structure > structures > codelists (skip) > codelist > code > parent
         'codelist': ParseError,
-
-        # AttributeError: 'Reader' object has no attribute
-        #                 'parse_enumerationformat'
-        'datastructure': ParseError,
         }
 
 

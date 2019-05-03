@@ -254,6 +254,24 @@ def add_localizations(target, values):
     target.localizations.update({locale: label for locale, label in values})
 
 
+class XMLParseError(ParseError):
+    def __init__(self, reader, elem, message=None):
+        self.stack = reader._stack
+        self.elem = elem
+        self.message = message
+        self.__suppress_context__ = True
+
+    def __str__(self):
+        msg = '\n\n'.join(filter(None, [
+            self.message,
+            str(self.__cause__),
+            'Stack:\n' + '\n> '.join(self.stack),
+            etree.tostring(self.elem, pretty_print=True).decode(),
+            ]))
+        self.__cause__ = None
+        return msg
+
+
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model.
 
@@ -289,16 +307,8 @@ class Reader(BaseReader):
         self._stack = [QName(root).localname.lower()]
         self._index = {}
 
-        try:
-            # Parse the tree
-            values = self._parse(root)
-        except Exception as e:  # pragma: no cover
-            # For debugging: print the stack
-            print(' > '.join(self._stack))
-            if isinstance(e, ParseError):
-                raise
-            else:
-                raise ParseError from e
+        # Parse the tree
+        values = self._parse(root)
 
         # Instantiate the message object
         msg = cls()
@@ -390,22 +400,25 @@ class Reader(BaseReader):
             self._stack.append(tag_name)
 
             # Invoke the parser for this element
-            if QName(child).localname in _parse_skip:
-                # Element doesn't require any parsing, per se.
-                # Immediately parse its children, as a list.
-                self._stack[-1] += ' (skip)'
-                result = self._parse(child, rtype=list, unwrap=False)
-            elif len(child) == 1 and child[0].tag == 'Ref':
-                # Element contains nothing but a reference. Parse or look up
-                # the reference
-                result = [self.parse_ref(child[0])]
-            else:
-                # Parse the element, maybe using an alias
-                method = 'parse_' + _parse_alias.get(tag_name, tag_name)
-                try:
+            try:
+                if QName(child).localname in _parse_skip:
+                    # Element doesn't require any parsing, per se.
+                    # Immediately parse its children, as a list.
+                    self._stack[-1] += ' (skip)'
+                    result = self._parse(child, rtype=list, unwrap=False)
+                elif len(child) == 1 and child[0].tag == 'Ref':
+                    # Element contains nothing but a reference. Parse or look
+                    # up the reference
+                    result = [self.parse_ref(child[0])]
+                else:
+                    # Parse the element, maybe using an alias
+                    method = 'parse_' + _parse_alias.get(tag_name, tag_name)
                     result = [getattr(self, method)(child)]
-                except AttributeError:
-                    raise NotImplementedError(child)
+            except XMLParseError:
+                # Re-raise without adding to the stack
+                raise
+            except Exception as e:
+                raise XMLParseError(self, child) from e
 
             # Add objects with IDs to the index
             for r in result:

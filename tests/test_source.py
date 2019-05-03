@@ -15,7 +15,7 @@ def test_source_support():
     assert sources['ILO'].supports['categoryscheme']
 
     # Specifically unsupported endpoint
-    assert not sources['ECB'].supports['datastructure']
+    assert not sources['ESTAT'].supports['categoryscheme']
 
     # Explicitly supported structure-specific data
     assert sources['INEGI'].supports['structure-specific data']

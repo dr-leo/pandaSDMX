@@ -38,6 +38,7 @@ from operator import attrgetter
 from traitlets import (
     Any,
     Bool,
+    CBool,
     CFloat,
     CInt,
     Dict,
@@ -239,6 +240,8 @@ FacetValueType = Enum(
     'reportingMonth reportingWeek reportingDay dateTime timesRange month '
     'monthDay day time duration keyValues identifiableReference '
     'dataSetReference')
+
+ConstraintRoleType = Enum('ConstraintRoleType', 'allowable actual')
 
 
 # 3.5: Item Scheme
@@ -506,32 +509,35 @@ class ConstrainableArtefact:
 
 # 10.3: Constraints
 
-ConstraintRoleType = Enum('ConstraintRoleType', 'allowable actual')
-
-
 class ConstraintRole(HasTraits):
     role = UseEnum(ConstraintRoleType)
 
 
-# class ComponentValue(HasTraits):
-#     value_for = Instance(Component)
-#     value = Unicode()
-#
-#
-# class DataKey(HasTraits):
-#     is_included = Bool()
-#     key_value = List(Instance(ComponentValue))
-#
-#
-# class DataKeySet(HasTraits):
-#     is_included = Bool()
-#     keys = List(Instance(DataKey))
+class ComponentValue(HasTraits):
+    value_for = Instance(Component)
+    value = Unicode()
+
+
+class DataKey(HasTraits):
+    included = Bool()
+    key_value = Dict(Instance(ComponentValue))
+
+    def __init__(self, *args):
+        for component, value in args:
+            self.key_value[component] = ComponentValue(value_for=component,
+                                                       value=value)
+
+class DataKeySet(HasTraits):
+    included = CBool()
+    keys = List(Instance(DataKey))
 
 
 class Constraint(MaintainableArtefact):
-    # data_content_keys = Instance(DataKeySet, allow_none=True)
+    data_content_keys = Instance(DataKeySet, allow_none=True)
     # metadata_content_keys = Instance(MetadataKeySet, allow_none=True)
-    role = Set(Instance(ConstraintRole))
+    # NB the spec gives 1..* for this attribute, but this implementation allows
+    # only 1
+    role = Instance(ConstraintRole)
 
 
 class SelectionValue(HasTraits):
@@ -546,11 +552,12 @@ class MemberValue(SelectionValue):
 class MemberSelection(HasTraits):
     included = Bool()
     values_for = Instance(Component)
+    # NB the spec does not say what this feature should be named
     values = Set(Instance(MemberValue))
 
 
 class CubeRegion(HasTraits):
-    included = Bool()
+    included = CBool()
     member = Dict(Instance(MemberSelection))
 
     def __contains__(self, v):
@@ -574,6 +581,7 @@ class CubeRegion(HasTraits):
 
 class ContentConstraint(Constraint):
     data_content_region = Instance(CubeRegion, allow_none=True)
+    content = Set(Instance(ConstrainableArtefact))
     # metadata_content_region = Instance(MetadataTargetRegion, allow_none=True)
 
     def __contains__(self, v):

@@ -843,7 +843,7 @@ class Reader(BaseReader):
         return c
 
     def parse_category(self, elem):
-        c, values = self._named(Category, elem)
+        c, values = self._named(Category, elem, unwrap=False)
         for child_category in values.pop('category', []):
             c.child.append(child_category)
             child_category.parent = c

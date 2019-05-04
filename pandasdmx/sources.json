@@ -72,7 +72,7 @@
     "id": "NB",
     "name": "Norges Bank (NO)",
     "url": "https://data.norges-bank.no/api",
-    "supports": {"structure-specific data": true},
+    "supports": {"categoryscheme": false, "structure-specific data": true},
     "headers": {
         "data": {
             "accept": "application/vnd.sdmx.genericdata+xml;version=2.1"

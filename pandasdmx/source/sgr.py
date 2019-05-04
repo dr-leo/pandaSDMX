@@ -9,3 +9,9 @@ class Source(BaseSource):
         if response.headers.get('content-type', None) is None:
             response.headers['content-type'] = 'application/xml'
         return response, content
+
+    def modify_request_args(self, kwargs):
+        """SGR is a data source but not a data provider.
+
+        Use 'all' to retrieve all data it republishes."""
+        kwargs.setdefault('agency', 'all')

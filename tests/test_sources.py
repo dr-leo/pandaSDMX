@@ -231,6 +231,8 @@ class TestISTAT(DataSourceTest):
 
 class TestNB(DataSourceTest):
     source_id = 'NB'
+    # This source returns a valid SDMX Error message (100 No Results Found)
+    # for the 'categoryscheme' endpoint.
 
 
 class TestOECD(DataSourceTest):
@@ -244,23 +246,9 @@ class TestSGR(DataSourceTest):
         # ESA2010MA.Q
         'categoryscheme': ParseError,
 
-        # TODO these are automatically constructed using 'SGR' as the
-        # agency_id; this gives 404, as SGR itself is not a data *provider*.
-        # However, with 'all', each works. Write tests for these.
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
-        'dataflow': HTTPError,
-        'datastructure': HTTPError,
+        # Same as ISTAT/codelist xfail, above.
+        'codelist': ParseError,
         }
-
-    # Based on query builder at
-    # https://registry.sdmx.org/FusionRegistry/rest-get.html
-    @pytest.mark.remote_data
-    def test_structure_codelist(self, req):
-        req.get(resource_type='codelist',
-                resource_id='all',
-                agency='all',
-                tofile=self._cache_path.with_suffix('.codelist2'))
 
 
 class TestUNESCO(DataSourceTest):

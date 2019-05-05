@@ -10,8 +10,7 @@ import pandas as pd
 import pytest
 from pytest import raises
 
-import pandasdmx
-from pandasdmx.writer import Writer
+from pandasdmx import open_file, to_pandas
 
 from . import (
     assert_pd_equal,
@@ -49,21 +48,21 @@ def pytest_generate_tests(metafunc):
 
 
 def test_write_data_arguments():
-    msg = pandasdmx.open_file(test_files(kind='data')['argvalues'][0])
+    msg = open_file(test_files(kind='data')['argvalues'][0])
 
     # Attributes must be a string
     with raises(TypeError):
-        Writer().write(msg, attributes=2)
+        to_pandas(msg, attributes=2)
 
     # Attributes must contain only 'dgso'
     with raises(ValueError):
-        Writer().write(msg, attributes='foobarbaz')
+        to_pandas(msg, attributes='foobarbaz')
 
 
 def test_write_data(data_path):
-    msg = pandasdmx.open_file(data_path)
+    msg = open_file(data_path)
 
-    result = Writer().write(msg)
+    result = to_pandas(msg)
 
     expected = expected_data(data_path)
     if expected is not None:
@@ -76,9 +75,9 @@ def test_write_data(data_path):
 
 @pytest.mark.parametrize('path', **test_files(kind='data'))
 def test_write_data_attributes(path):
-    msg = pandasdmx.open_file(path)
+    msg = open_file(path)
 
-    result = Writer().write(msg, attributes='osgd')
+    result = to_pandas(msg, attributes='osgd')
     # TODO incomplete
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
@@ -86,17 +85,17 @@ def test_write_data_attributes(path):
 def test_write_agencyscheme():
     # Convert an agency scheme
     with specimen('ecb_orgscheme.xml') as f:
-        msg = pandasdmx.open_file(f)
-        data = pandasdmx.to_pandas(msg)
+        msg = open_file(f)
+        data = to_pandas(msg)
 
     assert data['organisation_scheme']['AGENCIES']['ESTAT'] == 'Eurostat'
 
 
 def test_write_categoryscheme():
     with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
-        msg = pandasdmx.open_file(f)
+        msg = open_file(f)
         print(msg.category_scheme)
-        data = pandasdmx.to_pandas(msg)
+        data = to_pandas(msg)
 
     cs = data['category_scheme']['CLASSEMENT_DATAFLOWS']
 
@@ -109,8 +108,8 @@ def test_write_categoryscheme():
 
 def test_write_codelist():
     # Retrieve codelists from a test specimen and convert to pandas
-    dsd_common = pandasdmx.open_file(test_data_path / 'common' / 'common.xml')
-    codelists = pandasdmx.to_pandas(dsd_common)['codelist']
+    dsd_common = open_file(test_data_path / 'common' / 'common.xml')
+    codelists = to_pandas(dsd_common)['codelist']
 
     # File contains 5 code lists
     assert len(codelists) == 5
@@ -127,10 +126,10 @@ def test_write_codelist():
 
     # Hierarchical code list
     with specimen('unsd_codelist_partial.xml') as f:
-        msg = pandasdmx.open_file(f)
+        msg = open_file(f)
 
     # Convert single codelist
-    CL_AREA = pandasdmx.to_pandas(msg.codelist['CL_AREA'])
+    CL_AREA = to_pandas(msg.codelist['CL_AREA'])
 
     # Hierichical list has a 'parent' column; parent of Africa is the World
     assert CL_AREA.loc['002', 'parent'] == '001'
@@ -144,8 +143,8 @@ def test_write_codelist():
 
 def test_write_conceptscheme():
     with specimen('common.xml') as f:
-        msg = pandasdmx.open_file(f)
-        data = pandasdmx.to_pandas(msg)
+        msg = open_file(f)
+        data = to_pandas(msg)
 
     cdc = data['concept_scheme']['CROSS_DOMAIN_CONCEPTS']
     assert cdc.loc['UNIT_MEASURE', 'name'] == 'Unit of Measure'
@@ -154,10 +153,10 @@ def test_write_conceptscheme():
 def test_write_dataflow():
     # Read the INSEE dataflow definition
     with specimen('insee-dataflow') as f:
-        msg = pandasdmx.open_file(f)
+        msg = open_file(f)
 
     # Convert to pandas
-    result = pandasdmx.to_pandas(msg, include='dataflow')
+    result = to_pandas(msg, include='dataflow')
 
     # Number of Dataflows described in the file
     assert len(result['dataflow']) == 663
@@ -176,8 +175,8 @@ def test_write_dataflow():
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_structure(path):
-    msg = pandasdmx.open_file(path)
+    msg = open_file(path)
 
-    pandasdmx.to_pandas(msg)
+    to_pandas(msg)
 
     # TODO test contents

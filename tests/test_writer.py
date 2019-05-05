@@ -151,18 +151,27 @@ def test_write_conceptscheme():
     assert cdc.loc['UNIT_MEASURE', 'name'] == 'Unit of Measure'
 
 
-@pytest.mark.xfail(reason='TODO: iterable of DataflowDefinition not converted'
-                          'to pd.Series')
 def test_write_dataflow():
     # Read the INSEE dataflow definition
     with specimen('insee-dataflow') as f:
         msg = pandasdmx.open_file(f)
 
     # Convert to pandas
-    result = pandasdmx.to_pandas(msg)
+    result = pandasdmx.to_pandas(msg, include='dataflow')
 
+    # Number of Dataflows described in the file
     assert len(result['dataflow']) == 663
-    assert isinstance(result['dataflow'], pd.Series)
+
+    # ID and names of first Dataflows
+    mbop = 'Monthly Balance of Payments -'
+    expected = pd.Series({
+        'ACT-TRIM-ANC': 'Activity by sex and age - Quarterly series',
+        'BPM6-CCAPITAL': f'{mbop} Capital account',
+        'BPM6-CFINANCIER': f'{mbop} Financial account',
+        'BPM6-CTRANSACTION': f'{mbop} Current transactions account',
+        'BPM6-TOTAL': f'{mbop} Overall total and main headings',
+        })
+    assert_pd_equal(result['dataflow'].head(), expected)
 
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))

@@ -55,9 +55,8 @@ def pytest_generate_tests(metafunc):
             # No expected failure; use the bare string as an argument
             endpoints.append(ep)
 
-    if len(endpoints):
-        # Run the test function once for each endpoint
-        metafunc.parametrize('endpoint', endpoints)
+    # Run the test function once for each endpoint
+    metafunc.parametrize('endpoint', endpoints)
 
 
 class DataSourceTest:

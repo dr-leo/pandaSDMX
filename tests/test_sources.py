@@ -27,31 +27,35 @@ structure_endpoints = [
 
 def pytest_generate_tests(metafunc):
     """pytest hook for parametrizing tests with 'endpoint' arguments."""
-    if 'endpoint' in metafunc.fixturenames:
-        endpoints = []
-        for ep in structure_endpoints:
-            # Check if the associated source supports the endpoint
-            source = sources[metafunc.cls.source_id]
-            supported = source.supports[ep]
-            if not supported:
-                if ep in metafunc.cls.xfail:
-                    warn("tests for '{}' mention unsupported endpoint '{}'"
-                         .format(metafunc.cls.source_id, ep))
-                continue
-            elif source.data_content_type == 'JSON':
-                continue
+    if 'endpoint' not in metafunc.fixturenames:
+        return
 
-            # Check if the test function's class contains an expected failure
-            # for this endpoint
-            exc_class = metafunc.cls.xfail.get(ep, None)
-            if exc_class:
-                # Mark the test as expected to fail
-                mark = pytest.mark.xfail(strict=True, raises=exc_class)
-                endpoints.append(pytest.param(ep, marks=mark))
-            else:
-                # No expected failure; use the bare string as an argument
-                endpoints.append(ep)
+    endpoints = []
 
+    for ep in structure_endpoints:
+        # Check if the associated source supports the endpoint
+        source = sources[metafunc.cls.source_id]
+        supported = source.supports[ep]
+        if not supported:
+            if ep in metafunc.cls.xfail:
+                warn("tests for '{}' mention unsupported endpoint '{}'"
+                     .format(metafunc.cls.source_id, ep))
+            continue
+        elif source.data_content_type == 'JSON':
+            continue
+
+        # Check if the test function's class contains an expected failure
+        # for this endpoint
+        exc_class = metafunc.cls.xfail.get(ep, None)
+        if exc_class:
+            # Mark the test as expected to fail
+            mark = pytest.mark.xfail(strict=True, raises=exc_class)
+            endpoints.append(pytest.param(ep, marks=mark))
+        else:
+            # No expected failure; use the bare string as an argument
+            endpoints.append(ep)
+
+    if len(endpoints):
         # Run the test function once for each endpoint
         metafunc.parametrize('endpoint', endpoints)
 

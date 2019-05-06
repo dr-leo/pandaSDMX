@@ -79,8 +79,9 @@ def write_dict(obj, *args, **kwargs):
 
     result_type = set(type(v) for v in result.values())
 
-    if result_type == {pd.Series}:
-        if len(set(map(lambda s: s.index.name, result.values()))) == 1:
+    if result_type <= {pd.Series, pd.DataFrame}:
+        if (len(set(map(lambda s: s.index.name, result.values()))) == 1 and
+                len(result) > 1):
             # Can safely concatenate these to a pd.MultiIndex'd Series.
             return pd.concat(result)
         else:

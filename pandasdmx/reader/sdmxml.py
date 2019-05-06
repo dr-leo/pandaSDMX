@@ -14,6 +14,7 @@ This module contains a reader for SDMXML v2.1.
 '''
 from collections import ChainMap
 from inspect import isclass
+from itertools import chain
 
 from lxml import etree
 from lxml.etree import QName, XPath
@@ -76,6 +77,7 @@ from pandasdmx.model import (
     PrimaryMeasure,
     Representation,
     SeriesKey,
+    TimeDimension,
     UsageStatus,
     )
 
@@ -177,15 +179,11 @@ _parse_alias = {
     'dataprovider': 'organisation',
     'textformat': 'facet',
     'enumerationformat': 'facet',
+    'timedimension': 'dimension',
     }
 
 # Class names stored as strings in XML attributes -> pandasdmx.model classes
 _parse_class = {
-    'grouping': {
-        'DimensionDescriptor': DimensionDescriptor,
-        'AttributeDescriptor': AttributeDescriptor,
-        'MeasureDescriptor': MeasureDescriptor,
-        },
     'key': {
         'groupkey': GroupKey,
         'obskey': Key,
@@ -352,11 +350,27 @@ class Reader(BaseReader):
                 for obj in structures.pop(name, []):
                     getattr(msg, attr)[obj.id] = obj
 
+            # Check, but do not store, Categorisations
+
+            # Assemble a list of external categoryschemes
+            ext_cs = []
+            for key, cs in self._index.items():
+                if key[0] == 'CategoryScheme' and cs.is_external_reference:
+                    ext_cs.append(cs)
+
             for c in structures.pop('categorisations', []):
-                # Check, but do not store, the stated relationships
-                assert any(c.category in cs for cs in
-                           msg.category_scheme.values())
                 assert c.artefact in msg.dataflow.values()
+
+                missing_cs = True
+                for cs in chain(msg.category_scheme.values(), ext_cs):
+                    if c.category in cs:
+                        missing_cs = False
+                        if cs.is_external_reference:
+                            # Store the externally-referred CategoryScheme
+                            msg.category_scheme[cs.id] = cs
+                        break
+
+                assert not missing_cs
 
             assert len(structures) == 0
 
@@ -906,7 +920,7 @@ class Reader(BaseReader):
         return dsd
 
     def parse_grouping(self, elem):
-        Grouping = _parse_class['grouping'][elem.attrib.pop('id')]
+        Grouping = globals()[elem.attrib.pop('id')]
         g = Grouping(**elem.attrib)
         g.components.extend(self._parse(elem, list, unwrap=False))
         return g
@@ -914,22 +928,22 @@ class Reader(BaseReader):
     def parse_dimension(self, elem):
         values = self._parse(elem)
 
+        # Object class: Dimension, TimeDimension, etc.
+        cls = globals()[QName(elem).localname]
+
         attrs = {}
         try:
             attrs['order'] = int(elem.attrib.pop('position'))
         except KeyError:
             pass
 
-        d = Dimension(
+        d = cls(
             concept_identity=values.pop('conceptidentity'),
             local_representation=values.pop('localrepresentation'),
             **ChainMap(attrs, elem.attrib),
             )
         assert len(values) == 0
         return d
-
-    # TODO should return a TimeDimension
-    parse_timedimension = parse_dimension
 
     def parse_groupdimension(self, elem):
         values = self._parse(elem)

@@ -125,10 +125,12 @@ class Request(object):
         return DataStructureDefinition.from_keys(resp.data[0].series.keys())
 
     def _make_key(self, resource_type, resource_id, key):
-        # If key is a dict, validate items against the DSD
-        # and construct the key string which becomes part of the URL
-        # Otherwise, do nothing as key must be a str confirming to the REST
-        # API spec.
+        """Validate *key* if possible.
+
+        If key is a dict, validate items against the DSD and construct the key
+        string which becomes part of the URL. Otherwise, do nothing as key must
+        be a str confirming to the REST API spec.
+        """
         if not (resource_type == 'data' and isinstance(key, dict)):
             return key
 
@@ -147,7 +149,7 @@ class Request(object):
             dsd = self.series_keys(resource_id)
 
         # Make a ContentConstraint from the key
-        cc = dsd.make_cube(key)
+        cc = dsd.make_constraint(key)
 
         # TODO check that keys match dataflow constraints
 

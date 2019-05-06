@@ -14,6 +14,7 @@ import pandas as pd
 import pandasdmx as sdmx
 from pandasdmx import Request
 from pandasdmx.model import DataSet
+from pandasdmx.util import DictLike
 
 from . import assert_pd_equal
 
@@ -48,9 +49,8 @@ def test_doc_index1():
         }, name='GEO') \
         .rename_axis('CL_GEO')
 
-    with pytest.raises(AttributeError):
-        # Codelists returned as a single pd.Series with a pd.MultiIndex
-        s.codelist.loc['GEO'].head()
+    # Codelists are converted to a DictLike
+    assert isinstance(s.codelist, DictLike)
 
     # Same effect
     assert_pd_equal(s.codelist['CL_GEO'].sort_index().head(), expected)

@@ -576,7 +576,11 @@ class CubeRegion(HasTraits):
 
     def to_query_string(self, structure):
         all_values = []
+
         for dim in structure.dimensions:
+            if isinstance(dim, TimeDimension):
+                # TimeDimensions handled by query parameters
+                continue
             ms = self.member.get(dim, None)
             values = sorted(mv.value for mv in ms.values) if ms else []
             all_values.append('+'.join(values))
@@ -728,20 +732,26 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     def dimension(self, id, **kwargs):
         return self.dimensions.get(id, **kwargs)
 
-    def make_cube(self, keys):
+    def make_constraint(self, key):
         """Return a ContentConstraint for a dict of *keys*."""
-        # TODO validate values
+        # Make a copy to avoid pop()'ing off the object in the calling scope
+        key = key.copy()
+
         cr = CubeRegion()
         for dim in self.dimensions:
             try:
-                values = keys.pop(dim.id)
+                values = key.pop(dim.id)
             except KeyError:
                 continue
             ms = MemberSelection(included=True, values_for=dim)
+
+            # TODO validate values
             for value in values.split('+'):
                 ms.values.add(MemberValue(value=value))
             cr.member[dim] = ms
-        assert len(keys) == 0
+
+        assert len(key) == 0
+
         return ContentConstraint(data_content_region=cr)
 
     @classmethod

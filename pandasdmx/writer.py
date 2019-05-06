@@ -16,6 +16,7 @@ from pandasdmx.model import (
     ItemScheme,
     NameableArtefact,
     Observation,
+    TimeDimension,
     )
 from pandasdmx.util import DictLike
 
@@ -25,6 +26,7 @@ __all__ = ['to_pandas']
 
 # Class → common write_*() methods
 _alias = {
+    DictLike: dict,
     AgencyScheme: ItemScheme,
     CategoryScheme: ItemScheme,
     ConceptScheme: ItemScheme,
@@ -32,6 +34,7 @@ _alias = {
     DataflowDefinition: NameableArtefact,
     DataStructureDefinition: NameableArtefact,
     Dimension: Component,
+    TimeDimension: Component,
     }
 
 
@@ -47,28 +50,6 @@ def write(obj, *args, **kwargs):
     #      InternationalString
 
     cls = obj.__class__
-
-    # Convenience unwrapping of objects
-    # TODO consider deprecating some or all of these
-    # Note: can't import/compare api.Response; would be circular
-    if cls.__name__ == 'Response':
-        # Handle an attempt to 'write' a pandasdmx.api.Response object
-        obj = obj.msg
-        cls = obj.__class__
-    elif cls is list:
-        # List of objects
-        if isinstance(obj[0], Observation):
-            return write_dataset(obj, *args, **kwargs)
-        else:
-            return [write(item, *args, **kwargs) for item in obj]
-    elif cls in (dict, DictLike):
-        # dict or DictLike of objects
-        result = dict()
-        for k, v in obj.items():
-            result[k] = write(v, *args, **kwargs)
-        result = pd.Series(result)
-        return result
-
     function = 'write_' + _alias.get(cls, cls).__name__.lower()
     return globals()[function](obj, *args, **kwargs)
 
@@ -77,7 +58,48 @@ def write(obj, *args, **kwargs):
 to_pandas = write
 
 
+# Functions for Python containers
+def write_list(obj, *args, **kwargs):
+    """List of objects."""
+    if isinstance(obj[0], Observation):
+        return write_dataset(obj, *args, **kwargs)
+    else:
+        return [write(item, *args, **kwargs) for item in obj]
+
+
+def write_dict(obj, *args, **kwargs):
+    """Convert mappings.
+
+    The values of the mapping are write()'d individually. If the resulting
+    values are :class:`str` or :class:`pd.Series` *with indexes that share the
+    same name*, then they are converted to a pd.Series, possibly with a
+    pd.MultiIndex. Otherwise, a DictLike is returned.
+    """
+    result = {k: write(v, *args, **kwargs) for k, v in obj.items()}
+
+    result_type = set(type(v) for v in result.values())
+
+    if result_type == {pd.Series}:
+        if len(set(map(lambda s: s.index.name, result.values()))) == 1:
+            # Can safely concatenate these to a pd.MultiIndex'd Series.
+            return pd.concat(result)
+        else:
+            # The individual pd.Series are indexed by different dimensions; do
+            # not concatenate.
+            return DictLike(result)
+    elif result_type == {str}:
+        return pd.Series(result)
+    elif result_type == set():
+        return pd.Series()
+    else:
+        raise ValueError(result_type)
+
+
 # Functions for message classes
+def write_response(obj, *args, **kwargs):
+    """Writing a pandasdmx.api.Response → write the Response.msg."""
+    return write(obj.msg, *args, **kwargs)
+
 
 def write_datamessage(obj, *args, **kwargs):
     if len(obj.data) == 1:

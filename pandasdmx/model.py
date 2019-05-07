@@ -366,6 +366,11 @@ class Representation(HasTraits):
     enumerated = Instance(ItemScheme)
     non_enumerated = Set(Instance(Facet))
 
+    def __repr__(self):
+        return '<{}: {}, {}>'.format(self.__class__.__name__,
+                                     self.enumerated,
+                                     self.non_enumerated)
+
 
 # 4.4: Concept Scheme
 
@@ -390,6 +395,15 @@ class Component(IdentifiableArtefact):
     concept_identity = Instance(Concept)
     local_representation = Instance(Representation, args=(), allow_none=True)
 
+    def __contains__(self, value):
+        for repr in [self.concept_identity.core_representation,
+                     self.local_representation]:
+            enum = getattr(repr, 'enumerated', None)
+            if enum is not None:
+                return value in enum
+        raise TypeError('membership not defined for non-enumerated'
+                        'representations')
+
 
 class ComponentList(IdentifiableArtefact):
     components = List(Instance(Component))
@@ -405,6 +419,7 @@ class ComponentList(IdentifiableArtefact):
         subclass if 'components' is overridden in a subclass of ComponentList.
         """
         # TODO use an index to speed up
+        # TODO don't return missing items or add an option to avoid this
 
         # Chose an appropriate class specified for the trait in the
         # ComponentList subclass.
@@ -429,6 +444,10 @@ class ComponentList(IdentifiableArtefact):
         return candidate
 
     # Properties of components
+    def __getitem__(self, key):
+        """Convenience access to components."""
+        return self.components[key]
+
     def __len__(self):
         return len(self.components)
 
@@ -681,10 +700,6 @@ class DimensionDescriptor(ComponentList):
         Instance(MeasureDimension),
         Instance(TimeDimension),
         ]))
-
-    def __getitem__(self, key):
-        """Convenience access to components."""
-        return self.components[key]
 
     def order_key(self, key):
         """Return a key ordered according to the DSD."""

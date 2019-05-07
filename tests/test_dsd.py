@@ -5,7 +5,7 @@
 
 @author: Dr. Leo
 '''
-import pandasdmx
+import pandasdmx as sdmx
 from pandasdmx import model
 
 from . import MessageTest, test_data_path
@@ -29,7 +29,7 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_writer(self, msg):
-        cls_as_dfs = pandasdmx.to_pandas(msg.codelist)
+        cls_as_dfs = sdmx.to_pandas(msg.codelist)
 
         # Number of codes expected in each Codelist
         count = {
@@ -68,39 +68,54 @@ class test_dsd_common(MessageTest):
         assert a.type == 'NOTE'
 
 
-@pytest.mark.skip(reason='needs refactor')
 def test_exr_constraints():
-    def setUp(self):
-        self.ecb = Request('ecb')
-        filepath = os.path.join(test_path, 'data/exr_flow.xml')
-        self.resp = self.ecb.get(fromfile=filepath)
+    m = sdmx.open_file(test_data_path / 'exr_flow.xml')
+    ECB_EXR1 = m.structure['ECB_EXR1']
 
-    def test_constrained_codes(self):
-        m = self.resp.msg
-        self.assertEqual(m._dim_ids[0], 'FREQ')
-        self.assertEqual(len(m._dim_ids), 5)
-        self.assertEqual(len(m._dim_ids), 5)
-        self.assertEqual(len(m._dim_codes), 5)
-        self.assertEqual(len(m._attr_ids), 9)
-        self.assertEqual(len(m._attr_codes), 9)
-        self.assertEqual(m._attr_ids[-1], 'UNIT_MULT')
-        self.assertIn('5', m._attr_codes.UNIT_MULT)
-        self.assertIn('W', m._dim_codes.FREQ)
-        self.assertIn('W', m._dim_codes.FREQ)
-        self.assertEqual(len(m._constrained_codes), 14)
-        self.assertNotIn('W', m._constrained_codes.FREQ)
-        key = {'FREQ': ['W']}
-        self.assertTrue(m.in_codes(key))
-        self.assertFalse(m.in_constraints(key, raise_error=False))
-        self.assertRaises(ValueError, m.in_constraints, key)
-        self.assertTrue(m.in_constraints({'CURRENCY': ['CHF']}))
-        # test with invalid key
-        self.assertRaises(TypeError, m._in_constraints, {'FREQ': 'A'})
-        # structure writer with constraints
-        out = self.resp.write()
-        cl = out.codelist
-        self.assertEqual(cl.shape, (3555, 2))
-        # unconstrained codelists
-        out = self.resp.write(constraint=False)
-        cl = out.codelist
-        self.assertEqual(cl.shape, (4177, 2))
+    # Test DimensionDescriptor
+    dd = ECB_EXR1.dimensions
+
+    # Correct order
+    assert dd[0].id == 'FREQ'
+
+    # Correct number of dimensions
+    assert len(dd.components) == 6
+
+    # Dimensions can be retrieved by name; membership can be tested
+    assert 'W' in dd.get('FREQ')
+
+    # Similar tests for AttributeDescriptor
+    ad = ECB_EXR1.attributes
+    assert len(ad.components) == 24
+    assert ad[-1].id == 'UNIT_MULT'
+    assert '5' in ad.get('UNIT_MULT')
+
+    pytest.xfail('constrained codes not implemented')  # TODO
+    assert len(m._constrained_codes), 14
+
+    assert 'W' not in m._constrained_codes.FREQ
+
+    key = {'FREQ': ['W']}
+
+    assert m.in_codes(key)
+
+    assert not m.in_constraints(key, raise_error=False)
+
+    with pytest.raises(ValueError):
+        m.in_constraints(key)
+
+    assert m.in_constraints({'CURRENCY': ['CHF']})
+
+    # test with invalid key
+    with pytest.raises(TypeError):
+        m._in_constraints({'FREQ': 'A'})
+
+    # structure writer with constraints
+    out = sdmx.to_pandas(m)
+    cl = out.codelist
+    assert cl.shape == (3555, 2)
+
+    # unconstrained codelists
+    out = sdmx.to_pandas(m, constraint=False)
+    cl = out.codelist
+    assert cl.shape, (4177, 2)

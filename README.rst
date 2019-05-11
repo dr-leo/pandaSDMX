@@ -7,6 +7,7 @@ pandaSDMX: Statistical Data and Metadata eXchange
    :target: https://codecov.io/gh/dr-leo/pandaSDMX
 .. image:: https://readthedocs.org/projects/pandasdmx/badge/?version=latest
    :target: https://pandasdmx.readthedocs.io
+   :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/pandaSDMX.svg
    :target: https://pypi.org/project/pandaSDMX
 

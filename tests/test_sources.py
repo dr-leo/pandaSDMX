@@ -44,16 +44,24 @@ def pytest_generate_tests(metafunc):
         elif source.data_content_type == 'JSON':
             continue
 
+        marks = []
+
         # Check if the test function's class contains an expected failure
         # for this endpoint
         exc_class = metafunc.cls.xfail.get(ep, None)
         if exc_class:
             # Mark the test as expected to fail
-            mark = pytest.mark.xfail(strict=True, raises=exc_class)
-            endpoints.append(pytest.param(ep, marks=mark))
-        else:
-            # No expected failure; use the bare string as an argument
-            endpoints.append(ep)
+            marks.append(pytest.mark.xfail(strict=True, raises=exc_class))
+
+        # Tolerate 503 errors
+        if metafunc.cls.tolerate_503:
+            marks.append(
+                pytest.mark.xfail(
+                    raises=HTTPError,
+                    reason='503 Server Error: Service Unavailable')
+                )
+
+        endpoints.append(pytest.param(ep, marks=marks))
 
     # Run the test function once for each endpoint
     metafunc.parametrize('endpoint', endpoints)
@@ -70,6 +78,9 @@ class DataSourceTest:
     # Mapping of endpoint → Exception subclass.
     # Tests of these endpoints are expected to fail.
     xfail = {}
+
+    # True to xfail if a 503 Error is returned
+    tolerate_503 = False
 
     @pytest.fixture
     def req(self):
@@ -274,7 +285,7 @@ class TestUNESCO(DataSourceTest):
 
 class TestUNSD(DataSourceTest):
     source_id = 'UNSD'
-
+    tolerate_503 = True
 
 class TestWB(DataSourceTest):
     source_id = 'WB'

@@ -62,7 +62,8 @@ def specimen(pattern=''):
             break
 
 
-_expected_read_args = json.load(open(test_data_path / 'expected.json'))
+# str() here is for Python 3.5 compatibility
+_expected_read_args = json.load(open(str(test_data_path / 'expected.json')))
 
 
 def expected_data(path):

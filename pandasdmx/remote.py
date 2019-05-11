@@ -1,16 +1,3 @@
-# encoding: utf-8
-
-
-# pandaSDMX is licensed under the Apache 2.0 license a copy of which
-# is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this
-# distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
-
-'''
-This module is part of pandaSDMX. It contains
-a classes for http access.
-'''
 from io import BufferedIOBase
 import logging
 from warnings import warn
@@ -24,6 +11,7 @@ except ImportError:
     warn('optional dependency requests_cache is not installed; cache options '
          'to Session() have no effect', RuntimeWarning)
     from requests import Session as MaybeCachedSession
+
 
 logger = logging.getLogger(__name__)
 

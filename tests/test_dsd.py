@@ -1,10 +1,3 @@
-# encoding: utf-8
-
-'''
-
-
-@author: Dr. Leo
-'''
 import pandasdmx as sdmx
 from pandasdmx import model
 

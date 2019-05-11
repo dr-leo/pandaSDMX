@@ -1,10 +1,3 @@
-# encoding: utf-8
-
-'''
-
-
-@author: Dr. Leo
-'''
 import unittest
 from pandasdmx import model, Request
 import pandas

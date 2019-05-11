@@ -1,10 +1,3 @@
-# encoding: utf-8
-
-'''
-
-
-@author: Dr. Leo
-'''
 import pandas as pd
 import pandasdmx
 from pandasdmx import message, model

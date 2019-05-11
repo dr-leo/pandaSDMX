@@ -1,4 +1,4 @@
-"""SDMX Information Model (SDMX-IM)
+"""SDMX Information Model (SDMX-IM).
 
 This module implements many of the classes described in the SDMX-IM
 specification ('spec'), which is available from:

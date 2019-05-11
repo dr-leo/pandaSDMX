@@ -1,14 +1,5 @@
-# encoding: utf-8
+"""Network requests API
 
-
-# pandaSDMX is licensed under the Apache 2.0 license a copy of which
-# is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in this
-# distribution.
-# (c) 2014-2017 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
-
-
-'''
 This module defines two classes: :class:`pandasdmx.api.Request` and
 :class:`pandasdmx.api.Response`. Together, these form the high-level API of
 :mod:`pandasdmx`. Requesting data and metadata from an SDMX server requires a
@@ -16,7 +7,7 @@ good understanding of this API and a basic understanding of the SDMX web
 service guidelines (only the chapters on REST services are relevant as
 pandasdmx does not support the SOAP interface).
 
-'''
+"""
 from functools import partial, reduce
 from itertools import product
 import logging

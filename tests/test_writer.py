@@ -32,12 +32,14 @@ file_marks = {
         " 'list'> instead",
         'Message contains two DataSets; test infrastructure currently handles '
         'only messages with a single DataSet.'),
-    'ecb_exr_ng_ts.xml1': (AssertionError, 'Series.index are different', ssds),
-    'ecb_exr_ng_flat.xml1': (AssertionError, 'Series.index are different',
-                             ssds),
-    'ecb_exr_ng_xs.xml1': (AssertionError, 'Series.index are different', ssds),
-    'ecb_exr_ng_ts_gf.xml1': (AssertionError, 'Series.index are different',
-                              ssds),
+    'structured/ecb_exr_ng_ts.xml':
+        (AssertionError, 'Series.index are different', ssds),
+    'structured/ecb_exr_ng_flat.xml':
+        (AssertionError, 'Series.index are different', ssds),
+    'structured/ecb_exr_ng_xs.xml':
+        (AssertionError, 'Series.index are different', ssds),
+    'structured/ecb_exr_ng_ts_gf.xml':
+        (AssertionError, 'Series.index are different', ssds),
     }
 
 
@@ -46,12 +48,13 @@ def pytest_generate_tests(metafunc):
         params = []
         tf = test_files(kind='data')
         for value, id in zip(tf['argvalues'], tf['ids']):
-            try:
-                mark = pytest.mark.skip(file_marks[id][2])
-                kwarg = dict(marks=mark)
-            except KeyError:
-                kwarg = {}
-            params.append(pytest.param(value, id=id, **kwarg))
+            kwargs = dict(id=id)
+            for cond, info in file_marks.items():
+                if cond in str(value):
+                    kwargs['marks']  = pytest.mark.skip(reason=info[2])
+                    break
+
+            params.append(pytest.param(value, **kwargs))
 
         metafunc.parametrize('data_path', params)
 

@@ -222,6 +222,9 @@ class TestISTAT(DataSourceTest):
         # References to parent Codes in a hierarchical CodeList are not
         # implemented. This is distinct from the INSEE/codelist xfail, above.
         'codelist': ParseError,
+
+        # References in AttributeRelationship
+        'datastructure': ParseError,
         }
 
     @pytest.mark.remote_data

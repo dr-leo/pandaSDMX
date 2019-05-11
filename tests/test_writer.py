@@ -22,6 +22,9 @@ from . import (
 
 
 # file name → (exception raised, exception message, comment/reason)
+ssds = ('Reading StructureSpecificDataSet does not distinguish between attrs '
+        'and dimension values.')
+
 file_marks = {
     'exr-action-delete.json': (
         AssertionError,
@@ -29,6 +32,10 @@ file_marks = {
         " 'list'> instead",
         'Message contains two DataSets; test infrastructure currently handles '
         'only messages with a single DataSet.'),
+    'ecb_exr_ng_ts.xml1': (AssertionError, ssds)
+    'ecb_exr_ng_flat.xml1': (AssertionError, ssds)
+    'ecb_exr_ng_xs.xml1': (AssertionError, ssds)
+    'ecb_exr_ng_ts_gf.xml1': (AssertionError, ssds)
     }
 
 

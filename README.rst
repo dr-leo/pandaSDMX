@@ -1,6 +1,15 @@
 pandaSDMX: Statistical Data and Metadata eXchange
 =================================================
 
+.. image:: https://travis-ci.org/dr-leo/pandaSDMX.svg?branch=master
+   :target: https://travis-ci.org/dr-leo/pandaSDMX
+.. image:: https://codecov.io/gh/dr-leo/pandaSDMX/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/dr-leo/pandaSDMX
+.. image:: https://readthedocs.org/projects/pandasdmx/badge/?version=latest
+   :target: https://pandasdmx.readthedocs.io
+.. image:: https://img.shields.io/pypi/v/pandaSDMX.svg
+   :target: https://pypi.org/project/pandaSDMX
+
 | Author: Dr. Leo <fhaxbox66@gmail.com>
 | License: Apache 2.0
 | Development website: https://github.com/dr-leo/pandasdmx/

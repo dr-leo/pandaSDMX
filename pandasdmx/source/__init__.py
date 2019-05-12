@@ -1,5 +1,6 @@
 """SDMX-IM Datasource and related classes."""
 from importlib import import_module
+from io import TextIOWrapper
 import json
 
 from pkg_resources import resource_stream
@@ -123,7 +124,8 @@ def list_sources():
 def load_package_sources():
     """Discover all sources listed in agencies.json."""
     with resource_stream('pandasdmx', 'sources.json') as f:
-        for info in json.load(f):
+        # TextIOWrapper is for Python 3.5 compatibility
+        for info in json.load(TextIOWrapper(f)):
             add_source(info)
 
 

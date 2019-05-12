@@ -58,7 +58,8 @@ def specimen(pattern=''):
     """Open the test specimen file with *match* in the name."""
     for path, f, k in _test_files:
         if path.match('*' + pattern + '*'):
-            yield open(path)
+            # str() here is for Python 3.5 compatibility
+            yield open(str(path))
             break
 
 

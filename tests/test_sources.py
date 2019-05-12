@@ -139,7 +139,8 @@ class TestESTAT(DataSourceTest):
         # Prepare the mock requests
         fixture = requests_mock.Mocker()
         for url, args in estat_mock.items():
-            args['body'] = open(args['body'], 'rb')
+            # str() here is for Python 3.5 compatibility
+            args['body'] = open(str(args['body']), 'rb')
             fixture.get(url, **args)
 
         return fixture

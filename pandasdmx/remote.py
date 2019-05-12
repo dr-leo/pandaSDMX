@@ -75,7 +75,8 @@ class ResponseIO(BufferedIOBase):
         self.chunks = response.iter_content(ITER_CHUNK_SIZE)
         self.pending = bytes()
         self.tee_filename = tee
-        self.tee = open(tee, 'wb') if tee else None
+        # str() here is for Python 3.5 compatibility
+        self.tee = open(str(tee), 'wb') if tee else None
 
     def read(self, size=ITER_CHUNK_SIZE):
         """Read and return up to *size* bytes.

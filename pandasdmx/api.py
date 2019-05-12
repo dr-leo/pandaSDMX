@@ -485,7 +485,8 @@ def open_file(filename_or_obj):
         reader = readers[filename_or_obj.suffix.lstrip('.').upper()]
 
         # Open the file
-        obj = open(filename_or_obj)
+        # str() here is for Python 3.5 compatibility
+        obj = open(str(filename_or_obj))
     except AttributeError:
         # File is already open
         pos = filename_or_obj.tell()

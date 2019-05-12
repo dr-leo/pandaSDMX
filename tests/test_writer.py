@@ -174,13 +174,13 @@ def test_write_dataflow():
     assert len(result['dataflow']) == 663
 
     # ID and names of first Dataflows
-    mbop = 'Monthly Balance of Payments -'
+    mbop = 'Monthly Balance of Payments - '
     expected = pd.Series({
         'ACT-TRIM-ANC': 'Activity by sex and age - Quarterly series',
-        'BPM6-CCAPITAL': f'{mbop} Capital account',
-        'BPM6-CFINANCIER': f'{mbop} Financial account',
-        'BPM6-CTRANSACTION': f'{mbop} Current transactions account',
-        'BPM6-TOTAL': f'{mbop} Overall total and main headings',
+        'BPM6-CCAPITAL': '{}Capital account'.format(mbop),
+        'BPM6-CFINANCIER': '{}Financial account'.format(mbop),
+        'BPM6-CTRANSACTION': '{}Current transactions account'.format(mbop),
+        'BPM6-TOTAL': '{}Overall total and main headings'.format(mbop),
         })
     assert_pd_equal(result['dataflow'].head(), expected)
 

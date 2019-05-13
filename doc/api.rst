@@ -46,9 +46,9 @@ SDMX-JSON
 ``pandasdmx.writer``: Convert SDMX to pandas objects
 ----------------------------------------------------
 
-.. autoclass:: pandasdmx.writer.Writer
-    :members:
-    :undoc-members:
+.. automodule:: pandasdmx.writer
+   :members:
+   :undoc-members:
 
 
 ``pandasdmx.remote``: Utilities for accessing SDMX REST web services
@@ -65,7 +65,11 @@ Built-in subclasses of :class:`pandasdmx.source.Source` are described at
 :doc:`sources`.
 
 .. autoclass:: pandasdmx.source.Source
-   :members: finish_message, handle_response
+   :members: finish_message, handle_response, modify_request_args
+
+.. automodule:: pandasdmx.source
+   :members: add_source, list_sources, load_package_sources
+
 
 ``pandasdmx.util``: Utilities
 -----------------------------

@@ -1088,3 +1088,23 @@ class _AllDimensions:
 
 
 AllDimensions = _AllDimensions()
+
+
+# 11. Data Provisioning
+
+class Datasource(HasTraits):
+    url = Unicode()
+
+
+class SimpleDatasource(Datasource):
+    pass
+
+
+class QueryDatasource(Datasource):
+    # Abstract.
+    # NB the SDMX-IM inconsistently uses this name and 'WebServicesDatasource'.
+    pass
+
+
+class RESTDatasource(QueryDatasource):
+    pass

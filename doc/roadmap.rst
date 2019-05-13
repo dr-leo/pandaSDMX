@@ -15,15 +15,16 @@ In rough order of priority:
     plain text error page, for some others) is returned which isn't parsed or
     handled; a ValueError or something else gets raised.
 
+- Remove `odo` as a dependency; suggest its use in the documentation.
+
+Future
+------
+
 - pandasdmx.api.Request._resources only contains a small subset of:
   https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT
   SUPPORTED OPERATIONS")
 - Get a set of API keys for testing UNESCO and encrypt them for use in CI:
   https://docs.travis-ci.com/user/encryption-keys/
-- Remove `odo` as a dependency; suggest its use in the documentation.
-
-Future
-------
 
 Using pd.DataFrame for internal storage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,16 +78,15 @@ There are some ways this performance could be improved:
 SDMX features & miscellaneous
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Serialize Message objects as SDMX-JSON or SDMX-ML.
+
 - Check for functionality of pysdmx_ (direct ancestor of pandaSDMX) and
   sdmx.py_ (distinct); ensure pandaSDMX offers a superset of these features.
 
-- Serialize Message objects as SDMX-JSON or SDMX-ML.
+- SOAP APIs; currently only REST APIs are supported. This would allow access
+  to, e.g., a broader set of :ref:`IMF` data.
 
-- SDMX features:
-
-  - Cube and Constraints.
-  - SOAP APIs; currently only REST APIs are supported. This would allow access
-    to, e.g., a broader set of :ref:`IMF` data.
+- Support SDMX-ML 2.0.
 
 - Performance:
 

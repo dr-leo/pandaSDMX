@@ -1,60 +1,39 @@
-pandaSDMX: Statistical Data and Metadata eXchange in Python
-===========================================================
+Statistical Data and Metadata eXchange (SDMX) in Python
+=======================================================
 
-pandaSDMX is an Apache 2.0-licensed `Python <http://www.python.org>`_ library
-that implements `SDMX <http://www.sdmx.org>`_ 2.1
-(`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_) a format for
+:mod:`pandaSDMX` is an Apache 2.0-licensed `Python <http://www.python.org>`_ library that implements `SDMX <http://www.sdmx.org>`_ 2.1
+(`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_), a format for
 exchange of **statistical data and metadata** used by national statistical
 agencies, central banks, and international organisations.
 
-pandaSDMX can be used to:
+:mod:`pandaSDMX` can be used to:
 
-- explore the data available from many :doc:`data providers <sources>`;
-- retrieve data from SDMX web services, or from files;
-- convert data into `Pandas <http://pandas.pydata.org>`_ objects, for easy
-  use in analysis, plotting, and other tools in the Python data science
-  ecosystem; and
-- apply the :doc:`SDMX Information Model <im>` to your own data.
+- explore the data available from :doc:`data providers <sources>` such as the World Bank, International Monetary Fund, Eurostat, OECD, and United Nations;
+- parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
-Other features
---------------
+  - from local files, or
+  - retrieved from SDMX web services, with query validation and caching;
 
-- Built-in support for remote data sources including:
+- convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
+  for use with the analysis, plotting, and other tools in the Python data
+  science ecosystem;
+- apply the :doc:`SDMX Information Model <im>` to your own data;
 
-  - `Australian Bureau of Statistics <http://www.abs.gov.au>`_
-  - `European Central Bank <http://www.ecb.europa.eu>`_
-  - `Eurostat <http://ec.europa.eu/eurostat/>`_
-  - L'`Institut national de la statistique et des études économiques <https://insee.fr>`_ (INSEE), or National Institute of Statistics and Economic Studies (France).
-  - `International Monetary Fund (IMF) - SDMX Central only <https://sdmxcentral.imf.org/>`_
-  - `Organisation for Economic Cooperation and Development (OECD) <http://stats.oecd.org/SDMX-JSON/>`_
-  - `UN Statistics Division (UNSD) <https://unstats.un.org/home/>`_
-  - `UNESCO <https://apiportal.uis.unesco.org/getting-started>`_
-  - `World Bank <https://wits.worldbank.org>`_
-
-- Full parsers for the SDMX-ML (XML) and SDMX-JSON message formats.
-- Pythonic representation of the SDMX Information Model.
-- Query validation against content constraints and code lists.
-- Local file input.
-- Configurable HTTP connections and response caching.
-- Full test coverage.
+…and much more.
 
 Documentation
 -------------
 
-SDMX is extremely powerful, designed to be flexible enough to accommodate
-almost *any* data. This also means it is complex, with many abstract concepts.
-These are called the SDMX “Information Model” (IM)—a way of talking about data
-and metadata concepts that can be applied broadly.
+SDMX was designed to be flexible enough to accommodate almost *any* data.
+This also means it is complex, with many abstract concepts for describing data,
+metadata, and their relationships.
+These are called the “SDMX Information Model” (IM).
 
-The pandaSDMX documentation mainly omits details of the IM to focus on the
-functionality provided by the package itself. Detailed knowledge of the IM is
-not needed to use pandaSDMX; see a
-:doc:`usage example in only 10 lines of code <example>`!
+This documentation does not repeat the full description of the IM, but focuses on functionality provided by :mod:`pandaSDMX` itself.
+Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
+:doc:`usage example in only 10 lines of code <example>`.
 
-To learn about the IM and unlock the full power of SDMX, users can skim the
-:doc:`short introduction to SDMX <intro>`, consult the linked reference
-materials, and read the API documentation for the :mod:`pandasdmx.model` and
-:mod:`pandasdmx.message` modules that implement SDMX.
+To learn about the IM and unlock the full power of SDMX, users can skim a :doc:`short introduction <intro>`, consult the linked reference materials, and/or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that implement it.
 
 **Getting started**
 
@@ -62,6 +41,7 @@ materials, and read the API documentation for the :mod:`pandasdmx.model` and
 * :doc:`install`
 * :doc:`walkthrough`
 * :doc:`intro`
+* :doc:`howto`
 
 .. toctree::
    :hidden:
@@ -70,6 +50,7 @@ materials, and read the API documentation for the :mod:`pandasdmx.model` and
    install
    walkthrough
    Intro to SDMX <intro>
+   howto
 
 **User guide**
 
@@ -87,7 +68,6 @@ materials, and read the API documentation for the :mod:`pandasdmx.model` and
 **Help & development**
 
 * :doc:`whatsnew`
-* :doc:`faq`
 * Report bugs, suggest features or view the source code on
   `Github <https://github.com/dr-leo/pandaSDMX>`_; or use the `mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_ for other questions.
 * :doc:`roadmap`
@@ -102,6 +82,5 @@ materials, and read the API documentation for the :mod:`pandasdmx.model` and
    :hidden:
 
    whatsnew
-   faq
    roadmap
    license

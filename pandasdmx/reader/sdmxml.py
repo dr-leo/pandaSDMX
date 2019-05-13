@@ -261,8 +261,9 @@ class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model.
 
     The implementation is recursive, and depends on:
-    - Methods _parse(), _collect(), _named() and _maintained().
-    - State variables _stack, _index.
+
+    - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
+    - State variables :attr:`_stack, :attr:`_index`.
     """
     # TODO subclass the main reader for StructureSpecific*Data messages to
     #      avoid branching

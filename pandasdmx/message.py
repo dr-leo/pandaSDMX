@@ -45,8 +45,11 @@ class Footer(HasTraits):
 
 class Message(HasTraits):
     """Message."""
+    #: :class:`Header` instance.
     header = Instance(Header)
+    #: (optional) :class:`Footer` instance.
     footer = Instance(Footer, allow_none=True)
+    #: :class:`requests.Response` instance.
     response = Instance(Response)
 
 
@@ -65,6 +68,7 @@ class StructureMessage(Message):
 
 
 class DataMessage(Message):
+    #: :class:`list` of :class:`pandasdmx.model.DataSet`
     data = List(Instance(DataSet))
     dataflow = Instance(DataflowDefinition, args=())
 

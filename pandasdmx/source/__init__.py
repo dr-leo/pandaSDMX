@@ -74,7 +74,7 @@ def add_source(info, id=None, override=False, **kwargs):
         }
 
     …with unspecified values using the defaults; see
-    :class:`pandasdmx.source.Source`.
+    :class:`Source`.
 
     Parameters
     ----------
@@ -114,15 +114,15 @@ def add_source(info, id=None, override=False, **kwargs):
 
 
 def list_sources():
-    """Return a sorted list of valid agency IDs.
+    """Return a sorted list of valid source IDs.
 
-    These can be used to create Request instances.
+    These can be used to create :class:`Request` instances.
     """
     return sorted(sources.keys())
 
 
 def load_package_sources():
-    """Discover all sources listed in agencies.json."""
+    """Discover all sources listed in ``sources.json``."""
     with resource_stream('pandasdmx', 'sources.json') as f:
         # TextIOWrapper is for Python 3.5 compatibility
         for info in json.load(TextIOWrapper(f)):

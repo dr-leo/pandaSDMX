@@ -6,15 +6,42 @@ What's new?
 v1.0 (unreleased)
 -----------------
 
+- :mod:`pandasdmx.model` is reimplemented.
+
+  - traitlets_ is used to force tight compliance with the SDMX Information
+    Model (IM). Users familiar with the IM can use :mod:`pandaSDMX` without the
+    need to understand implementation-specific details.
+  - IM classes are no longer tied to :mod:`pandasdmx.reader` instances and can
+    be created and manipulated outside of a read operation.
+
+- :mod:`pandasdmx.api` and :mod:`pandasdmx.remote` are reimplemented to (1)
+  match the semantics of the requests_ package and (2) be much thinner.
+- Data sources are modularized in :class:`pandasdmx.source.Source`.
+
+  - Idiosyncrasies of particular data sources (e.g. ESTAT's process for large
+    requests) are handled by source-specific subclasses. As a result,
+    :mod:`pandasdmx.api` is leaner.
+
+- Testing coverage is significantly expanded.
+
+  - Promised, but untested, features of the 0.x series now have tests, to
+    ensure feature parity.
+  - There are tests for each data source (``tests/test_sources.py``) to ensure
+    the package can handle idiosyncratic behaviour.
+  - The pytest-remotedata_ pytest plugin allows developers and users to run or
+    skip network tests with `--remote-data`.
+
+.. _traitlets: https://github.com/ipython/traitlets
+.. _requests: http://docs.python-requests.org
+.. _pytest-remotedata: https://github.com/astropy/pytest-remotedata
 
 Breaking changes
 ::::::::::::::::
-* Python 2.7 and earlier are not supported.
-* Numerous others!
+- Python 2.7 and earlier are not supported.
 
 Migrating
 :::::::::
-* Writer.write(…, reverse_obs=True): use s.iloc[::-1] to reverse a pd.Series.
+* ``Writer.write(…, reverse_obs=True)``: use s.iloc[::-1] to reverse a pd.Series.
 
 v0.9 (2018-04)
 ----------------------------
@@ -75,8 +102,7 @@ v0.8 (2017-12-12)
 v0.9 (2018-04)
 --------------
 
-This version is the last tested on Python 2.x. Future versions
-will be tested on Python 3.5+ only
+This version is the last tested on Python 2.x. Future versions will be tested on Python 3.5+ only
 
 New features
 :::::::::::::::

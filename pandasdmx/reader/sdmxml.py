@@ -1023,9 +1023,6 @@ class Reader(BaseReader):
         ca = values.pop('constraintattachment')
         cc.content.update(ca if isinstance(ca, list) else [ca])
         try:
-            cr = values['cuberegion']
-            print(cr)
-            print(list(cr.member.keys())[0].id)
             cc.data_content_region = values.pop('cuberegion')
         except KeyError:
             pass

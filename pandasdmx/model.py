@@ -132,12 +132,21 @@ class InternationalString:
         yield cls.validate
 
     @classmethod
-    def validate(cls, value):
-        print(value)
-        if isinstance(value, InternationalString):
-            return value
+    def validate(cls, value, values, field):
+        if not isinstance(value, InternationalString):
+            value = InternationalString(value)
+
+        # Maybe update existing value
+        try:
+            existing = values[field.name]
+        except KeyError:
+            existing = None
+        if isinstance(existing, InternationalString):
+            existing.localizations.update(value.localizations)
+            return existing
         else:
-            return InternationalString(value)
+            return value
+
 
 
 class InternationalStringTrait():
@@ -200,7 +209,7 @@ class IdentifiableArtefact(AnnotableArtefact):
         return hash(self.id)
 
     def __str__(self):
-        return self.id
+        return self.id if self.id else '<missing id>'
 
     def __repr__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.id)
@@ -304,9 +313,7 @@ class ItemScheme(MaintainableArtefact):
             return super().__getattr__(name)
         except AttributeError:
             # Provided to pass test_dsd.py
-            for i in self.__dict__.get('items', []):
-                if i.id == name:
-                    return i
+            return self.__getitem__(name)
 
     def __getitem__(self, name):
         for i in self.items:
@@ -629,6 +636,9 @@ class ContentConstraint(Constraint):
     data_content_region: Optional[CubeRegion] = None
     content: Set[ConstrainableArtefact] = set()
     # metadata_content_region: MetadataTargetRegion = None
+
+    class Config:
+        validate_assignment_exclude = 'data_content_region'
 
     def __contains__(self, v):
         if self.data_content_region:

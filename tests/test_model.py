@@ -11,6 +11,7 @@ from pandasdmx.model import (
     DataAttribute,
     DataSet,
     DataStructureDefinition,
+    DataflowDefinition,
     Dimension,
     Item,
     Key,
@@ -29,6 +30,7 @@ def test_itemscheme_setdefault():
 def test_contentconstraint():
     crole = ConstraintRole(role=ConstraintRoleType['allowable'])
     cr = ContentConstraint(role=crole)
+    cr.content = {DataflowDefinition()}
     cr.data_content_region = CubeRegion(included=True, member={})
 
 

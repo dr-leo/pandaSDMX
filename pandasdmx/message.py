@@ -3,14 +3,14 @@
 The module implements classes that are NOT described in the SDMX Information
 Model (SDMX-IM) spec, but are used in XML and JSON messages.
 """
-from traitlets import (
-    CInt,
-    HasTraits,
-    Instance,
+from typing import (
     List,
-    Unicode,
+    Mapping,
+    Optional,
+    Text,
     Union,
     )
+
 from pandasdmx.model import (
     _AllDimensions,
     AgencyScheme,
@@ -25,32 +25,37 @@ from pandasdmx.model import (
     InternationalString,
     Item,
     )
-from pandasdmx.util import DictLikeTrait
+from pandasdmx.util import BaseModel, DictLike
+from pydantic import validator
 from requests import Response
 
 
-class Header(HasTraits):
-    error = Unicode()
-    id = Unicode()
-    prepared = Unicode()
-    receiver = Unicode()
-    sender = Union([Instance(Item), Unicode()])
+class Header(BaseModel):
+    error: Text = None
+    id: Text = None
+    prepared: Text = None
+    receiver: Text = None
+    sender: Union[Item, Text] = None
 
 
-class Footer(HasTraits):
-    severity = Unicode()
-    text = List(Instance(InternationalString))
-    code = CInt()
+class Footer(BaseModel):
+    severity: Text
+    text: List[InternationalString] = []
+    code: int
 
 
-class Message(HasTraits):
+class Message(BaseModel):
     """Message."""
+    class Config:
+        arbitrary_types_allowed = True  # For Response
+        validate_assignment = True
+
     #: :class:`Header` instance.
-    header = Instance(Header)
+    header: Header = Header()
     #: (optional) :class:`Footer` instance.
-    footer = Instance(Footer, allow_none=True)
+    footer: Footer = None
     #: :class:`requests.Response` instance.
-    response = Instance(Response)
+    response: Response = None
 
 
 class ErrorMessage(Message):
@@ -58,25 +63,24 @@ class ErrorMessage(Message):
 
 
 class StructureMessage(Message):
-    category_scheme = DictLikeTrait(Instance(CategoryScheme))
-    codelist = DictLikeTrait(Instance(Codelist))
-    concept_scheme = DictLikeTrait(Instance(ConceptScheme))
-    constraint = DictLikeTrait(Instance(ContentConstraint))
-    dataflow = DictLikeTrait(Instance(DataflowDefinition))
-    structure = DictLikeTrait(Instance(DataStructureDefinition))
-    organisation_scheme = DictLikeTrait(Instance(AgencyScheme))
+    category_scheme: DictLike[str, CategoryScheme] = DictLike()
+    codelist: DictLike[str, Codelist] = DictLike()
+    concept_scheme: DictLike[str, ConceptScheme] = DictLike()
+    constraint: DictLike[str, ContentConstraint] = DictLike()
+    dataflow: DictLike[str, DataflowDefinition] = DictLike()
+    structure: DictLike[str, DataStructureDefinition] = DictLike()
+    organisation_scheme: DictLike[str, AgencyScheme] = DictLike()
 
 
 class DataMessage(Message):
     #: :class:`list` of :class:`pandasdmx.model.DataSet`
-    data = List(Instance(DataSet))
-    dataflow = Instance(DataflowDefinition, args=())
+    data: List[DataSet] = []
+    dataflow: DataflowDefinition = DataflowDefinition()
 
     # TODO infer the observation dimension from the DSD, e.g.
     # - If a *TimeSeriesDataSet, it's the TimeDimension,
     # - etc.
-    observation_dimension = Union([Instance(_AllDimensions),
-                                   List(Instance(Dimension))], allow_none=True)
+    observation_dimension: Union[_AllDimensions, List[Dimension]] = None
 
     # Convenience access
     @property

@@ -12,6 +12,8 @@ are stored internally as a pd.DataFrame. test_experimental.py verifies that
 this implementation exposes the same API as the default DataSet.
 
 """
+from typing import Text
+
 import pandas as pd
 from pandasdmx.model import (
     ActionType,
@@ -22,20 +24,15 @@ from pandasdmx.model import (
     Key,
     Observation,
     )
-from pandasdmx.util import DictLikeTrait
-from traitlets import (
-    Instance,
-    Unicode,
-    UseEnum,
-    )
+from pandasdmx.util import DictLike
 
 
 class DataSet(AnnotableArtefact):
     # SDMX-IM features
-    action = UseEnum(ActionType)
-    attrib = DictLikeTrait(Instance(AttributeValue))
-    valid_from = Unicode(allow_none=True)
-    structured_by = Instance(DataStructureDefinition)
+    action: ActionType = None
+    attrib: DictLike[str, AttributeValue] = DictLike()
+    valid_from: Text = None
+    structured_by: DataStructureDefinition = None
 
     # Internal storage: a pd.DataFrame with columns:
     # - 'value': the Observation value.

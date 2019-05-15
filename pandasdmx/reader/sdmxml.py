@@ -37,6 +37,7 @@ from pandasdmx.model import (
     Contact,
     ContentConstraint,
     ConstraintRole,
+    ConstraintRoleType,
     CubeRegion,
     DataAttribute,
     DataflowDefinition,
@@ -49,6 +50,7 @@ from pandasdmx.model import (
     Dimension,
     DimensionDescriptor,
     Facet,
+    FacetValueType,
     GroupDimensionDescriptor,
     GroupKey,
     IdentifiableArtefact,
@@ -497,7 +499,8 @@ class Reader(BaseReader):
             'isFinal': ('is_final', bool),
             'isPartial': ('is_partial', bool),
             'structureURL': ('structure_url', lambda value: value),
-            'role': ('role', lambda value: ConstraintRole(role=value)),
+            'role': ('role', lambda value:
+                             ConstraintRole(role=ConstraintRoleType[value])),
             'validFrom': ('valid_from', str),
             'validTo': ('valid_to', str),
             }
@@ -705,7 +708,7 @@ class Reader(BaseReader):
                 da = DataAttribute(id='TITLE')
                 av = AttributeValue(value_for=da,
                                     value=elem.attrib.pop('TITLE'))
-                attrs = {da: av}
+                attrs = {da.id: av}
             except KeyError:
                 attrs = {}
 
@@ -988,9 +991,9 @@ class Reader(BaseReader):
                     e = ItemScheme(urn=e)
                 r.enumerated = e
             if 'enumerationformat' in values:
-                r.non_enumerated = set(values.pop('enumerationformat'))
+                r.non_enumerated = values.pop('enumerationformat')
         elif 'textformat' in values:
-            r.non_enumerated = set(values.pop('textformat'))
+            r.non_enumerated = values.pop('textformat')
         assert len(values) == 0
         return r
 
@@ -999,7 +1002,7 @@ class Reader(BaseReader):
         # in the spec, lowercase.
         value_type = elem.attrib.pop('textType', None)
         if isinstance(value_type, str):
-            value_type = value_type[0].lower() + value_type[1:]
+            value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
         f = Facet(value_type=value_type)
         key_map = {
             'minValue': 'min_value',
@@ -1020,6 +1023,9 @@ class Reader(BaseReader):
         ca = values.pop('constraintattachment')
         cc.content.update(ca if isinstance(ca, list) else [ca])
         try:
+            cr = values['cuberegion']
+            print(cr)
+            print(list(cr.member.keys())[0].id)
             cc.data_content_region = values.pop('cuberegion')
         except KeyError:
             pass
@@ -1032,8 +1038,9 @@ class Reader(BaseReader):
 
     def parse_cuberegion(self, elem):
         values = self._parse(elem)
-        cr = CubeRegion(included=elem.attrib.pop('include'))
-        cr.member = {ms.values_for: ms for ms in values.pop('keyvalue')}
+        cr = CubeRegion(
+            included=elem.attrib.pop('include'),
+            member={ms.values_for: ms for ms in values.pop('keyvalue')})
         assert len(values) == 0
         return cr
 
@@ -1043,6 +1050,7 @@ class Reader(BaseReader):
         values = list(map(lambda v: MemberValue(value=v), values['value']))
         values_for = self._index['Dimension', elem.attrib.pop('id')]
         return MemberSelection(values_for=values_for, values=values)
+
 
     def parse_datakeyset(self, elem):
         values = self._parse(elem)

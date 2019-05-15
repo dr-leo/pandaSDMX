@@ -1,6 +1,7 @@
-from traitlets import HasTraits, Instance
-
-from pandasdmx.util import DictLike, DictLikeTrait
+from pandasdmx.util import BaseModel, DictLike, validate_dictlike
+import pydantic
+from pydantic import StrictStr
+import pytest
 
 
 def test_dictlike():
@@ -8,9 +9,7 @@ def test_dictlike():
 
     # Set by item name
     dl['TIME_PERIOD'] = 3
-
-    # Set by attribute name
-    dl.CURRENCY = 'USD'
+    dl['CURRENCY'] = 'USD'
 
     # Access by attribute name
     assert dl.TIME_PERIOD == 3
@@ -18,17 +17,54 @@ def test_dictlike():
     # Access by item index
     assert dl[1] == 'USD'
 
+    # Access beyond index
+    with pytest.raises(KeyError):
+        dl['FOO']
 
-def test_dictliketrait():
-    class Foo:
-        id = None
+    with pytest.raises(IndexError):
+        dl[2]
 
-    class Bar(HasTraits):
-        members = DictLikeTrait(Instance(Foo))
+    with pytest.raises(AttributeError):
+        dl.FOO
 
-    bar = Bar()
 
-    a1 = bar.members.get('a')
-    a2 = bar.members.get('a')
+def test_dictlike_anno():
+    @validate_dictlike('items')
+    class Foo(BaseModel):
+        items: DictLike[StrictStr, int] = DictLike()
 
-    assert a1 is a2
+    f = Foo()
+    assert type(f.items) == DictLike
+
+    # Can be set with DictLike
+    f.items = DictLike(a=1, b=2)
+    assert type(f.items) == DictLike
+
+    # Can be set with dict()
+    f.items = {'a': 1, 'b': 2}
+    assert type(f.items) == DictLike
+
+    # Type checking on creation
+    with pytest.raises(pydantic.ValidationError):
+        f = Foo(items={1: 'a'})
+
+    # Type checking on assignment
+    f = Foo()
+    with pytest.raises(pydantic.ValidationError):
+        f.items = {1: 'a'}
+
+    # Type checking on setting elements
+    f = Foo(items={'a': 1})
+    with pytest.raises(pydantic.ValidationError):
+        f.items[123] = 456
+
+    # commented: this does not work, since validate_dictlike does not operate
+    # until initial values are assigned to the field
+    # f = Foo()
+    # with pytest.raises(pydantic.ValidationError):
+    #     f.items[123] = 456
+
+    # Use validate_dictlike() twice
+    @validate_dictlike('elems')
+    class Bar(BaseModel):
+        elems: DictLike[StrictStr, float] = DictLike()

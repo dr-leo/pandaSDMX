@@ -6,6 +6,7 @@ from pandasdmx.message import (
     Header,
     )
 from pandasdmx.model import (
+    ActionType,
     AllDimensions,
     AttributeValue,
     Concept,
@@ -102,7 +103,7 @@ class Reader(BaseReader):
         return msg
 
     def read_dataset(self, root, ds_key):
-        ds = DataSet(action=root['action'].lower(),
+        ds = DataSet(action=ActionType[root['action'].lower()],
                      valid_from=root.get('validFrom', None))
 
         # Process series
@@ -173,5 +174,5 @@ class Reader(BaseReader):
         result = {}
         for index, attr in zip(values, attrs):
             av = self._attr_values[attr][index]
-            result[av.value_for] = av
+            result[av.value_for.id] = av
         return result

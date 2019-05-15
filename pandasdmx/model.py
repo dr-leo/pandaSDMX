@@ -12,7 +12,7 @@ Details of the implementation:
 - the IPython traitlets package is used to enforce the types of attributes
   that reference instances of other classes. Two custom trait types are used:
 
-  - DictLikeTrait: a dict-like object that adds both attribute access by name,
+  - DictLikerait: a dict-like object that adds both attribute access by name,
     and integer index access. See pandasdmx.util.
   - InternationalStringTrait.
 
@@ -33,29 +33,26 @@ Details of the implementation:
 from copy import copy
 from datetime import date, datetime, timedelta
 from enum import Enum
+from inspect import isclass
 from operator import attrgetter
-
-from traitlets import (
+from typing import (
     Any,
-    Bool,
-    CBool,
-    CFloat,
-    CInt,
     Dict,
-    Float,
-    HasTraits,
-    Instance,
-    Int,
     List,
+    NewType,
+    Optional,
     Set,
-    This,
-    TraitType,
-    Unicode,
+    Text,
     Union,
-    UseEnum,
     )
 
-from pandasdmx.util import DictLike, DictLikeTrait
+from pandasdmx.util import (
+    BaseModel,
+    DictLike,
+    get_class_hint,
+    validate_dictlike,
+    )
+from pydantic import validator
 
 
 # TODO read this from the environment, or use any value set in the SDMX XML
@@ -65,7 +62,7 @@ DEFAULT_LOCALE = 'en'
 
 # 3.2: Base structures
 
-class InternationalString(HasTraits):
+class InternationalString:
     """SDMX-IM InternationalString.
 
     SDMX-IM LocalisedString is not implemented. Instead, the 'localizations' is
@@ -74,17 +71,21 @@ class InternationalString(HasTraits):
      - keys correspond to the 'locale' property of LocalisedString.
      - values correspond to the 'label' property of LocalisedString.
     """
-    localizations = Dict(Instance(Unicode))
+    localizations: Dict[str, str] = {}
 
     def __init__(self, value=None, **kwargs):
+        super().__init__()
+
         if isinstance(value, str):
-            self.localizations[DEFAULT_LOCALE] = value
+            value = {DEFAULT_LOCALE: value}
         elif isinstance(value, tuple) and len(value) == 2:
-            self.localizations[value[0]] = value[1]
+            value = {value[0]: value[1]}
         elif value is None:
-            self.localizations.update(kwargs)
+            value = dict(kwargs)
         else:
-            raise ValueError
+            raise ValueError(value, kwargs)
+
+        self.localizations = value
 
     # Convenience access
     def __getitem__(self, locale):
@@ -94,11 +95,14 @@ class InternationalString(HasTraits):
         self.localizations[locale] = label
 
     # Duplicate of __getitem__, to pass existing tests in test_dsd.py
-    def __getattr__(self, locale):
+    def __getattr__(self, name):
         try:
-            return self._trait_values['localizations'][locale]
-        except KeyError:
-            super(HasTraits, self).__getattr__(locale)
+            return super().__getattr__(name)
+        except AttributeError:
+            try:
+                return self.__dict__['localizations'][name]
+            except KeyError:
+                raise AttributeError(name)
 
     def __add__(self, other):
         result = copy(self)
@@ -123,13 +127,25 @@ class InternationalString(HasTraits):
         return '\n'.join(['{}: {}'.format(*kv) for kv in
                           sorted(self.localizations.items())])
 
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-class InternationalStringTrait(TraitType):
+    @classmethod
+    def validate(cls, value):
+        print(value)
+        if isinstance(value, InternationalString):
+            return value
+        else:
+            return InternationalString(value)
+
+
+class InternationalStringTrait():
     """Trait type for InternationalString.
 
     With trailets.Instance, a locale must be provided for every label:
 
-    >>> class Foo(HasTraits):
+    >>> class Foo(BaseModel):
     >>>     name = Instance(InternationalString)
     >>>
     >>> f = Foo()
@@ -138,44 +154,35 @@ class InternationalStringTrait(TraitType):
     With InternationalStringTrait, the DEFAULT_LOCALE is automatically selected
     when setting with a string:
 
-    >>> class Bar(HasTraits):
+    >>> class Bar(BaseModel):
     >>>     name = InternationalStringTrait
     >>>
     >>> b = Bar()
     >>> b.name = "Bar's name in English"
 
     """
-    def make_dynamic_default(self):
-        return InternationalString()
-
-    def validate(self, obj, value):
-        if isinstance(value, InternationalString):
-            return value
-        try:
-            return obj._trait_values.get(self.name, InternationalString()) + \
-                InternationalString(value)
-        except ValueError:
-            self.error(obj, value)
+    # TODO preserve docstring; delete class
+    pass
 
 
-class Annotation(HasTraits):
-    id = Unicode()
-    title = Unicode()
-    type = Unicode()
-    url = Unicode()
+class Annotation(BaseModel):
+    id: Text = None
+    title: Text = None
+    type: Text = None
+    url: Text = None
 
-    text = InternationalStringTrait()
+    text: InternationalString = InternationalString()
 
 
-class AnnotableArtefact(HasTraits):
-    annotations = List(Instance(Annotation))
+class AnnotableArtefact(BaseModel):
+    annotations: List[Annotation] = []
 
 
 class IdentifiableArtefact(AnnotableArtefact):
     """SDMX-IM IdentifiableArtefact."""
-    id = Unicode()
-    uri = Unicode()
-    urn = Unicode()
+    id: Text = None
+    uri: Text = None
+    urn: Text = None
 
     def __eq__(self, other):
         """Equality comparison.
@@ -200,8 +207,8 @@ class IdentifiableArtefact(AnnotableArtefact):
 
 
 class NameableArtefact(IdentifiableArtefact):
-    name = InternationalStringTrait()
-    description = InternationalStringTrait(allow_none=True)
+    name: InternationalString = InternationalString()
+    description: InternationalString = InternationalString()
 
     def __repr__(self):
         return "<{}: '{}'='{}'>".format(
@@ -211,22 +218,22 @@ class NameableArtefact(IdentifiableArtefact):
 
 
 class VersionableArtefact(NameableArtefact):
-    version = Unicode()
-    valid_from = Unicode(allow_none=True)
-    valid_to = Unicode(allow_none=True)
+    version: Text = None
+    valid_from: Text = None
+    valid_to: Text = None
 
 
 class MaintainableArtefact(VersionableArtefact):
-    is_final = Bool()
-    is_external_reference = Bool()
-    service_url = Unicode()
-    structure_url = Unicode()
-    maintainer = Instance('pandasdmx.model.Agency')
+    is_final: Optional[bool]
+    is_external_reference: Optional[bool]
+    service_url: Optional[Text]
+    structure_url: Optional[Text]
+    maintainer: Optional['Agency']
 
 
 # 3.4: Data Types
 
-ActionType = Enum('ActionType', 'delete replace append information')
+ActionType = Enum('ActionType', 'delete replace append information', type=str)
 
 UsageStatus = Enum('UsageStatus', 'mandatory conditional')
 
@@ -252,15 +259,18 @@ ConstraintRoleType = Enum('ConstraintRoleType', 'allowable actual')
 # 3.5: Item Scheme
 
 class Item(NameableArtefact):
-    parent = Instance('pandasdmx.model.Item', allow_none=True)
-    child = List(Instance(This))
+    parent: 'Item' = None
+    child: List['Item'] = []
+
+    class Config:
+        validate_assignment_exclude = 'parent'
 
     def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Add this Item as a child of its parent
         parent = kwargs.get('parent', None)
-        if parent and self not in parent:
+        if parent and self not in parent.child:
             parent.child.append(self)
 
         # Add this Item as a parent of its children
@@ -281,17 +291,22 @@ class Item(NameableArtefact):
         raise ValueError(id)
 
 
+Item.update_forward_refs()
+
+
 class ItemScheme(MaintainableArtefact):
-    is_partial = Bool()
-    items = List(Instance(Item))
+    is_partial: Optional[bool]
+    items: List[Item] = []
 
     # Convenience access to items
     def __getattr__(self, name):
-        # Provided to pass test_dsd.py
-        for i in self._trait_values.get('items', []):
-            if i.id == name:
-                return i
-        raise AttributeError(name)
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            # Provided to pass test_dsd.py
+            for i in self.__dict__.get('items', []):
+                if i.id == name:
+                    return i
 
     def __getitem__(self, name):
         for i in self.items:
@@ -328,8 +343,8 @@ class ItemScheme(MaintainableArtefact):
                 kwargs['parent'] = self[parent]
 
             # Instantiate an object of the correct class by introspecting
-            # the items trait
-            obj = self.__class__.items._trait.klass(**kwargs)
+            # the items hint
+            obj = get_class_hint(self, 'items')(**kwargs)
 
         if obj not in self.items:
             # Add the object to the ItemScheme
@@ -340,31 +355,31 @@ class ItemScheme(MaintainableArtefact):
 
 # 3.6: Structure
 
-class FacetType(HasTraits):
-    is_sequence = CBool()
-    min_length = CInt()
-    max_length = CInt()
-    min_value = CFloat()
-    max_value = CFloat()
-    start_value = Float()
-    end_value = Unicode()
-    interval = Float()
-    time_interval = Instance(timedelta)
-    decimals = Int()
-    pattern = Unicode()
-    start_time = Instance(datetime)
-    end_time = Instance(datetime)
+class FacetType(BaseModel):
+    is_sequence: Optional[bool]
+    min_length: Optional[int]
+    max_length: Optional[int]
+    min_value: Optional[float]
+    max_value: Optional[float]
+    start_value: Optional[float]
+    end_value: Optional[Text]
+    interval: Optional[float]
+    time_interval: Optional[timedelta]
+    decimals: Optional[int]
+    pattern: Optional[Text]
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]
 
 
-class Facet(HasTraits):
-    type = Instance(FacetType, args=())
-    value = Unicode()
-    value_type = UseEnum(FacetValueType)
+class Facet(BaseModel):
+    type: FacetType = FacetType()
+    value: Text = None
+    value_type: Optional[FacetValueType] = None
 
 
-class Representation(HasTraits):
-    enumerated = Instance(ItemScheme)
-    non_enumerated = Set(Instance(Facet))
+class Representation(BaseModel):
+    enumerated: ItemScheme = None
+    non_enumerated: List[Facet] = []
 
     def __repr__(self):
         return '<{}: {}, {}>'.format(self.__class__.__name__,
@@ -374,26 +389,26 @@ class Representation(HasTraits):
 
 # 4.4: Concept Scheme
 
-class ISOConceptReference(HasTraits):
-    agency = Unicode()
-    id = Unicode()
-    scheme_id = Unicode()
+class ISOConceptReference(BaseModel):
+    agency: Text
+    id: Text
+    scheme_id: Text
 
 
 class Concept(Item):
-    core_representation = Instance(Representation, allow_none=True)
-    iso_concept = Instance(ISOConceptReference)
+    core_representation: Representation = None
+    iso_concept: ISOConceptReference = None
 
 
 class ConceptScheme(ItemScheme):
-    items = List(Instance(Concept))
+    items: List[Concept] = []
 
 
 # 3.3: Basic Inheritance
 
 class Component(IdentifiableArtefact):
-    concept_identity = Instance(Concept)
-    local_representation = Instance(Representation, args=(), allow_none=True)
+    concept_identity: Concept = None
+    local_representation: Representation = None
 
     def __contains__(self, value):
         for repr in [self.concept_identity.core_representation,
@@ -406,7 +421,7 @@ class Component(IdentifiableArtefact):
 
 
 class ComponentList(IdentifiableArtefact):
-    components = List(Instance(Component))
+    components: List[Component] = []
 
     # Convenience access to the components
     def append(self, value):
@@ -421,14 +436,9 @@ class ComponentList(IdentifiableArtefact):
         # TODO use an index to speed up
         # TODO don't return missing items or add an option to avoid this
 
-        # Chose an appropriate class specified for the trait in the
+        # Chose an appropriate class specified for the attribute in the
         # ComponentList subclass.
-        trait = self.__class__.components._trait
-        try:
-            klass = trait.klass
-        except AttributeError:
-            # Union trait
-            klass = trait.trait_types[0].klass
+        klass = get_class_hint(self, 'components')
 
         # Create the candidate
         candidate = klass(id=id, **kwargs)
@@ -466,7 +476,7 @@ class Code(Item):
 
 
 class Codelist(ItemScheme):
-    items = List(Instance(Code))
+    items: List[Code] = []
 
 
 # 4.5: Category Scheme
@@ -476,17 +486,17 @@ class Category(Item):
 
 
 class CategoryScheme(ItemScheme):
-    items = List(Instance(Category))
+    items: List[Category] = []
 
 
 class Categorisation(MaintainableArtefact):
-    category = Instance(Category)
-    artefact = Instance(IdentifiableArtefact)
+    category: Category = None
+    artefact: IdentifiableArtefact = None
 
 
 # 4.6: Organisations
 
-class Contact(HasTraits):
+class Contact(BaseModel):
     """Organization contact information.
 
     IMF is the only data provider that returns messages with :class:`Contact`
@@ -497,92 +507,100 @@ class Contact(HasTraits):
     - 'email' may be a list of e-mail addresses, rather than a single address.
     - 'uri' may be a list of URIs, rather than a single URI.
     """
-    name = InternationalStringTrait()
-    org_unit = InternationalStringTrait()
-    telephone = Unicode(allow_none=True)
-    responsibility = InternationalStringTrait()
-    email = List(Unicode())
-    uri = List(Unicode())
+    name: InternationalString = InternationalString()
+    org_unit: InternationalString = InternationalString()
+    telephone: Text = None
+    responsibility: InternationalString = InternationalString()
+    email: List[Text]
+    uri: List[Text]
 
 
 class Organisation(Item):
-    contact = List(Instance(Contact))
-    pass
+    contact: List[Contact] = []
 
 
 Agency = Organisation
 DataProvider = Organisation
 
 
+# Update forward references to 'Agency'
+for cls in list(locals().values()):
+    if isclass(cls) and issubclass(cls, MaintainableArtefact):
+        cls.update_forward_refs()
+
+
 # Skip the abstract OrganisationScheme class, since it has no particular
 # functionality
 
 class AgencyScheme(ItemScheme):
-    items = List(Instance(Agency))
+    items: List[Agency] = []
 
 
 class DataProviderScheme(ItemScheme):
-    items = List(Instance(DataProvider))
+    items: List[DataProvider] = []
 
 
 # 10.2: Constraint inheritance
 
-class ConstrainableArtefact:
+class ConstrainableArtefact(BaseModel):
     pass
 
 
 # 10.3: Constraints
 
-class ConstraintRole(HasTraits):
-    role = UseEnum(ConstraintRoleType)
+class ConstraintRole(BaseModel):
+    role: ConstraintRoleType
 
 
-class ComponentValue(HasTraits):
-    value_for = Instance(Component)
-    value = Unicode()
+class ComponentValue(BaseModel):
+    value_for: Component
+    value: Text
 
 
-class DataKey(HasTraits):
-    included = Bool()
-    key_value = Dict(Instance(ComponentValue))
+class DataKey(BaseModel):
+    included: bool
+    key_value: Dict[Component, ComponentValue]
 
     def __init__(self, *args):
         for component, value in args:
             self.key_value[component] = ComponentValue(value_for=component,
                                                        value=value)
 
-class DataKeySet(HasTraits):
-    included = CBool()
-    keys = List(Instance(DataKey))
+class DataKeySet(BaseModel):
+    included: bool
+    keys: List[DataKey]
 
 
 class Constraint(MaintainableArtefact):
-    data_content_keys = Instance(DataKeySet, allow_none=True)
-    # metadata_content_keys = Instance(MetadataKeySet, allow_none=True)
+    data_content_keys: DataKeySet = None
+    # metadata_content_keys: MetadataKeySet = None
     # NB the spec gives 1..* for this attribute, but this implementation allows
     # only 1
-    role = Instance(ConstraintRole)
+    role: ConstraintRole
 
 
-class SelectionValue(HasTraits):
+class SelectionValue(BaseModel):
     pass
 
 
 class MemberValue(SelectionValue):
-    value = Unicode()
-    cascade_values = Bool()
+    value: Text
+    cascade_values: bool = None
+
+    def __hash__(self):
+        return hash(self.value)
 
 
-class MemberSelection(HasTraits):
-    included = Bool()
-    values_for = Instance(Component)
+class MemberSelection(BaseModel):
+    included: bool = True
+    values_for: Component
     # NB the spec does not say what this feature should be named
-    values = Set(Instance(MemberValue))
+    values: Set[MemberValue]
 
 
-class CubeRegion(HasTraits):
-    included = CBool()
-    member = Dict(Instance(MemberSelection))
+class CubeRegion(BaseModel):
+    included: bool
+    member: Dict['Dimension', MemberSelection] = {}
 
     def __contains__(self, v):
         key, value = v
@@ -608,9 +626,9 @@ class CubeRegion(HasTraits):
 
 
 class ContentConstraint(Constraint):
-    data_content_region = Instance(CubeRegion, allow_none=True)
-    content = Set(Instance(ConstrainableArtefact))
-    # metadata_content_region = Instance(MetadataTargetRegion, allow_none=True)
+    data_content_region: Optional[CubeRegion] = None
+    content: Set[ConstrainableArtefact] = set()
+    # metadata_content_region: MetadataTargetRegion = None
 
     def __contains__(self, v):
         if self.data_content_region:
@@ -638,11 +656,14 @@ class ContentConstraint(Constraint):
 # 5.2: Data Structure Defintion
 
 class DimensionComponent(Component):
-    order = Int()
+    order: Optional[int]
 
 
 class Dimension(DimensionComponent):
     pass
+
+
+CubeRegion.update_forward_refs()
 
 
 class TimeDimension(DimensionComponent):
@@ -658,13 +679,12 @@ class PrimaryMeasure(Component):
 
 
 class MeasureDescriptor(ComponentList):
-    components = List(Instance(PrimaryMeasure))
+    components: List[PrimaryMeasure] = []
 
 
-class AttributeRelationship(HasTraits):
-    dimensions = List(Instance(Dimension))
-    group = Instance('pandasdmx.model.GroupDimensionDescriptor',
-                     allow_none=True)
+class AttributeRelationship(BaseModel):
+    dimensions: List[Dimension] = []
+    group: 'GroupDimensionDescriptor' = None
 
 
 NoSpecifiedRelationship = AttributeRelationship
@@ -674,8 +694,8 @@ DimensionRelationship = AttributeRelationship
 
 
 class DataAttribute(Component):
-    related_to = Instance(AttributeRelationship)
-    usage_status = Instance(UsageStatus)
+    related_to: AttributeRelationship = None
+    usage_status: UsageStatus = None
 
 
 class ReportingYearStartDay(DataAttribute):
@@ -683,23 +703,19 @@ class ReportingYearStartDay(DataAttribute):
 
 
 class AttributeDescriptor(ComponentList):
-    components = List(Instance(DataAttribute))
+    components: List[DataAttribute] = []
 
 
 class Structure(MaintainableArtefact):
-    grouping = Instance(ComponentList)
+    grouping: ComponentList = None
 
 
 class StructureUsage(MaintainableArtefact):
-    structure = Instance(Structure)
+    structure: Structure = None
 
 
 class DimensionDescriptor(ComponentList):
-    components = List(Union([
-        Instance(Dimension),
-        Instance(MeasureDimension),
-        Instance(TimeDimension),
-        ]))
+    components: List[Union[Dimension, MeasureDimension, TimeDimension]] = []
 
     def order_key(self, key):
         """Return a key ordered according to the DSD."""
@@ -730,15 +746,18 @@ class DimensionDescriptor(ComponentList):
 
 
 class GroupDimensionDescriptor(DimensionDescriptor):
-    attachment_constraint = Bool()
-    # constraint = Instance(AttachmentConstraint, allow_none=True)
+    attachment_constraint: bool = None
+    # constraint: AttachmentConstraint = None
+
+
+AttributeRelationship.update_forward_refs()
 
 
 class DataStructureDefinition(Structure, ConstrainableArtefact):
-    attributes = Instance(AttributeDescriptor, args=())
-    dimensions = Instance(DimensionDescriptor, args=())
-    measures = Instance(MeasureDescriptor)
-    group_dimensions = Instance(GroupDimensionDescriptor)
+    attributes: AttributeDescriptor = AttributeDescriptor()
+    dimensions: DimensionDescriptor = DimensionDescriptor()
+    measures: MeasureDescriptor = None
+    group_dimensions: GroupDimensionDescriptor = None
 
     # Convenience methods
     def attribute(self, id, **kwargs):
@@ -786,14 +805,14 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
 
 class DataflowDefinition(StructureUsage, ConstrainableArtefact):
-    structure = Instance(DataStructureDefinition, args=())
+    structure: DataStructureDefinition = DataStructureDefinition()
 
 
 # 5.4: Data Set
 
-class KeyValue(HasTraits):
-    id = Unicode()
-    value = Any()
+class KeyValue(BaseModel):
+    id: Text
+    value: Any = ...
 
     def __eq__(self, other):
         """Compare the value to a Python built-in type, e.g. str."""
@@ -823,16 +842,16 @@ def value_for_dsd_ref(args, kwargs):
     return args, kwargs
 
 
-class AttributeValue(HasTraits):
+class AttributeValue(BaseModel):
     """SDMX-IM AttributeValue.
 
     In the spec, AttributeValue is an abstract class. Here, it serves as both
     the concrete subclasses CodedAttributeValue and UncodedAttributeValue.
     """
     # TODO separate and enforce properties of Coded- and UncodedAttributeValue
-    value = Union([Unicode(), Instance(Code)])
-    value_for = Instance(DataAttribute, allow_none=True)
-    start_date = Instance(date)
+    value: Union[Text, Code]
+    value_for: DataAttribute = None
+    start_date: Optional[date]
 
     def __init__(self, *args, **kwargs):
         args, kwargs = value_for_dsd_ref(args, kwargs)
@@ -850,7 +869,8 @@ class AttributeValue(HasTraits):
                                     self.value)
 
 
-class Key(HasTraits):
+@validate_dictlike('attrib', 'values')
+class Key(BaseModel):
     """SDMX Key class.
 
     The constructor takes an optional list of keyword arguments; the keywords
@@ -865,11 +885,12 @@ class Key(HasTraits):
     1
 
     """
-    attrib = DictLikeTrait(Instance(AttributeValue))
-    values = DictLikeTrait(Instance(KeyValue))
-    described_by = Instance(DimensionDescriptor, allow_none=True)
+    attrib: DictLike[str, AttributeValue] = DictLike()
+    values: DictLike[str, KeyValue] = DictLike()
+    described_by: DimensionDescriptor = None
 
     def __init__(self, arg=None, **kwargs):
+        super().__init__()
         if arg:
             if len(kwargs):
                 raise ValueError("Key() accepts either a single argument, or "
@@ -891,8 +912,12 @@ class Key(HasTraits):
             # 'k' in other does not appear in this Key()
             return False
 
+    def __iter__(self):
+        yield from self.values.values()
+
     # Convenience access to values by name
     def __getitem__(self, name):
+        print(self, name)
         return self.values[name]
 
     def __setitem__(self, name, value):
@@ -904,10 +929,12 @@ class Key(HasTraits):
     # Convenience access to values by attribute
     def __getattr__(self, name):
         try:
-            # To avoid recursion, use the underlying traitlets private member
-            return self._trait_values['values'][name]
-        except KeyError:
-            raise AttributeError
+            return super().__getattr__(name)
+        except AttributeError as e:
+            try:
+                return self.__getitem__(name)
+            except KeyError:
+                raise e
 
     # Copying
     def __copy__(self):
@@ -942,6 +969,7 @@ class Key(HasTraits):
         if hasattr(other, 'values'):
             return all([a == b for a, b in zip(self.values, other.values)])
         elif isinstance(other, str) and len(self.values) == 1:
+            print(self.values)
             return self.values[0] == other
         else:
             raise ValueError(other)
@@ -972,13 +1000,13 @@ class Key(HasTraits):
 
 
 class GroupKey(Key):
-    id = Unicode()
-    described_by = Instance(GroupDimensionDescriptor, allow_none=True)
+    id: Text = None
+    described_by: GroupDimensionDescriptor = None
 
 
 class SeriesKey(Key):
     # pandaSDMX extensions not in the IM
-    group_keys = Set(Instance(GroupKey))
+    group_keys: Set[GroupKey] = set()
 
     @property
     def group_attrib(self):
@@ -990,20 +1018,22 @@ class SeriesKey(Key):
         return view
 
 
-class Observation(HasTraits):
+@validate_dictlike('attached_attribute')
+class Observation(BaseModel):
     """SDMX-IM Observation.
 
     This class also implements the spec classes ObservationValue,
     UncodedObservationValue, and CodedObservation.
     """
-    attached_attribute = DictLikeTrait(Instance(AttributeValue))
-    series_key = Instance(SeriesKey, allow_none=True)
-    dimension = Instance(Key, allow_none=True)
-    value = Union([Any(), Instance(Code)])
-    value_for = Instance(PrimaryMeasure, allow_none=True)
+    attached_attribute: DictLike[str, AttributeValue] = DictLike()
+    series_key: SeriesKey = None
+    dimension: Key = None
+    value: Union[Any, Code] = None
+    value_for: PrimaryMeasure = None
 
     # pandaSDMX extensions not in the IM
-    group_keys = Set(Instance(GroupKey))
+    group_keys: Set[GroupKey] = set()
+
 
     @property
     def attrib(self):
@@ -1031,19 +1061,20 @@ class Observation(HasTraits):
         return '{0.key}: {0.value}'.format(self)
 
 
+@validate_dictlike('attrib')
 class DataSet(AnnotableArtefact):
     # SDMX-IM features
-    action = UseEnum(ActionType)
-    attrib = DictLikeTrait(Instance(AttributeValue))
-    valid_from = Unicode(allow_none=True)
-    structured_by = Instance(DataStructureDefinition)
-    obs = List(Instance(Observation))
+    action: ActionType = None
+    attrib: DictLike[str, AttributeValue] = DictLike()
+    valid_from: Text = None
+    structured_by: DataStructureDefinition = None
+    obs: List[Observation] = []
 
     # pandaSDMX extensions not in the IM
     # Map of series key → list of observations
-    series = DictLikeTrait(List(Instance(Observation)))
+    series: DictLike[SeriesKey, List[Observation]] = DictLike()
     # Map of group key → list of observations
-    group = DictLikeTrait(List(Instance(Observation)))
+    group: DictLike[GroupKey, List[Observation]] = DictLike()
 
     def _add_group_refs(self, target):
         """Associate *target* with groups in this dataset.
@@ -1078,9 +1109,17 @@ class DataSet(AnnotableArtefact):
             if series_key:
                 # Check that the Observation is not associated with a different
                 # SeriesKey
-                assert obs.series_key is series_key
+                assert obs.series_key is series_key, \
+                    (obs.series_key, id(obs.series_key), series_key, id(series_key))
                 # Store a reference to the observation
                 self.series[series_key].append(obs)
+
+    @validator('action')
+    def _validate_action(cls, value):
+        if value in ActionType:
+            return value
+        else:
+            return ActionType[value]
 
 
 class _AllDimensions:
@@ -1092,8 +1131,8 @@ AllDimensions = _AllDimensions()
 
 # 11. Data Provisioning
 
-class Datasource(HasTraits):
-    url = Unicode()
+class Datasource(BaseModel):
+    url: Text
 
 
 class SimpleDatasource(Datasource):

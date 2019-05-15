@@ -1,19 +1,22 @@
 # TODO test str() and repr() implementations
 
-from traitlets import TraitError
-
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeValue,
     ConceptScheme,
+    ContentConstraint,
+    ConstraintRole,
+    ConstraintRoleType,
+    CubeRegion,
     DataAttribute,
+    DataSet,
     DataStructureDefinition,
     Dimension,
     Item,
     Key,
     Observation,
     )
-
+import pydantic
 from pytest import raises
 
 
@@ -21,6 +24,19 @@ def test_itemscheme_setdefault():
     # Setting works even if the 'items' trait has not been initialized
     cs = ConceptScheme()
     cs.setdefault(id='FOO')
+
+
+def test_contentconstraint():
+    crole = ConstraintRole(role=ConstraintRoleType['allowable'])
+    cr = ContentConstraint(role=crole)
+    cr.data_content_region = CubeRegion(included=True, member={})
+
+
+def test_dataset():
+    # Enumeration values can be used to initialize
+    from pandasdmx.model import ActionType
+    print(ActionType)
+    ds = DataSet(action=ActionType['information'])
 
 
 def test_datastructuredefinition():
@@ -43,7 +59,7 @@ def test_internationalstring():
     # Constructor; the .name attribute is an InternationalString
     i = Item(id='ECB')
 
-    # Set and get using the trait directly
+    # Set and get using the attribute directly
     i.name.localizations['DE'] = 'Europäische Zentralbank'
     assert i.name.localizations['DE'] == 'Europäische Zentralbank'
 
@@ -57,8 +73,12 @@ def test_internationalstring():
     assert len(i.name.localizations) == 3
     assert i.name.localizations[DEFAULT_LOCALE] == 'European Central Bank'
 
+    # Setting with a (locale, text) tuple
+    i.name = ('FI', 'Euroopan keskuspankki')
+    assert len(i.name.localizations) == 4
+
     # Using some other type is an error
-    with raises(TraitError):
+    with raises(pydantic.ValidationError):
         i.name = 123
 
     # Same, but in the constructor
@@ -71,7 +91,20 @@ def test_internationalstring():
     assert repr(i.name) == '\n'.join(sorted([
         '{}: European Central Bank'.format(DEFAULT_LOCALE),
         'DE: Europäische Zentralbank',
-        'FR: Banque centrale européenne']))
+        'FR: Banque centrale européenne',
+        'FI: Euroopan keskuspankki']))
+
+
+def test_item():
+    items = []
+    for i in range(10):
+        items.append(Item(id='Foo {}'.format(i)))
+
+        if i > 0:
+            items[-1].parent = items[-2]
+            items[-2].child.append(items[-1])
+
+    assert items[-1] in items[0]
 
 
 def test_key():
@@ -136,8 +169,7 @@ def test_observation():
     # NB the following does not work; see Observation.attrib()
     # obs.attrib['TIME_PERIOD'] = 3
 
-    # Set by attribute name
-    obs.attached_attribute.CURRENCY = 'USD'
+    obs.attached_attribute['CURRENCY'] = 'USD'
 
     # Access by attribute name
     assert obs.attrib.TIME_PERIOD == 3

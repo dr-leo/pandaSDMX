@@ -75,6 +75,11 @@ class Request(object):
         for r in cls._resources:
             setattr(cls, r, ResourceGetter(r))
 
+    @classmethod
+    def url(cls, url, **kwargs):
+        """Request a URL directly."""
+        return Request().get(url=url, **kwargs)
+
     def __init__(self, source=None, log_level=None, **session_opts):
         """Constructor."""
         # If needed, generate wrapper properties for get method
@@ -151,7 +156,8 @@ class Request(object):
         # Allow sources to modify request args
         # TODO this should occur after most processing, defaults, checking etc.
         #      are performed, so that core code does most of the work.
-        self.source.modify_request_args(kwargs)
+        if self.source:
+            self.source.modify_request_args(kwargs)
 
         parameters = kwargs.pop('params', {})
         headers = kwargs.pop('headers', {})
@@ -207,7 +213,7 @@ class Request(object):
                      .format(resource_type))
             agency_id = None
         else:
-            agency_id = agency if agency else self.source.id
+            agency_id = agency if agency else getattr(self.source, 'id', None)
 
         if not direct_url:
             url_parts.extend([agency_id, resource_id])
@@ -234,7 +240,7 @@ class Request(object):
                 parameters['references'] = 'parentsandsiblings'
 
         # Headers: use headers from agency config if not given by the caller
-        if not headers:
+        if not headers and self.source:
             headers = self.source.headers.get(resource_type, {})
 
         assert len(kwargs) == 0, ValueError('unrecognized arguments: %r' %

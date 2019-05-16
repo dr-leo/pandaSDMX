@@ -562,10 +562,6 @@ class DataKey(BaseModel):
     included: bool
     key_value: Dict[Component, ComponentValue]
 
-    def __init__(self, *args):
-        for component, value in args:
-            self.key_value[component] = ComponentValue(value_for=component,
-                                                       value=value)
 
 class DataKeySet(BaseModel):
     included: bool
@@ -818,7 +814,7 @@ class DataflowDefinition(StructureUsage, ConstrainableArtefact):
 
 class KeyValue(BaseModel):
     id: str
-    value: Any = ...
+    value: Any
 
     def __eq__(self, other):
         """Compare the value to a Python built-in type, e.g. str."""
@@ -923,7 +919,6 @@ class Key(BaseModel):
 
     # Convenience access to values by name
     def __getitem__(self, name):
-        print(self, name)
         return self.values[name]
 
     def __setitem__(self, name, value):
@@ -975,7 +970,6 @@ class Key(BaseModel):
         if hasattr(other, 'values'):
             return all([a == b for a, b in zip(self.values, other.values)])
         elif isinstance(other, str) and len(self.values) == 1:
-            print(self.values)
             return self.values[0] == other
         else:
             raise ValueError(other)

@@ -32,6 +32,7 @@ from pandasdmx.model import (
     Code,
     Codelist,
     Component,
+    ComponentValue,
     Concept,
     ConceptScheme,
     Contact,
@@ -719,7 +720,7 @@ class Reader(BaseReader):
         return result
 
     def parse_key(self, elem):
-        """SeriesKey, GroupKey, and observation dimensions."""
+        """SeriesKey, GroupKey, observation dimensions."""
         cls = _parse_class['key'][self._stack[-1]]
         if cls is not DataKey:
             # Most data: the value is specified as an XML attribute
@@ -727,14 +728,16 @@ class Reader(BaseReader):
                   elem.iterchildren()}
             return cls(**kv)
         else:
-            # Some structure messages: the value is specified with a
-            # <com:Value>...</com:Value> element.
-            kv = []
+            # <str:DataKeySet> and <str:CubeRegion>: the value(s) are specified
+            # with a <com:Value>...</com:Value> element.
+            kvs = {}
             for e in elem.iterchildren():
-                kv.append((self._maintained(Component, e.attrib['id'],
-                                            match_subclass=True),
-                           self._parse(e)['value']))
-            return cls(*kv)
+                c = self._maintained(Component, e.attrib['id'],
+                                     match_subclass=True)
+                kvs[c] = ComponentValue(value_for=c,
+                                        value=self._parse(e)['value'])
+            return cls(included=elem.attrib.pop('isIncluded', True),
+                       key_value=kvs)
 
     def parse_obs(self, elem):
         # TODO handle key-values as attribs
@@ -1043,7 +1046,7 @@ class Reader(BaseReader):
         return cr
 
     def parse_keyvalue(self, elem):
-        """<com:KeyValue> specifies a MemberSelection."""
+        """<com:KeyValue> NOT inside <com:Key> specifies a MemberSelection."""
         values = self._parse(elem)
         values = list(map(lambda v: MemberValue(value=v), values['value']))
         values_for = self._index['Dimension', elem.attrib.pop('id')]

@@ -1,19 +1,19 @@
 language: python
+
 cache: pip
+
 python:
-  - "3.5"
-  - "3.6"
   - "3.7"
   - "3.7-dev"
 
 dist: xenial
 
-install:
-  - pip install -r requirements.txt
-  - pip install coverage codecov pytest-cov
-  - pip install --no-deps -e .
+install: pip install -e .[cache,docs,tests]
 
-script: pytest --cov=pandasdmx --cov-report=term-missing --remote-data --verbose
+script: >
+  pytest
+  --verbose --remote-data
+  --cov pandasdmx --cov-report term-missing
 
 after_success:
   - coverage combine

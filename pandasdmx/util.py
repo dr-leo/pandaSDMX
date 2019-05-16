@@ -1,11 +1,19 @@
-import collections
-import typing
 from typing import (
-    TypeVar,
+    KT,
+    VT,
     Union,
     get_type_hints,
     no_type_check,
     )
+try:
+    from typing import OrderedDict
+except ImportError:
+    # Python < 3.7.2 compatibility; see
+    # https://github.com/python/cpython/commit/68b56d0
+    import collections
+    from typing import _alias
+    OrderedDict = _alias(collections.OrderedDict, (KT, VT))
+
 
 import pydantic
 from pydantic import DictError, Extra, ValidationError, validator
@@ -69,10 +77,7 @@ def get_class_hint(obj, attr):
     return klass
 
 
-KT = TypeVar('KT')
-VT = TypeVar('VT')
-
-class DictLike(typing.OrderedDict[KT, VT]):
+class DictLike(OrderedDict[KT, VT]):
     """Container with features of a dict & list, plus attribute access."""
     def __getitem__(self, key):
         try:

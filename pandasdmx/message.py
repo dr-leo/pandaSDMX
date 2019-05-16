@@ -47,8 +47,10 @@ class Footer(BaseModel):
 class Message(BaseModel):
     """Message."""
     class Config:
-        arbitrary_types_allowed = True  # For Response
-        validate_assignment = True
+        # for .response
+        arbitrary_types_allowed = True
+        # NB this is required to prevent “unhashable type: 'dict'” in pydantic
+        validate_assignment = False
 
     #: :class:`Header` instance.
     header: Header = Header()

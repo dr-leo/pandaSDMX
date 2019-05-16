@@ -11,19 +11,19 @@ Details of the implementation:
 
 - Python typing and pydantic are used to enforce the types of attributes
   that reference instances of other classes.
-- some classes have additional attributes not mentioned in the spec, to ease
-  navigation between related objects. These are marked with comments "pandaSDMX
-  extensions not in the IM".
-- class definitions are grouped by section of the spec, but these sections
+- Some classes have convenience attributes not mentioned in the spec, to ease
+  navigation between related objects. These are marked “:mod:`pandaSDMX`
+  extension not in the IM.”
+- Class definitions are grouped by section of the spec, but these sections
   appear out of order so that dependent classes are defined first.
 
 """
-# TODO for a complete implementation of the spec
-# - Enforce TimeKeyValue (instead of KeyValue) for {Generic,StructureSpecific}
-#   TimeSeriesDataSet.
-#
-# TODO for convenience
-# - Guess URNs using the standard format.
+# TODO:
+# - For a complete implementation of the spec:
+#   - Enforce TimeKeyValue (instead of KeyValue) for
+#     {Generic,StructureSpecific} TimeSeriesDataSet.
+# - For convenience:
+#   - Guess URNs using the standard format.
 
 from copy import copy
 from datetime import date, datetime, timedelta
@@ -64,6 +64,28 @@ class InternationalString:
 
      - keys correspond to the 'locale' property of LocalisedString.
      - values correspond to the 'label' property of LocalisedString.
+
+    When used as a type hint with pydantic, InternationalString fields can be
+    assigned to in one of four ways::
+
+        class Foo(BaseModel):
+             name: InternationalString = InternationalString()
+
+        f = Foo()
+
+        # Using an explicit locale
+        f.name['en'] = "Foo's name in English"
+
+        # Using a (locale, label) tuple
+        f.name = ('fr', "Foo's name in French")
+
+        # Using a dict
+        f.name = {'en': "Replacement English name",
+                  'fr': "Replacement French name"}
+
+        # Using a bare string, implicitly for the DEFAULT_LOCALE
+        f.name = "Name in DEFAULT_LOCALE language"
+
     """
     localizations: Dict[str, str] = {}
 
@@ -140,32 +162,6 @@ class InternationalString:
             return existing
         else:
             return value
-
-
-
-class InternationalStringTrait():
-    """Trait type for InternationalString.
-
-    With trailets.Instance, a locale must be provided for every label:
-
-    >>> class Foo(BaseModel):
-    >>>     name = Instance(InternationalString)
-    >>>
-    >>> f = Foo()
-    >>> f.name['en'] = "Foo's name in English"
-
-    With InternationalStringTrait, the DEFAULT_LOCALE is automatically selected
-    when setting with a string:
-
-    >>> class Bar(BaseModel):
-    >>>     name = InternationalStringTrait
-    >>>
-    >>> b = Bar()
-    >>> b.name = "Bar's name in English"
-
-    """
-    # TODO preserve docstring; delete class
-    pass
 
 
 class Annotation(BaseModel):
@@ -265,6 +261,8 @@ class Item(NameableArtefact):
     parent: 'Item' = None
     child: List['Item'] = []
 
+    # NB this is required to prevent RecursionError in pydantic;
+    #    see https://github.com/samuelcolvin/pydantic/issues/524
     class Config:
         validate_assignment_exclude = 'parent'
 
@@ -575,6 +573,10 @@ class Constraint(MaintainableArtefact):
     # only 1
     role: ConstraintRole
 
+    # NB this is required to prevent “unhashable type: 'dict'” in pydantic
+    class Config:
+        validate_assignment = False
+
 
 class SelectionValue(BaseModel):
     pass
@@ -627,6 +629,8 @@ class ContentConstraint(Constraint):
     content: Set[ConstrainableArtefact] = set()
     # metadata_content_region: MetadataTargetRegion = None
 
+    # NB this is required to prevent RecursionError in pydantic;
+    #    see https://github.com/samuelcolvin/pydantic/issues/524
     class Config:
         validate_assignment_exclude = 'data_content_region'
 
@@ -1005,7 +1009,7 @@ class GroupKey(Key):
 
 
 class SeriesKey(Key):
-    # pandaSDMX extensions not in the IM
+    #: :mod:`pandaSDMX` extension not in the IM.
     group_keys: Set[GroupKey] = set()
 
     @property
@@ -1031,7 +1035,7 @@ class Observation(BaseModel):
     value: Union[Any, Code] = None
     value_for: PrimaryMeasure = None
 
-    # pandaSDMX extensions not in the IM
+    #: :mod:`pandaSDMX` extension not in the IM.
     group_keys: Set[GroupKey] = set()
 
 
@@ -1070,10 +1074,11 @@ class DataSet(AnnotableArtefact):
     structured_by: DataStructureDefinition = None
     obs: List[Observation] = []
 
-    # pandaSDMX extensions not in the IM
-    # Map of series key → list of observations
+    #: Map of series key → list of observations.
+    #: :mod:`pandaSDMX` extension not in the IM.
     series: DictLike[SeriesKey, List[Observation]] = DictLike()
-    # Map of group key → list of observations
+    #: Map of group key → list of observations.
+    #: :mod:`pandaSDMX` extension not in the IM.
     group: DictLike[GroupKey, List[Observation]] = DictLike()
 
     def _add_group_refs(self, target):

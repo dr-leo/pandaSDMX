@@ -33,21 +33,21 @@ SDMX-JSON APIs do not support structure queries; only data queries.
 
 In order to anticipate and handle these differences:
 
-1. :meth:`add_source` accepts "data_content_type" and "unsupported" keys. For
+1. :meth:`add_source` accepts "data_content_type" and "supported" keys. For
    example:
 
    .. code-block:: json
 
-       "ABS": {
-           "id": "ABS",
-           "data_content_type": "JSON",
-           …
-          },
-      "UNESCO": {
+      [
+        {
+          "id": "ABS",
+          "data_content_type": "JSON"
+        },
+        {
           "id": "UNESCO",
-          …
           "unsupported": ["datastructure"]
-          },
+        },
+      ]
 
    pandaSDMX will raise :class:`NotImplementedError` on an attempt to query the
    "datastructure" API endpoint of either of these data sources.

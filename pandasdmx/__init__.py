@@ -11,7 +11,7 @@ __all__ = [
     'to_pandas',
     ]
 
-__version__ = '0.9.0'
+__version__ = '1.0.0-dev'
 
 
 def _init_logger():
@@ -38,7 +38,7 @@ def odo_register():
     logger.info('Registering with odo...')
     import odo
     from odo.utils import keywords
-    import pandas as PD
+    import pandas as pd
     from toolz import keyfilter
     import toolz.curried.operator as op
 
@@ -55,7 +55,7 @@ def odo_register():
     def _(sdmx):
         return odo.discover(Request().get(fromfile=sdmx.uri).write())
 
-    @odo.convert.register(PD.DataFrame, PandaSDMX)
+    @odo.convert.register(pd.DataFrame, PandaSDMX)
     def convert_sdmx(sdmx, **kwargs):
         write = Request().get(fromfile=sdmx.uri).write
         return write(**keyfilter(op.contains(keywords(write)), kwargs))

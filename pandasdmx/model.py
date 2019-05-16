@@ -179,8 +179,12 @@ class AnnotableArtefact(BaseModel):
 
 class IdentifiableArtefact(AnnotableArtefact):
     """SDMX-IM IdentifiableArtefact."""
+    #: Unique identifier of the object.
     id: str = None
+    #: Universal resource identifier that may or may not be resolvable.
     uri: str = None
+    #: Universal resource name. For use in SDMX registries; all registered
+    #: objects have a URN.
     urn: str = None
 
     def __eq__(self, other):
@@ -206,7 +210,9 @@ class IdentifiableArtefact(AnnotableArtefact):
 
 
 class NameableArtefact(IdentifiableArtefact):
+    #: Multi-lingual name of the object.
     name: InternationalString = InternationalString()
+    #: Multi-lingual description of the object.
     description: InternationalString = InternationalString()
 
     def __repr__(self):
@@ -217,16 +223,26 @@ class NameableArtefact(IdentifiableArtefact):
 
 
 class VersionableArtefact(NameableArtefact):
+    #: A version string following an agreed convention.
     version: str = None
+    #: Date from which the version is valid.
     valid_from: str = None
+    #: Date from which the version is superseded.
     valid_to: str = None
 
 
 class MaintainableArtefact(VersionableArtefact):
+    #: True if the object is final; otherwise it is in a draft state.
     is_final: Optional[bool]
+    #: :obj:`True` if the content of the object is held externally; i.e., not
+    #: the current :class:`Message`.
     is_external_reference: Optional[bool]
+    #: URL of an SDMX-compliant web service from which the object can be
+    #: retrieved.
     service_url: Optional[str]
+    #: URL of an SDMX-ML document containing the object.
     structure_url: Optional[str]
+    #: Association to the Agency responsible for maintaining the object.
     maintainer: Optional['Agency']
 
 
@@ -567,7 +583,7 @@ class DataKeySet(BaseModel):
 
 
 class Constraint(MaintainableArtefact):
-    data_content_keys: DataKeySet = None
+    data_content_keys: Optional[DataKeySet] = None
     # metadata_content_keys: MetadataKeySet = None
     # NB the spec gives 1..* for this attribute, but this implementation allows
     # only 1

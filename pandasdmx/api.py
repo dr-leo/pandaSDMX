@@ -111,8 +111,11 @@ class Request(object):
     def series_keys(self, flow_id, use_cache=True):
         """Get an empty dataset with all possible series keys.
 
-        Return a pandas DataFrame. Each column represents a dimension, each row
-        a series key of datasets of the given dataflow.
+        Returns
+        -------
+        :class:`pd.DataFrame`.
+            Each column represents a dimension, each row a series key of
+            datasets of the given dataflow.
         """
         # download an empty dataset with all available series keys
         resp = self.data(flow_id, params={'detail': 'serieskeysonly'},
@@ -397,34 +400,35 @@ class Request(object):
         return msg
 
     def preview_data(self, flow_id, key=None, count=True, total=True):
-        """
+        """Return a preview of data.
+
         Get keys or number of series for a prospective dataset query allowing
         for keys with multiple values per dimension. It downloads the complete
         list of series keys for a dataflow rather than using constraints and
         DSD. This feature is, however, not supported by all data providers.
         ECB and UNSD are known to work.
 
-        Args:
-
-        flow_id(str): dataflow id
-
-        key(dict): optional key mapping dimension names to values or lists of
-            values.
-            Must have been validated before. It is not checked if key values
-            are actually valid dimension names and values. Default: {}
-
-        count(bool): if True (default), return the number of series
-            of the dataset designated by flow_id and key. If False,
-            the actual keys are returned as a pandas DataFrame or dict of
-            dataframes, depending on the value of 'total'.
-
-        total(bool): if True (default), return the aggregate number
-            of series or a single dataframe (depending on the value of
-            'count'). If False, return a dict mapping keys to dataframes of
-            series keys. E.g., if key={'COUNTRY':'IT+CA+AU'}, the dict will
-            have 3 items describing the series keys for each country
-            respectively. If 'count' is True, dict values will be int rather
-            than pd.DataFrame.
+        Parameters
+        ----------
+        flow_id : str
+            :attr:`Dataflow.id`
+        key : dict, optional
+            Mapping dimension names to values or lists of values. Must have
+            been validated before. It is not checked if key values are actually
+            valid dimension names and values.
+        count : bool, optional
+            If :obj:`True` (default), return the number of series of the
+            dataset designated by `flow_id` and `key`. If :obj:`False`,the
+            actual keys are returned as a :class:`pd.DataFrame` or
+            :class:`dict` of dataframes, depending on the value of `total`.
+        total : bool, optional
+            If True (default), return the aggregate number of series or a
+            single dataframe (depending on the value of `count`). If False,
+            return a dict mapping keys to dataframes of series keys. E.g., if
+            ``key={'COUNTRY': 'IT+CA+AU'}``, the dict will have 3 items
+            describing the series keys for each country respectively. If
+            `count` is True, dict values will be :class:`int` rather than
+            pd.DataFrame.
         """
         all_keys = self.series_keys(flow_id)
         # Handle the special case that no key is provided

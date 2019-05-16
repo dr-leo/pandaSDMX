@@ -39,16 +39,17 @@ _alias = {
 
 
 def write(obj, *args, **kwargs):
-    """Convert an SDMX-IM *obj* to (a) :mod:`pandas` object(s).
+    """Convert an SDMX *obj* to :mod:`pandas` object(s).
 
     :meth:`write` implements a dispatch pattern according to the type of
     *obj*. For instance, a :class:`pandasdmx.message.DataSet` object is
     converted using :meth:`write_dataset`. See the methods named `write_*`
     for more information on their behaviour.
-    """
-    # TODO support selection of language for conversion of
-    #      InternationalString
 
+    .. todo::
+       Support selection of language for conversion of
+       :class:`InternationalString`.
+    """
     cls = obj.__class__
     function = 'write_' + _alias.get(cls, cls).__name__.lower()
     return globals()[function](obj, *args, **kwargs)

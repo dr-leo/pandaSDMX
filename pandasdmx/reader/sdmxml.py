@@ -261,7 +261,7 @@ class XMLParseError(ParseError):
 
 
 class Reader(BaseReader):
-    """Read SDMX-ML 2.1 and expose it as instances from pandasdmx.model.
+    """Read SDMX-ML 2.1 and expose it as instances from :mod:`pandasdmx.model`.
 
     The implementation is recursive, and depends on:
 
@@ -1026,14 +1026,8 @@ class Reader(BaseReader):
         cc, values = self._named(ContentConstraint, elem)
         ca = values.pop('constraintattachment')
         cc.content.update(ca if isinstance(ca, list) else [ca])
-        try:
-            cc.data_content_region = values.pop('cuberegion')
-        except KeyError:
-            pass
-        try:
-            cc.data_content_keys = values.pop('datakeyset')
-        except KeyError:
-            pass
+        cc.data_content_region = values.pop('cuberegion', None)
+        cc.data_content_keys = values.pop('datakeyset', None)
         assert len(values) == 0, values
         return cc
 

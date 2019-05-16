@@ -49,7 +49,7 @@ conversions:
 
 For a fair comparison, the API between the readers and DataSet could be changed
 to eliminate the round trip in #1/#2, but *without* sacrificing the data model
-consistency provided by traitlets on Observation instances.
+consistency provided by pydantic on Observation instances.
 
 Optimize parsing
 ~~~~~~~~~~~~~~~~

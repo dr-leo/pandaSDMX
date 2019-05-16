@@ -69,9 +69,8 @@ class DataSet(AnnotableArtefact):
 
     @property
     def obs(self):
-        # In pandasdmx.model.DataSet, .obs is a List() traitlet containing
-        # Observation instances. Here, the Observations are generated on
-        # request.
+        # In pandasdmx.model.DataSet, .obs is typed as List[Observation].
+        # Here, the Observations are generated on request.
         for key, data in self._data.iterrows():
             yield self._make_obs(key, data)
 

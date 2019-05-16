@@ -8,9 +8,10 @@ v1.0 (unreleased)
 
 - :mod:`pandasdmx.model` is reimplemented.
 
-  - traitlets_ is used to force tight compliance with the SDMX Information
-    Model (IM). Users familiar with the IM can use :mod:`pandaSDMX` without the
-    need to understand implementation-specific details.
+  - Python typing_ and pydantic_ are used to force tight compliance with the
+    SDMX Information Model (IM). Users familiar with the IM can use
+    :mod:`pandaSDMX` without the need to understand implementation-specific
+    details.
   - IM classes are no longer tied to :mod:`pandasdmx.reader` instances and can
     be created and manipulated outside of a read operation.
 
@@ -31,7 +32,8 @@ v1.0 (unreleased)
   - The pytest-remotedata_ pytest plugin allows developers and users to run or
     skip network tests with `--remote-data`.
 
-.. _traitlets: https://github.com/ipython/traitlets
+.. _typing: https://docs.python.org/3/library/typing.html
+.. _pydantic: https://pydantic-docs.helpmanual.io
 .. _requests: http://docs.python-requests.org
 .. _pytest-remotedata: https://github.com/astropy/pytest-remotedata
 

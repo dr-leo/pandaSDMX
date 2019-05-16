@@ -468,12 +468,13 @@ class Request(object):
                 return {k: v.value_counts()[True] for k, v in matches.items()}
 
 
-def open_file(filename_or_obj):
+def open_file(filename_or_obj, format=None):
     """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
 
     Parameters
     ----------
-    filename_or_obj: str, Path, or file.
+    filename_or_obj : str or os.PathLike or file
+    format: 'XML' or 'JSON', optional
     """
     import pandasdmx.reader.sdmxml
     import pandasdmx.reader.sdmxjson
@@ -493,6 +494,14 @@ def open_file(filename_or_obj):
         # Open the file
         # str() here is for Python 3.5 compatibility
         obj = open(str(filename_or_obj))
+    except KeyError:
+        if format:
+            reader = readers[format]
+            obj = open(str(filename_or_obj))
+        else:
+            raise RuntimeError(('unable to identify SDMX file format from '
+                                'name "{}"; use format="..."')
+                               .format(filename_or_obj.name))
     except AttributeError:
         # File is already open
         pos = filename_or_obj.tell()

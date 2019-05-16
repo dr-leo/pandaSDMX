@@ -9,13 +9,8 @@ specification ('spec'), which is available from:
 
 Details of the implementation:
 
-- the IPython traitlets package is used to enforce the types of attributes
-  that reference instances of other classes. Two custom trait types are used:
-
-  - DictLikerait: a dict-like object that adds both attribute access by name,
-    and integer index access. See pandasdmx.util.
-  - InternationalStringTrait.
-
+- Python typing and pydantic are used to enforce the types of attributes
+  that reference instances of other classes.
 - some classes have additional attributes not mentioned in the spec, to ease
   navigation between related objects. These are marked with comments "pandaSDMX
   extensions not in the IM".
@@ -42,7 +37,6 @@ from typing import (
     NewType,
     Optional,
     Set,
-    Text,
     Union,
     )
 
@@ -175,10 +169,10 @@ class InternationalStringTrait():
 
 
 class Annotation(BaseModel):
-    id: Text = None
-    title: Text = None
-    type: Text = None
-    url: Text = None
+    id: str = None
+    title: str = None
+    type: str = None
+    url: str = None
 
     text: InternationalString = InternationalString()
 
@@ -189,9 +183,9 @@ class AnnotableArtefact(BaseModel):
 
 class IdentifiableArtefact(AnnotableArtefact):
     """SDMX-IM IdentifiableArtefact."""
-    id: Text = None
-    uri: Text = None
-    urn: Text = None
+    id: str = None
+    uri: str = None
+    urn: str = None
 
     def __eq__(self, other):
         """Equality comparison.
@@ -227,16 +221,16 @@ class NameableArtefact(IdentifiableArtefact):
 
 
 class VersionableArtefact(NameableArtefact):
-    version: Text = None
-    valid_from: Text = None
-    valid_to: Text = None
+    version: str = None
+    valid_from: str = None
+    valid_to: str = None
 
 
 class MaintainableArtefact(VersionableArtefact):
     is_final: Optional[bool]
     is_external_reference: Optional[bool]
-    service_url: Optional[Text]
-    structure_url: Optional[Text]
+    service_url: Optional[str]
+    structure_url: Optional[str]
     maintainer: Optional['Agency']
 
 
@@ -369,18 +363,18 @@ class FacetType(BaseModel):
     min_value: Optional[float]
     max_value: Optional[float]
     start_value: Optional[float]
-    end_value: Optional[Text]
+    end_value: Optional[str]
     interval: Optional[float]
     time_interval: Optional[timedelta]
     decimals: Optional[int]
-    pattern: Optional[Text]
+    pattern: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
 
 class Facet(BaseModel):
     type: FacetType = FacetType()
-    value: Text = None
+    value: str = None
     value_type: Optional[FacetValueType] = None
 
 
@@ -397,9 +391,9 @@ class Representation(BaseModel):
 # 4.4: Concept Scheme
 
 class ISOConceptReference(BaseModel):
-    agency: Text
-    id: Text
-    scheme_id: Text
+    agency: str
+    id: str
+    scheme_id: str
 
 
 class Concept(Item):
@@ -516,10 +510,10 @@ class Contact(BaseModel):
     """
     name: InternationalString = InternationalString()
     org_unit: InternationalString = InternationalString()
-    telephone: Text = None
+    telephone: str = None
     responsibility: InternationalString = InternationalString()
-    email: List[Text]
-    uri: List[Text]
+    email: List[str]
+    uri: List[str]
 
 
 class Organisation(Item):
@@ -561,7 +555,7 @@ class ConstraintRole(BaseModel):
 
 class ComponentValue(BaseModel):
     value_for: Component
-    value: Text
+    value: str
 
 
 class DataKey(BaseModel):
@@ -591,7 +585,7 @@ class SelectionValue(BaseModel):
 
 
 class MemberValue(SelectionValue):
-    value: Text
+    value: str
     cascade_values: bool = None
 
     def __hash__(self):
@@ -606,7 +600,7 @@ class MemberSelection(BaseModel):
 
 
 class CubeRegion(BaseModel):
-    included: bool
+    included: bool = True
     member: Dict['Dimension', MemberSelection] = {}
 
     def __contains__(self, v):
@@ -821,7 +815,7 @@ class DataflowDefinition(StructureUsage, ConstrainableArtefact):
 # 5.4: Data Set
 
 class KeyValue(BaseModel):
-    id: Text
+    id: str
     value: Any = ...
 
     def __eq__(self, other):
@@ -859,7 +853,7 @@ class AttributeValue(BaseModel):
     the concrete subclasses CodedAttributeValue and UncodedAttributeValue.
     """
     # TODO separate and enforce properties of Coded- and UncodedAttributeValue
-    value: Union[Text, Code]
+    value: Union[str, Code]
     value_for: DataAttribute = None
     start_date: Optional[date]
 
@@ -1010,7 +1004,7 @@ class Key(BaseModel):
 
 
 class GroupKey(Key):
-    id: Text = None
+    id: str = None
     described_by: GroupDimensionDescriptor = None
 
 
@@ -1076,7 +1070,7 @@ class DataSet(AnnotableArtefact):
     # SDMX-IM features
     action: ActionType = None
     attrib: DictLike[str, AttributeValue] = DictLike()
-    valid_from: Text = None
+    valid_from: str = None
     structured_by: DataStructureDefinition = None
     obs: List[Observation] = []
 
@@ -1142,7 +1136,7 @@ AllDimensions = _AllDimensions()
 # 11. Data Provisioning
 
 class Datasource(BaseModel):
-    url: Text
+    url: str
 
 
 class SimpleDatasource(Datasource):

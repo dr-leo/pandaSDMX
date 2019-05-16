@@ -282,7 +282,6 @@ class TestUNESCO(DataSourceTest):
 
 class TestUNSD(DataSourceTest):
     source_id = 'UNSD'
-    tolerate_503 = True
 
 
 class TestWB(DataSourceTest):

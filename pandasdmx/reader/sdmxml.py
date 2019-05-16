@@ -1005,6 +1005,7 @@ class Reader(BaseReader):
             value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
         f = Facet(value_type=value_type)
         key_map = {
+            'isSequence': 'is_sequence',
             'minValue': 'min_value',
             'maxValue': 'max_value',
             'minLength': 'min_length',

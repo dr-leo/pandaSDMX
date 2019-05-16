@@ -777,20 +777,22 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
         cr = CubeRegion()
         for dim in self.dimensions:
+            mvs = set()
             try:
-                values = key.pop(dim.id)
+                for value in key.pop(dim.id).split('+'):
+                    # TODO validate values
+                    mvs.add(MemberValue(value=value))
             except KeyError:
                 continue
-            ms = MemberSelection(included=True, values_for=dim)
-
-            # TODO validate values
-            for value in values.split('+'):
-                ms.values.add(MemberValue(value=value))
-            cr.member[dim] = ms
+            else:
+                cr.member[dim] = MemberSelection(included=True,
+                                                 values_for=dim,
+                                                 values=mvs)
 
         assert len(key) == 0
 
-        return ContentConstraint(data_content_region=cr)
+        return ContentConstraint(data_content_region=cr,
+            role=ConstraintRole(role=ConstraintRoleType.allowable))
 
     @classmethod
     def from_keys(cls, keys):

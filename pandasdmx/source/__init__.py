@@ -76,7 +76,10 @@ class Source(BaseModel):
 
     @validator('data_content_type', pre=True)
     def _validate_dct(cls, value):
-        return value if value in DataContentType else DataContentType[value]
+        if isinstance(value, DataContentType):
+            return value
+        else:
+            return DataContentType[value]
 
 
 def add_source(info, id=None, override=False, **kwargs):

@@ -166,6 +166,8 @@ class TestIMF(DataSourceTest):
 
 class TestILO(DataSourceTest):
     source_id = 'ILO'
+    tolerate_503 = False
+
     xfail = {
         'categoryscheme': HTTPError,  # 501 'Resolve parents not supported'
 
@@ -287,6 +289,7 @@ class TestUNESCO(DataSourceTest):
 class TestUNSD(DataSourceTest):
     source_id = 'UNSD'
     tolerate_503 = True
+
 
 class TestWB(DataSourceTest):
     source_id = 'WB'

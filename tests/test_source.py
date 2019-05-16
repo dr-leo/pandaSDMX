@@ -37,4 +37,4 @@ def test_add_source():
         "url": "https://example.org/sdmx"
         }"""
     add_source(profile2)
-    assert not sources['BAR'].supports('datastructure')
+    assert not sources['BAR'].supports['datastructure']

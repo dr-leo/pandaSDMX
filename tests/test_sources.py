@@ -164,23 +164,18 @@ class TestIMF(DataSourceTest):
         }
 
 
+@pytest.mark.skip('ILO returns SDMXML v2.0 messages.')
 class TestILO(DataSourceTest):
     source_id = 'ILO'
-    tolerate_503 = False
 
     xfail = {
-        'categoryscheme': HTTPError,  # 501 'Resolve parents not supported'
+        # 501 'Resolve parents not supported'
+        'categoryscheme': HTTPError,
 
         # 413 'Too many results, please specify codelist ID'
         'codelist': HTTPError,
-
-        # Returns SDMXML v2.0 messages
-        'conceptscheme': ParseError,
-        'dataflow': ParseError,
-        'datastructure': ParseError,
         }
 
-    @pytest.mark.xfail(reason='ILO returns SDMXML v2.0 messages.')
     @pytest.mark.remote_data
     def test_categoryscheme(self, req):
         # Identical to DataSourceTest.test_endpoints, except
@@ -194,7 +189,6 @@ class TestILO(DataSourceTest):
                 tofile=self._cache_path.with_suffix('.' + 'categoryscheme'),
                 params={'references': 'children'})
 
-    @pytest.mark.xfail(reason='ILO returns SDMXML v2.0 messages.')
     @pytest.mark.remote_data
     def test_codelist(self, req):
         req.get('codelist', 'CL_ECO',

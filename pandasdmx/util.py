@@ -16,6 +16,7 @@ from pydantic.utils import change_exception
 class BaseModel(pydantic.BaseModel):
     class Config:
         validate_assignment = 'limited'
+        validate_assignment_exclude = []
 
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/521:
     # - When cls.attr is typed as BaseModel (or a subclass), then

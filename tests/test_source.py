@@ -24,6 +24,17 @@ def test_source_support():
 def test_add_source():
     profile = """{
         "id": "FOO",
+        "name": "Demo source",
         "url": "https://example.org/sdmx"
         }"""
     add_source(profile)
+
+    # JSON sources do not support metadata endpoints, by default
+    profile2 = """{
+        "id": "BAR",
+        "data_content_type": "JSON",
+        "name": "Demo source",
+        "url": "https://example.org/sdmx"
+        }"""
+    add_source(profile2)
+    assert not sources['BAR'].supports('datastructure')

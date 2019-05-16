@@ -1,10 +1,18 @@
 """SDMX-IM Datasource and related classes."""
+from enum import Enum
 from importlib import import_module
 from io import TextIOWrapper
 import json
+from typing import (
+    Any,
+    Dict,
+    Union,
+    )
 
 from pkg_resources import resource_stream
-from traitlets import CaselessStrEnum, Dict, HasTraits, Unicode
+
+from pandasdmx.util import BaseModel
+from pydantic import validator
 
 
 sources = {}
@@ -18,8 +26,12 @@ endpoints = [
     'datastructure',
     ]
 
+features = endpoints + ['preview']
 
-class Source(HasTraits):
+DataContentType = Enum('DataContentType', 'XML JSON')
+
+
+class Source(BaseModel):
     """SDMX-IM RESTDatasource.
 
     This class describes the location and features supported by an SDMX data
@@ -28,24 +40,24 @@ class Source(HasTraits):
     by one data source.
 
     """
-    id = Unicode()
-    url = Unicode()
-    name = Unicode()
-    headers = Dict()
-    data_content_type = CaselessStrEnum('XML JSON'.split(),
-                                        default_value='XML')
-    supports = Dict(default_value={ep: True for ep in endpoints})
+    id: str
+    url: str
+    name: str
+    headers: Dict[str, Any] = {}
+    data_content_type: DataContentType = DataContentType.XML
+    supports: Dict[str, bool] = {}
 
     @classmethod
     def from_dict(cls, info):
-        supports = info.pop('supports', {})
-        result = cls(**info)
-        result.supports.update(supports)
-        return result
+        return cls(**info)
 
     def __init__(self, **kwargs):
-        assert getattr(self, '_id', kwargs['id']) == kwargs['id']
-        super(Source, self).__init__(**kwargs)
+        super().__init__(**kwargs)
+        for f in features:
+            if f in self.supports:
+                continue
+            self.supports[f] = (f not in endpoints or
+                (self.data_content_type == DataContentType.XML))
 
     # Hooks
     def handle_response(self, response, content):
@@ -56,6 +68,15 @@ class Source(HasTraits):
 
     def modify_request_args(self, kwargs):
         pass
+
+    @validator('id')
+    def _validate_id(cls, value):
+        assert getattr(cls, '_id', value) == value
+        return value
+
+    @validator('data_content_type', pre=True)
+    def _validate_dct(cls, value):
+        return value if value in DataContentType else DataContentType[value]
 
 
 def add_source(info, id=None, override=False, **kwargs):

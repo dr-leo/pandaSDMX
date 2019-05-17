@@ -252,7 +252,8 @@ class XMLParseError(ParseError):
     def __str__(self):
         msg = '\n\n'.join(filter(None, [
             self.message,
-            str(self.__cause__),
+            '{}: {}'.format(self.__cause__.__class__.__name__,
+                            self.__cause__),
             'Stack:\n' + '\n> '.join(self.stack),
             etree.tostring(self.elem, pretty_print=True).decode(),
             ]))
@@ -933,7 +934,7 @@ class Reader(BaseReader):
 
         d = cls(
             concept_identity=values.pop('conceptidentity'),
-            local_representation=values.pop('localrepresentation'),
+            local_representation=values.pop('localrepresentation', None),
             **ChainMap(attrs, elem.attrib),
             )
         assert len(values) == 0

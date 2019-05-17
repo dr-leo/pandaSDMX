@@ -6,7 +6,6 @@ import json
 from typing import (
     Any,
     Dict,
-    Union,
     )
 
 from pkg_resources import resource_stream

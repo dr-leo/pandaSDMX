@@ -1,10 +1,11 @@
 The SDMX Information Model
 ==========================
 
-The module :mod:`pandasdmx.model` implements the SDMX Information Model
-(SDMX-IM). The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the
-`full specification of the IM <https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf>`_ (PDF format); this page gives a
-brief explanation of the SDMX-IM classes as they appear in pandaSDMX.
+:mod:`pandasdmx.model` implements the SDMX Information Model (SDMX-IM).
+The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF format); this page gives a
+brief overview of the SDMX-IM classes as they appear in :mod:`pandaSDMX`.
+
+.. _sdmx-im: https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
 
 .. contents::
    :local:
@@ -15,7 +16,9 @@ Abstract classes and data types
 
 .. currentmodule:: pandasdmx.model
 
-Many classes inherit from one of the following classes. For instance, a :class:`Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. It also has the `id`, `URI`, and `URN` attributes of an ``IndentifiableArtefact``. The API reference for :mod:`pandasdmx.model` describes the parent classes for each class.
+Many classes inherit from one of the following classes.
+For example, a :class:`Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
+The API reference for :mod:`pandasdmx.model` shows the parent classes for each class.
 
 - An :class:`IdentifiableArtefact` has an :attr:`id <IdentifiableArtefact.id>`,
   :attr:`URI <IdentifiableArtefact.uri>`, and

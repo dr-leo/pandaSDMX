@@ -6,7 +6,6 @@ from codecs import open
 long_descr = open('description.rst', 'r', encoding='utf8').read()
 
 TESTS_REQUIRE = [
-    'odo>=0.5',
     'pytest>=3.3',
     'pytest-remotedata>=0.3.1',
     'requests-mock>=1.4',

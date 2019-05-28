@@ -1,5 +1,5 @@
-pandaSDMX: Statistical Data and Metadata eXchange in Python
-===========================================================
+pandaSDMX: Statistical Data and Metadata eXchange
+=================================================
 
 .. image:: https://travis-ci.org/dr-leo/pandaSDMX.svg?branch=master
    :target: https://travis-ci.org/dr-leo/pandaSDMX

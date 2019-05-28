@@ -15,7 +15,6 @@ In rough order of priority:
     plain text error page, for some others) is returned which isn't parsed or
     handled; a ValueError or something else gets raised.
 
-- Remove `odo` as a dependency; suggest its use in the documentation.
 
 Future
 ------

@@ -39,11 +39,12 @@ v1.0 (unreleased)
 
 Breaking changes
 ::::::::::::::::
-- Python 2.7 and earlier are not supported.
+- Python 3.6 and earlier (including Python 2) are not supported.
 
 Migrating
 :::::::::
-* ``Writer.write(…, reverse_obs=True)``: use s.iloc[::-1] to reverse a pd.Series.
+- ``Writer.write(…, reverse_obs=True)``: use s.iloc[::-1] to reverse a pd.Series.
+- odo support is no longer built-in; however, users can still register a pandaSDMX resource with odo. See the :ref:`HOWTO <howto-convert>`.
 
 v0.9 (2018-04)
 ----------------------------

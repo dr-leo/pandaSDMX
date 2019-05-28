@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 
 
-class ParseError(Exception):
-    pass
-
-
 class BaseReader(ABC):
     @abstractmethod
     def read_message(self, source):

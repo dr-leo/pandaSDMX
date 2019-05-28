@@ -23,7 +23,6 @@ def test_session_without_requests_cache():
 
 
 @pytest.mark.remote_data
-# @requires_requests_cache
 def test_session_init_cache(tmpdir):
     # Instantiate a REST object with cache
     cache_name = Path(tmpdir.join('pandasdmx_cache'))

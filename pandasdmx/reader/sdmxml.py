@@ -6,6 +6,7 @@ from itertools import chain
 from lxml import etree
 from lxml.etree import QName, XPath
 
+from pandasdmx.exceptions import ParseError, XMLParseError
 from pandasdmx.message import (
     DataMessage,
     ErrorMessage,
@@ -13,7 +14,7 @@ from pandasdmx.message import (
     Header,
     StructureMessage,
     )
-from pandasdmx.model import (
+from pandasdmx.model import (  # noqa: F401
     DEFAULT_LOCALE,
     Agency,
     AgencyScheme,
@@ -71,7 +72,7 @@ from pandasdmx.model import (
     UsageStatus,
     )
 
-from pandasdmx.reader import BaseReader, ParseError
+from pandasdmx.reader import BaseReader
 
 # XML namespaces
 _ns = {
@@ -242,25 +243,6 @@ def add_localizations(target, values):
     target.localizations.update({locale: label for locale, label in values})
 
 
-class XMLParseError(ParseError):
-    def __init__(self, reader, elem, message=None):
-        self.stack = reader._stack
-        self.elem = elem
-        self.message = message
-        self.__suppress_context__ = True
-
-    def __str__(self):
-        msg = '\n\n'.join(filter(None, [
-            self.message,
-            '{}: {}'.format(self.__cause__.__class__.__name__,
-                            self.__cause__),
-            'Stack:\n' + '\n> '.join(self.stack),
-            etree.tostring(self.elem, pretty_print=True).decode(),
-            ]))
-        self.__cause__ = None
-        return msg
-
-
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from :mod:`pandasdmx.model`.
 
@@ -289,7 +271,7 @@ class Reader(BaseReader):
         # Message class
         try:
             cls = _message_class[root.tag]
-        except KeyError as e:
+        except KeyError:
             msg = 'Unrecognized message root element {!r}'.format(root.tag)
             raise ParseError(msg) from None
 
@@ -502,7 +484,7 @@ class Reader(BaseReader):
             'isPartial': ('is_partial', bool),
             'structureURL': ('structure_url', lambda value: value),
             'role': ('role', lambda value:
-                             ConstraintRole(role=ConstraintRoleType[value])),
+                     ConstraintRole(role=ConstraintRoleType[value])),
             'validFrom': ('valid_from', str),
             'validTo': ('valid_to', str),
             }
@@ -1046,7 +1028,6 @@ class Reader(BaseReader):
         values = list(map(lambda v: MemberValue(value=v), values['value']))
         values_for = self._index['Dimension', elem.attrib.pop('id')]
         return MemberSelection(values_for=values_for, values=values)
-
 
     def parse_datakeyset(self, elem):
         values = self._parse(elem)

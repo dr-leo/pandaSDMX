@@ -51,7 +51,7 @@ def pytest_generate_tests(metafunc):
             kwargs = dict(id=id)
             for cond, info in file_marks.items():
                 if cond in str(value):
-                    kwargs['marks']  = pytest.mark.skip(reason=info[2])
+                    kwargs['marks'] = pytest.mark.skip(reason=info[2])
                     break
 
             params.append(pytest.param(value, **kwargs))

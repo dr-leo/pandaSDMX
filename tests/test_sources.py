@@ -7,10 +7,9 @@ To force the data to be retrieved over the Internet, delete this directory.
 from warnings import warn
 
 from pandasdmx.api import Request
-from pandasdmx.reader import ParseError
+from pandasdmx.exceptions import HTTPError, ParseError
 from pandasdmx.source import sources
 import pytest
-from requests.exceptions import HTTPError
 import requests_mock
 
 from . import test_data_path

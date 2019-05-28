@@ -6,15 +6,6 @@ Towards v1.0
 In rough order of priority:
 
 - Update and add tests for Request.preview_data().
-- Harmonize handling of API errors. Currently at least four things can happen:
-
-  - requests.Response.raise_for_status() produces an HTTPError.
-  - a 501 error gets translated to a Python NotImplementedError.
-  - a message.ErrorMessage is parsed and returned.
-  - some other form of return value (e.g. an HTML error page, for ABS, or a
-    plain text error page, for some others) is returned which isn't parsed or
-    handled; a ValueError or something else gets raised.
-
 
 Future
 ------

@@ -6,7 +6,6 @@
 @author: Dr. Leo
 '''
 import unittest
-import pandasdmx
 from pandasdmx import model, Request
 import pandas
 import os
@@ -16,13 +15,16 @@ pkg_path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
-class TestGenericFlatDataSet(unittest.TestCase):
+class TestStructSpecFlatDataSet(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
-            pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_flat.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+            pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_flat.xml')
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
+        self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_msg_type(self):
         self.assertIsInstance(self.resp.msg, model.DataMessage)
@@ -57,13 +59,16 @@ class TestGenericFlatDataSet(unittest.TestCase):
         self.assertIsInstance(data_series, pandas.Series)
 
 
-class TestGenericSeriesDataSet(unittest.TestCase):
+class TestStructSpecSeriesDataSet(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
-            pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts_gf.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+            pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts_gf.xml')
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
+        self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
         self.assertEqual(self.resp.header.structured_by, 'STR1')
@@ -72,7 +77,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
     def test_dataset_cls(self):
         self.assertIsInstance(self.resp.msg.data, model.DataSet)
 
-    def test_generic_obs(self):
+    def test_obs(self):
         data = self.resp.data
         # empty obs iterator
         self.assertEqual(len(list(data.obs())), 0)
@@ -81,7 +86,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         s3 = series_list[3]
         self.assertIsInstance(s3, model.Series)
         self.assertIsInstance(s3.key, tuple)
-        self.assertEqual(len(s3.key), 5)
+        self.assertEqual(len(s3.key), 4)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs(reverse_obs=True))
@@ -103,7 +108,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(s3, pandas.core.series.Series)
         self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(s3.name), 4)
         # now with attributes
         pd_series = [s for s in resp.write(
             data, attributes='osgd', reverse_obs=True, asframe=False)]
@@ -115,34 +120,7 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         self.assertIsInstance(a3, pandas.core.series.Series)
         self.assertEqual(s3[2], 1.2894)
         self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
-        self.assertEqual(len(a3), 3)
-        # access an attribute of the first value
-        self.assertEqual(a3[0].OBS_STATUS, 'A')
-
-    def test_pandas_with_freq(self):
-        resp = self.resp
-        data = resp.data
-        pd_series = [s for s in resp.write(
-            data, attributes='', reverse_obs=True, asframe=False, fromfreq=True)]
-        self.assertEqual(len(pd_series), 4)
-        s3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
-        # now with attributes
-        pd_series = [s for s in resp.write(
-            data, attributes='osgd', reverse_obs=True, asframe=False, fromfreq=True)]
-        self.assertEqual(len(pd_series), 4)
-        self.assertIsInstance(pd_series[0], tuple)  # contains 2 series
-        self.assertEqual(len(pd_series[0]), 2)
-        s3, a3 = pd_series[3]
-        self.assertIsInstance(s3, pandas.core.series.Series)
-        self.assertIsInstance(a3, pandas.core.series.Series)
-        self.assertEqual(s3[2], 1.2894)
-        self.assertIsInstance(s3.name, tuple)
-        self.assertEqual(len(s3.name), 5)
+        self.assertEqual(len(s3.name), 4)
         self.assertEqual(len(a3), 3)
         # access an attribute of the first value
         self.assertEqual(a3[0].OBS_STATUS, 'A')
@@ -158,25 +136,17 @@ class TestGenericSeriesDataSet(unittest.TestCase):
         assert mdf.shape == (3, 4)
         assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
-    def test_write2pandas_with_freq(self):
-        df = self.resp.write(attributes='',
-                             reverse_obs=False, fromfreq=True)
-        self.assertIsInstance(df, pandas.DataFrame)
-        assert df.shape == (3, 4)
-        # with metadata
-        df, mdf = self.resp.write(attributes='osgd',
-                                  reverse_obs=False, fromfreq=True)
-        assert mdf.shape == (3, 4)
-        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
 
-
-class TestGenericSeriesDataSet2(unittest.TestCase):
+class TestStructSpecSeriesDataSet2(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request('ESTAT')
         filepath = os.path.join(
-            pkg_path, 'data/exr/ecb_exr_ng/generic/ecb_exr_ng_ts.xml')
-        self.resp = self.estat.data(fromfile=filepath)
+            pkg_path, 'data/exr/ecb_exr_ng/structured/ecb_exr_ng_ts.xml')
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_ng/ecb_exr_ng_full.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
+        self.resp = self.estat.data(fromfile=filepath, dsd=dsd)
 
     def test_header_attributes(self):
         self.assertEqual(self.resp.header.structured_by, 'STR1')
@@ -185,7 +155,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
     def test_dataset_cls(self):
         self.assertIsInstance(self.resp.data, model.DataSet)
 
-    def test_generic_obs(self):
+    def test_structured_obs(self):
         data = self.resp.data
         # empty obs iterator
         self.assertEqual(len(list(data.obs())), 0)
@@ -194,7 +164,7 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         s3 = series_list[3]
         self.assertIsInstance(s3, model.Series)
         self.assertIsInstance(s3.key, tuple)
-        self.assertEqual(len(s3.key), 5)
+        self.assertEqual(len(s3.key), 4)
         self.assertEqual(s3.key.CURRENCY, 'USD')
         self.assertEqual(s3.attrib.DECIMALS, '4')
         obs_list = list(s3.obs(reverse_obs=True))
@@ -214,13 +184,16 @@ class TestGenericSeriesDataSet2(unittest.TestCase):
         self.assertEqual(df.shape, (3, 4))
 
 
-class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
+class TestStructSpecSeriesData_SiblingGroup_TS(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request()
         filepath = os.path.join(
-            pkg_path, 'data/exr/ecb_exr_sg/generic/ecb_exr_sg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+            pkg_path, 'data/exr/ecb_exr_sg/structured/ecb_exr_sg_ts.xml')
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_sg/ecb_exr_sg.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
+        self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):
         data = self.resp.data
@@ -238,13 +211,16 @@ class TestGenericSeriesData_SiblingGroup_TS(unittest.TestCase):
         self.assertEqual(len(g_attrib), 1)
 
 
-class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
+class TestStructSpecSeriesData_RateGroup_TS(unittest.TestCase):
 
     def setUp(self):
         self.estat = Request()
         filepath = os.path.join(
-            pkg_path, 'data/exr/ecb_exr_rg/generic/ecb_exr_rg_ts.xml')
-        self.resp = self.estat.get(fromfile=filepath)
+            pkg_path, 'data/exr/ecb_exr_rg/structured/ecb_exr_rg_ts.xml')
+        dsd_resp = self.estat.datastructure(
+            fromfile=os.path.join(pkg_path, 'data/exr/ecb_exr_rg/ecb_exr_rg.xml'))
+        dsd = dsd_resp.datastructure.DataStructure
+        self.resp = self.estat.get(fromfile=filepath, dsd=dsd)
 
     def test_groups(self):
         data = self.resp.data
@@ -260,13 +236,3 @@ class TestGenericSeriesData_RateGroup_TS(unittest.TestCase):
         self.assertEqual(len(g_attrib), 5)
         self.assertIsInstance(g_attrib, tuple)
         self.assertEqual(len(g_attrib), 5)
-
-    def test_footer(self):
-        filepath = os.path.join(
-            pkg_path, 'data/estat/footer.xml')
-        resp = self.estat.get(
-            fromfile=filepath, get_footer_url=None)
-        f = resp.footer
-        assert f.code == 413
-        assert f.severity == 'Infomation'
-        assert f.text[1].startswith('http')

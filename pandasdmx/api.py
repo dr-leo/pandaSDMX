@@ -17,7 +17,7 @@ SOAP interface.
 '''
 
 from pandasdmx import remote
-from pandasdmx.utils import str_type, namedtuple_factory
+from pandasdmx.utils import str_type, namedtuple_factory, LazyDict
 import pandas as PD
 from pkg_resources import resource_string
 from importlib import import_module
@@ -26,6 +26,7 @@ from time import sleep
 from functools import partial, reduce
 from itertools import chain, product
 from operator import and_
+from collections import defaultdict
 import logging
 import json
 
@@ -84,7 +85,7 @@ class Request(object):
         return sorted(list(cls._agencies))
 
     _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'codelist', 'conceptscheme']
+                  'codelist', 'conceptscheme', 'contentconstraint']
 
     @classmethod
     def _make_get_wrappers(cls):
@@ -136,8 +137,16 @@ class Request(object):
                 list(self._agencies)))
         self.cache = {}  # for SDMX messages and other stuff.
 
-    def clear_cache(self):
-        self.cache.clear()
+    def clear_cache(self, key=None):
+        '''
+        If key is Non (default), remove the item if it exists. 
+        Otherwise, clear the entire cache.
+        '''
+        if key:
+            if key in self.cache:
+                del self.cache[key]
+        else:
+            self.cache.clear()
 
     @property
     def timeout(self):
@@ -147,7 +156,7 @@ class Request(object):
     def timeout(self, value):
         self.client.config['timeout'] = value
 
-    def series_keys(self, flow_id, cache=True):
+    def series_keys(self, flow_id, cache=True, dsd=None):
         '''
         Get an empty dataset with all possible series keys.
 
@@ -162,7 +171,8 @@ class Request(object):
             return self.cache[cache_id]
         else:
             # download an empty dataset with all available series keys
-            resp = self.data(flow_id, params={'detail': 'serieskeysonly'})
+            resp = self.data(flow_id, params={'detail': 'serieskeysonly'},
+                             dsd=dsd)
             l = list(s.key for s in resp.data.series)
             df = PD.DataFrame(l, columns=l[0]._fields, dtype='category')
             if cache:
@@ -173,7 +183,7 @@ class Request(object):
             version=None, key='',
             params={}, headers={},
             fromfile=None, tofile=None, url=None, get_footer_url=(30, 3),
-            memcache=None, writer=None):
+            memcache=None, writer=None, dsd=None, series_keys=True):
         '''get SDMX data or metadata and return it as a :class:`pandasdmx.api.Response` instance.
 
         While 'get' can load any SDMX file (also as zip-file) specified by 'fromfile',
@@ -216,7 +226,7 @@ class Request(object):
                 accessing an SDMX web service. Defaults to None. If `fromfile` is
                 given, args relating to URL construction will be ignored.
             tofile(str): file path to write the received SDMX file on the fly. This
-                is useful if you want to load data offline using
+                is useful, e.g., if you want to save it for later loading as local file with
                 `fromfile` or if you want to open an SDMX file in
                 an XML editor.
             url(str): URL of the resource to download.
@@ -236,7 +246,15 @@ class Request(object):
             otherwise download resource and cache Response instance.             
         writer(str): optional custom writer class. 
             Should inherit from pandasdmx.writer.BaseWriter. Defaults to None, 
-            i.e. one of the included writers is selected as appropriate. 
+            i.e. one of the included writers is selected as appropriate.
+        dsd(model.DataStructure): DSD to be passed on to the sdmxml reader
+            to process a structure-specific dataset without an incidental http request.
+        series_keys(bool):
+            If True (default), use the SeriesKeysOnly http param if supported by the
+            agency (e.g. ECB) to download all valid key combinations. This is the most
+            accurate key validation method. Otherwise, i.e.
+            if False or the agency does not support SeriesKeysOnly requests, key validation
+            is performed using codelists and content constraints, if any.
 
         Returns:
             pandasdmx.api.Response: instance containing the requested
@@ -250,11 +268,11 @@ class Request(object):
         if url:
             base_url = url
         else:
-            # Construct URL from args unless ``tofile`` is given
+            # Construct URL from args unless ``fromfile`` is given
             # Validate args
-            agency = agency or self._agencies[self.agency]['id']
+            agency = agency or self._agencies[self.agency].get('id')
             # Validate resource if no filename is specified
-            if not fromfile and resource_type not in self._resources:
+            if not (fromfile or resource_type in self._resources):
                 raise ValueError(
                     'resource must be one of {0}'.format(self._resources))
             # resource_id: if it is not a str or unicode type,
@@ -262,17 +280,38 @@ class Request(object):
             # extract its ID
             if resource_id and not isinstance(resource_id, (str_type, str)):
                 resource_id = resource_id.id
+            # Raise error if agency is JSON-based and resource is not supported by the agency.
+            # Note that SDMX-JSON currently only supports data messages.
+            if (self._agencies[self.agency]['resources'].get('data', {}).get('json')
+                    and resource_type != 'data'):
+                raise ValueError(
+                    'This agency only supports requests for data, not {0}.'.format(resource_type))
 
             # If key is a dict, validate items against the DSD
             # and construct the key string which becomes part of the URL
             # Otherwise, do nothing as key must be a str confirming to the REST
-            # API spec.
+            # API specs.
             if resource_type == 'data' and isinstance(key, dict):
+                # normalize key making str-type, '+'-separated values a list
+                key = self.prepare_key(key)
                 # select validation method based on agency capabilities
-                if self._agencies[self.agency].get('supports_series_keys_only'):
-                    key = self._make_key_from_series(resource_id, key)
+                if (series_keys and
+                        self._agencies[self.agency].get('supports_series_keys_only')):
+                    val_resp = self.data(resource_id,
+                                         params={'detail': 'serieskeysonly'})
                 else:
-                    key = self._make_key_from_dsd(resource_id, key)
+                    val_resp = self.dataflow(resource_id,
+                                             memcache='dataflow' + resource_id)
+                    # check if the message contains the datastructure. This is
+                    # not the case, eg, for ESTAT. If not, download it.
+                    if not hasattr(val_resp.msg, 'datastructure'):
+                        val_resp = val_resp.dataflow[resource_id].structure(
+                            request=True, target_only=False)
+                val_msg = val_resp.msg
+                # validate key
+                val_msg.in_constraints(key)
+                key = '.'.join('+'.join(key.get(i, ''))
+                               for i in val_msg._dim_ids)
 
             # Get http headers from agency config if not given by the caller
             if not (fromfile or headers):
@@ -280,7 +319,7 @@ class Request(object):
                 resource_cfg = self._agencies[self.agency][
                     'resources'].get(resource_type)
                 if resource_cfg:
-                    headers = resource_cfg.get('headers') or {}
+                    headers = resource_cfg.get('headers', {})
 
             # Construct URL from the given non-empty substrings.
             # if data is requested, omit the agency part. See the query
@@ -293,7 +332,7 @@ class Request(object):
                 version = 'latest'
             # Remove None's and '' first. Then join them to form the base URL.
             # Any parameters are appended by remote module.
-            if self.agency:
+            if not fromfile and self.agency:
                 parts = [self._agencies[self.agency]['url'],
                          resource_type,
                          agency_id,
@@ -301,6 +340,7 @@ class Request(object):
                 base_url = '/'.join(filter(None, parts))
 
                 # Set references to sensible defaults
+                params = params.copy()  # to avoid side effects
                 if 'references' not in params:
                     if resource_type in [
                             'dataflow', 'datastructure'] and resource_id:
@@ -342,13 +382,12 @@ class Request(object):
                 source.seek(0)
             # select reader class
             if ((fromfile and fromfile.endswith('.json'))
-                    or (self.agency and self._agencies[self.agency]['resources'].get(resource_type)
-                        and self._agencies[self.agency]['resources'][resource_type].get('json'))):
+                    or self._agencies[self.agency]['resources'].get(resource_type, {}).get('json')):
                 reader_module = import_module('pandasdmx.reader.sdmxjson')
             else:
                 reader_module = import_module('pandasdmx.reader.sdmxml')
             reader_cls = reader_module.Reader
-            msg = reader_cls(self).initialize(source)
+            msg = reader_cls(self, dsd).initialize(source)
         # Check for URL in a footer and get the real data if so configured
         if get_footer_url and hasattr(msg, 'footer'):
             logger.info('Footer found in SDMX message.')
@@ -380,125 +419,22 @@ class Request(object):
             self.cache[memcache] = r
         return r
 
-    def _make_key_from_dsd(self, flow_id, key):
+    def prepare_key(self, key):
         '''
-        Download the dataflow def. and DSD and validate 
-        key(dict) against it. 
-
-        Return: key(str)
+        Split any value of the form 'v1+v2+v3' into a list and
+        return a new key dict. Values that are lists already are 
+        left unchanged.
         '''
-        # get the dataflow and the DSD ID
-        dataflow = self.get('dataflow', flow_id,
-                            memcache='dataflow' + flow_id)
-        dsd_id = dataflow.msg.dataflow[flow_id].structure.id
-        dsd_resp = self.get('datastructure', dsd_id,
-                            memcache='datastructure' + dsd_id)
-        dsd = dsd_resp.msg.datastructure[dsd_id]
-        # Extract dimensions excluding the dimension at observation (time, time-period)
-        # as we are only interested in dimensions for columns, not rows.
-        dimensions = [d for d in dsd.dimensions.aslist() if d.id not in
-                      ['TIME', 'TIME_PERIOD']]
-        dim_names = [d.id for d in dimensions]
-        # Retrieve any ContentConstraint
-        try:
-            constraint_l = [c for c in dataflow.constraint.aslist()
-                            if c.constraint_attachment.id == flow_id]
-            if constraint_l:
-                constraint = constraint_l[0]
-        except:
-            constraint = None
-        # Validate the key dict
-        # First, check correctness of dimension names
-        invalid = [d for d in key.keys()
-                   if d not in dim_names]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
-        # Check for each dimension name if values are correct and construct
-        # string of the form 'value1.value2.value3+value4' etc.
-        parts = []
-        # Iterate over the dimensions. If the key dict
-        # contains a value for the dimension, append it to the 'parts' list. Otherwise
-        # append ''. Then join the parts to form the dotted str.
-        for d in dimensions:
-            try:
-                values = key[d.id]
-                values_l = values.split('+')
-                codelist = d.local_repr.enum
-                codes = codelist.keys()
-                invalid = [v for v in values_l if v not in codes]
-                if invalid:
-                    # ToDo: attach codelist to exception.
-                    raise ValueError("'{0}' is not in codelist for dimension '{1}: {2}'".
-                                     format(invalid, d.id, codes))
-                # Check if values are in Contentconstraint if present
-                if constraint:
-                    try:
-                        invalid = [
-                            v for v in values_l if (d.id, v) not in constraint]
-                        if invalid:
-                            raise ValueError("'{0}' out of content_constraint for '{1}'.".
-                                             format(invalid, d.id))
-                    except NotImplementedError:
-                        pass
-                part = values
-            except KeyError:
-                part = ''
-            parts.append(part)
-        return '.'.join(parts)
+        return {k: v if isinstance(v, list) else v.split('+')
+                for k, v in key.items()}
 
-    def _make_key_from_series(self, flow_id, key):
-        '''
-        Get all series keys by calling
-        self.series_keys, and validate 
-        the key(dict) against it. Raises ValueError if
-        a value does not occur in the respective
-        set of dimension values. Multiple values per
-        dimension can be provided as a list or in 'V1+V2' notation.
-
-        Return: key(str) 
-        '''
-        # get all series keys
-        all_keys = self.series_keys(flow_id)
-        dim_names = list(all_keys)
-        # Validate the key dict
-        # First, check correctness of dimension names
-        invalid = [d for d in key
-                   if d not in dim_names]
-        if invalid:
-            raise ValueError(
-                'Invalid dimension name {0}, allowed are: {1}'.format(invalid, dim_names))
-        # Pre-process key by expanding multiple values as list
-        key = {k: v.split('+') if '+' in v else v for k, v in key.items()}
-        # Check for each dimension name if values are correct and construct
-        # string of the form 'value1.value2.value3+value4' etc.
-        # First, wrap each single dim value in a list to allow
-        # uniform treatment of single and multiple dim values.
-        key_l = {k: [v] if isinstance(v, str_type) else v
-                 for k, v in key.items()}
-        # Iterate over the dimensions. If the key dict
-        # contains an allowed value for the dimension,
-        # it will become part of the string.
-        invalid = list(chain.from_iterable((((k, v) for v in vl if v not in all_keys[k].values)
-                                            for k, vl in key_l.items())))
-        if invalid:
-            raise ValueError("The following dimension values are invalid: {0}".
-                             format(invalid))
-        # Generate the 'Val1+Val2' notation for multiple dim values and remove the
-        # lists
-        for k, v in key_l.items():
-            key_l[k] = '+'.join(v)
-        # assemble the key string which goes into the URL
-        parts = [key_l.get(name, '') for name in dim_names]
-        return '.'.join(parts)
-
-    def preview_data(self, flow_id, key=None, count=True, total=True):
+    def preview_data(self, flow_id, key=None, count=True, total=True, dsd=None):
         '''
         Get keys or number of series for a prospective dataset query allowing for
         keys with multiple values per dimension.
         It downloads the complete list of series keys for a dataflow rather than using constraints and DSD. This feature is,
         however, not supported by all data providers.
-        ECB and UNSD are known to work.
+        ECB, IMF_SDMXCENTRAL and UNSD are known to work.
 
         Args:
 
@@ -521,7 +457,7 @@ class Request(object):
             respectively. If 'count' is True, dict values will be int rather than
             PD.DataFrame.
         '''
-        all_keys = self.series_keys(flow_id)
+        all_keys = self.series_keys(flow_id, dsd=dsd)
         # Handle the special case that no key is provided
         if not key:
             if count:
@@ -531,8 +467,7 @@ class Request(object):
 
         # So there is a key specifying at least one dimension value.
         # Wrap single values in 1-elem list for uniform treatment
-        key_l = {k: [v] if isinstance(v, str_type) else v
-                 for k, v in key.items()}
+        key_l = self.prepare_key(key)
         # order dim_names that are present in the key
         dim_names = [k for k in all_keys if k in key]
         # Drop columns that are not in the key
@@ -582,7 +517,8 @@ class Response(object):
             Arguments are propagated to the writer.
     '''
 
-    def __init__(self, msg, url, headers, status_code, writer=None):
+    def __init__(self, msg, url, headers, status_code,
+                 writer=None):
         '''
         Set the main attributes and instantiate the writer if given.
 
@@ -592,7 +528,6 @@ class Response(object):
             headers(dict): http headers 
             status_code(int): the status code returned by the server
             writer(str): the module path for the writer class
-
         '''
         self.msg = msg
         self.url = url
@@ -616,7 +551,8 @@ class Response(object):
             self._writer = None
 
     def write(self, source=None, **kwargs):
-        '''Wrappe    r to call the writer's write method if present.
+        '''
+        Wrapper to call the writer's write method if present.
 
         Args:
             source(pandasdmx.model.Message, iterable): stuff to be written.

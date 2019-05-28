@@ -125,3 +125,30 @@ if sys.version[0] == '3':
     str_type = str
 else:
     str_type = unicode
+
+
+def str2bool(s):
+    if isinstance(s, str_type) and s.lower() == 'false':
+        return False
+    return bool(s)
+
+
+class LazyDict(dict):
+    '''
+    lazily comput values by calling func(k)
+    '''
+
+    def __init__(self, func, *args, **kwargs):
+        '''
+        func: callable to return d[k]
+        '''
+        super(LazyDict, self).__init__(*args, **kwargs)
+        self.__func__ = func
+        self.__computed__ = set()
+
+    def __getitem__(self, k):
+        if k not in self.__computed__:
+            v = self.__func__(k)
+            self.__computed__.add(k)
+            self[k] = v
+        return super(LazyDict, self).__getitem__(k)

@@ -1,5 +1,3 @@
-
-
 # pandaSDMX is licensed under the Apache 2.0 license a copy of which
 # is included in the source distribution of pandaSDMX.
 # This is notwithstanding any licenses of third-party software included in
@@ -42,7 +40,7 @@ class Writer(BaseWriter):
             attributes(str, None): string determining which attributes, if any,
                 should be returned in separate series or a separate DataFrame.
                 Allowed values: '', 'o', 's', 'g', 'd'
-                or any combination thereof such as 'os', 'go'. Defaults to 'osgd'.
+                or any combination thereof such as 'os', 'go'. Defaults to ''.
                 Where 'o', 's', 'g', and 'd' mean that attributes at observation,
                 series, group and dataset level will be returned as members of
                 per-observation namedtuples.
@@ -71,6 +69,7 @@ class Writer(BaseWriter):
             if set(attributes) - {'o', 's', 'g', 'd'}:
                 raise ValueError(
                     "'attributes' must only contain 'o', 's', 'd' or 'g'.")
+        with_obs_attr = 'o' in attributes
 
         # Allow source to be either an iterable or a model.DataSet instance
         if hasattr(source, '__iter__'):
@@ -82,7 +81,8 @@ class Writer(BaseWriter):
 
         # Is 'data' a flat dataset with just a list of obs?
         if dim_at_obs == 'AllDimensions':
-            obs_zip = iter(zip(*source.data.obs()))
+            obs_zip = iter(
+                zip(*source.data.obs(with_attributes=with_obs_attr)))
             dimensions = next(obs_zip)
             idx = PD.MultiIndex.from_tuples(
                 dimensions, names=dimensions[0]._fields)
@@ -142,118 +142,102 @@ class Writer(BaseWriter):
 
     def iter_pd_series(self, iter_series, dim_at_obs, dtype,
                        attributes, reverse_obs, fromfreq, parse_time):
-
+        with_obs_attr = 'o' in attributes
         for series in iter_series:
             # Generate the 3 main columns: index, values and attributes
-            obs_zip = iter(zip(*series.obs(dtype, attributes, reverse_obs)))
-            obs_dim = next(obs_zip)
-            l = len(obs_dim)
-            obs_values = NP.array(next(obs_zip), dtype=dtype)
-            if attributes:
-                obs_attrib = next(obs_zip)
+            obs_zip = list(zip(*series.obs(with_values=dtype,
+                                           with_attributes=with_obs_attr, reverse_obs=reverse_obs)))
+            # Are there observations at all?
+            if obs_zip:
+                obs_dim = obs_zip[0]
+                obs_values = NP.array(obs_zip[1], dtype=dtype)
+                obs_attrib = obs_zip[2]
+                l = len(obs_dim)
 
-            # Generate the index
-            if parse_time and dim_at_obs == 'TIME_PERIOD':
-                # Check if we can build the index based on start and freq
-                # Constructing the index from the first value and FREQ should only
-                # occur if 'fromfreq' is True
-                # and there is a FREQ dimension at all.
-                # Check for common frequency field names
-                # Initialize with dummy value first to avoid UnboundLocalError
-                freq_key = ''
-                if 'FREQ' in series.key._fields or 'FREQ' in series.attrib._fields:
-                    freq_key = 'FREQ'
-                elif 'FREQUENCY' in series.key._fields or 'FREQUENCY' in series.attrib._fields:
-                    freq_key = 'FREQUENCY'
+                # Generate the index
+                # Get frequency if present
+                if 'FREQ' in series.key._fields:
+                    f = series.key.FREQ
+                elif series.attrib and 'FREQUENCY' in series.attrib._fields:
+                    f = series.attrib.FREQUENCY
+                elif 'FREQUENCY' in series.key._fields:
+                    f = series.key.FREQUENCY
+                elif series.attrib and 'FREQ' in series.attrib._fields:
+                    f = series.attrib.FREQ
+                else:
+                    f = None
 
-                if fromfreq and freq_key in series.key._fields:
-                    f = getattr(series.key, freq_key)
-                    od0 = obs_dim[0]
-                    year, subdiv = map(int, (od0[:4], od0[-1]))
-                    if f == 'Q':
-                        start_date = PD.datetime(year, (subdiv - 1) * 3 + 1, 1)
-                        series_index = PD.period_range(
-                            start=start_date, periods=l, freq='Q',
-                            name=dim_at_obs)
-                    elif 'S' in od0:
-                        # pandas cannot represent semesters as periods. So we
-                        # use date_range.
-                        start_date = PD.datetime(year, (subdiv - 1) * 6 + 1, 1)
-                        series_index = PD.date_range(
-                            start=start_date, periods=l, freq='6M', name=dim_at_obs)
-                    else:
-                        series_index = PD.period_range(start=od0, periods=l,
+                if parse_time and dim_at_obs == 'TIME_PERIOD':
+                    # First, handle half-yearly and bimonthly freqs
+                    # and format such as '2010-S1' format dim
+                    # pandas cannot parse those. So convert them
+                    if f == 'H':
+                        f = '2Q'
+                        # patch the dim values
+                        obs_dim = ['Q'.join((od[:-2], '1' if od[-1] == '1' else '3'))
+                                   for od in obs_dim]
+                    # Check if we can build the index based on start and freq
+                    # Constructing the index from the first value and FREQ should only
+                    # occur if 'fromfreq' and hence f is True
+                    if fromfreq and f:  # So there is a freq and we must use it
+                        series_index = PD.period_range(start=PD.Period(obs_dim[0], freq=f), periods=l,
                                                        freq=f, name=dim_at_obs)
-                elif freq_key in series.key._fields or freq_key in series.attrib._fields:
-                    # fromfreq is False. So generate the index from all the
-                    # strings
-                    if freq_key in series.key._fields:
-                        f = getattr(series.key, freq_key)
-                    elif freq_key in series.attrib._fields:
-                        f = getattr(series.attrib, freq_key)
                     else:
-                        # Data set has neither a frequency dimension nor a frequency attribute.
-                        # At this point, no DateTimeIndex or PeriodIndex can be generated.
-                        # This should be improved in future versions. For now, a
-                        # a gentle error is raised to inform the user of a
-                        # work-around.
-                        raise ValueError("Cannot generate DateTimeIndex from this data set.\
-                        Try again with `parse_time=False`")
-                    # Generate arrays for years and subdivisions (quarters or
-                    # semesters
-                    if f == 'Q':
-                        series_index = PD.Index((PD.Period(year=int(d[:4]), quarter=int(d[-1]), freq='Q')
-                                                 for d in obs_dim), name=dim_at_obs)
-                    elif f == 'H':
-                        series_index = PD.Index(
-                            (PD.datetime(
-                                int(d[:4]), (int(d[-1]) - 1) * 6 + 1, 1) for d in obs_dim),
+                        # There is no ffreq or we must not use it.
+                        # So generate the index from all the obs dim values
+                        series_index = PD.PeriodIndex(
+                            (PD.Period(d, freq=f) for d in obs_dim), name=dim_at_obs)
+                elif parse_time and dim_at_obs == 'TIME':
+                    if fromfreq and f:
+                        series_index = PD.date_range(
+                            start=PD.datetime(obs_dim[0]), periods=l, freq=f, name=dim_at_obs)
+                    else:
+                        series_index = PD.DatetimeIndex(
+                            (PD.datetime(d) for d in obs_dim),
                             name=dim_at_obs)
-                    else:  # other freq such as 'A' or 'M'
-                        series_index = PD.PeriodIndex(obs_dim,
-                                                      freq=f, name=dim_at_obs)
-            elif parse_time and dim_at_obs == 'TIME':
-                if fromfreq and freq_key in series.key._fields:
-                    f = getattr(series.key, freq_key)
-                    series_index = PD.date_range(
-                        start=obs_dim[0], periods=l, freq=f, name=dim_at_obs)
                 else:
-                    series_index = PD.DatetimeIndex(obs_dim, name=dim_at_obs)
-            # Not a datetime or period index or don't parse it
-            else:
-                series_index = PD.Index(obs_dim, name=dim_at_obs)
+                    # Not a datetime or period index or don't parse it
+                    series_index = PD.Index(obs_dim, name=dim_at_obs)
 
-            if dtype:
-                value_series = PD.Series(
-                    obs_values, index=series_index, name=series.key)
+                if dtype:
+                    value_series = PD.Series(
+                        obs_values, index=series_index, name=series.key)
 
-            if attributes:
-                # Assemble attributes of dataset, group and series if needed
-                gen_attrib = [attr
-                              for flag, attr in (('s', series.attrib),
-                                                 ('g', series.group_attrib), ('d', series.dataset.attrib))
-                              if (flag in attributes) and attr]
-                if gen_attrib:
-                    gen_attrib = concat_namedtuples(*gen_attrib)
-                else:
-                    gen_attrib = None
-
-                if 'o' in attributes:
-                    # concat with general attributes if any
+                if attributes:
+                    # Assemble attributes of dataset, group and series if
+                    # needed
+                    gen_attrib = [attr
+                                  for flag, attr in (('s', series.attrib),
+                                                     ('g', series.group_attrib), ('d', series.dataset.attrib))
+                                  if (flag in attributes) and attr]
                     if gen_attrib:
-                        attrib_iter = (concat_namedtuples(a, gen_attrib,
-                                                          name='Attrib') for a in obs_attrib)
+                        gen_attrib = concat_namedtuples(*gen_attrib)
                     else:
-                        # Simply take the obs attributes
-                        attrib_iter = obs_attrib
-                else:
-                    # Make iterator yielding the constant general attribute set
-                    # It may be None.
-                    # for each obs
-                    attrib_iter = (gen_attrib for d in obs_attrib)
+                        gen_attrib = None
 
-                attrib_series = PD.Series(attrib_iter,
-                                          index=series_index, dtype='object', name=series.key)
+                    if 'o' in attributes:
+                        # concat with general attributes if any
+                        if gen_attrib:
+                            attrib_iter = (concat_namedtuples(a, gen_attrib,
+                                                              name='Attrib') for a in obs_attrib)
+                        else:
+                            # Simply take the obs attributes
+                            attrib_iter = obs_attrib
+                    else:
+                        # Make iterator yielding the constant general attribute set
+                        # It may be None.
+                        # for each obs
+                        attrib_iter = (gen_attrib for d in obs_attrib)
+
+                    attrib_series = PD.Series(attrib_iter,
+                                              index=series_index, dtype='object', name=series.key)
+
+            else:
+                # There are no observations. So generate empty DataFrames
+                if dtype:
+                    value_series = PD.Series(name=series.key)
+                if attributes:
+                    attrib_series = PD.Series(name=series.key)
 
             # decide what to yield
             if dtype and attributes:

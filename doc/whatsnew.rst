@@ -4,6 +4,61 @@ What's new?
 ==============
 
 
+v0.9 (2018-04)
+----------------------------
+
+This version is the last tested on Python 2.x. Future versions
+will be tested on Python 3.5+ only
+
+New features
+:::::::::::::::
+
+* four new data providers INEGI (Mexico), Norges Bank (Norway), 
+  International Labour Organization (ILO) and 
+  and Italian statistics office (ISTAT)
+* model: make Ref instances callable for resolving them, i.e. getting the referenced object
+  by making a remote request if needed
+* improve loading of structure-specific messages when DSD is not passed / must be requested on the fly
+* process multiple and cascading content constraints as described in the Technical Guide (Chap. 6 of the SDMX 2.1 standard)
+* StructureMessages and DataMessages now have properties to compute the constrained and unconstrained codelists as
+  dicts of frozensets of codes. For DataMessage this is useful when ``series_keys`` was set to True when making
+  the request. This prompts the data provider to generate a dataset without data, but with
+  the complete set of series keys. This is the most accurate representation
+  of the available series. Agencies such as IMF and ECB support this feature. 
+
+v0.8.2 (2017-12-21)
+----------------------------
+
+* fix reading of structure-specific data sets when DSD_ID is present in the data set
+
+v0.8.1 (2017-12-20)
+----------------------------
+
+* fix broken  package preventing pip installs of the wheel 
+
+
+v0.8 (2017-12-12)
+----------------------------
+
+* add support for an alternative data set format 
+  defined for SDMXML messages. These so-called  structure-specific data sets lend themselves
+  for large data queries. File sizes are typically
+  about 60 % smaller than with equivalent generic data sets. To make use of 
+  structure-specific data sets, instantiate Request 
+  objects with agency IDs such as   
+  'ECB_S', 'INSEE_S' or 'ESTAT_S' instead of 'ECB' etc.
+  These alternative agency profiles prompt pandaSDMX to execute data queries for structure-specific data sets.
+  For all other queries they behave exactly as their siblings. 
+  See a code example in chapter 5 of the docs.
+* raise ValueError when user attempts to request a resource other than data
+  from an agency delivering data in SCMX-JSON format only (OECD and ABS).
+* Update INSEE profile
+* handle empty series properly
+* data2pd writer: the code for Series index generation was rewritten from scratch to make
+  better use of pandas' time series functionality. However, some data sets, in particular from INSEE, which
+  come with bimonthly or semestrial frequencies cannot be rendered as PeriodIndex. Pass
+  ``parse_time=False`` to the .write method to prevent errors.
+  
 
 v0.7.0 (2017-06-10)
 ----------------------------
@@ -19,7 +74,7 @@ v0.7.0 (2017-06-10)
 * new feature: load metadata on data providers from json file; allow the user to
   add new agencies on the fly by specifying an appropriate
   JSON file using the :meth:`pandasdmx.api.Request.load_agency_profile`.
-* new :method:`pandasdmx.api.Request.preview_data` providing a 
+* new :meth:`pandasdmx.api.Request.preview_data` providing a 
   powerful fine-grain key validation algorithm by downloading all series-keys of a dataset and 
   exposing them as a pandas DataFrame which is then mapped to the cartesian product 
   of the given dimension values. Works only with
@@ -49,7 +104,7 @@ Bug fixes
   is now properly downloaded 
 * The data writer tries to gleen a frequency value for a time series from its attributes.
   This is helpful when exporting data sets, e.g., from INSEE 
-  ('Issue 41 <https://github.com/dr-leo/pandaSDMX/issues/41>`_).
+  (`Issue 41 <https://github.com/dr-leo/pandaSDMX/issues/41>`_).
  
 Known issues
 :::::::::::::::

@@ -22,6 +22,7 @@ from pandasdmx.model import (
     Dimension,
     InternationalString,
     Item,
+    ProvisionAgreement,
     )
 from pandasdmx.util import BaseModel, DictLike
 from requests import Response
@@ -69,6 +70,7 @@ class StructureMessage(Message):
     dataflow: DictLike[str, DataflowDefinition] = DictLike()
     structure: DictLike[str, DataStructureDefinition] = DictLike()
     organisation_scheme: DictLike[str, AgencyScheme] = DictLike()
+    provisionagreement: DictLike[str, ProvisionAgreement] = DictLike()
 
 
 class DataMessage(Message):

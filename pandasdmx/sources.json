@@ -24,7 +24,8 @@
     "supports": {
       "categoryscheme": false,
       "codelist": false,
-      "conceptscheme": false
+      "conceptscheme": false,
+      "provisionagreement": false
     }
   },
   {
@@ -44,7 +45,10 @@
     "id": "INEGI",
     "url": "http://sdmx.snieg.mx/service/rest",
     "name": "Instituto Nacional de Estadística y Geografía (MX)",
-    "supports": {"structure-specific data": true}
+    "supports": {
+      "provisionagreement": false,
+      "structure-specific data": true
+    }
   },
   {
     "id": "INSEE",
@@ -54,13 +58,17 @@
         "data": {
             "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
         }
-    }
+    },
+    "supports": {"provisionagreement": false}
   },
   {
     "id": "ISTAT",
     "name": "Instituto Nationale di Statistica (IT)",
     "url": "http://sdmx.istat.it/SDMXWS/rest",
-    "supports": {"structure-specific data": true}
+    "supports": {
+      "provisionagreement": false,
+      "structure-specific data": true
+    }
   },
   {
     "id": "OECD",
@@ -97,11 +105,12 @@
     "id": "UNSD",
     "name": "United Nations Statistics Division",
     "url": "http://data.un.org/WS/rest",
-    "supports": {"preview": true}
+    "supports": {"preview": true, "provisionagreement": false}
   },
   {
     "id": "WB",
     "name": "World Bank World Integrated Trade Solution",
-    "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest"
+    "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
+    "supports": {"provisionagreement": false}
   }
 ]

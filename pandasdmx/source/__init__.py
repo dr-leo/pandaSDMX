@@ -23,6 +23,7 @@ endpoints = [
     'data',
     'dataflow',
     'datastructure',
+    'provisionagreement',
     ]
 
 features = endpoints + ['preview']

@@ -66,6 +66,7 @@ from pandasdmx.model import (  # noqa: F401
     KeyValue,
     Observation,
     PrimaryMeasure,
+    ProvisionAgreement,
     Representation,
     SeriesKey,
     TimeDimension,
@@ -182,6 +183,7 @@ _parse_class = {
         'key': DataKey,  # for DataKeySet
         },
     'ref': {  # Keys here are concatenated 'package' and 'class' attributes
+        'base.DataProvider': DataProvider,
         'categoryscheme.Category': Category,
         'codelist.Codelist': Codelist,
         'conceptscheme.Concept': Concept,
@@ -191,6 +193,7 @@ _parse_class = {
     'ref_parent': {
         Category: CategoryScheme,
         Concept: ConceptScheme,
+        DataProvider: DataProviderScheme,
         },
     'orgscheme': {
         'agencyscheme': AgencyScheme,
@@ -216,6 +219,7 @@ _parse_skip = [
     'DataStructureComponents',
     'Footer',
     'OrganisationSchemes',
+    'ProvisionAgreements',
     # Tag names that only ever contain references
     'DimensionReference',
     'Source',
@@ -320,6 +324,7 @@ class Reader(BaseReader):
                     ('category_scheme', 'categoryschemes'),
                     ('concept_scheme', 'concepts'),
                     ('organisation_scheme', 'organisationschemes'),
+                    ('provisionagreement', 'provisionagreements'),
                     ):
                 for obj in structures.pop(name, []):
                     getattr(msg, attr)[obj.id] = obj
@@ -346,9 +351,9 @@ class Reader(BaseReader):
 
                 assert not missing_cs
 
-            assert len(structures) == 0
+            assert len(structures) == 0, structures
 
-        assert len(values) == 0
+        assert len(values) == 0, values
         return msg
 
     def _collect(self, group, elem):
@@ -455,8 +460,8 @@ class Reader(BaseReader):
 
         if key not in self._index:
             if not isclass(cls):
-                raise TypeError("cannot instantiate from string class name: %s"
-                                % cls)
+                raise TypeError('cannot instantiate from string class name: {}'
+                                .format(cls))
             # Create a new object. A reference to a MaintainableArtefact
             # without it being fully defined is necessarily external
             assert kwargs.pop('is_external_reference', True)
@@ -591,7 +596,7 @@ class Reader(BaseReader):
             # No parent object
             obj = self._maintained(cls, id=ref_id)
 
-        assert len(elem.attrib) == 0
+        assert len(elem.attrib) == 0, elem.attrib
         return obj
 
     # Parsers for elements appearing in data messages
@@ -1035,6 +1040,9 @@ class Reader(BaseReader):
                          keys=values.pop('key'))
         assert len(values) == 0
         return dks
+
+    def parse_provisionagreement(self, elem):
+        return ProvisionAgreement(**self._parse(elem))
 
     # Parsers for elements appearing in error messages
 

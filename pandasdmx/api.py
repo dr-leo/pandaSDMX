@@ -8,10 +8,8 @@ service guidelines (only the chapters on REST services are relevant as
 pandasdmx does not support the SOAP interface).
 
 """
-from functools import partial, reduce
-from itertools import product
+from functools import partial
 import logging
-from operator import and_
 from pathlib import Path
 import sys
 from warnings import warn
@@ -190,8 +188,9 @@ class Request(object):
                 resource_id = resource.id
 
         if resource_type and not self.source.supports[resource_type]:
-            raise ValueError("{} does not support the '{}' API endpoint"
-                             .format(self.source.id, resource_type))
+            raise NotImplementedError(
+                '{} does not support the {!r} API endpoint'
+                .format(self.source.id, resource_type))
 
         force = kwargs.pop('force', False)
         try:
@@ -357,10 +356,16 @@ class Request(object):
 
         try:
             response = self.session.send(req)
+            response.raise_for_status()
         except requests.exceptions.ConnectionError as e:
             raise e from None
-
-        response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 501:
+                # Convert a 501 response to a Python NotImplementedError
+                raise NotImplementedError(
+                    '{!r} endpoint at {}'.format(resource_type, e.request.url))
+            else:
+                raise
 
         # Maybe copy the response to file as it's received
         arg = [tofile] if tofile else []

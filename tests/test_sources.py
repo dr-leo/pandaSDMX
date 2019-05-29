@@ -4,46 +4,53 @@ HTTP responses from the data sources are cached in tests/data/cache.
 To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
-from warnings import warn
+import logging
 
 from pandasdmx.api import Request
 from pandasdmx.exceptions import HTTPError, ParseError
-from pandasdmx.source import sources
+from pandasdmx.source import endpoints, sources
 import pytest
 import requests_mock
 
 from . import test_data_path
 
 
-structure_endpoints = [
-    'categoryscheme',
-    'codelist',
-    'conceptscheme',
-    'dataflow',
-    'datastructure',
-    ]
+log = logging.getLogger(__name__)
+
+
+structure_endpoints = list(filter(lambda ep: ep != 'data', endpoints))
 
 
 def pytest_generate_tests(metafunc):
     """pytest hook for parametrizing tests with 'endpoint' arguments."""
     if 'endpoint' not in metafunc.fixturenames:
-        return
+        return  # Don't need to parametrize this metafunc
 
     endpoints = []
 
+    # SDMX-JSON sources do not support structure queries
+    source = sources[metafunc.cls.source_id]
+    if source.data_content_type == 'JSON':
+        metafunc.parametrize('endpoint', endpoints)
+        return
+
+    # This exception is raised by api.Request._request_from_args
+    # TODO parametrize force=True to query these endpoints anyway; then CI
+    #      XPASS will reveal when data sources change their support for
+    #      endpoints
+    mark_unsupported = pytest.mark.xfail(
+        strict=True,
+        reason='Known non-supported endpoint.',
+        raises=NotImplementedError)
+
     for ep in structure_endpoints:
+        # Accumulate multiple marks; first takes precedence
+        marks = []
+
         # Check if the associated source supports the endpoint
-        source = sources[metafunc.cls.source_id]
         supported = source.supports[ep]
         if not supported:
-            if ep in metafunc.cls.xfail:
-                warn("tests for '{}' mention unsupported endpoint '{}'"
-                     .format(metafunc.cls.source_id, ep))
-            continue
-        elif source.data_content_type == 'JSON':
-            continue
-
-        marks = []
+            marks.append(mark_unsupported)
 
         # Check if the test function's class contains an expected failure
         # for this endpoint
@@ -51,6 +58,10 @@ def pytest_generate_tests(metafunc):
         if exc_class:
             # Mark the test as expected to fail
             marks.append(pytest.mark.xfail(strict=True, raises=exc_class))
+
+            if not supported:
+                log.info("tests for '{}' mention unsupported endpoint '{}'"
+                         .format(metafunc.cls.source_id, ep))
 
         # Tolerate 503 errors
         if metafunc.cls.tolerate_503:
@@ -101,6 +112,10 @@ class TestABS(DataSourceTest):
 
 class TestECB(DataSourceTest):
     source_id = 'ECB'
+    xfail = {
+        # 404 Client Error: Not Found
+        'provisionagreement': HTTPError,
+        }
 
 
 # Data for requests_mock; see TestESTAT.mock()
@@ -213,6 +228,9 @@ class TestINSEE(DataSourceTest):
         # precede the appearance of "foo" itself. Requires a promise pattern/
         # delayed lookup
         'codelist': ParseError,
+
+        # 400 Bad Request
+        'provisionagreement': HTTPError,
         }
 
     @pytest.mark.remote_data
@@ -272,6 +290,7 @@ class TestUNESCO(DataSourceTest):
         'codelist': HTTPError,
         'conceptscheme': HTTPError,
         'dataflow': HTTPError,
+        'provisionagreement': HTTPError,
 
         # Because 'supports_series_keys_only' was set
         # TODO check

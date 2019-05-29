@@ -534,7 +534,10 @@ class Organisation(Item):
 
 
 Agency = Organisation
-DataProvider = Organisation
+
+
+class DataProvider(Organisation):
+    pass
 
 
 # Update forward references to 'Agency'
@@ -1231,4 +1234,8 @@ class QueryDatasource(Datasource):
 
 
 class RESTDatasource(QueryDatasource):
+    pass
+
+
+class ProvisionAgreement(MaintainableArtefact, ConstrainableArtefact):
     pass

@@ -34,7 +34,6 @@ from typing import (
     Any,
     Dict,
     List,
-    NewType,
     Optional,
     Set,
     Union,
@@ -605,26 +604,33 @@ class MemberValue(SelectionValue):
     def __hash__(self):
         return hash(self.value)
 
+    def __eq__(self, other):
+        if isinstance(other, KeyValue):
+            return self.value == other.value
+        else:
+            return self.value == other
+
 
 class MemberSelection(BaseModel):
     included: bool = True
     values_for: Component
     # NB the spec does not say what this feature should be named
-    values: Set[MemberValue]
+    values: Set[MemberValue] = set()
+
+    def __contains__(self, value):
+        """Compare KeyValue to MemberValue."""
+        return any(mv == value for mv in self.values)
 
 
 class CubeRegion(BaseModel):
     included: bool = True
     member: Dict['Dimension', MemberSelection] = {}
 
-    def __contains__(self, v):
-        key, value = v
-        kv = self.key_values
-        if key not in kv.keys():
-            raise KeyError(
-                'Unknown key: {0}. Allowed keys are: {1}'.format(
-                    key, list(kv.keys())))
-        return (value in kv[key]) == self.include
+    def __contains__(self, key):
+        for ms in self.member.values():
+            if key[ms.values_for.id] not in ms:
+                return False
+        return True
 
     def to_query_string(self, structure):
         all_values = []
@@ -641,7 +647,7 @@ class CubeRegion(BaseModel):
 
 
 class ContentConstraint(Constraint):
-    data_content_region: Optional[CubeRegion] = None
+    data_content_region: List[CubeRegion] = []
     content: Set[ConstrainableArtefact] = set()
     # metadata_content_region: MetadataTargetRegion = None
 
@@ -650,17 +656,9 @@ class ContentConstraint(Constraint):
     class Config:
         validate_assignment_exclude = 'data_content_region'
 
-    def __contains__(self, v):
+    def __contains__(self, value):
         if self.data_content_region:
-            result = [v in c for c in self.data_content_region]
-            # Remove all cubes where v passed. The remaining ones indicate
-            # fails.
-            if True in result:
-                result.remove(True)
-            if result == []:
-                return True
-            else:
-                raise ValueError('Key outside cube region(s).', v, result)
+            return any(value in cr for cr in self.data_content_region)
         else:
             raise NotImplementedError(
                 'ContentConstraint does not contain a CubeRegion.')
@@ -668,7 +666,7 @@ class ContentConstraint(Constraint):
     def to_query_string(self, structure):
         try:
             return self.data_content_region.to_query_string(structure)
-        except AttributeError as e:
+        except AttributeError:
             raise NotImplementedError(
                 'ContentConstraint does not contain a CubeRegion.')
 
@@ -735,6 +733,15 @@ class StructureUsage(MaintainableArtefact):
 
 
 class DimensionDescriptor(ComponentList):
+    """Describes a set of dimensions.
+
+    IM: “An ordered set of metadata concepts that, combined, classify a
+    statistical series, and whose values, when combined (the key) in an
+    instance such as a data set, uniquely identify a specific observation.”
+    """
+
+    #: :class:`list` (ordered) of :class:`Dimension`,
+    #: :class:`MeasureDimension`, and/or :class:`TimeDimension`.
     components: List[Union[Dimension, MeasureDimension, TimeDimension]] = []
 
     def order_key(self, key):
@@ -751,16 +758,22 @@ class DimensionDescriptor(ComponentList):
     def from_key(cls, key):
         """Create a new DimensionDescriptor from a *key*.
 
-        For each KeyValue in the *key*:
-        - A new Dimension is created.
-        - A new Codelist is created, containing the KeyValue.value.
+        For each :class:`KeyValue` in the *key*:
+
+        - A new :class:`Dimension` is created.
+        - A new :class:`Codelist` is created, containing the
+          :attr:`KeyValue.value`.
+
+        Parameters
+        ----------
+        key : :class:`Key` or :class:`GroupKey` or :class:`SeriesKey`
         """
         dd = cls()
         for id, kv in key.values.items():
-            d = Dimension(id=id)
             cl = Codelist(id=id)
-            d.local_representation.enumerated = cl
             cl.items.append(Code(id=kv.value))
+            d = Dimension(id=id,
+                          local_representation=Representation(enumerated=cl))
             dd.components.append(d)
         return dd
 
@@ -774,20 +787,56 @@ AttributeRelationship.update_forward_refs()
 
 
 class DataStructureDefinition(Structure, ConstrainableArtefact):
+    """Defines a data structure. Referred to as “DSD”."""
+    #: A :class:`AttributeDescriptor` that describes the attributes of the
+    #: data structure.
     attributes: AttributeDescriptor = AttributeDescriptor()
+
+    #: A :class:`DimensionDescriptor` that describes the dimensions of the
+    #: data structure.
     dimensions: DimensionDescriptor = DimensionDescriptor()
+
     measures: MeasureDescriptor = None
     group_dimensions: GroupDimensionDescriptor = None
 
     # Convenience methods
     def attribute(self, id, **kwargs):
+        """Call :meth:`ComponentList.get` on :attr:`attributes`."""
         return self.attributes.get(id, **kwargs)
 
     def dimension(self, id, **kwargs):
+        """Call :meth:`ComponentList.get` on :attr:`dimensions`."""
         return self.dimensions.get(id, **kwargs)
 
     def make_constraint(self, key):
-        """Return a ContentConstraint for a dict of *keys*."""
+        """Return a constraint for *key*.
+
+        *key* is a :class:`dict` wherein:
+
+        - keys are :class:`str` ids of Dimensions appearing in this
+          DSD's :attr:`dimensions`, and
+        - values are '+'-delimited :class:`str` containing allowable values.
+
+        For example::
+
+            cc2 = dsd.make_constraint({'foo': 'bar+baz', 'qux': 'q1+q2+q3'})
+
+        ``cc2`` includes any key where the 'foo' dimension is 'bar' *or* 'baz',
+        *and* the 'qux' dimension is one of 'q1', 'q2', or 'q3'.
+
+        Returns
+        -------
+        ContentConstraint
+            A constraint with one :class:`CubeRegion` in its
+            :attr:`data_content_region <ContentConstraint.data_content_region>`
+            , including only the values appearing in *keys*.
+
+        Raises
+        ------
+        ValueError
+            if *key* contains a dimension IDs not appearing in
+            :attr:`dimensions`.
+        """
         # Make a copy to avoid pop()'ing off the object in the calling scope
         key = key.copy()
 
@@ -805,17 +854,26 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
                                                  values_for=dim,
                                                  values=mvs)
 
-        assert len(key) == 0
+        if len(key):
+            raise ValueError('Dimensions {!r} not in {!r}'
+                             .format(list(key.keys()), self.dimensions))
 
-        return ContentConstraint(data_content_region=cr,
+        return ContentConstraint(
+            data_content_region=[cr],
             role=ConstraintRole(role=ConstraintRoleType.allowable))
 
     @classmethod
     def from_keys(cls, keys):
-        """Create a new DataStructureDefinition from some *keys*.
+        """Return a new DSD given some *keys*.
 
-        The DSD.dimensions refers to a set of Concepts and Codelists, each
-        containing all the values observed across *keys* for that dimension.
+        The DSD's :attr:`dimensions` refers to a set of new :class:`Concepts
+        <Concept>` and :class:`Codelists <Codelist>`, created to represent all
+        the values observed across *keys* for each dimension.
+
+        Parameters
+        ----------
+        keys : iterable of :class:`Key`
+            or of subclasses such as :class:`SeriesKey` or :class:`GroupKey`.
         """
         iter_keys = iter(keys)
         dd = DimensionDescriptor.from_key(next(iter_keys))
@@ -833,12 +891,18 @@ class DataflowDefinition(StructureUsage, ConstrainableArtefact):
 # 5.4: Data Set
 
 class KeyValue(BaseModel):
+    """One value in a multi-dimensional :class:`Key`."""
     id: str
+
+    #: The actual value.
     value: Any
 
     def __eq__(self, other):
         """Compare the value to a Python built-in type, e.g. str."""
-        return self.value == other
+        if isinstance(other, (KeyValue, MemberValue)):
+            return self.value == other.value
+        else:
+            return self.value == other
 
     def __str__(self):
         return '{0.id}={0.value}'.format(self)
@@ -1054,7 +1118,6 @@ class Observation(BaseModel):
     #: :mod:`pandaSDMX` extension not in the IM.
     group_keys: Set[GroupKey] = set()
 
-
     @property
     def attrib(self):
         """Return a view of combined observation, series & group attributes."""
@@ -1131,7 +1194,8 @@ class DataSet(AnnotableArtefact):
                 # Check that the Observation is not associated with a different
                 # SeriesKey
                 assert obs.series_key is series_key, \
-                    (obs.series_key, id(obs.series_key), series_key, id(series_key))
+                    (obs.series_key, id(obs.series_key), series_key,
+                     id(series_key))
                 # Store a reference to the observation
                 self.series[series_key].append(obs)
 

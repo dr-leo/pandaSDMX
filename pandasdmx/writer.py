@@ -8,7 +8,7 @@ from pandasdmx.model import (
     DataflowDefinition,
     DataStructureDefinition,
     Dimension,
-    DimensionDescriptor,
+    # DimensionDescriptor,
     CategoryScheme,
     Codelist,
     Component,
@@ -16,6 +16,7 @@ from pandasdmx.model import (
     ItemScheme,
     NameableArtefact,
     Observation,
+    SeriesKey,
     TimeDimension,
     )
 from pandasdmx.util import DictLike
@@ -64,6 +65,8 @@ def write_list(obj, *args, **kwargs):
     """List of objects."""
     if isinstance(obj[0], Observation):
         return write_dataset(obj, *args, **kwargs)
+    elif isinstance(obj[0], SeriesKey):
+        return write_serieskeys(obj, *args, **kwargs)
     else:
         return [write(item, *args, **kwargs) for item in obj]
 
@@ -287,3 +290,11 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
 
 def write_nameableartefact(obj):
     return str(obj.name)
+
+
+def write_serieskeys(obj):
+    result = []
+    for sk in obj:
+        result.append({dim: kv.value for dim, kv in sk.order().values.items()})
+    # TODO perhaps return as a pd.MultiIndex if that is more useful
+    return pd.DataFrame(result)

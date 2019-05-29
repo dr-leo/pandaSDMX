@@ -109,21 +109,20 @@ class Request(object):
         self.session.timeout = value
 
     def series_keys(self, flow_id, use_cache=True):
-        """Get an empty dataset with all possible series keys.
+        """Return all :class:`pandasdmx.model.SeriesKey` for *flow_id*.
 
         Returns
         -------
-        :class:`pd.DataFrame`.
-            Each column represents a dimension, each row a series key of
-            datasets of the given dataflow.
+        list
         """
         # download an empty dataset with all available series keys
-        resp = self.data(flow_id, params={'detail': 'serieskeysonly'},
-                         use_cache=use_cache)
+        return self.data(flow_id, params={'detail': 'serieskeysonly'},
+                         use_cache=use_cache) \
+                   .data[0] \
+                   .series \
+                   .keys()
 
-        return DataStructureDefinition.from_keys(resp.data[0].series.keys())
-
-    def _make_key(self, resource_type, resource_id, key):
+    def _make_key(self, resource_type, resource_id, key, keys=[]):
         """Validate *key* if possible.
 
         If key is a dict, validate items against the DSD and construct the key
@@ -145,7 +144,8 @@ class Request(object):
                       .structure[dsd_id]
         else:
             # Construct a DSD from the keys
-            dsd = self.series_keys(resource_id)
+            dsd = DataStructureDefinition.from_keys(
+                self.series_keys(resource_id))
 
         # Make a ContentConstraint from the key
         cc = dsd.make_constraint(key)
@@ -254,8 +254,7 @@ class Request(object):
 
     def get(self, resource_type=None, resource_id=None, tofile=None,
             get_footer_url=(30, 3), use_cache=False, dry_run=False, **kwargs):
-        """Get SDMX data or metadata and return it as a
-        :class:`pandasdmx.Message` instance.
+        """Retrieve SDMX data or metadata.
 
         get() can only construct URLs for the SDMX service set for this
         instance. Hence, you have to instantiate a
@@ -307,11 +306,11 @@ class Request(object):
             File path to write the received SDMX file on the fly. This is
             useful if you want to load data offline using `open_file()` or if
             you want to open an SDMX file in an XML editor.
-        url : str
+        url : str, optional
             URL of the resource to download.
             If given, any other arguments such as `resource_type` or
-            `resource_id` are ignored. Default is None.
-        get_footer_url : (int, int)
+            `resource_id` are ignored.
+        get_footer_url : (int, int), optional
             Tuple of the form (seconds, number_of_attempts). Determines the
             behavior in case the received SDMX message has a footer where
             one of its lines is a valid URL. ``get_footer_url`` defines how
@@ -323,7 +322,7 @@ class Request(object):
             original message containing the footer is dismissed and the
             dataset is returned. The ``tofile`` argument is propagated.
             Note that the written file may be a zip archive. pandaSDMX
-            handles zip archives since version 0.2.1. Defaults to (30, 3).
+            handles zip archives since version 0.2.1.
         memcache : str
             If given, return Response instance if already in
             self.cache(dict), otherwise download resource and cache
@@ -331,7 +330,7 @@ class Request(object):
 
         Returns
         -------
-        :class:`pandasdmx.message.Message` or subclass
+        :class:`pandasdmx.message.Message`
             The requested SDMX message.
 
         """
@@ -399,77 +398,52 @@ class Request(object):
 
         return msg
 
-    def preview_data(self, flow_id, key=None, count=True, total=True):
+    def preview_data(self, flow_id, key={}):
         """Return a preview of data.
 
-        Get keys or number of series for a prospective dataset query allowing
-        for keys with multiple values per dimension. It downloads the complete
-        list of series keys for a dataflow rather than using constraints and
-        DSD. This feature is, however, not supported by all data providers.
-        ECB and UNSD are known to work.
+        For the Dataflow *flow_id*, return all series keys matching *key*.
+        preview_data() uses a feature supported by some data providers that
+        returns :class:`SeriesKeys <pandasdmx.model.SeriesKey>` without the
+        corresponding :class:`Observations <pandasdmx.model.Observation>`.
+
+        To count the number of series::
+
+            keys = sdmx.Request('PROVIDER').preview_data('flow')
+            len(keys)
+
+        To get a :mod:`pandas` object containing the key values::
+
+            keys_df = sdmx.to_pandas(keys)
 
         Parameters
         ----------
         flow_id : str
-            :attr:`Dataflow.id`
+            Dataflow to preview.
         key : dict, optional
-            Mapping dimension names to values or lists of values. Must have
-            been validated before. It is not checked if key values are actually
-            valid dimension names and values.
-        count : bool, optional
-            If :obj:`True` (default), return the number of series of the
-            dataset designated by `flow_id` and `key`. If :obj:`False`,the
-            actual keys are returned as a :class:`pd.DataFrame` or
-            :class:`dict` of dataframes, depending on the value of `total`.
-        total : bool, optional
-            If True (default), return the aggregate number of series or a
-            single dataframe (depending on the value of `count`). If False,
-            return a dict mapping keys to dataframes of series keys. E.g., if
-            ``key={'COUNTRY': 'IT+CA+AU'}``, the dict will have 3 items
-            describing the series keys for each country respectively. If
-            `count` is True, dict values will be :class:`int` rather than
-            pd.DataFrame.
+            Mapping of *dimension* to *values*, where *values* may be a
+            '+'-delimited list of values. If given, only SeriesKeys that match
+            *key* are returned. If not given, preview_data is equivalent to
+            ``list(req.series_keys(flow_id))``.
+
+        Returns
+        -------
+        list of :class:`SeriesKey <pandasdmx.model.SeriesKey>`
         """
+        # Retrieve the series keys
         all_keys = self.series_keys(flow_id)
-        # Handle the special case that no key is provided
-        if not key:
-            if count:
-                return all_keys.shape[0]
-            else:
-                return all_keys
 
-        # So there is a key specifying at least one dimension value.
-        # Wrap single values in 1-elem list for uniform treatment
-        key_l = self.prepare_key(key)
-        # order dim_names that are present in the key
-        dim_names = [k for k in all_keys if k in key]
-        # Drop columns that are not in the key
-        key_df = all_keys.loc[:, dim_names]
-        if total:
-            # DataFrame with matching series keys
-            bool_series = reduce(
-                and_, (key_df.isin(key_l)[col] for col in dim_names))
-            if count:
-                return bool_series.value_counts()[True]
-            else:
-                return all_keys[bool_series]
+        if len(key):
+            # Construct a DSD from the keys
+            dsd = DataStructureDefinition.from_keys(all_keys)
+
+            # Make a ContentConstraint from *key*
+            cc = dsd.make_constraint(key)
+
+            # Filter the keys
+            return [k for k in all_keys if k in cc]
         else:
-            # Dict of value combinations as dict keys
-            key_product = product(*(key_l[k] for k in dim_names))
-            # Replace key tuples by namedtuples
-            PartialKey = namedtuple_factory('PartialKey', dim_names)
-
-            matches = {PartialKey(k): reduce(and_,
-                       (key_df.isin({k1: [v1] for k1, v1 in zip(dim_names, k)}
-                                    )[col] for col in dim_names))
-                       for k in key_product}
-
-            if not count:
-                # dict mapping each key to DataFrame with selected key-set
-                return {k: all_keys[v] for k, v in matches.items()}
-            else:
-                # Number of series per key
-                return {k: v.value_counts()[True] for k, v in matches.items()}
+            # No key is provided
+            return list(all_keys)
 
 
 def open_file(filename_or_obj, format=None):

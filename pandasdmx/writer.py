@@ -216,7 +216,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
 
     # Iterate on observations
     result = {}
-    for observation in getattr(source, 'obs', source):
+    for observation in getattr(obj, 'obs', obj):
         # Check that the Observation is within the constraint, if any
         key = observation.key.order()
         if constraint and key not in constraint:

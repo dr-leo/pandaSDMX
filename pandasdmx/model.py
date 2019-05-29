@@ -38,6 +38,7 @@ from typing import (
     Set,
     Union,
     )
+from warnings import warn
 
 from pandasdmx.util import (
     BaseModel,
@@ -667,10 +668,15 @@ class ContentConstraint(Constraint):
                 'ContentConstraint does not contain a CubeRegion.')
 
     def to_query_string(self, structure):
+        cr_count = len(self.data_content_region)
         try:
-            return self.data_content_region.to_query_string(structure)
-        except AttributeError:
-            raise NotImplementedError(
+            if cr_count > 1:
+                warn(f'to_query_string() using first of {cr_count} '
+                     'CubeRegions.')
+
+            return self.data_content_region[0].to_query_string(structure)
+        except IndexError:
+            raise RuntimeError(
                 'ContentConstraint does not contain a CubeRegion.')
 
 

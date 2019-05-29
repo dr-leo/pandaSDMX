@@ -8,7 +8,7 @@ import logging
 
 from pandasdmx.api import Request
 from pandasdmx.exceptions import HTTPError, ParseError
-from pandasdmx.source import endpoints, sources
+from pandasdmx.source import DataContentType, endpoints, sources
 import pytest
 import requests_mock
 
@@ -30,7 +30,7 @@ def pytest_generate_tests(metafunc):
 
     # SDMX-JSON sources do not support structure queries
     source = sources[metafunc.cls.source_id]
-    if source.data_content_type == 'JSON':
+    if source.data_content_type == DataContentType.JSON:
         metafunc.parametrize('endpoint', endpoints)
         return
 

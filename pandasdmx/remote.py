@@ -7,7 +7,7 @@ from requests.models import ITER_CHUNK_SIZE
 
 try:
     from requests_cache import CachedSession as MaybeCachedSession
-except ImportError:
+except ImportError:  # pragma: no cover
     warn('optional dependency requests_cache is not installed; cache options '
          'to Session() have no effect', RuntimeWarning)
     from requests import Session as MaybeCachedSession

@@ -11,22 +11,15 @@ pandasdmx does not support the SOAP interface).
 from functools import partial
 import logging
 from pathlib import Path
-import sys
 from warnings import warn
 
 from pandasdmx import remote
 from pandasdmx.model import DataStructureDefinition, IdentifiableArtefact
 from pandasdmx.reader import get_reader_for_content_type
-from pandasdmx.source import list_sources, sources
+from pandasdmx.source import NoSource, list_sources, sources
 import requests
 
 logger = logging.getLogger(__name__)
-
-
-if sys.version_info[0] == 3:
-    str_type = str,
-else:
-    str_type = basestring,  # noqa: F821
 
 
 class SDMXException(Exception):
@@ -85,7 +78,7 @@ class Request(object):
             self._make_get_wrappers()
 
         try:
-            self.source = source if source is None else sources[source.upper()]
+            self.source = sources[source.upper()] if source else NoSource
         except KeyError:
             raise ValueError('source must be None or one of: %s' %
                              ' '.join(list_sources()))
@@ -175,11 +168,14 @@ class Request(object):
         resource_type = kwargs.pop('resource_type', None)
         resource_id = kwargs.pop('resource_id', None)
         if resource:
-            assert isinstance(IdentifiableArtefact, resource)
+            assert isinstance(resource, IdentifiableArtefact)
+            resource_cls = resource.__class__
             if resource_type:
-                assert resource_type == resource.__class__.name
+                assert resource_type == resource_cls.__name__
             else:
-                resource_type = resource.__class__.name
+                resource_type = {
+                    DataStructureDefinition: 'datastructure',
+                    }[resource_cls]
             if resource_id:
                 assert resource_id == resource.id, ValueError(
                     "mismatch between resource_id=%s and id '%s' of %r" %

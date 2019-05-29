@@ -56,7 +56,8 @@ class Source(BaseModel):
         for f in features:
             if f in self.supports:
                 continue
-            self.supports[f] = (f not in endpoints or
+            self.supports[f] = (
+                f not in endpoints or
                 (self.data_content_type == DataContentType.XML))
 
     # Hooks
@@ -80,6 +81,15 @@ class Source(BaseModel):
             return value
         else:
             return DataContentType[value]
+
+
+class _NoSource(Source):
+    id = ''
+    url = ''
+    name = ''
+
+
+NoSource = _NoSource()
 
 
 def add_source(info, id=None, override=False, **kwargs):

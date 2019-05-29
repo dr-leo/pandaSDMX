@@ -35,7 +35,7 @@ def test_request_get():
     req.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
              params={'startPeriod': '2007'})
 
-    with pytest.warns(UserWarning, 'agency argument is redundant'):
+    with pytest.warns(UserWarning, match='agency argument is redundant'):
         req.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
                  params={'startPeriod': '2007'},
                  agency='ESTAT')

@@ -8,7 +8,8 @@ import logging
 
 from pandasdmx.api import Request
 from pandasdmx.exceptions import HTTPError, ParseError
-from pandasdmx.source import DataContentType, endpoints, sources
+from pandasdmx.source import DataContentType, sources
+from pandasdmx.util import Resource
 import pytest
 import requests_mock
 
@@ -18,7 +19,7 @@ from . import test_data_path
 log = logging.getLogger(__name__)
 
 
-structure_endpoints = list(filter(lambda ep: ep != 'data', endpoints))
+structure_endpoints = list(filter(lambda r: r != Resource.data, Resource))
 
 
 def pytest_generate_tests(metafunc):
@@ -54,14 +55,14 @@ def pytest_generate_tests(metafunc):
 
         # Check if the test function's class contains an expected failure
         # for this endpoint
-        exc_class = metafunc.cls.xfail.get(ep, None)
+        exc_class = metafunc.cls.xfail.get(ep.name, None)
         if exc_class:
             # Mark the test as expected to fail
             marks.append(pytest.mark.xfail(strict=True, raises=exc_class))
 
             if not supported:
-                log.info("tests for '{}' mention unsupported endpoint '{}'"
-                         .format(metafunc.cls.source_id, ep))
+                log.info(f'tests for {metafunc.cls.source_id!r} mention '
+                         f'unsupported endpoint {ep.name!r}')
 
         # Tolerate 503 errors
         if metafunc.cls.tolerate_503:

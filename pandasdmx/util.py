@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import (
     KT,
     VT,
@@ -16,9 +17,27 @@ except ImportError:
 
 
 import pydantic
-from pydantic import DictError, Extra, ValidationError, validator
+from pydantic import DictError, Extra, ValidationError
 from pydantic.class_validators import make_generic_validator
 from pydantic.utils import change_exception
+
+
+class Resource(str, Enum):
+    categoryscheme = 'categoryscheme'
+    codelist = 'codelist'
+    conceptscheme = 'conceptscheme'
+    data = 'data'
+    dataflow = 'dataflow'
+    datastructure = 'datastructure'
+    provisionagreement = 'provisionagreement'
+
+    @classmethod
+    def _missing_(cls, value):
+        return cls._member_map_[value.__class__.__name__.lower()]
+
+    @classmethod
+    def describe(cls):
+        return '{' + ' '.join(v.name for v in cls._member_map_.values()) + '}'
 
 
 class BaseModel(pydantic.BaseModel):

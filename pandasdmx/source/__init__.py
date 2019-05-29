@@ -6,27 +6,16 @@ import json
 from typing import (
     Any,
     Dict,
+    Union,
     )
 
 from pkg_resources import resource_stream
 
-from pandasdmx.util import BaseModel
+from pandasdmx.util import BaseModel, Resource
 from pydantic import validator
 
 
 sources = {}
-
-endpoints = [
-    'categoryscheme',
-    'codelist',
-    'conceptscheme',
-    'data',
-    'dataflow',
-    'datastructure',
-    'provisionagreement',
-    ]
-
-features = endpoints + ['preview']
 
 DataContentType = Enum('DataContentType', 'XML JSON')
 
@@ -45,7 +34,7 @@ class Source(BaseModel):
     name: str
     headers: Dict[str, Any] = {}
     data_content_type: DataContentType = DataContentType.XML
-    supports: Dict[str, bool] = {}
+    supports: Dict[Union[str, Resource], bool] = {}
 
     @classmethod
     def from_dict(cls, info):
@@ -53,12 +42,11 @@ class Source(BaseModel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        for f in features:
-            if f in self.supports:
-                continue
-            self.supports[f] = (
-                f not in endpoints or
-                (self.data_content_type == DataContentType.XML))
+
+        # Set default supported features
+        for feature in list(Resource) + ['preview']:
+            self.supports.setdefault(
+                feature, self.data_content_type == DataContentType.XML)
 
     # Hooks
     def handle_response(self, response, content):

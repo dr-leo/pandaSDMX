@@ -14,29 +14,13 @@ from pathlib import Path
 from warnings import warn
 
 from pandasdmx import remote
-from pandasdmx.model import DataStructureDefinition, IdentifiableArtefact
-from pandasdmx.reader import get_reader_for_content_type
-from pandasdmx.source import NoSource, list_sources, sources
+from .model import DataStructureDefinition, IdentifiableArtefact
+from .reader import get_reader_for_content_type
+from .source import NoSource, list_sources, sources
+from .util import Resource
 import requests
 
 logger = logging.getLogger(__name__)
-
-
-class SDMXException(Exception):
-    pass
-
-
-class ResourceGetter(object):
-    '''
-    Descriptor to wrap Request.get vor convenient calls
-    without specifying the resource as arg.
-    '''
-
-    def __init__(self, resource_type):
-        self.resource_type = resource_type
-
-    def __get__(self, inst, cls):
-        return partial(inst.get, self.resource_type)
 
 
 class Request(object):
@@ -58,13 +42,6 @@ class Request(object):
 
     """
     cache = {}
-    _resources = ['dataflow', 'datastructure', 'data', 'categoryscheme',
-                  'codelist', 'conceptscheme', 'contentconstraint']
-
-    @classmethod
-    def _make_get_wrappers(cls):
-        for r in cls._resources:
-            setattr(cls, r, ResourceGetter(r))
 
     @classmethod
     def url(cls, url, **kwargs):
@@ -73,10 +50,6 @@ class Request(object):
 
     def __init__(self, source=None, log_level=None, **session_opts):
         """Constructor."""
-        # If needed, generate wrapper properties for get method
-        if not hasattr(self, 'data'):
-            self._make_get_wrappers()
-
         try:
             self.source = sources[source.upper()] if source else NoSource
         except KeyError:
@@ -87,6 +60,10 @@ class Request(object):
 
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)
+
+    def __getattr__(self, name):
+        """Convenience methods."""
+        return partial(self.get, Resource[name])
 
     def clear_cache(self):
         self.cache.clear()
@@ -120,11 +97,11 @@ class Request(object):
         string which becomes part of the URL. Otherwise, do nothing as key must
         be a str confirming to the REST API spec.
         """
-        if not (resource_type == 'data' and isinstance(key, dict)):
+        if not (resource_type == Resource.data and isinstance(key, dict)):
             return key
 
         # Select validation method based on agency capabilities
-        if self.source.supports['datastructure']:
+        if self.source.supports[Resource.datastructure]:
             # Retrieve the DataflowDefinition
             df = self.get('dataflow', resource_id, use_cache=True) \
                      .dataflow[resource_id]
@@ -158,57 +135,51 @@ class Request(object):
 
         # Base URL
         direct_url = kwargs.pop('url', None)
-        if not direct_url:
-            url_parts = [self.source.url]
-        else:
-            url_parts = [direct_url]
+        url_parts = [direct_url] if direct_url else [self.source.url]
 
         # Resource arguments
         resource = kwargs.pop('resource', None)
         resource_type = kwargs.pop('resource_type', None)
         resource_id = kwargs.pop('resource_id', None)
-        if resource:
-            assert isinstance(resource, IdentifiableArtefact)
-            resource_cls = resource.__class__
+
+        try:
             if resource_type:
-                assert resource_type == resource_cls.__name__
+                resource_type = Resource[resource_type]
+        except KeyError:
+            raise ValueError(f'resource_type ({resource_type!r}) must be in '
+                             + Resource.describe())
+
+        if resource:
+            # Resource object is given
+            assert isinstance(resource, IdentifiableArtefact)
+
+            # Class of the object
+            if resource_type:
+                assert resource_type == Resource[resource]
             else:
-                resource_type = {
-                    DataStructureDefinition: 'datastructure',
-                    }[resource_cls]
+                resource_type = Resource[resource]
             if resource_id:
-                assert resource_id == resource.id, ValueError(
-                    "mismatch between resource_id=%s and id '%s' of %r" %
-                    (resource_id, resource.id, resource))
+                assert resource_id == resource.id, (
+                    f'mismatch between resource_id={resource_id!r} and '
+                    f'resource={resource!r}')
             else:
                 resource_id = resource.id
 
-        if resource_type and not self.source.supports[resource_type]:
-            raise NotImplementedError(
-                '{} does not support the {!r} API endpoint'
-                .format(self.source.id, resource_type))
-
         force = kwargs.pop('force', False)
-        try:
-            supported = direct_url or self.source.supports[resource_type]
-        except KeyError:
-            raise ValueError("resource_type ('%s') must be in %r" %
-                             (resource_type, self._resources))
-        if not (force or supported):
-            raise NotImplementedError("%s does not support %s queries; try "
-                                      "force=True" % (self.source.id,
-                                                      resource_type))
+        if not (force or direct_url or self.source.supports[resource_type]):
+            raise NotImplementedError(f'{self.source.id} does not support the'
+                                      f'{resource_type!r} API endpoint; '
+                                      'override using force=True')
 
         if not direct_url:
-            url_parts.append(resource_type)
+            url_parts.append(resource_type.name)
 
         # Agency ID to use in the URL
         agency = kwargs.pop('agency', None)
-        if resource_type == 'data':
+        if resource_type == Resource.data:
             # Requests for data do not specific an agency in the URL
             if agency is not None:
-                warn("agency argument is redundant for resource type '{}'"
-                     .format(resource_type))
+                warn(f'agency argument is redundant for {resource_type!r}')
             agency_id = None
         else:
             agency_id = agency if agency else getattr(self.source, 'id', None)
@@ -217,7 +188,8 @@ class Request(object):
             url_parts.extend([agency_id, resource_id])
 
         version = kwargs.pop('version', None)
-        if not version and resource_type != 'data' and not direct_url:
+        if not version and (resource_type != Resource.data
+                            and not direct_url):
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
@@ -231,15 +203,15 @@ class Request(object):
 
         # Parameters: set 'references' to sensible defaults
         if 'references' not in parameters:
-            if resource_type in [
-                    'dataflow', 'datastructure'] and resource_id:
+            if resource_type in [Resource.dataflow, Resource.datastructure] \
+                    and resource_id:
                 parameters['references'] = 'all'
-            elif resource_type == 'categoryscheme':
+            elif resource_type == Resource.categoryscheme:
                 parameters['references'] = 'parentsandsiblings'
 
         # Headers: use headers from agency config if not given by the caller
-        if not headers and self.source:
-            headers = self.source.headers.get(resource_type, {})
+        if not headers and self.source and resource_type:
+            headers = self.source.headers.get(resource_type.name, {})
 
         assert len(kwargs) == 0, ValueError('unrecognized arguments: %r' %
                                             kwargs)

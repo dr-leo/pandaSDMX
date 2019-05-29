@@ -48,7 +48,6 @@ SDMX-JSON
 
 .. automodule:: pandasdmx.writer
    :members:
-   :undoc-members:
 
 
 ``pandasdmx.remote``: Utilities for accessing SDMX REST web services

@@ -22,9 +22,6 @@ from pandasdmx.model import (
 from pandasdmx.util import DictLike
 
 
-__all__ = ['to_pandas']
-
-
 # Class → common write_*() methods
 _alias = {
     DictLike: dict,
@@ -43,21 +40,18 @@ def write(obj, *args, **kwargs):
     """Convert an SDMX *obj* to :mod:`pandas` object(s).
 
     :meth:`write` implements a dispatch pattern according to the type of
-    *obj*. For instance, a :class:`pandasdmx.message.DataSet` object is
-    converted using :meth:`write_dataset`. See the methods named `write_*`
-    for more information on their behaviour.
+    *obj*. For instance, a :class:`pandasdmx.model.DataSet` object is
+    converted using :meth:`write_dataset`. See individual ``write_*`` methods
+    named for more information on their behaviour, including accepted *args*
+    and *kwargs*.
 
     .. todo::
        Support selection of language for conversion of
-       :class:`InternationalString`.
+       :class:`InternationalString <pandasdmx.model.InternationalString>`.
     """
     cls = obj.__class__
     function = 'write_' + _alias.get(cls, cls).__name__.lower()
     return globals()[function](obj, *args, **kwargs)
-
-
-# Simply an alias
-to_pandas = write
 
 
 # Functions for Python containers
@@ -161,35 +155,38 @@ def write_component(obj):
     return str(obj.concept_identity.id)
 
 
-def write_dataset(source=None, attributes='', dtype=np.float64,
+def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
                   fromfreq=False, parse_time=True):
-    """Transform a :class:`pandasdmx.model.DataMessage` instance to a
-    pandas DataFrame or iterator over pandas Series.
+    """Write :class:`DataSet <pandasdmx.model.DataSet>`.
 
     Parameters
     ----------
-    source : :class:`pandasdmx.model.DataSet` or iterable of
-             :class:`pandasdmx.model.Observation`
+    obj : :class:`DataSet <pandasdmx.model.DataSet>` or iterable of \
+          :class:`Observation <pandasdmx.model.Observation>`
     attributes : str
         Types of attributes to return with the data. A string containing
         zero or more of:
 
-        - 'o': attributes attached to each :class`Observation`.
-        - 's': attributes attached to any (0 or 1) :class:`SeriesKey`
-          associated with each Observation.
-        - 'g': attributes attached to any (0 or more) :class:`GroupKey`s
-          associated with each Observation.
-        - 'd': attributes attached to the :class:`DataSet` containing the
-          Observations.
+        - ``'o'``: attributes attached to each :class:`Observation
+          <pandasdmx.model.Observation>` .
+        - ``'s'``: attributes attached to any (0 or 1) :class:`SeriesKey
+          <pandasdmx.model.SeriesKey>` associated with each Observation.
+        - ``'g'``: attributes attached to any (0 or more) :class:`GroupKeys
+          <pandasdmx.model.GroupKey>` associated with each Observation.
+        - ``'d'``: attributes attached to the :class:`DataSet
+          <pandasdmx.model.DataSet>` containing the Observations.
 
-    dtype : str or np.dtype or None
+    dtype : str or :class:`np.dtype` or None
         Datatype for values. If None, do not return the values of a series.
         In this case, `attributes` must not be an empty string so that some
         attribute is returned.
-    fromfreq : bool
+    constraint : :class:`ContentConstraint \
+                 <pandasdmx.model.ContentConstraint>` , optional
+        If given, only Observations included by the *constraint* are returned.
+    fromfreq : bool, optional
         If True, extrapolate time periods from the first item and FREQ
         dimension.
-    parse_time : bool
+    parse_time : bool, optional
         If True (default), try to generate datetime index, provided that
         dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_time`` is
         ignored. If False, always generate index of strings. Set it to
@@ -217,16 +214,22 @@ def write_dataset(source=None, attributes='', dtype=np.float64,
             raise ValueError(
                 "'attributes' must only contain 'o', 's', 'd' or 'g'.")
 
-    # Convert observations
+    # Iterate on observations
     result = {}
     for observation in getattr(source, 'obs', source):
+        # Check that the Observation is within the constraint, if any
+        key = observation.key.order()
+        if constraint and key not in constraint:
+            continue
+
+        # Add value and attributes
         row = {}
         if dtype:
             row['value'] = observation.value
         if attributes:
             row.update(observation.attrib)
-        key = tuple(map(str, observation.key.order().get_values()))
-        result[key] = row
+
+        result[tuple(map(str, key.get_values()))] = row
 
     result = pd.DataFrame.from_dict(result, orient='index')
 

@@ -1,6 +1,6 @@
 from pandasdmx.api import Request, open_file
 from pandasdmx.source import add_source, list_sources
-from pandasdmx.writer import to_pandas
+from pandasdmx.writer import write as to_pandas
 import logging
 
 __all__ = [

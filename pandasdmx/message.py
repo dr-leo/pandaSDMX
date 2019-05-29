@@ -5,8 +5,6 @@ Model (SDMX-IM) spec, but are used in XML and JSON messages.
 """
 from typing import (
     List,
-    Mapping,
-    Optional,
     Text,
     Union,
     )
@@ -26,7 +24,6 @@ from pandasdmx.model import (
     Item,
     )
 from pandasdmx.util import BaseModel, DictLike
-from pydantic import validator
 from requests import Response
 
 

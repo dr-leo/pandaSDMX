@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pytest import raises
 
-from pandasdmx import open_file, to_pandas
+import pandasdmx as sdmx
 
 from . import (
     assert_pd_equal,
@@ -60,21 +60,21 @@ def pytest_generate_tests(metafunc):
 
 
 def test_write_data_arguments():
-    msg = open_file(test_files(kind='data')['argvalues'][0])
+    msg = sdmx.open_file(test_files(kind='data')['argvalues'][0])
 
     # Attributes must be a string
     with raises(TypeError):
-        to_pandas(msg, attributes=2)
+        sdmx.to_pandas(msg, attributes=2)
 
     # Attributes must contain only 'dgso'
     with raises(ValueError):
-        to_pandas(msg, attributes='foobarbaz')
+        sdmx.to_pandas(msg, attributes='foobarbaz')
 
 
 def test_write_data(data_path):
-    msg = open_file(data_path)
+    msg = sdmx.open_file(data_path)
 
-    result = to_pandas(msg)
+    result = sdmx.to_pandas(msg)
 
     expected = expected_data(data_path)
     if expected is not None:
@@ -87,9 +87,9 @@ def test_write_data(data_path):
 
 @pytest.mark.parametrize('path', **test_files(kind='data'))
 def test_write_data_attributes(path):
-    msg = open_file(path)
+    msg = sdmx.open_file(path)
 
-    result = to_pandas(msg, attributes='osgd')
+    result = sdmx.to_pandas(msg, attributes='osgd')
     # TODO incomplete
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
@@ -97,17 +97,17 @@ def test_write_data_attributes(path):
 def test_write_agencyscheme():
     # Convert an agency scheme
     with specimen('ecb_orgscheme.xml') as f:
-        msg = open_file(f)
-        data = to_pandas(msg)
+        msg = sdmx.open_file(f)
+        data = sdmx.to_pandas(msg)
 
     assert data['organisation_scheme']['AGENCIES']['ESTAT'] == 'Eurostat'
 
 
 def test_write_categoryscheme():
     with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
-        msg = open_file(f)
+        msg = sdmx.open_file(f)
         print(msg.category_scheme)
-        data = to_pandas(msg)
+        data = sdmx.to_pandas(msg)
 
     cs = data['category_scheme']['CLASSEMENT_DATAFLOWS']
 
@@ -120,8 +120,8 @@ def test_write_categoryscheme():
 
 def test_write_codelist():
     # Retrieve codelists from a test specimen and convert to pandas
-    dsd_common = open_file(test_data_path / 'common' / 'common.xml')
-    codelists = to_pandas(dsd_common)['codelist']
+    dsd_common = sdmx.open_file(test_data_path / 'common' / 'common.xml')
+    codelists = sdmx.to_pandas(dsd_common)['codelist']
 
     # File contains 5 code lists
     assert len(codelists) == 5
@@ -138,10 +138,10 @@ def test_write_codelist():
 
     # Hierarchical code list
     with specimen('unsd_codelist_partial.xml') as f:
-        msg = open_file(f)
+        msg = sdmx.open_file(f)
 
     # Convert single codelist
-    CL_AREA = to_pandas(msg.codelist['CL_AREA'])
+    CL_AREA = sdmx.to_pandas(msg.codelist['CL_AREA'])
 
     # Hierichical list has a 'parent' column; parent of Africa is the World
     assert CL_AREA.loc['002', 'parent'] == '001'
@@ -155,8 +155,8 @@ def test_write_codelist():
 
 def test_write_conceptscheme():
     with specimen('common.xml') as f:
-        msg = open_file(f)
-        data = to_pandas(msg)
+        msg = sdmx.open_file(f)
+        data = sdmx.to_pandas(msg)
 
     cdc = data['concept_scheme']['CROSS_DOMAIN_CONCEPTS']
     assert cdc.loc['UNIT_MEASURE', 'name'] == 'Unit of Measure'
@@ -165,10 +165,10 @@ def test_write_conceptscheme():
 def test_write_dataflow():
     # Read the INSEE dataflow definition
     with specimen('insee-dataflow') as f:
-        msg = open_file(f)
+        msg = sdmx.open_file(f)
 
     # Convert to pandas
-    result = to_pandas(msg, include='dataflow')
+    result = sdmx.to_pandas(msg, include='dataflow')
 
     # Number of Dataflows described in the file
     assert len(result['dataflow']) == 663
@@ -187,8 +187,39 @@ def test_write_dataflow():
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_structure(path):
-    msg = open_file(path)
+    msg = sdmx.open_file(path)
 
-    to_pandas(msg)
+    sdmx.to_pandas(msg)
 
     # TODO test contents
+
+
+@pytest.mark.remote_data
+def test_write_constraint():
+    """'constraint' argument to writer.write_dataset."""
+    with specimen('generic/ecb_exr_ng_ts.xml') as f:
+        msg = sdmx.open_file(f)
+
+    # Fetch the message's DSD
+    assert msg.structure.is_external_reference
+    # NB the speciment included in tests/data has 'ECB_EXR_NG' as the
+    #    data structure ID; but a query against the web service gives
+    #    'ECB_EXR1' for the same data structure.
+    id = 'ECB_EXR1'
+    dsd = sdmx.Request(msg.structure.maintainer.id) \
+              .get('datastructure', id) \
+              .structure[id]
+
+    # Create a ContentConstraint
+    cc = dsd.make_constraint({'CURRENCY': 'JPY+USD'})
+
+    # Write the message without constraint
+    s1 = sdmx.to_pandas(msg)
+    assert len(s1) == 12
+    assert set(s1.index.to_frame()['CURRENCY']) == {'CHF', 'GBP', 'JPY', 'USD'}
+
+    # Writing using constraint produces a fewer items; only those matching the
+    # constraint
+    s2 = sdmx.to_pandas(msg, constraint=cc)
+    assert len(s2) == 6
+    assert set(s2.index.to_frame()['CURRENCY']) == {'JPY', 'USD'}

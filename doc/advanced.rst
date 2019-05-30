@@ -1,16 +1,15 @@
 Advanced topics
-===================
+===============
 
+References in the SDMX-IM and REST APIs
+---------------------------------------
 
-
-References in the SDMX information model and REST APIs
----------------------------------------------------------
+.. todo:: Update. This is out of date with the current implementation.
 
 Background
-:::::::::::::
+::::::::::
 
-Some SDMX artefacts (objects) reference others to indicate a relationship between
-both objects. pandaSDMX represents such references as instances of :class:`pandasdmx.model.Ref`.
+Some SDMX artefacts (objects) reference others to indicate a relationship between both objects. pandaSDMX represents such references as instances of :class:`pandasdmx.model.Ref`.
 
 Examples:
 
@@ -29,7 +28,7 @@ by the dimensions defined in the DSD are children of that child,
 i.e. descendants of said DataflowDefinition.
 
 The :class:`pandasdmx.model.Ref`
-:::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::
 
 :class:`pandasdmx.model.Ref` instances identify the referenced target by attributes such as id, agency_id,
 package (= resource type) etc. To resolve a reference, i.e. to retrieve the target, Ref instances are
@@ -44,7 +43,7 @@ retrieval process.
   None is returned.
 
 Using references in requests
-:::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::
 
 SDMX web services support a ``references`` parameter in HTTP requests which can take on values such as 'all',
 'descendants' and so forth. This parameter instructs the web service to include, when generating the
@@ -75,7 +74,7 @@ SDMX standard.
 
 
 Category schemes
---------------------
+----------------
 
 SDMX supports category-schemes to categorize dataflow definitions and other objects.
 This helps retrieve, e.g., a dataflow of interest. Note that not all agencies support
@@ -89,8 +88,8 @@ ECB's SDMX service and explore the response like so:
 
 .. ipython:: python
 
-    from pandasdmx import *
-    ecb = Request('ecb')
+    import pandasdmx as sdmx
+    ecb = sdmx.Request('ecb')
     cat_response = ecb.categoryscheme()
 
 Like any other scheme, a category scheme is essentially a dict mapping ID's
@@ -99,7 +98,6 @@ To display the categorised items, in our case the dataflow definitions contained
 on exchange rates, we iterate over the `Category` instance (new in version 0.5):
 
 .. ipython:: python
-    :okexcept:
 
-    cat_response.categoryscheme.keys()
-    list(cat_response.categoryscheme.MOBILE_NAVI['07'])
+    cat_response.category_scheme.keys()
+    sdmx.to_pandas(cat_response.category_scheme.MOBILE_NAVI)

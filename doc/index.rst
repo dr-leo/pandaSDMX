@@ -50,20 +50,18 @@ To learn about the IM and unlock the full power of SDMX, skim a :doc:`short intr
 
 **Learn more**
 
-* :doc:`intro`
-* :doc:`howto`
-
 .. toctree::
-   :hidden:
+   :maxdepth: 2
 
    Intro to SDMX <intro>
-   howto
+   advanced
 
 **User guide**
 
 * :doc:`sources`
 * :doc:`im`
 * :doc:`api`
+* :doc:`howto`
 
 .. toctree::
     :hidden:
@@ -71,6 +69,7 @@ To learn about the IM and unlock the full power of SDMX, skim a :doc:`short intr
     sources
     Information model <im>
     api
+    howto
 
 **Help & development**
 

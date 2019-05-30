@@ -7,7 +7,7 @@ Contributions are welcome!
 Using pd.DataFrame for internal storage
 ----------------------------------------
 
-pandaSDMX handles :class:`Observations <pandasdmx.model.Observation>`_ as
+pandaSDMX handles :class:`Observations <pandasdmx.model.Observation>` as
 individual object instances. An alternative is to use :mod:`pandas` or other
 data structures internally. See:
 
@@ -59,7 +59,7 @@ SDMX features & miscellaneous
 
 - pandasdmx.api.Request._resources only contains a small subset of:
   https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT
-  SUPPORTED OPERATIONS")
+  SUPPORTED OPERATIONS"); provide the rest.
 
 - Get a set of API keys for testing UNESCO and encrypt them for use in CI:
   https://docs.travis-ci.com/user/encryption-keys/

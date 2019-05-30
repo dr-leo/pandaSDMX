@@ -25,13 +25,30 @@ from pydantic.utils import change_exception
 class Resource(str, Enum):
     """SDMX REST API endpoints."""
 
+    # agencyscheme = 'agencyscheme'
+    # attachementconstraint = 'attachementconstraint'
+    # categorisation = 'categorisation'
     categoryscheme = 'categoryscheme'
     codelist = 'codelist'
     conceptscheme = 'conceptscheme'
+    # contentconstraint = 'contentconstraint'
     data = 'data'
+    # dataconsumerscheme = 'dataconsumerscheme'
     dataflow = 'dataflow'
+    # dataproviderscheme = 'dataproviderscheme'
     datastructure = 'datastructure'
+    # hierarchicalcodelist = 'hierarchicalcodelist'
+    # metadata = 'metadata'
+    # metadataflow = 'metadataflow'
+    # metadatastructure = 'metadatastructure'
+    # organisationscheme = 'organisationscheme'
+    # organisationunitscheme = 'organisationunitscheme'
+    # process = 'process'
     provisionagreement = 'provisionagreement'
+    # reportingtaxonomy = 'reportingtaxonomy'
+    # schema = 'schema'
+    # structure = 'structure'
+    # structureset = 'structureset'
 
     @classmethod
     def _missing_(cls, value):

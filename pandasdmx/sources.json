@@ -22,6 +22,7 @@
     "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
     "name": "Eurostat",
     "supports": {
+      "agencyscheme": false,
       "categoryscheme": false,
       "codelist": false,
       "conceptscheme": false,
@@ -49,6 +50,7 @@
     "url": "http://sdmx.snieg.mx/service/rest",
     "name": "Instituto Nacional de Estadística y Geografía (MX)",
     "supports": {
+      "agencyscheme": false,
       "provisionagreement": false,
       "structure-specific data": true
     }
@@ -69,6 +71,7 @@
     "name": "Instituto Nationale di Statistica (IT)",
     "url": "http://sdmx.istat.it/SDMXWS/rest",
     "supports": {
+      "agencyscheme": false,
       "provisionagreement": false,
       "structure-specific data": true
     }
@@ -114,6 +117,9 @@
     "id": "WB",
     "name": "World Bank World Integrated Trade Solution",
     "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
-    "supports": {"provisionagreement": false}
+    "supports": {
+      "agencyscheme": false,
+      "provisionagreement": false
+    }
   }
 ]

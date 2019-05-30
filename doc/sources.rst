@@ -105,19 +105,6 @@ Built-in data sources
 - In general short response times.
 
 
-``INSEE``: French National Institute for Statistics
-:::::::::::::::::::::::::::::::::::::::::::::::::::
-
-- `Website <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`__
-- SDMX-ML.
-
-.. warning::
-   An issue has been reported apparently due to a missing pericite codelist
-   in StructureMessages. This may cause crashes. Avoid downloading
-   this type of message. Prepare the key as string using the web interface, and
-   simply download a dataset.
-
-
 ``ILO``: International Labour Organization
 ::::::::::::::::::::::::::::::::::::::::::
 
@@ -149,6 +136,19 @@ Built-in data sources
 - SDMX-ML.
 - Subset of the data available on http://data.imf.org.
 - Supports series-key-only and hence dataset-based key validation and construction.
+
+
+``INSEE``: French National Institute for Statistics
+:::::::::::::::::::::::::::::::::::::::::::::::::::
+
+- `Website <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`__
+- SDMX-ML.
+
+.. warning::
+   An issue has been reported apparently due to a missing pericite codelist
+   in StructureMessages. This may cause crashes. Avoid downloading
+   this type of message. Prepare the key as string using the web interface, and
+   simply download a dataset.
 
 
 ``ISTAT``: Italian Statistics Office

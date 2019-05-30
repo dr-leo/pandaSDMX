@@ -5,21 +5,18 @@ API reference
 
 Top-level methods and classes
 -----------------------------
-
 .. automodule:: pandasdmx
    :members:
 
-``pandasdmx.message``: SDMX messages
-------------------------------------
-
+``message``: SDMX messages
+--------------------------
 .. automodule:: pandasdmx.message
    :members:
    :undoc-members:
    :show-inheritance:
 
-``pandasdmx.model``: SDMX Information Model
--------------------------------------------
-
+``model``: SDMX Information Model
+---------------------------------
 See :doc:`im`.
 
 .. automodule:: pandasdmx.model
@@ -27,9 +24,8 @@ See :doc:`im`.
    :undoc-members:
    :show-inheritance:
 
-``pandasdmx.reader``: Parsers for SDMX file formats
----------------------------------------------------
-
+``reader``: Parsers for SDMX file formats
+-----------------------------------------
 SDMX-ML
 :::::::
 
@@ -45,36 +41,53 @@ SDMX-JSON
     :undoc-members:
 
 
-``pandasdmx.writer``: Convert SDMX to pandas objects
-----------------------------------------------------
+``writer``: Convert SDMX to pandas objects
+------------------------------------------
+Convert :mod:`model <pandasdmx.model>` and :mod:`message <pandasdmx.message>`
+objects to :mod:`pandas` objects.
+
+.. versionchanged:: 0.6
+
+   Two writers are available:
+
+   - ``data2pandas`` exports a dataset or portions thereof to a pandas DataFrame
+     or Series.
+   - ``structure2pd`` exports structural metadata such as lists of data-flow
+     definitions, code-lists, concept-schemes etc. which are contained in a
+     structural SDMX message as a dict mapping resource names (e.g. 'dataflow',
+     'codelist') to pandas DataFrames.
+
+.. versionchanged:: 1.0
+
+   The :meth:`write <pandasdmx.writer.write>` method
+   (:meth:`pandasdmx.to_pandas`) handles all types of objects.
 
 .. automodule:: pandasdmx.writer
    :members:
 
 
-``pandasdmx.remote``: Utilities for accessing SDMX REST web services
---------------------------------------------------------------------
-
+``remote``: Access SDMX REST web services
+-----------------------------------------
 .. autoclass:: pandasdmx.remote.Session
 .. autoclass:: pandasdmx.remote.ResponseIO
 
 
-``pandasdmx.source``: Features for specific SDMX data sources
--------------------------------------------------------------
+``source``: Features of SDMX data sources
+-----------------------------------------
 
-Built-in subclasses of :class:`pandasdmx.source.Source` are described at
-:doc:`sources`.
+This module defines :class:`Source <pandasdmx.source.Source>` and some utility functions.
+For built-in subclasses of Source used to provide pandaSDMX's built-in support
+for certain data sources, see :doc:`sources`.
 
 .. autoclass:: pandasdmx.source.Source
-   :members: finish_message, handle_response, modify_request_args
+   :members:
 
 .. automodule:: pandasdmx.source
    :members: add_source, list_sources, load_package_sources
 
 
-``pandasdmx.util``: Utilities
------------------------------
-
+``util``: Utilities
+-------------------
 .. automodule:: pandasdmx.util
    :members:
    :undoc-members:

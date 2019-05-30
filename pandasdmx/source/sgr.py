@@ -13,5 +13,7 @@ class Source(BaseSource):
     def modify_request_args(self, kwargs):
         """SGR is a data source but not a data provider.
 
-        Use 'all' to retrieve all data it republishes."""
+        Override the ``agency`` argument by setting ``agency='all'`` to
+        retrieve all data republished by SGR from different providers.
+        """
         kwargs.setdefault('agency', 'all')

@@ -23,6 +23,8 @@ from pydantic.utils import change_exception
 
 
 class Resource(str, Enum):
+    """SDMX REST API endpoints."""
+
     categoryscheme = 'categoryscheme'
     codelist = 'codelist'
     conceptscheme = 'conceptscheme'

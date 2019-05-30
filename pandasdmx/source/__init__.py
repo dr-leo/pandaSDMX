@@ -1,4 +1,3 @@
-"""SDMX-IM Datasource and related classes."""
 from enum import Enum
 from importlib import import_module
 from io import TextIOWrapper
@@ -24,16 +23,33 @@ class Source(BaseModel):
     """SDMX-IM RESTDatasource.
 
     This class describes the location and features supported by an SDMX data
-    source. Subclasses can override :meth:`handle_response` and
-    :meth:`finish_message` to handle specific types of responses only provided
-    by one data source.
+    source. Subclasses may override the hooks in order to handle specific
+    features of different REST web services:
+
+    .. autosummary::
+       handle_response
+       finish_message
+       modify_request_args
 
     """
+    #: ID of the data source
     id: str
+    #: Base URL for queries
     url: str
+    #: Human-readable name of the data source
     name: str
     headers: Dict[str, Any] = {}
+    #: :class:`pandasdmx.util.DataContentType` indicating the type of data
+    #: returned by the source.
     data_content_type: DataContentType = DataContentType.XML
+    #: Mapping from :class:`Resource <pandasdmx.util.Resource>` to
+    #: :class:`bool` indicating support for SDMX REST API features. Two
+    #: additional keys are valid:
+    #:
+    #: - ``'preview'=True`` if the source supports ``?detail=serieskeysonly``.
+    #:   See :meth:`preview_data <pandasdmx.Request.preview_data>`.
+    #: - ``'structure-specific data'=True`` if the source can return structure-
+    #:   specific data messages.
     supports: Dict[Union[str, Resource], bool] = {}
 
     @classmethod
@@ -44,18 +60,44 @@ class Source(BaseModel):
         super().__init__(**kwargs)
 
         # Set default supported features
-        for feature in list(Resource) + ['preview']:
+        for feature in list(Resource) + ['preview', 'structure-specific data']:
             self.supports.setdefault(
                 feature, self.data_content_type == DataContentType.XML)
 
     # Hooks
     def handle_response(self, response, content):
+        """Handle response content of unknown type.
+
+        This hook is called by :meth:`pandasdmx.Request.get` *only* when
+        the `content` cannot be parsed as XML or JSON.
+
+        See :meth:`ESTAT <pandasdmx.source.estat.Source.handle_response>` and
+        :meth:`SGR <pandasdmx.source.sgr.Source.handle_response>` for example
+        implementations.
+        """
         return response, content
 
     def finish_message(self, message, request, **kwargs):
+        """Postprocess retrieved message.
+
+        This hook is called by :meth:`pandasdmx.Request.get` after a
+        :class:`pandasdmx.message.Message` object has been successfully
+        parsed from the query response.
+
+        See :meth:`ESTAT <pandasdmx.source.estat.Source.finish_message>` for an
+        example implementation.
+        """
         return message
 
     def modify_request_args(self, kwargs):
+        """Modify arguments used to build query URL.
+
+        This hook is called by :meth:`pandasdmx.Request.get` to modify the
+        keyword arguments before the query URL is built.
+
+        See :meth:`SGR <pandasdmx.source.sgr.Source.modify_request_args>` for
+        an example implementation.
+        """
         pass
 
     @validator('id')

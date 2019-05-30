@@ -24,15 +24,15 @@ logger = logging.getLogger(__name__)
 
 
 class Request(object):
-    """Interface to an SDMX data provider.
+    """Client for a SDMX data provider.
 
     Parameters
     ----------
-    source : str
-        Identifier of a data source. Must be one of the dict keys in
-        Request._agencies such as 'ESTAT', 'ECB', ''GSR' or ''. If '', the
-        instance can only retrieve data or metadata from pre-fabricated URLs
-        provided to :meth:`get`.
+    source : str or :obj:`None`
+        Identifier of a data source. If a string, must be one of the known
+        sources in :meth:`list_sources`. If :obj:`None`, the Request instance
+        can only retrieve data or metadata from complete URLs provided to
+        :meth:`get`.
     log_level : int
         Override the package-wide logger with one of the
         :ref:`standard logging levels <py:levels>`.
@@ -42,6 +42,9 @@ class Request(object):
 
     """
     cache = {}
+
+    #: :class:`pandasdmx.source.Source` for requests sent from the instance.
+    source = None
 
     @classmethod
     def url(cls, url, **kwargs):
@@ -90,7 +93,7 @@ class Request(object):
                    .series \
                    .keys()
 
-    def _make_key(self, resource_type, resource_id, key, keys=[]):
+    def _make_key(self, resource_type, resource_id, key, dsd=None):
         """Validate *key* if possible.
 
         If key is a dict, validate items against the DSD and construct the key
@@ -101,7 +104,10 @@ class Request(object):
             return key
 
         # Select validation method based on agency capabilities
-        if self.source.supports[Resource.datastructure]:
+        if dsd:
+            # DSD was provided
+            pass
+        elif self.source.supports[Resource.datastructure]:
             # Retrieve the DataflowDefinition
             df = self.get('dataflow', resource_id, use_cache=True) \
                      .dataflow[resource_id]
@@ -193,10 +199,11 @@ class Request(object):
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
+        dsd = kwargs.pop('dsd', None)
         if kwargs.pop('validate', True):
-            url_parts.append(self._make_key(resource_type, resource_id, key))
-        else:
-            url_parts.append(key)
+            key = self._make_key(resource_type, resource_id, key, dsd)
+
+        url_parts.append(key)
 
         # Assemble final URL
         url = '/'.join(filter(None, url_parts))
@@ -220,24 +227,36 @@ class Request(object):
                                 headers=headers)
 
     def get(self, resource_type=None, resource_id=None, tofile=None,
-            get_footer_url=(30, 3), use_cache=False, dry_run=False, **kwargs):
+            use_cache=False, dry_run=False, **kwargs):
         """Retrieve SDMX data or metadata.
 
-        get() can only construct URLs for the SDMX service set for this
-        instance. Hence, you have to instantiate a
-        :class:`pandasdmx.api.Request` instance for each data provider you want
-        to access, or pass a pre-fabricated URL through the ``url`` parameter.
+        get() constructs and queries URLs for the :attr:`source` of the current
+        Request, *except* if the `url` parameter is given.
 
         Parameters
         ----------
-        resource_type : str
-            Type of resource to be requested. Values must be one of the items
-            in Request._resources such as 'data', 'dataflow', 'categoryscheme',
-            etc. It is used for URL construction, not to read the received SDMX
-            file. Default: ''.
-        resource_id : str
-            ID of the resource to be requested. It is used for URL
-            construction. Defaults to ''.
+        resource_type : str or :class:`Resource`, optional
+            Type of resource to get.
+        resource_id : str, optional
+            ID of the resource to get.
+        tofile : str or :py:class:`os.PathLike`, optional
+            File path to write SDMX data as it is recieved.
+        use_cache : bool, optional
+            If :obj:`True`, return a previously retrieved :class:`Message` from
+            :attr:`cache`, or update the cache with a newly-retrieved Message.
+        dry_run : bool, optional
+            If :obj:`True`, prepare and return, but do not get, a
+            :class:`requests.Request`.
+        **kwargs
+            Other parameters (below) used to construct the query URL.
+
+        Other Parameters
+        ----------------
+        resource : :mod:`pandasdmx.model` object
+            Object to get.
+        url : str
+            Full URL to get directly. If given, other arguments are ignored.
+            See also :meth:`url`.
         agency : str
             ID of the agency providing the data or metadata.
             Used for URL construction only. It tells the SDMX web service
@@ -269,37 +288,14 @@ class Request(object):
             HTTP headers. Given headers will overwrite
             instance-wide headers passed to the constructor. Defaults to
             `None`, i.e. use defaults from agency configuration.
-        tofile : str or :py:class:`os.PathLike`
-            File path to write the received SDMX file on the fly. This is
-            useful if you want to load data offline using `open_file()` or if
-            you want to open an SDMX file in an XML editor.
-        url : str, optional
-            URL of the resource to download.
-            If given, any other arguments such as `resource_type` or
-            `resource_id` are ignored.
-        get_footer_url : (int, int), optional
-            Tuple of the form (seconds, number_of_attempts). Determines the
-            behavior in case the received SDMX message has a footer where
-            one of its lines is a valid URL. ``get_footer_url`` defines how
-            many attempts should be made to request the resource at that
-            URL after waiting so many seconds before each attempt.
-            This behavior is useful when requesting large datasets from
-            Eurostat. Other agencies do not seem to send such footers. Once
-            an attempt to get the resource has been successful, the
-            original message containing the footer is dismissed and the
-            dataset is returned. The ``tofile`` argument is propagated.
-            Note that the written file may be a zip archive. pandaSDMX
-            handles zip archives since version 0.2.1.
-        memcache : str
-            If given, return Response instance if already in
-            self.cache(dict), otherwise download resource and cache
-            Response instance.
+        dsd : :class:`DataStructureDefinition`
+        force : bool
+        version : str
 
         Returns
         -------
         :class:`pandasdmx.message.Message`
             The requested SDMX message.
-
         """
         req = self._request_from_args(
             resource_type=resource_type,
@@ -328,8 +324,8 @@ class Request(object):
         except requests.exceptions.ConnectionError as e:
             raise e from None
         except requests.exceptions.HTTPError as e:
+            # Convert a 501 response to a Python NotImplementedError
             if e.response.status_code == 501:
-                # Convert a 501 response to a Python NotImplementedError
                 raise NotImplementedError(
                     '{!r} endpoint at {}'.format(resource_type, e.request.url))
             else:
@@ -362,8 +358,8 @@ class Request(object):
         # Store the HTTP response with the message
         msg.response = response
 
-        msg = self.source.finish_message(msg, self,
-                                         get_footer_url=get_footer_url)
+        # Call the finish_message() hook
+        msg = self.source.finish_message(msg, self, **kwargs)
 
         # store in memory cache if needed
         if use_cache:

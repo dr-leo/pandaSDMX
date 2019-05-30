@@ -11,19 +11,32 @@ from . import Source as BaseSource
 class Source(BaseSource):
     """Handle Eurostat's mechanism for large datasets.
 
-    To some requests, ESTAT returns a DataMessage that has no content, except a
-    <footer:Footer> element that gives a URL where the data will be made
-    available as a ZIP file.
+    For some requests, ESTAT returns a DataMessage that has no content except
+    for a ``<footer:Footer>`` element containing a URL where the data will be
+    made available as a ZIP file.
+
+    To configure :meth:`finish_message`, pass its `get_footer_url` argument to
+    :meth:`pandasdmx.api.Request.get`.
+
+    .. versionadded:: 0.2.1
 
     """
     _id = 'ESTAT'
 
-    def finish_message(self, message, request, get_footer_url=(30, 3)):
+    def finish_message(self, message, request, get_footer_url=(30, 3),
+                       **kwargs):
         """Handle the initial response.
 
         This hook identifies the URL in the footer of the initial response,
         makes a second request (polling as indicated by *get_footer_url*), and
         returns a new DataMessage with the parsed content.
+
+        Parameters
+        ----------
+        get_footer_url : (int, int)
+            Tuple of the form (`seconds`, `attempts`), controlling the interval
+            between attempts to retrieve the data from the URL, and the
+            maximum number of attempts to make.
         """
         # Check the message footer for a text element that is a valid URL
         url = None

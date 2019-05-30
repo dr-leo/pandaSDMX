@@ -138,6 +138,13 @@ Built-in data sources
 - Supports series-key-only and hence dataset-based key validation and construction.
 
 
+``INEGI``: National Institute of Statistics and Geography (Mexico)
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+- Spanish name: Instituto Nacional de Estadística y Geografía.
+- SDMX-ML. `Website <https://sdmx.snieg.mx/infrastructure>`__.
+
+
 ``INSEE``: French National Institute for Statistics
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 

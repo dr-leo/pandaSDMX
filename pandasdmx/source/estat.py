@@ -23,6 +23,9 @@ class Source(BaseSource):
     """
     _id = 'ESTAT'
 
+    def modify_request_args(self, kwargs):
+        kwargs.pop('get_footer_url', None)
+
     def finish_message(self, message, request, get_footer_url=(30, 3),
                        **kwargs):
         """Handle the initial response.

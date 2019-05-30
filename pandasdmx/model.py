@@ -853,15 +853,18 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
         for dim in self.dimensions:
             mvs = set()
             try:
-                for value in key.pop(dim.id).split('+'):
-                    # TODO validate values
-                    mvs.add(MemberValue(value=value))
+                values = key.pop(dim.id)
             except KeyError:
                 continue
-            else:
-                cr.member[dim] = MemberSelection(included=True,
-                                                 values_for=dim,
-                                                 values=mvs)
+
+            values = values.split('+') if isinstance(values, str) else values
+            for value in values:
+                # TODO validate values
+                mvs.add(MemberValue(value=value))
+
+            cr.member[dim] = MemberSelection(included=True,
+                                             values_for=dim,
+                                             values=mvs)
 
         if len(key):
             raise ValueError('Dimensions {!r} not in {!r}'

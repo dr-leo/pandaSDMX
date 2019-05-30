@@ -73,6 +73,10 @@ pandaSDMX can also be used with `odo <https://github.com/blaze/odo>`_ by registe
         return sdxm.to_pandas(msg, **keyfilter(op.contains(keywords(write)),
                                                kwargs))
 
+.. versionadded:: 0.4
+
+   ``pandasdmx.odo_register()`` added, providing automatic registration.
+
 .. deprecated:: 1.0
 
    odo `appears unmaintained <https://github.com/blaze/odo/issues/619>`_ since about 2016, so pandaSDMX no longer provides built-in registration.

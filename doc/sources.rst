@@ -21,6 +21,11 @@ package source code, for more details.
 
 pandaSDMX also supports adding other data sources; see :meth:`add_source` and :class:`pandasdmx.source.Source`.
 
+.. contents::
+   :local:
+   :backlinks: none
+
+
 Data source limitations
 -----------------------
 
@@ -60,32 +65,26 @@ In order to anticipate and handle these differences:
    and SGR_.
 
 
-Built-in data sources
----------------------
-
-.. contents::
-   :local:
-   :backlinks: none
-
-
 .. _ABS:
 
 ``ABS``: Australian Bureau of Statistics
-::::::::::::::::::::::::::::::::::::::::
+----------------------------------------
 
-- `Website <http://www.abs.gov.au/>`__
-- SDMX-JSON.
+SDMX-JSON —
+`Website <http://www.abs.gov.au/>`__
 
 .. autoclass:: pandasdmx.source.abs.Source
    :members:
 
+
 .. _ESTAT:
 
 ``ESTAT``: Eurostat
-:::::::::::::::::::
+-------------------
 
-- `Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
+
 - Thousands of dataflows on a wide range of topics.
 - No categorisations available.
 - Long response times are reported. Increase the timeout attribute to avoid
@@ -96,20 +95,22 @@ Built-in data sources
 
 
 ``ECB``: European Central Bank
-::::::::::::::::::::::::::::::
+------------------------------
 
-- `Website <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`__
+
 - Supports categorisations of data-flows.
 - Supports preview_data and series-key based key validation.
 - In general short response times.
 
 
 ``ILO``: International Labour Organization
-::::::::::::::::::::::::::::::::::::::::::
+------------------------------------------
 
-- `Website <www.ilo.org/ilostat/>`__.
-- SDMX-ML.
+SDMX-ML —
+`Website <www.ilo.org/ilostat/>`__
+
 - :class:`pandasdmx.source.ilo.Source` handles some particularities of the ILO
   web service. Others that are not handled:
 
@@ -130,26 +131,31 @@ Built-in data sources
 .. _IMF:
 
 ``IMF``: International Monetary Fund's “SDMX Central” source
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+------------------------------------------------------------
 
-- `Website <https://sdmxcentral.imf.org/>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <https://sdmxcentral.imf.org/>`__
+
 - Subset of the data available on http://data.imf.org.
 - Supports series-key-only and hence dataset-based key validation and construction.
 
 
 ``INEGI``: National Institute of Statistics and Geography (Mexico)
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+------------------------------------------------------------------
+
+SDMX-ML —
+`Website <https://sdmx.snieg.mx/infrastructure>`__.
 
 - Spanish name: Instituto Nacional de Estadística y Geografía.
-- SDMX-ML. `Website <https://sdmx.snieg.mx/infrastructure>`__.
 
 
-``INSEE``: French National Institute for Statistics
-:::::::::::::::::::::::::::::::::::::::::::::::::::
+``INSEE``: National Institute of Statistics and Economic Studies (France)
+-------------------------------------------------------------------------
 
-- `Website <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`__
+
+- French name: Institut national de la statistique et des études économiques.
 
 .. warning::
    An issue has been reported apparently due to a missing pericite codelist
@@ -158,47 +164,51 @@ Built-in data sources
    simply download a dataset.
 
 
-``ISTAT``: Italian Statistics Office
-::::::::::::::::::::::::::::::::::::
+``ISTAT``: National Institute of Statistics (Italy)
+---------------------------------------------------
 
-- `Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
+
+- Italian name: Istituto Nazionale di Statistica.
 - Similar server platform to Eurostat, with similar capabilities.
 
 
-``NB``: Norges Bank
-:::::::::::::::::::
+``NB``: Norges Bank (Norway)
+----------------------------
 
-- `Website <https://www.norges-bank.no/en/topics/Statistics/open-data/>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <https://www.norges-bank.no/en/topics/Statistics/open-data/>`__
+
 - Few dataflows. So do not use categoryscheme.
 - It is unknown whether NB supports series-keys-only.
 
 
 ``OECD``: Organisation for Economic Cooperation and Development
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+---------------------------------------------------------------
 
-- `Website <http://stats.oecd.org/SDMX-JSON/>`__
-- SDMX-JSON.
+SDMX-JSON —
+`Website <http://stats.oecd.org/SDMX-JSON/>`__
 
 
 .. _SGR:
 
 ``SGR``: SDMX Global Registry
-:::::::::::::::::::::::::::::
+-----------------------------
 
-- `Website <https://registry.sdmx.org/ws/rest>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <https://registry.sdmx.org/ws/rest>`__
 
 .. autoclass:: pandasdmx.source.sgr.Source
    :members:
 
 
 ``UNSD``: United Nations Statistics Division
-::::::::::::::::::::::::::::::::::::::::::::
+--------------------------------------------
 
-- `Website <https://unstats.un.org/home/>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <https://unstats.un.org/home/>`__
+
 - Supports preview_data and series-key based key validation.
 
 .. warning:: supports categoryscheme even though it offers very few dataflows.  Use this feature with caution. Moreover, it seems that categories confusingly
@@ -206,10 +216,11 @@ Built-in data sources
 
 
 ``UNESCO``: UN Educational, Scientific and Cultural Organization
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+----------------------------------------------------------------
 
-- `Website <https://apiportal.uis.unesco.org/getting-started>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <https://apiportal.uis.unesco.org/getting-started>`__
+
 - Free registration required; user credentials must be provided either as
   parameter or HTTP header with each request.
 
@@ -218,8 +229,8 @@ Built-in data sources
   in the XML format.
 
 
-``WBG_WITS``: World Bank Group's “World Integrated Trade Solution”
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+``WB``: World Bank Group's “World Integrated Trade Solution”
+------------------------------------------------------------
 
-- `Website <wits.worldbank.org>`__
-- SDMX-ML.
+SDMX-ML —
+`Website <wits.worldbank.org>`__

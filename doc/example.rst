@@ -15,26 +15,31 @@ corresponding code lists.
 
 .. ipython:: python
 
-    from pandasdmx import Request, to_pandas
-    estat = Request('ESTAT')
+    import pandasdmx as sdmx
+    estat = sdmx.Request('ESTAT')
 
     # Download the metadata and expose
     metadata = estat.datastructure('DSD_une_rt_a')
+    metadata
 
     # Show some code lists
-    to_pandas(metadata.codelist['CL_AGE'])
-    to_pandas(metadata.codelist['CL_UNIT'])
+    for cl in 'CL_AGE', 'CL_UNIT':
+        print(sdmx.to_pandas(metadata.codelist[cl]))
 
 Next we download a dataset. We use codes from the code list 'GEO'
 to obtain data on Greece, Ireland and Spain only.
 
 .. ipython:: python
 
-    resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
-                      params={'startPeriod': '2007'})
+    resp = estat.data(
+        'une_rt_a',
+        key={'GEO': 'EL+ES+IE'},
+        params={'startPeriod': '2007'},
+        )
 
     # Convert to a pandas.Series and select on the 'AGE' dimension
-    data = to_pandas(resp.data[0]).xs('TOTAL', level='AGE', drop_level=False)
+    data = (sdmx.to_pandas(resp.data[0])
+                .xs('TOTAL', level='AGE', drop_level=False))
 
     # Explore the data set. First, show dimension names
     data.index.names

@@ -121,19 +121,23 @@ Built-in data sources
 ``ILO``: International Labour Organization
 ::::::::::::::::::::::::::::::::::::::::::
 
-- `Website <www.ilo.org/ilostat/>`__
+- `Website <www.ilo.org/ilostat/>`__.
 - SDMX-ML.
-- ILO's SDMX web API deviates in some respects from the others. It is highly
-  recommended to read the `API guide <http://www.ilo.org/ilostat/content/conn/ILOSTATContentServer/path/Contribution%20Folders/statistics/web_pages/static_pages/technical_page/ilostat_appl/SDMX_User_Guide.pdf>`_.
-  Here are some of the gotchas:
+- :class:`pandasdmx.source.ilo.Source` handles some particularities of the ILO
+  web service. Others that are not handled:
 
-  - dataflow IDs take on the role of a filter. E.g., there are dataflows for
-    individual countries, ages, sexes etc. rather than merely for different indicators.
-  - Do not set the 'references' parameter to 'all' as is done by pandaSDMX by
-    default when one requests a dataflow specified by ID. ILO can handle
-    'references' = 'descendants' and some others, but not 'all'.
-  - As the default format is SDMX 2.0, the 'format' parameter should be set to
-    'generic_2_1' or equivalent for each request.
+  - Data flow IDs take on the role of a filter. E.g., there are dataflows for
+    individual countries, ages, sexes etc. rather than merely for different
+    indicators.
+  - The service returns 413 Payload Too Large errors for some queries, with
+    messages like: "Too many results, please specify codelist ID". Test for
+    :class:`pandasdmx.exceptions.HTTPError`
+    (= :class:`requests.exceptions.HTTPError`) and/or specify a ``resource_id``.
+
+- It is highly recommended to read the `API guide <http://www.ilo.org/ilostat/content/conn/ILOSTATContentServer/path/Contribution%20Folders/statistics/web_pages/static_pages/technical_page/ilostat_appl/SDMX_User_Guide.pdf>`_.
+
+.. autoclass:: pandasdmx.source.ilo.Source
+   :members:
 
 
 .. _IMF:

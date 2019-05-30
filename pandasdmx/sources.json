@@ -34,6 +34,9 @@
     "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
     "headers": {
         "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+    },
+    "supports": {
+      "provisionagreement": false
     }
   },
   {

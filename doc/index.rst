@@ -31,17 +31,15 @@ These are called the “SDMX Information Model” (IM).
 
 This documentation does not repeat the full description of the IM, but focuses on functionality provided by :mod:`pandaSDMX` itself.
 Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
-:doc:`usage example in only 10 lines of code <example>`.
+:doc:`usage example in only 10 lines of code <example>`, and then the longer :doc:`walkthrough`.
 
-To learn about the IM and unlock the full power of SDMX, users can skim a :doc:`short introduction <intro>`, consult the linked reference materials, and/or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that implement it.
+To learn about the IM and unlock the full power of SDMX, skim a :doc:`short introduction <intro>`, consult the linked reference materials, and/or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM.
 
-**Getting started**
+**Get started**
 
 * :doc:`example`
 * :doc:`install`
 * :doc:`walkthrough`
-* :doc:`intro`
-* :doc:`howto`
 
 .. toctree::
    :hidden:
@@ -49,6 +47,15 @@ To learn about the IM and unlock the full power of SDMX, users can skim a :doc:`
    10-line example <example>
    install
    walkthrough
+
+**Learn more**
+
+* :doc:`intro`
+* :doc:`howto`
+
+.. toctree::
+   :hidden:
+
    Intro to SDMX <intro>
    howto
 
@@ -73,10 +80,6 @@ To learn about the IM and unlock the full power of SDMX, users can skim a :doc:`
 * :doc:`roadmap`
 * :doc:`license`
 * :ref:`genindex`
-* External links:
-
-  * `Official SDMX website <http://www.sdmx.org>`_
-
 
 .. toctree::
    :hidden:

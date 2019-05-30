@@ -1,6 +1,8 @@
 API reference
 =============
 
+.. contents::
+
 Top-level methods and classes
 -----------------------------
 

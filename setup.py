@@ -5,12 +5,25 @@ from codecs import open
 # Publish README on PYPI when uploading.
 long_descr = open('description.rst', 'r', encoding='utf8').read()
 
+INSTALL_REQUIRES = [
+    'lxml>=3.6',
+    'pandas>=0.20',
+    'pydantic>=0.25',
+    'requests>=2.7',
+    'setuptools>19',
+    ]
+
 TESTS_REQUIRE = [
     'pytest>=3.3',
     'pytest-remotedata>=0.3.1',
     'requests-mock>=1.4',
-    'requests>=2.7',
     ]
+
+EXTRAS_REQUIRE = {
+    'cache': ['requests_cache'],
+    'docs': ['sphinx>=1.5', 'ipython'],
+    'tests': TESTS_REQUIRE,
+    }
 
 setup(name='pandaSDMX',
       version='1.0.0-dev',
@@ -21,18 +34,8 @@ setup(name='pandaSDMX',
       packages=find_packages(),
       package_data={'pandasdmx': ['sources.json']},
       url='https://github.com/dr-leo/pandasdmx',
-      install_requires=[
-          'pandas>=0.20',
-          'lxml>=3.6',
-          'pydantic>=0.25',
-          'requests',
-          'setuptools>19',
-          ],
-      extras_require={
-        'cache': ['requests_cache'],
-        'docs': ['sphinx>=1.5'],
-        'tests': TESTS_REQUIRE,
-        },
+      install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
       tests_require=TESTS_REQUIRE,
       keywords='statistics SDMX pandas data economics science',
       zip_safe=True,

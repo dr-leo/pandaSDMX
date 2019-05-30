@@ -1,56 +1,83 @@
 Installation
 ============
 
-
 Required dependencies
 ---------------------
 
-pandaSDMX is a pure `Python <http://www.python.org>`_ package.
-It requires Python 3.5 or higher.
+pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.7 or higher, which can be installed:
 
-It is recommended to use one of the common Python distributions for scientific
-data analysis such as:
+- from `the Python website <https://www.python.org/downloads/>`_, or
+- using a scientific Python distribution. These include other packages useful
+  for data analysis.
 
-* `Anaconda <https://store.continuum.io/cshop/anaconda/>`_, or
-* `Canopy <https://www.enthought.com/products/canopy/>`_.
+  - `Anaconda <https://store.continuum.io/cshop/anaconda/>`_,
+  - `Canopy <https://www.enthought.com/products/canopy/>`_.
+  - Others listed on `the Python wiki
+    <https://wiki.python.org/moin/PythonDistributions>`_.
 
-Along with a current Python interpreter, these Python distributions include
-lots of useful packages for data analysis. For other Python distributions (not
-only scientific) see
-`the Python wiki <https://wiki.python.org/moin/PythonDistributions>`_.
+pandaSDMX also depends on:
 
-pandaSDMX has the following dependencies:
+- `pandas <http://pandas.pydata.org>`_ for data structures,
+- `pydantic <https://pydantic-docs.helpmanual.io>`_ to implement the IM,
+- `requests <https://pypi.python.org/pypi/requests/>`_ for HTTP requests, and
+- `lxml <http://www.lxml.de>`_ for XML processing.
 
-* the data analysis library
-  `pandas <http://pandas.pydata.org/>`_ which itself depends on a number of packages
-* the HTTP library `requests <https://pypi.python.org/pypi/requests/>`_
-* `LXML <http://www.lxml.de>`_ for XML processing.
-* `JSONPATH-RW <https://pypi.python.org/pypi/jsonpath-rw>`_ for JSON processing.
+Optional dependencies for extra features
+----------------------------------------
 
-Optional dependencies
----------------------
-
-* `requests-cache <https://readthedocs.io/projects/requests-cache/>`_
-  allowing to cache SDMX messages in
-  memory, MongoDB, Redis and more.
-* `IPython <http://ipython.org/>`_ is required to build the Sphinx documentation To do this,
-  check out the pandaSDMX repository on github.
-* `py.test <http://pytest.org/latest/>`_ to run the test suite.
+- for ``cache``, allowing the caching of SDMX messages in memory, MongoDB,
+  Redis, and more: `requests-cache <https://requests-cache.readthedocs.io>`_.
+- for ``docs``, to build the documentation: `sphinx <https://sphinx-doc.org>`_
+  and `IPython <https://ipython.org>`_.
+- for ``tests``, to run the test suite: `pytest <https://pytest.org>`_,
+  `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_, and
+  `requests-mock <https://requests-mock.readthedocs.io>`_.
 
 Instructions
 ------------
 
-From the command line of your OS, issue:
+0. (optional) If using Anaconda, use ``source activate [ENV]`` to activate the
+   environment in which to install pandaSDMX.
+1. From the command line, issue::
 
-* ``conda install -c alcibiade pandasdmx`` if you are using Anaconda,
-* ``pip install pandasdmx`` otherwise.
+    $ pip install pandasdmx
 
-Of course, you can also download the tarball from the PyPI and issue
-``python setup.py install`` from the package dir.
+   To also install optional dependencies, use commands like::
 
-Testing
--------
+    $ pip install pandasdmx[cache]             # just requests-cache
+    $ pip install pandasdmx[cache,docs,tests]  # all extras
 
-From the package directory, issue the following command::
+From source
+~~~~~~~~~~~
+
+1. Download the latest code:
+
+   - `from PyPI <https://pypi.org/project/pandaSDMX/#files>`_
+   - `from Github <https://github.com/dr-leo/pandaSDMX>`_
+   - by cloning the Github respository::
+
+     $ git clone git@github.com:dr-leo/pandaSDMX.git
+
+2. In the package directory, issue::
+
+    $ python setup.py install
+
+   To also install optional dependencies, use commands like::
+
+    $ pip install .[cache]             # just requests-cache
+    $ pip install .[cache,docs,tests]  # all extras
+
+Running tests
+-------------
+
+Install from source, including the ``tests`` optional dependencies.
+Then, in the package directory, issue::
 
     $ py.test
+
+By default, tests that involve retrieving data over the network are skipped. To
+also run these tests, use::
+
+    $ py.test --remote-data
+
+pytest offers many command-line options to control test invocation; see ``py.test --help`` or the `documentation <https://pytest.org>`_.

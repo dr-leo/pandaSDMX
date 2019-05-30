@@ -2,6 +2,8 @@ API reference
 =============
 
 .. contents::
+   :local:
+   :backlinks: none
 
 Top-level methods and classes
 -----------------------------

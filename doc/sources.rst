@@ -31,6 +31,8 @@ error message.
 A key difference is between sources offering SDMX-ML and SDMX-JSON APIs.
 SDMX-JSON APIs do not support structure queries; only data queries.
 
+.. note:: For JSON APIs, start by browsing the website to retrieve the dataflow you're interested in. Then try to fine-tune a planned data request by providing a valid key (= selection of series from the dataset). No automatic validation can be performed as structural metadata is unavailable.
+
 In order to anticipate and handle these differences:
 
 1. :meth:`add_source` accepts "data_content_type" and "supported" keys. For
@@ -61,13 +63,10 @@ In order to anticipate and handle these differences:
 Built-in data sources
 ---------------------
 
-.. todo::
-
-   The snippets of text for each source are not current with ``sources.json``. Update, or generate automatically.
-
 .. contents::
    :local:
    :backlinks: none
+
 
 .. _ABS:
 
@@ -75,12 +74,7 @@ Built-in data sources
 ::::::::::::::::::::::::::::::::::::::::
 
 - `Website <http://www.abs.gov.au/>`__
-
-SDMX-JSON only. Start by browsing the website to retrieve the dataflow you're
-interested in. Then try to fine-tune a planned data request by providing a
-valid key (= selection of series from the dataset). No automatic validation can
-be performed as structural metadata is unavailable.
-
+- SDMX-JSON.
 
 .. autoclass:: pandasdmx.source.abs.Source
    :members:
@@ -115,6 +109,31 @@ be performed as structural metadata is unavailable.
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 - `Website <http://www.bdm.insee.fr/bdm2/statique?page=sdmx>`__
+- SDMX-ML.
+
+.. warning::
+   An issue has been reported apparently due to a missing pericite codelist
+   in StructureMessages. This may cause crashes. Avoid downloading
+   this type of message. Prepare the key as string using the web interface, and
+   simply download a dataset.
+
+
+``ILO``: International Labour Organization
+::::::::::::::::::::::::::::::::::::::::::
+
+- `Website <www.ilo.org/ilostat/>`__
+- SDMX-ML.
+- ILO's SDMX web API deviates in some respects from the others. It is highly
+  recommended to read the `API guide <http://www.ilo.org/ilostat/content/conn/ILOSTATContentServer/path/Contribution%20Folders/statistics/web_pages/static_pages/technical_page/ilostat_appl/SDMX_User_Guide.pdf>`_.
+  Here are some of the gotchas:
+
+  - dataflow IDs take on the role of a filter. E.g., there are dataflows for
+    individual countries, ages, sexes etc. rather than merely for different indicators.
+  - Do not set the 'references' parameter to 'all' as is done by pandaSDMX by
+    default when one requests a dataflow specified by ID. ILO can handle
+    'references' = 'descendants' and some others, but not 'all'.
+  - As the default format is SDMX 2.0, the 'format' parameter should be set to
+    'generic_2_1' or equivalent for each request.
 
 
 .. _IMF:
@@ -125,6 +144,24 @@ be performed as structural metadata is unavailable.
 - `Website <https://sdmxcentral.imf.org/>`__
 - SDMX-ML.
 - Subset of the data available on http://data.imf.org.
+- Supports series-key-only and hence dataset-based key validation and construction.
+
+
+``ISTAT``: Italian Statistics Office
+::::::::::::::::::::::::::::::::::::
+
+- `Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
+- SDMX-ML.
+- Similar server platform to Eurostat, with similar capabilities.
+
+
+``NB``: Norges Bank
+:::::::::::::::::::
+
+- `Website <https://www.norges-bank.no/en/topics/Statistics/open-data/>`__
+- SDMX-ML.
+- Few dataflows. So do not use categoryscheme.
+- It is unknown whether NB supports series-keys-only.
 
 
 ``OECD``: Organisation for Economic Cooperation and Development
@@ -132,6 +169,7 @@ be performed as structural metadata is unavailable.
 
 - `Website <http://stats.oecd.org/SDMX-JSON/>`__
 - SDMX-JSON.
+
 
 .. _SGR:
 
@@ -152,6 +190,9 @@ be performed as structural metadata is unavailable.
 - SDMX-ML.
 - Supports preview_data and series-key based key validation.
 
+.. warning:: supports categoryscheme even though it offers very few dataflows.  Use this feature with caution. Moreover, it seems that categories confusingly
+  include dataflows which UNSD does not actually provide.
+
 
 ``UNESCO``: UN Educational, Scientific and Cultural Organization
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -159,7 +200,11 @@ be performed as structural metadata is unavailable.
 - `Website <https://apiportal.uis.unesco.org/getting-started>`__
 - SDMX-ML.
 - Free registration required; user credentials must be provided either as
-  parameter or HTTP-header with each request.
+  parameter or HTTP header with each request.
+
+.. warning:: An issue with structure-specific datasets has been reported.
+  It seems that Series are not recognized due to some oddity
+  in the XML format.
 
 
 ``WBG_WITS``: World Bank Group's “World Integrated Trade Solution”

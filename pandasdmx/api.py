@@ -354,6 +354,12 @@ class Request(object):
                 raise ValueError(
                     'If `` url`` is not specified, either agency or fromfile must be given.')
 
+        # horrible patch to have this work on ISTAT's wsdmx
+        # which requires /IT1 (or agency ID) for dataflow requests, 
+        # while does not require it in data requests
+        if self.agency[:5] == 'ISTAT' and resource_type == 'data':
+            base_url = base_url.replace("/IT1", "")
+
         # Now get the SDMX message either via http or as local file
         logger.info(
             'Requesting resource from URL/file %s', (base_url or fromfile))

@@ -2,9 +2,6 @@ from setuptools import find_packages, setup
 from codecs import open
 
 
-# Publish README on PYPI when uploading.
-long_descr = open('description.rst', 'r', encoding='utf8').read()
-
 INSTALL_REQUIRES = [
     'lxml>=3.6',
     'pandas>=0.20',
@@ -28,7 +25,6 @@ EXTRAS_REQUIRE = {
 setup(name='pandaSDMX',
       version='1.0.0-dev',
       description='A client for SDMX - Statistical Data and Metadata eXchange',
-      long_description=long_descr,
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
       packages=find_packages(),

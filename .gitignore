@@ -1,9 +1,13 @@
 *.cache
 *.egg-info
 *.pdf
+__pycache__
+
+# Development and build files
 .coverage
 .pytest_cache
-__pycache__
+build
+dist
 doc/_build
 prof/
 tests/data/cache

@@ -1,18 +1,22 @@
 language: python
 
-dist: xenial
+cache: pip
 
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
   - "3.7"
+  - "3.7-dev"
+
+dist: xenial
 
 install:
   - pip install -r requirements.txt
-  - pip install coverage codecov pytest-cov
+  - pip install -e .[cache,docs,tests]
 
-script: pytest --cov=./
+script: >
+  pytest
+  --verbose --remote-data
+  -ra
+  --cov pandasdmx --cov-report term-missing
 
 after_success:
   - coverage combine

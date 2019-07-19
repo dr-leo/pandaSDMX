@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--NSI Web Service v6.8.0-->
+<!-- Note: this file was retrieved from http://data.un.org/WS/rest/codelist/UNSD/latest?references=parentsandsiblings, but has been abbreviated to only include elements relevant to pandaSDMX test cases. -->
+<Structure xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message">
+  <Header>
+    <ID>IDREF5</ID>
+    <Test>false</Test>
+    <Prepared>2018-11-11T15:00:35.9328895+01:00</Prepared>
+    <Sender id="Unknown" />
+    <Receiver id="Unknown" />
+  </Header>
+  <Structures>
+    <Codelists xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <Codelist id="CL_AGE_GROUP_SDG" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=UNSD:CL_AGE_GROUP_SDG(1.0)" agencyID="UNSD" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Age group code list</Name>
+        <Code id="NA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AGE_GROUP_SDG(1.0).NA">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not applicable (deprecated)</Name>
+        </Code>
+        <Code id="000_099_Y" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AGE_GROUP_SDG(1.0).000_099_Y">
+          <Annotations xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">
+            <Annotation>
+              <AnnotationTitle>PresentationTitle</AnnotationTitle>
+              <AnnotationText xml:lang="en">Total</AnnotationText>
+            </Annotation>
+          </Annotations>
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">All age ranges or no breakdown by age</Name>
+        </Code>
+      </Codelist>
+      <Codelist id="CL_AREA" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=UNSD:CL_AREA(1.0)" agencyID="UNSD" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Reference area code list</Name>
+        <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Represents a combination of reference area codes in M49 and ISO-3611 classifications.</Description>
+        <Code id="000" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).000">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Total</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active other code</Description>
+        </Code>
+        <Code id="001" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).001">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">World</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">World</Description>
+        </Code>
+        <Code id="002" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).002">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Africa</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Africa (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="006" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).006">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Asia [former]</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active region code</Description>
+        </Code>
+        <Code id="007" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).007">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Europe [former]</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Not active region code</Description>
+        </Code>
+        <Code id="009" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).009">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Oceania</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Oceania (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="010" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).010">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Antarctica</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Antarctica (M49)</Description>
+          <Parent>
+            <Ref id="001" xmlns="" />
+          </Parent>
+        </Code>
+        <Code id="015" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AREA(1.0).015">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Northern Africa</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Northern Africa (M49)</Description>
+          <Parent>
+            <Ref id="002" xmlns="" />
+          </Parent>
+        </Code>
+      </Codelist>
+    </Codelists>
+    <Concepts xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <ConceptScheme id="MDG_DATA_CONCEPTS" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=IAEG:MDG_DATA_CONCEPTS(1.0)" agencyID="IAEG" version="1.0" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Data Concepts for MDG Indicators</Name>
+        <Concept id="TIME_DETAIL" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IAEG:MDG_DATA_CONCEPTS(1.0).TIME_DETAIL">
+          <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">Time period details</Name>
+          <Description xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">When TIME_PERIOD refers to a date range, this attribute is used to provide METADATA on the actual range the observation refers to (e.g. for period '2001-2003' TIME_PERIOD would be 2002 but the actual dates --2001-2003-- would be expressed here).</Description>
+        </Concept>
+      </ConceptScheme>
+    </Concepts>
+    <DataStructures xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure">
+      <DataStructure id="CountryData" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=UNSD:CountryData(1.4)" agencyID="UNSD" version="1.4" isFinal="true">
+        <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">SDMX-CountryData</Name>
+        <DataStructureComponents>
+          <DimensionList id="DimensionDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DimensionDescriptor=UNSD:CountryData(1.4).DimensionDescriptor"/>
+          <AttributeList id="AttributeDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.AttributeDescriptor=UNSD:CountryData(1.4).AttributeDescriptor">
+            <Attribute id="TIME_DETAIL" urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=UNSD:CountryData(1.4).TIME_DETAIL" assignmentStatus="Conditional">
+              <ConceptIdentity>
+                <Ref id="TIME_DETAIL" maintainableParentID="MDG_DATA_CONCEPTS" maintainableParentVersion="1.0" agencyID="IAEG" package="conceptscheme" class="Concept" xmlns="" />
+              </ConceptIdentity>
+              <AttributeRelationship>
+                <PrimaryMeasure>
+                  <Ref id="OBS_VALUE" xmlns="" />
+                </PrimaryMeasure>
+              </AttributeRelationship>
+            </Attribute>
+          </AttributeList>
+          <MeasureList id="MeasureDescriptor" urn="urn:sdmx:org.sdmx.infomodel.datastructure.MeasureDescriptor=UNSD:CountryData(1.4).MeasureDescriptor"/>
+        </DataStructureComponents>
+      </DataStructure>
+    </DataStructures>
+  </Structures>
+</Structure>

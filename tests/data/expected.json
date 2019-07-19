@@ -1,0 +1,10 @@
+{
+  "ecb_exr_ng_flat.xml": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "ecb_exr_ng_ts_gf.xml": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "ecb_exr_ng_ts.xml": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "ecb_exr_ng_xs.xml": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "exr-action-delete.json": {"header": [0, 1, 2, 3, 4]},
+  "exr-cross-section.json": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "exr-flat.json": {"index_col": [0, 1, 2, 3, 4, 5]},
+  "exr-time-series.json": {"index_col": [0, 1, 2, 3, 4, 5]}
+}

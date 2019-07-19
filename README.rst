@@ -7,12 +7,14 @@ pandaSDMX: Statistical Data and Metadata eXchange
    :target: https://codecov.io/gh/dr-leo/pandaSDMX
 .. image:: https://readthedocs.org/projects/pandasdmx/badge/?version=latest
    :target: https://pandasdmx.readthedocs.io
+   :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/pandaSDMX.svg
    :target: https://pypi.org/project/pandaSDMX
 
 | Author: Dr. Leo <fhaxbox66@gmail.com>
 | License: Apache 2.0
-| Development website: https://github.com/dr-leo/pandasdmx
+| Development website: https://github.com/dr-leo/pandasdmx/
+| PyPI: https://pypi.org/project/pandaSDMX/
 
 Purpose of this project
 -----------------------

@@ -1,0 +1,5 @@
+FREQ CURRENCY_DENOM EXR_TYPE EXR_SUFFIX TIME_PERIOD CURRENCY value
+D    EUR            SP00     A          2013-01-18  NZD       1.5931
+D    EUR            SP00     A          2013-01-18  RUB      40.3426
+D    EUR            SP00     A          2013-01-21  NZD       1.5925
+D    EUR            SP00     A          2013-01-21  RUB      40.3000

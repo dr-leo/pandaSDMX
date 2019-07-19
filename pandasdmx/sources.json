@@ -1,0 +1,125 @@
+[
+  {
+    "id": "ABS",
+    "data_content_type": "JSON",
+    "url": "http://stat.data.abs.gov.au/sdmx-json",
+    "name": "Australian Bureau of Statistics"
+  },
+  {
+    "id": "ECB",
+    "resources": {
+        "data": {
+            "headers": {}
+        }
+    },
+    "url": "http://sdw-wsrest.ecb.int/service",
+    "name": "European Central Bank",
+    "supports": {"preview": true}
+  },
+  {
+    "id": "ESTAT",
+    "documentation": "http://data.un.org/Host.aspx?Content=API",
+    "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+    "name": "Eurostat",
+    "supports": {
+      "agencyscheme": false,
+      "categoryscheme": false,
+      "codelist": false,
+      "conceptscheme": false,
+      "provisionagreement": false
+    }
+  },
+  {
+    "id": "ILO",
+    "name": "International Labor Organization",
+    "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
+    "headers": {
+        "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+    },
+    "supports": {
+      "provisionagreement": false
+    }
+  },
+  {
+    "id": "IMF",
+    "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
+    "name": "International Monetary Fund"
+  },
+  {
+    "id": "INEGI",
+    "url": "http://sdmx.snieg.mx/service/rest",
+    "name": "Instituto Nacional de Estadística y Geografía (MX)",
+    "supports": {
+      "agencyscheme": false,
+      "provisionagreement": false,
+      "structure-specific data": true
+    }
+  },
+  {
+    "id": "INSEE",
+    "name": "Institut national de la statistique et des études économiques (FR)",
+    "url": "https://www.bdm.insee.fr/series/sdmx",
+    "headers": {
+        "data": {
+            "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+        }
+    },
+    "supports": {"provisionagreement": false}
+  },
+  {
+    "id": "ISTAT",
+    "name": "Instituto Nationale di Statistica (IT)",
+    "url": "http://sdmx.istat.it/SDMXWS/rest",
+    "supports": {
+      "agencyscheme": false,
+      "provisionagreement": false,
+      "structure-specific data": true
+    }
+  },
+  {
+    "id": "OECD",
+    "data_content_type": "JSON",
+    "url": "http://stats.oecd.org/SDMX-JSON",
+    "name": "Organisation for Economic Co-operation and Development"
+  },
+  {
+    "id": "NB",
+    "name": "Norges Bank (NO)",
+    "url": "https://data.norges-bank.no/api",
+    "supports": {"categoryscheme": false, "structure-specific data": true},
+    "headers": {
+        "data": {
+            "accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+        }
+    }
+  },
+  {
+    "id": "SGR",
+    "url": "https://registry.sdmx.org/ws/rest",
+    "name": "SDMX Global Registry"
+  },
+  {
+    "id": "UNESCO",
+    "name": "UN Educational, Scientific and Cultural Organization",
+    "url": "http://api.uis.unesco.org/sdmx",
+    "headers": {
+        "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+    },
+    "supports": {"datastructure": false}
+  },
+  {
+    "id": "UNSD",
+    "name": "United Nations Statistics Division",
+    "url": "http://data.un.org/WS/rest",
+    "supports": {"preview": true, "provisionagreement": false}
+  },
+  {
+    "id": "WB",
+    "name": "World Bank World Integrated Trade Solution",
+    "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
+    "supports": {
+      "agencyscheme": false,
+      "provisionagreement": false
+    }
+  }
+]

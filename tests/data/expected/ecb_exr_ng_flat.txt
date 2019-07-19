@@ -1,0 +1,13 @@
+FREQ CURRENCY CURRENCY_DENOM EXR_TYPE EXR_VAR TIME_PERIOD value
+M    CHF      EUR            SP00     E       2010-08     1.3413
+M    CHF      EUR            SP00     E       2010-09     1.3089
+M    CHF      EUR            SP00     E       2010-10     1.3452
+M    GBP      EUR            SP00     E       2010-08     0.82363
+M    GBP      EUR            SP00     E       2010-09     0.83987
+M    GBP      EUR            SP00     E       2010-10     0.87637
+M    JPY      EUR            SP00     E       2010-08     110.04
+M    JPY      EUR            SP00     E       2010-09     110.26
+M    JPY      EUR            SP00     E       2010-10     113.67
+M    USD      EUR            SP00     E       2010-08     1.2894
+M    USD      EUR            SP00     E       2010-09     1.3067
+M    USD      EUR            SP00     E       2010-10     1.3898

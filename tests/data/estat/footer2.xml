@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<message:GenericData xmlns:footer="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer" xmlns:generic="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <message:Header>
+    <message:ID>cf8d69898599728d6ce51b5b9684de21</message:ID>
+    <message:Test>false</message:Test>
+    <message:Prepared>2018-11-23T13:15:30</message:Prepared>
+    <message:Sender id="ESTAT">
+      <common:Name xml:lang="en">Eurostat</common:Name>
+      <message:Timezone>+01:00</message:Timezone>
+    </message:Sender>
+    <message:Receiver id="RECEIVER"/>
+    <message:DataSetAction>Append</message:DataSetAction>
+    <message:DataSetID>nama_10_gdp</message:DataSetID>
+  </message:Header>
+  <footer:Footer>
+    <footer:Message code="413" severity="Infomation">
+      <common:Text xml:lang="en">Due to the large query the response will be written to a file which will be located under URL: http://ec.europa.eu/eurostat/SDMX/diss-web/file/7JUdWyAy4fmjBSWT</common:Text>
+      <common:Text xml:lang="en">http://ec.europa.eu/eurostat/SDMX/diss-web/file/7JUdWyAy4fmjBSWT</common:Text>
+      <common:Text xml:lang="en">Please check the location periodic every 5 minutes or at your preference.</common:Text>
+    </footer:Message>
+  </footer:Footer>
+</message:GenericData>

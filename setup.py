@@ -1,40 +1,38 @@
-# encoding: utf-8
-
-# pandaSDMX is licensed under the Apache 2.0 license a copy of which
-# is included in the source distribution of pandaSDMX.
-# This is notwithstanding any licenses of third-party software included in
-# this distribution.
-# (c) 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, all rights reserved
-
-
-from setuptools import setup
+from setuptools import find_packages, setup
 from codecs import open
-# import re
 
 
-# Get version
-ver = '0.9'
+INSTALL_REQUIRES = [
+    'lxml>=3.6',
+    'pandas>=0.20',
+    'pydantic>=0.25',
+    'requests>=2.7',
+    'setuptools>19',
+    ]
 
-# Publish README on PYPI when uploading.
-long_descr = open('description.rst', 'r', encoding='utf8').read()
+TESTS_REQUIRE = [
+    'pytest>=3.3',
+    'pytest-remotedata>=0.3.1',
+    'requests-mock>=1.4',
+    ]
+
+EXTRAS_REQUIRE = {
+    'cache': ['requests_cache'],
+    'docs': ['sphinx>=1.5', 'ipython'],
+    'tests': TESTS_REQUIRE,
+    }
 
 setup(name='pandaSDMX',
-      version=ver,
+      version='1.0.0-dev',
       description='A client for SDMX - Statistical Data and Metadata eXchange',
-      long_description=long_descr,
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',
-      packages=['pandasdmx', 'pandasdmx.reader', 'pandasdmx.writer',
-                'pandasdmx.utils'],
-      package_data={'pandasdmx': ['agencies.json']},
+      packages=find_packages(),
+      package_data={'pandasdmx': ['sources.json']},
       url='https://github.com/dr-leo/pandasdmx',
-      install_requires=[
-          'pandas',
-          'lxml',
-          'requests',
-          'jsonpath-rw',
-          'setuptools'
-      ],
+      install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
+      tests_require=TESTS_REQUIRE,
       keywords='statistics SDMX pandas data economics science',
       zip_safe=True,
       provides=['pandasdmx'],
@@ -46,13 +44,9 @@ setup(name='pandaSDMX',
           'License :: OSI Approved :: Apache Software License',
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
-          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.7',
           'Topic :: Scientific/Engineering',
           'Topic :: Scientific/Engineering :: Information Analysis'
-      ]
-
+          ]
       )

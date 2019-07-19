@@ -1,4 +1,14 @@
 *.cache
 *.egg-info
-.coverage
+*.pdf
 __pycache__
+
+# Development and build files
+.coverage
+.pytest_cache
+build
+dist
+doc/_build
+prof/
+tests/data/cache
+htmlcov

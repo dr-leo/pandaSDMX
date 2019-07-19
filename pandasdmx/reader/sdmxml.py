@@ -569,13 +569,28 @@ class Reader(BaseReader):
                                 elem.attrib.pop('class')])
             cls = _parse_class['ref'][cls_key]
         except KeyError:
-            cls = hint if hint else self._stack[-1].capitalize()
+            # Use optional hint at class name
+            cls = hint or self._stack[-1].capitalize()
+
             if cls == 'Parent':
                 # The parent of an Item in an ItemScheme has the same class as
                 # the Item
                 cls = self._stack[-2].capitalize()
-            elif cls == 'Ref' and 'dimensionreference' in self._stack[-2]:
-                return self._index[('Dimension', ref_id)]
+            elif ((cls == 'Ref' and 'dimensionreference' in self._stack[-2]) or
+                  (cls == 'Dimension' and
+                   self._stack[-2] == 'attributerelationship')):
+                # References to Dimensions. Dimensions are not
+                # MaintainableArtefacts, but are targets for references.
+                # TODO disambiguate the same Dimension appearing in multiple
+                #      DataStructures/DimensionDescriptors in the same Message
+                for dim_cls in 'Dimension', 'TimeDimension':
+                    try:
+                        return self._index[(dim_cls, ref_id)]
+                    except KeyError:
+                        continue
+
+                # No matching dimension found
+                raise IndexError((dim_cls, ref_id))
 
         try:
             # Class of the maintainable parent object

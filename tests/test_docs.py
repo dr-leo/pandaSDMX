@@ -137,7 +137,7 @@ def test_doc_usage_structure():
     assert sdmx.to_pandas(dsd.dimensions) == ['FREQ', 'CURRENCY',
         'CURRENCY_DENOM', 'EXR_TYPE', 'EXR_SUFFIX', 'TIME_PERIOD']
 
-    cl = sdmx.to_pandas(msg2.codelist['CL_CURRENCY']).head()
+    cl = sdmx.to_pandas(msg2.codelist['CL_CURRENCY']).sort_index()
     expected = pd.Series({
         'ADF': 'Andorran Franc (1-1 peg to the French franc)',
         'ADP': 'Andorran Peseta (1-1 peg to the Spanish peseta)',
@@ -146,7 +146,7 @@ def test_doc_usage_structure():
         'AFN': 'Afghanistan, Afghanis',
         }, name='Currency code list') \
         .rename_axis('CL_CURRENCY')
-    assert_pd_equal(cl, expected)
+    assert_pd_equal(cl.head(), expected)
 
 
 @pytest.mark.remote_data

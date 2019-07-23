@@ -145,10 +145,10 @@ class InternationalString:
 
     @classmethod
     def __get_validators__(cls):
-        yield cls.validate
+        yield cls.__validate
 
     @classmethod
-    def validate(cls, value, values, field):
+    def __validate(cls, value, values, field):
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
 

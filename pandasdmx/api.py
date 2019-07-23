@@ -23,7 +23,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-class Request(object):
+class Request:
     """Client for a SDMX data provider.
 
     Parameters

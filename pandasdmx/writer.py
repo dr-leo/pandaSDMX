@@ -6,6 +6,7 @@ from pandasdmx.model import (
     AgencyScheme,
     DataflowDefinition,
     DataStructureDefinition,
+    DataSet,
     Dimension,
     # DimensionDescriptor,
     CategoryScheme,
@@ -17,7 +18,7 @@ from pandasdmx.model import (
     Observation,
     SeriesKey,
     TimeDimension,
-    )
+)
 from pandasdmx.util import DictLike
 
 
@@ -32,7 +33,7 @@ _alias = {
     DataStructureDefinition: NameableArtefact,
     Dimension: Component,
     TimeDimension: Component,
-    }
+}
 
 
 def write(obj, *args, **kwargs):
@@ -58,6 +59,8 @@ def write_list(obj, *args, **kwargs):
     """List of objects."""
     if isinstance(obj[0], Observation):
         return write_dataset(obj, *args, **kwargs)
+    elif isinstance(obj[0], DataSet):
+        return write_dataset(obj[0], *args, **kwargs)
     elif isinstance(obj[0], SeriesKey):
         return write_serieskeys(obj, *args, **kwargs)
     else:
@@ -131,7 +134,7 @@ def write_structuremessage(obj, include=None, **kwargs):
         'dataflow',
         'structure',
         'organisation_scheme',
-        }
+    }
 
     # Handle arguments
     if include is None:

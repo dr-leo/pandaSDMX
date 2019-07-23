@@ -53,6 +53,9 @@ class TestGenericFlatDataSet(DataMessageTest):
     def test_write2pandas(self, msg):
         data_series = pandasdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
+        data_series2 = pandasdmx.to_pandas(msg.data)
+        assert isinstance(data_series2, pd.Series)
+        assert data_series == data_series2
 
 
 class TestGenericSeriesDataSet(DataMessageTest):

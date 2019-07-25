@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas.testing as pdt
 import pandasdmx
 from pandasdmx import message, model
 
@@ -50,12 +51,16 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert o0.attrib.OBS_STATUS == 'A'
         assert o0.attrib.DECIMALS == '4'
 
-    def test_write2pandas(self, msg):
+    def test_to_pandas(self, msg):
+        # Single data series is converted to pd.Series
         data_series = pandasdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
-        data_series2 = pandasdmx.to_pandas(msg.data)
-        assert isinstance(data_series2, pd.Series)
-        assert data_series == data_series2
+
+        # When len(msg.data) is 1, the data series in a single Dataset are
+        # unwrapped automatically
+        assert len(msg.data) == 1
+        data_series2 = pandasdmx.to_pandas(msg.data)  # NB no '[0]' index
+        pdt.assert_series_equal(data_series, data_series2)
 
 
 class TestGenericSeriesDataSet(DataMessageTest):

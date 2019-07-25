@@ -59,7 +59,7 @@ def write_list(obj, *args, **kwargs):
     """List of objects."""
     if isinstance(obj[0], Observation):
         return write_dataset(obj, *args, **kwargs)
-    elif isinstance(obj[0], DataSet):
+    elif isinstance(obj[0], DataSet) and len(obj) == 1:
         return write_dataset(obj[0], *args, **kwargs)
     elif isinstance(obj[0], SeriesKey):
         return write_serieskeys(obj, *args, **kwargs)

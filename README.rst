@@ -37,10 +37,13 @@ agencies, central banks, and international organisations.
 
 …and much more.
 
+
 Documentation
 -------------
 
-See https://pandasdmx.readthedocs.io/en/latest.
+See https://pandasdmx.readthedocs.io/en/latest for the latest docs, or
+https://pandasdmx.readthedocs.io/en/v0.9 for the 0.9 release.
+
 
 History
 -------

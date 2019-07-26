@@ -45,27 +45,34 @@ SDMX-JSON
 
 ``writer``: Convert SDMX to pandas objects
 ------------------------------------------
-Convert :mod:`model <pandasdmx.model>` and :mod:`message <pandasdmx.message>`
-objects to :mod:`pandas` objects.
-
-.. versionchanged:: 0.6
-
-   Two writers are available:
-
-   - ``data2pandas`` exports a dataset or portions thereof to a pandas DataFrame
-     or Series.
-   - ``structure2pd`` exports structural metadata such as lists of data-flow
-     definitions, code-lists, concept-schemes etc. which are contained in a
-     structural SDMX message as a dict mapping resource names (e.g. 'dataflow',
-     'codelist') to pandas DataFrames.
-
 .. versionchanged:: 1.0
 
-   The :meth:`write <pandasdmx.writer.write>` method
-   (:meth:`pandasdmx.to_pandas`) handles all types of objects.
+   :meth:`pandasdmx.to_pandas` (via :meth:`write <pandasdmx.writer.write>`)
+   handles all types of objects, replacing the earlier, separate
+   ``data2pandas`` and ``structure2pd`` writers.
 
 .. automodule:: pandasdmx.writer
    :members:
+   :exclude-members: write
+
+   .. automethod:: pandasdmx.writer.write
+
+      .. autosummary::
+         write_component
+         write_dataset
+         write_dict
+         write_dimensiondescriptor
+         write_itemscheme
+         write_list
+         write_nameableartefact
+         write_response
+         write_serieskeys
+         write_structuremessage
+
+.. todo::
+   Support selection of language for conversion of
+   :class:`InternationalString <pandasdmx.model.InternationalString>`.
+
 
 
 ``remote``: Access SDMX REST web services

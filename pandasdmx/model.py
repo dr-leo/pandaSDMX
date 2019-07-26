@@ -86,6 +86,9 @@ class InternationalString:
         # Using a bare string, implicitly for the DEFAULT_LOCALE
         f.name = "Name in DEFAULT_LOCALE language"
 
+    Only the first method preserves existing localizations; the latter three
+    replace them.
+
     """
     localizations: Dict[str, str] = {}
 
@@ -98,6 +101,8 @@ class InternationalString:
             value = {value[0]: value[1]}
         elif value is None:
             value = dict(kwargs)
+        elif isinstance(value, dict):
+            pass
         else:
             raise ValueError(value, kwargs)
 
@@ -148,7 +153,7 @@ class InternationalString:
         yield cls.__validate
 
     @classmethod
-    def __validate(cls, value, values, field):
+    def __validate(cls, value, values, config, field):
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
 

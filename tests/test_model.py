@@ -70,14 +70,24 @@ def test_internationalstring():
     assert len(i.name.localizations) == 2
     assert i.name['FR'] == 'Banque centrale européenne'
 
+    # repr() gives all localizations
+    assert repr(i.name) == '\n'.join(sorted([
+        'DE: Europäische Zentralbank',
+        'FR: Banque centrale européenne',
+        ]))
+
     # Setting with a string directly sets the value in the default locale
     i.name = 'European Central Bank'
-    assert len(i.name.localizations) == 3
+    assert len(i.name.localizations) == 1
     assert i.name.localizations[DEFAULT_LOCALE] == 'European Central Bank'
 
     # Setting with a (locale, text) tuple
     i.name = ('FI', 'Euroopan keskuspankki')
-    assert len(i.name.localizations) == 4
+    assert len(i.name.localizations) == 1
+
+    # Setting with a dict()
+    i.name = {'IT': 'Banca centrale europea'}
+    assert len(i.name.localizations) == 1
 
     # Using some other type is an error
     with raises(pydantic.ValidationError):
@@ -88,13 +98,6 @@ def test_internationalstring():
 
     # str() uses the default locale
     assert str(i2.name) == 'European Central Bank'
-
-    # repr() gives all localizations
-    assert repr(i.name) == '\n'.join(sorted([
-        '{}: European Central Bank'.format(DEFAULT_LOCALE),
-        'DE: Europäische Zentralbank',
-        'FR: Banque centrale européenne',
-        'FI: Euroopan keskuspankki']))
 
 
 def test_item():

@@ -1,11 +1,10 @@
 from setuptools import find_packages, setup
-from codecs import open
 
 
 INSTALL_REQUIRES = [
     'lxml>=3.6',
     'pandas>=0.20',
-    'pydantic>=0.25',
+    'pydantic>=0.31',
     'requests>=2.7',
     'setuptools>19',
     ]

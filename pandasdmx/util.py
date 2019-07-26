@@ -162,7 +162,6 @@ class DictLike(OrderedDict[KT, VT]):
             return result
 
 
-
 def validate_dictlike(*fields):
     def decorator(cls):
         v = make_generic_validator(DictLike.validate)

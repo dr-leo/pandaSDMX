@@ -38,7 +38,7 @@ to obtain data on Greece, Ireland and Spain only.
         )
 
     # Convert to a pandas.Series and select on the 'AGE' dimension
-    data = (sdmx.to_pandas(resp.data[0])
+    data = (sdmx.to_pandas(resp)
                 .xs('TOTAL', level='AGE', drop_level=False))
 
     # Explore the data set. First, show dimension names

@@ -162,6 +162,20 @@ class DictLike(OrderedDict[KT, VT]):
             return result
 
 
+def summarize_dictlike(dl, maxwidth=72):
+    """Return a string summary of the DictLike contents."""
+    value_cls = dl[0].__class__.__name__
+    count = len(dl)
+    keys = ' '.join(dl.keys())
+    result = f'{value_cls} ({count}): {keys}'
+
+    if len(result) > maxwidth:
+        # Truncate the list of keys
+        result = result[:maxwidth - 3] + '...'
+
+    return result
+
+
 def validate_dictlike(*fields):
     def decorator(cls):
         v = make_generic_validator(DictLike.validate)

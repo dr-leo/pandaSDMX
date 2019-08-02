@@ -24,8 +24,17 @@ from pandasdmx.model import (
     Item,
     ProvisionAgreement,
     )
-from pandasdmx.util import BaseModel, DictLike
+from pandasdmx.util import BaseModel, DictLike, summarize_dictlike
 from requests import Response
+
+
+def _summarize(obj, fields):
+    """Helper method for __repr__ on Header and Message (sub)classes."""
+    for name in fields:
+        attr = getattr(obj, name)
+        if attr is None:
+            continue
+        yield f'{name}: {attr!r}'
 
 
 class Header(BaseModel):
@@ -34,6 +43,12 @@ class Header(BaseModel):
     prepared: Text = None
     receiver: Text = None
     sender: Union[Item, Text] = None
+
+    def __repr__(self):
+        """String representation."""
+        lines = ['<Header>']
+        lines.extend(_summarize(self, self.__fields__.keys()))
+        return '\n  '.join(lines)
 
 
 class Footer(BaseModel):
@@ -57,6 +72,18 @@ class Message(BaseModel):
     #: :class:`requests.Response` instance.
     response: Response = None
 
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        """String representation."""
+        lines = [
+            f'<pandasdmx.{self.__class__.__name__}>',
+            repr(self.header).replace('\n', '\n  '),
+        ]
+        lines.extend(_summarize(self, ['footer', 'response']))
+        return '\n  '.join(lines)
+
 
 class ErrorMessage(Message):
     pass
@@ -71,6 +98,19 @@ class StructureMessage(Message):
     structure: DictLike[str, DataStructureDefinition] = DictLike()
     organisation_scheme: DictLike[str, AgencyScheme] = DictLike()
     provisionagreement: DictLike[str, ProvisionAgreement] = DictLike()
+
+    def __repr__(self):
+        """String representation."""
+        lines = [super().__repr__()]
+
+        # StructureMessage contents
+        for name in dir(self):
+            attr = getattr(self, name)
+            if not isinstance(attr, DictLike) or len(attr) == 0:
+                continue
+            lines.append(summarize_dictlike(attr))
+
+        return '\n  '.join(lines)
 
 
 class DataMessage(Message):
@@ -88,3 +128,14 @@ class DataMessage(Message):
     def structure(self):
         """The DataStructureDefinition used in the DataMessage.dataflow."""
         return self.dataflow.structure
+
+    def __repr__(self):
+        """String representation."""
+        lines = [super().__repr__()]
+
+        # DataMessage contents
+        if len(self.data):
+            lines.append('DataSet ({})'.format(len(self.data)))
+        lines.extend(_summarize(self, ('dataflow', 'observation_dimension')))
+
+        return '\n  '.join(lines)

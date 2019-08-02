@@ -58,10 +58,10 @@ def test_request_make_series_key():
 
 
 @pytest.mark.remote_data
-def test_request_url():
+def test_read_url():
     # URL can be queried without instantiating Request
-    sdmx.Request.url('http://sdw-wsrest.ecb.int/service/datastructure/ECB/'
-                     'ECB_EXR1/latest?references=all')
+    sdmx.read_url('http://sdw-wsrest.ecb.int/service/datastructure/ECB/'
+                  'ECB_EXR1/latest?references=all')
 
 
 @pytest.mark.remote_data

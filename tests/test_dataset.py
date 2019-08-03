@@ -314,7 +314,7 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         # assert isinstance(g_attrib, tuple)
 
     def test_footer(self):
-        f = pandasdmx.open_file(test_data_path / 'estat' / 'footer.xml').footer
+        f = pandasdmx.read_sdmx(test_data_path / 'estat' / 'footer.xml').footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

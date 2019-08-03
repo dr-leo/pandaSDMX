@@ -1,4 +1,4 @@
-from pandasdmx.api import Request, open_file, read_url
+from pandasdmx.api import Request, read_sdmx, read_url
 from pandasdmx.source import add_source, list_sources
 from pandasdmx.writer import write as to_pandas
 import logging
@@ -7,7 +7,7 @@ __all__ = [
     'Request',
     'add_source',
     'list_sources',
-    'open_file',
+    'read_sdmx',
     'read_url',
     'to_pandas',
     ]

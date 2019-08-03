@@ -60,7 +60,7 @@ def pytest_generate_tests(metafunc):
 
 
 def test_write_data_arguments():
-    msg = sdmx.open_file(test_files(kind='data')['argvalues'][0])
+    msg = sdmx.read_sdmx(test_files(kind='data')['argvalues'][0])
 
     # Attributes must be a string
     with raises(TypeError):
@@ -72,7 +72,7 @@ def test_write_data_arguments():
 
 
 def test_write_data(data_path):
-    msg = sdmx.open_file(data_path)
+    msg = sdmx.read_sdmx(data_path)
 
     result = sdmx.to_pandas(msg)
 
@@ -87,7 +87,7 @@ def test_write_data(data_path):
 
 @pytest.mark.parametrize('path', **test_files(kind='data'))
 def test_write_data_attributes(path):
-    msg = sdmx.open_file(path)
+    msg = sdmx.read_sdmx(path)
 
     result = sdmx.to_pandas(msg, attributes='osgd')
     # TODO incomplete
@@ -97,7 +97,7 @@ def test_write_data_attributes(path):
 def test_write_agencyscheme():
     # Convert an agency scheme
     with specimen('ecb_orgscheme.xml') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
         data = sdmx.to_pandas(msg)
 
     assert data['organisation_scheme']['AGENCIES']['ESTAT'] == 'Eurostat'
@@ -105,7 +105,7 @@ def test_write_agencyscheme():
 
 def test_write_categoryscheme():
     with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
         print(msg.category_scheme)
         data = sdmx.to_pandas(msg)
 
@@ -120,7 +120,7 @@ def test_write_categoryscheme():
 
 def test_write_codelist():
     # Retrieve codelists from a test specimen and convert to pandas
-    dsd_common = sdmx.open_file(test_data_path / 'common' / 'common.xml')
+    dsd_common = sdmx.read_sdmx(test_data_path / 'common' / 'common.xml')
     codelists = sdmx.to_pandas(dsd_common)['codelist']
 
     # File contains 5 code lists
@@ -138,7 +138,7 @@ def test_write_codelist():
 
     # Hierarchical code list
     with specimen('unsd_codelist_partial.xml') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
 
     # Convert single codelist
     CL_AREA = sdmx.to_pandas(msg.codelist['CL_AREA'])
@@ -155,7 +155,7 @@ def test_write_codelist():
 
 def test_write_conceptscheme():
     with specimen('common.xml') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
         data = sdmx.to_pandas(msg)
 
     cdc = data['concept_scheme']['CROSS_DOMAIN_CONCEPTS']
@@ -165,7 +165,7 @@ def test_write_conceptscheme():
 def test_write_dataflow():
     # Read the INSEE dataflow definition
     with specimen('insee-dataflow') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
 
     # Convert to pandas
     result = sdmx.to_pandas(msg, include='dataflow')
@@ -187,7 +187,7 @@ def test_write_dataflow():
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_structure(path):
-    msg = sdmx.open_file(path)
+    msg = sdmx.read_sdmx(path)
 
     sdmx.to_pandas(msg)
 
@@ -198,7 +198,7 @@ def test_writer_structure(path):
 def test_write_constraint():
     """'constraint' argument to writer.write_dataset."""
     with specimen('generic/ecb_exr_ng_ts.xml') as f:
-        msg = sdmx.open_file(f)
+        msg = sdmx.read_sdmx(f)
 
     # Fetch the message's DSD
     assert msg.structure.is_external_reference

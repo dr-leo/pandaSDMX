@@ -51,5 +51,5 @@ EXPECTED = {
 def test_message_repr():
     for pattern, result in EXPECTED.items():
         with specimen(pattern) as f:
-            msg = sdmx.open_file(f)
+            msg = sdmx.read_sdmx(f)
         assert str(msg) == result

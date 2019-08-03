@@ -54,14 +54,14 @@ def test_flat():
     # Write to pd.Dataframe
     df1 = pandasdmx.to_pandas(msg)
 
-    ref = pandasdmx.open_file(test_data_path / 'json' / 'exr-flat.json')
+    ref = pandasdmx.read_sdmx(test_data_path / 'json' / 'exr-flat.json')
     df2 = pandasdmx.to_pandas(ref)
 
     assert_pd_equal(df1, df2)
 
 
 def test_bare_series():
-    ref = pandasdmx.open_file(test_data_path / 'exr' / 'ecb_exr_ng' /
+    ref = pandasdmx.read_sdmx(test_data_path / 'exr' / 'ecb_exr_ng' /
                               'generic' / 'ecb_exr_ng_ts.xml')
 
     # TODO generate the series and observations

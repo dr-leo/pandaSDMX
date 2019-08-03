@@ -12,17 +12,17 @@ warnings.filterwarnings('error')
 # Read example data files
 @pytest.mark.parametrize('path', **test_files(format='xml', kind='data'))
 def test_read_xml(path):
-    pandasdmx.open_file(path)
+    pandasdmx.read_sdmx(path)
 
 
 # Read example structure files
 @pytest.mark.parametrize('path', **test_files(format='xml', kind='structure'))
 def test_read_xml_structure(path):
-    pandasdmx.open_file(path)
+    pandasdmx.read_sdmx(path)
 
 
 def test_read_xml_structure_insee():
-    msg = pandasdmx.open_file(test_data_path / 'insee' /
+    msg = pandasdmx.read_sdmx(test_data_path / 'insee' /
                               'insee-IPI-2010-A21-datastructure.xml')
 
     # Same objects referenced

@@ -61,6 +61,10 @@ class Request:
         """Convenience methods."""
         return partial(self.get, Resource[name])
 
+    def __dir__(self):
+        """Include convenience methods in dir()."""
+        return sorted(super().__dir__() + [ep.name for ep in Resource])
+
     def clear_cache(self):
         self.cache.clear()
 

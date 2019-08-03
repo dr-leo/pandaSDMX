@@ -41,31 +41,31 @@ class TestINSEE:
     def test_load_dataset(self, req):
         dataset_code = 'IPI-2010-A21'
 
-        '''load all dataflows'''
+        # Load all dataflows
         dataflows_response = sdmx.read_sdmx(DATAFLOW_FP)
         dataflows = dataflows_response.dataflow
 
         assert len(dataflows) == 663
         assert dataset_code in dataflows
 
-        '''load datastructure for current dataset_code'''
+        # Load datastructure for current dataset_code
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
         datastructure_response = sdmx.read_sdmx(fp_datastructure)
         assert dataset_code in datastructure_response.dataflow
         dsd = datastructure_response.dataflow[dataset_code].structure
 
-        '''Verify dimensions list'''
+        # Verify dimensions list
         dimensions = OrderedDict([dim.id, dim] for dim in
                                  dsd.dimensions if dim.id not in
                                  ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
         assert dim_keys == ['FREQ', 'PRODUIT', 'NATURE']
 
-        '''load datas for the current dataset'''
+        # Load datas for the current dataset
         fp_data = DATASETS[dataset_code]['data-fp']
         data = sdmx.read_sdmx(fp_data)
 
-        '''Verify series count and values'''
+        # Verify series count and values
         # CHANGED: dataset index added; list() not required
         series = data.data[0].series
         series_count = len(series)
@@ -84,8 +84,7 @@ class TestINSEE:
         assert last_obs.value == '139.22'
 
     def test_fixe_key_names(self, req):
-        """Verify key or attribute contains '-' in name
-        """
+        """Verify key or attribute contains '-' in name."""
         dataset_code = 'CNA-2010-CONSO-SI-A17'
 
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']

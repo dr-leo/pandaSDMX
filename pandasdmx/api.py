@@ -248,6 +248,9 @@ class Request:
             If :obj:`True`, prepare and return a :class:`requests.Request`
             object, but do not execute the query. The prepared URL and headers
             can be examined by inspecting the returned object.
+        force : bool, optional
+            If :obj:`True`, execute the query even if the :attr:`source` does
+            not support queries for the given `resource_type`.
         **kwargs
             Other parameters (below) used to construct the query URL.
 
@@ -287,14 +290,19 @@ class Request:
             passed to the constructor. Defaults to `None`, i.e. use defaults
             from agency configuration.
         dsd : :class:`DataStructureDefinition`
-        force : bool
         version : str
 
         Returns
         -------
         :class:`pandasdmx.message.Message` or :class:`requests.Request`
-            The requested SDMX message or, if ``dry_run=True``, the prepared
-            request object.
+            The requested SDMX message or, if `dry_run` is :obj:`True`, the
+            prepared request object.
+
+        Raises
+        ------
+        NotImplementedError
+            If the :attr:`source` does not support the given `resource_type`
+            and `force` is not :obj:`True`.
 
         """
         req = self._request_from_args(

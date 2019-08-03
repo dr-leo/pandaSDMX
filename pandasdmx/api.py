@@ -451,11 +451,13 @@ def open_file(filename_or_obj, format=None):
             reader = readers[format]
             obj = open(str(filename_or_obj))
         else:
-            raise RuntimeError(('unable to identify SDMX file format from '
-                                'name "{}"; use format="..."')
-                               .format(filename_or_obj.name))
+            msg = ("cannot identify SDMX message format from file name "
+                   f"'{filename_or_obj.name}'; use  format='...'")
+            raise RuntimeError(msg)
     except AttributeError:
         # File is already open
+
+        # Read a line and then return the cursor to the initial position
         pos = filename_or_obj.tell()
         first_line = filename_or_obj.readline().strip()
         filename_or_obj.seek(pos)
@@ -465,7 +467,8 @@ def open_file(filename_or_obj, format=None):
         elif first_line.startswith('<'):
             reader = readers['XML']
         else:
-            raise ValueError(first_line)
+            msg = f"cannot infer SDMX message format from '{first_line[:5]}..'"
+            raise RuntimeError(msg)
 
         obj = filename_or_obj
 

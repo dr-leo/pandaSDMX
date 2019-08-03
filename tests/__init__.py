@@ -54,12 +54,12 @@ def test_files(format=None, kind=None):
 
 
 @contextmanager
-def specimen(pattern=''):
+def specimen(pattern='', opened=True):
     """Open the test specimen file with *match* in the name."""
     for path, f, k in _test_files:
         if path.match('*' + pattern + '*'):
             # str() here is for Python 3.5 compatibility
-            yield open(str(path))
+            yield open(str(path)) if opened else path
             break
 
 

@@ -94,11 +94,11 @@ SDMX messages in databases such as MongoDB, Redis or SQLite.  See the
 Load messages from file
 :::::::::::::::::::::::
 
-:meth:`open_file` can be used to load SDMX messages from local files:
+:meth:`read_sdmx` can be used to load SDMX messages from local files:
 
 .. ipython:: python
 
-    sdmx.open_file('saved_message.xml')
+    sdmx.read_sdmx('saved_message.xml')
 
 Obtain and explore metadata
 ---------------------------

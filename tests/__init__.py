@@ -103,8 +103,8 @@ class MessageTest:
 
     @pytest.fixture(scope='class')
     def msg(self):
-        import pandasdmx
-        return pandasdmx.open_file(self.path / self.filename)
+        import pandasdmx as sdmx
+        return sdmx.read_sdmx(self.path / self.filename)
 
 
 # thanks to xarray

@@ -43,7 +43,7 @@ Convert SDMX data to other formats
 `Pandas <https://pandas.pydata.org>`_ supports output to `many popular file formats <http://pandas.pydata.org/pandas-docs/stable/user_guide/io.html>`_.
 Call these methods on the :class:`pandas.DataFrame` objects returned by :meth:`pandasdmx.to_pandas`. For instance::
 
-    msg = sdmx.open_file('data.xml')
+    msg = sdmx.read_sdmx('data.xml')
     sdmx.to_pandas(msg).to_excel('data.xlsx')
 
 
@@ -65,11 +65,11 @@ pandaSDMX can also be used with `odo <https://github.com/blaze/odo>`_ by registe
 
     @odo.discover.register(PandaSDMX)
     def _discover(obj):
-        return odo.discover(sdmx.to_pandas(sdmx.open_file(obj.uri)))
+        return odo.discover(sdmx.to_pandas(sdmx.read_sdmx(obj.uri)))
 
     @odo.convert.register(pd.DataFrame, PandaSDMX)
     def _convert(obj, **kwargs):
-        msg = sdmx.open_file(obj.uri)
+        msg = sdmx.read_sdmx(obj.uri)
         return sdxm.to_pandas(msg, **keyfilter(op.contains(keywords(write)),
                                                kwargs))
 

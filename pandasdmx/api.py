@@ -469,7 +469,7 @@ class Request:
             return list(all_keys)
 
 
-def open_file(filename_or_obj, format=None):
+def read_sdmx(filename_or_obj, format=None):
     """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
 
     Parameters

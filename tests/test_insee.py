@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import pandasdmx
+import pandasdmx as sdmx
 from pandasdmx import Request
 import pytest
 
@@ -41,32 +41,31 @@ class TestINSEE:
     def test_load_dataset(self, req):
         dataset_code = 'IPI-2010-A21'
 
-        '''load all dataflows'''
-        dataflows_response = pandasdmx.open_file(DATAFLOW_FP)
+        # Load all dataflows
+        dataflows_response = sdmx.read_sdmx(DATAFLOW_FP)
         dataflows = dataflows_response.dataflow
 
         assert len(dataflows) == 663
         assert dataset_code in dataflows
 
-        '''load datastructure for current dataset_code'''
+        # Load datastructure for current dataset_code
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = pandasdmx.open_file(fp_datastructure)
+        datastructure_response = sdmx.read_sdmx(fp_datastructure)
         assert dataset_code in datastructure_response.dataflow
         dsd = datastructure_response.dataflow[dataset_code].structure
 
-        '''Verify dimensions list'''
+        # Verify dimensions list
         dimensions = OrderedDict([dim.id, dim] for dim in
                                  dsd.dimensions if dim.id not in
                                  ['TIME', 'TIME_PERIOD'])
         dim_keys = list(dimensions.keys())
         assert dim_keys == ['FREQ', 'PRODUIT', 'NATURE']
 
-        '''load datas for the current dataset'''
+        # Load datas for the current dataset
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = pandasdmx.open_file(fp_data)
+        data = sdmx.read_sdmx(fp_data)
 
-        '''Verify series count and values'''
-        # CHANGED: dataset index added; list() not required
+        # Verify series count and values
         series = data.data[0].series
         series_count = len(series)
         assert series_count == DATASETS[dataset_code]['series_count']
@@ -84,12 +83,11 @@ class TestINSEE:
         assert last_obs.value == '139.22'
 
     def test_fixe_key_names(self, req):
-        """Verify key or attribute contains '-' in name
-        """
+        """Verify key or attribute contains '-' in name."""
         dataset_code = 'CNA-2010-CONSO-SI-A17'
 
         fp_datastructure = DATASETS[dataset_code]['datastructure-fp']
-        datastructure_response = pandasdmx.open_file(fp_datastructure)
+        datastructure_response = sdmx.read_sdmx(fp_datastructure)
         assert dataset_code in datastructure_response.dataflow
         dsd = datastructure_response.dataflow[dataset_code].structure
 
@@ -100,11 +98,8 @@ class TestINSEE:
         assert dim_keys == ['SECT-INST', 'OPERATION', 'PRODUIT', 'PRIX']
 
         fp_data = DATASETS[dataset_code]['data-fp']
-        data = pandasdmx.open_file(fp_data)
-
-        # CHANGED: dataset index added; list() not required
+        data = sdmx.read_sdmx(fp_data)
         series = data.data[0].series
-
         series_key = list(series.keys())[0]
 
         assert (list(series_key.values.keys()) ==
@@ -120,6 +115,6 @@ class TestINSEE:
         # INSEE time series provide the FREQ value as attribute on the series
         # instead of a dimension. This caused a runtime error when writing as
         # pandas dataframe.
-        data_response = pandasdmx.open_file(
+        data_response = sdmx.read_sdmx(
             SERIES['UNEMPLOYMENT_CAT_A_B_C']['data-fp'])
-        pandasdmx.to_pandas(data_response)
+        sdmx.to_pandas(data_response)

@@ -62,7 +62,7 @@ class test_dsd_common(MessageTest):
 
 
 def test_exr_constraints():
-    m = sdmx.open_file(test_data_path / 'exr_flow.xml')
+    m = sdmx.read_sdmx(test_data_path / 'exr_flow.xml')
     ECB_EXR1 = m.structure['ECB_EXR1']
 
     # Test DimensionDescriptor

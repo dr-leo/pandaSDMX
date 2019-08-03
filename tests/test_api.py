@@ -8,7 +8,7 @@ import pytest
 from . import specimen
 
 
-def test_open_file(tmp_path):
+def test_read_sdmx(tmp_path):
     # Copy the file to a temporary file with an urecognizable suffix
     target = tmp_path / 'foo.badsuffix'
     with specimen('exr-flat.json', opened=False) as original:
@@ -18,20 +18,20 @@ def test_open_file(tmp_path):
     exc = ("cannot identify SDMX message format from file name 'foo.badsuffix'"
            "; use  format='...'")
     with pytest.raises(RuntimeError, match=exc):
-        sdmx.open_file(target)
+        sdmx.read_sdmx(target)
 
     # Using the format= kwarg suppresses the error
-    sdmx.open_file(target, format='JSON')
+    sdmx.read_sdmx(target, format='JSON')
 
     # Format can be inferred from an already-open file without extension
     with specimen('exr-flat.json') as f:
-        sdmx.open_file(f)
+        sdmx.read_sdmx(f)
 
     # Exception raised when the file contents don't allow to guess the format
     bad_file = StringIO('#! neither XML nor JSON')
     exc = "cannot infer SDMX message format from '#! ne..'"
     with pytest.raises(RuntimeError, match=exc):
-        sdmx.open_file(bad_file)
+        sdmx.read_sdmx(bad_file)
 
 
 

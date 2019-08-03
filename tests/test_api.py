@@ -1,14 +1,38 @@
+from io import StringIO
 import logging
 
 import pandas as pd
 import pandasdmx as sdmx
 import pytest
 
+from . import specimen
 
-def test_open_file():
+
+def test_open_file(tmp_path):
+    # Copy the file to a temporary file with an urecognizable suffix
+    target = tmp_path / 'foo.badsuffix'
+    with specimen('exr-flat.json', opened=False) as original:
+        target.open('w').write(original.read_text())
+
     # Can't infer message type for unknown file extension
-    with pytest.raises(RuntimeError):
-        sdmx.open_file('foo.badsuffix')
+    exc = ("cannot identify SDMX message format from file name 'foo.badsuffix'"
+           "; use  format='...'")
+    with pytest.raises(RuntimeError, match=exc):
+        sdmx.open_file(target)
+
+    # Using the format= kwarg suppresses the error
+    sdmx.open_file(target, format='JSON')
+
+    # Format can be inferred from an already-open file without extension
+    with specimen('exr-flat.json') as f:
+        sdmx.open_file(f)
+
+    # Exception raised when the file contents don't allow to guess the format
+    bad_file = StringIO('#! neither XML nor JSON')
+    exc = "cannot infer SDMX message format from '#! ne..'"
+    with pytest.raises(RuntimeError, match=exc):
+        sdmx.open_file(bad_file)
+
 
 
 def test_request():
@@ -24,6 +48,19 @@ def test_request():
 
     r.timeout = 300
     assert r.timeout == 300
+
+
+def test_request_get_exceptions():
+    """Tests of Request.get() that don't require remote data."""
+    req = sdmx.Request('ESTAT')
+
+    # Exception is raised on unrecognized arguments
+    exc = "unrecognized arguments: {'foo': 'bar'}"
+    with pytest.raises(ValueError, match=exc):
+        req.get('datastructure', foo='bar')
+
+    with pytest.raises(ValueError, match=exc):
+        sdmx.read_url('https://example.com', foo='bar')
 
 
 @pytest.mark.remote_data
@@ -58,10 +95,10 @@ def test_request_get_args():
 
 
 @pytest.mark.remote_data
-def test_request_url():
+def test_read_url():
     # URL can be queried without instantiating Request
-    sdmx.Request.url('http://sdw-wsrest.ecb.int/service/datastructure/ECB/'
-                     'ECB_EXR1/latest?references=all')
+    sdmx.read_url('http://sdw-wsrest.ecb.int/service/datastructure/ECB/'
+                  'ECB_EXR1/latest?references=all')
 
 
 @pytest.mark.remote_data

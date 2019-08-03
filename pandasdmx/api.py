@@ -44,11 +44,6 @@ class Request:
     #: :class:`pandasdmx.source.Source` for requests sent from the instance.
     source = None
 
-    @classmethod
-    def url(cls, url, **kwargs):
-        """Request a URL directly."""
-        return Request().get(url=url, **kwargs)
-
     def __init__(self, source=None, log_level=None, **session_opts):
         """Constructor."""
         try:
@@ -128,18 +123,11 @@ class Request:
 
     def _request_from_args(self, **kwargs):
         """Validate arguments and prepare pieces for a request."""
-        # Allow sources to modify request args
-        # TODO this should occur after most processing, defaults, checking etc.
-        #      are performed, so that core code does most of the work.
-        if self.source:
-            self.source.modify_request_args(kwargs)
-
         parameters = kwargs.pop('params', {})
         headers = kwargs.pop('headers', {})
 
         # Base URL
-        direct_url = kwargs.pop('url', None)
-        url_parts = [direct_url] if direct_url else [self.source.url]
+        url_parts = [self.source.url]
 
         # Resource arguments
         resource = kwargs.pop('resource', None)
@@ -170,13 +158,12 @@ class Request:
                 resource_id = resource.id
 
         force = kwargs.pop('force', False)
-        if not (force or direct_url or self.source.supports[resource_type]):
+        if not (force or self.source.supports[resource_type]):
             raise NotImplementedError(f'{self.source.id} does not support the'
                                       f'{resource_type!r} API endpoint; '
                                       'override using force=True')
 
-        if not direct_url:
-            url_parts.append(resource_type.name)
+        url_parts.append(resource_type.name)
 
         # Data provider ID to use in the URL
         provider = kwargs.pop('provider', None)
@@ -189,12 +176,10 @@ class Request:
             provider_id = provider if provider else getattr(self.source, 'id',
                                                             None)
 
-        if not direct_url:
-            url_parts.extend([provider_id, resource_id])
+        url_parts.extend([provider_id, resource_id])
 
         version = kwargs.pop('version', None)
-        if not version and (resource_type != Resource.data
-                            and not direct_url):
+        if not version and resource_type != Resource.data:
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
@@ -219,8 +204,18 @@ class Request:
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
-        assert len(kwargs) == 0, ValueError('unrecognized arguments: %r' %
-                                            kwargs)
+        if len(kwargs):
+            raise ValueError(f'unrecognized arguments: {kwargs!r}')
+
+        return requests.Request('get', url, params=parameters,
+                                headers=headers)
+
+    def _request_from_url(self, url, **kwargs):
+        parameters = kwargs.pop('params', {})
+        headers = kwargs.pop('headers', {})
+
+        if len(kwargs):
+            raise ValueError(f'unrecognized arguments: {kwargs!r}')
 
         return requests.Request('get', url, params=parameters,
                                 headers=headers)
@@ -346,10 +341,20 @@ class Request:
             and `force` is not :obj:`True`.
 
         """
-        req = self._request_from_args(
-            resource_type=resource_type,
-            resource_id=resource_id,
-            **kwargs)
+        # Allow sources to modify request args
+        # TODO this should occur after most processing, defaults, checking etc.
+        #      are performed, so that core code does most of the work.
+        if self.source:
+            self.source.modify_request_args(kwargs)
+
+        if 'url' in kwargs:
+            req = self._request_from_url(**kwargs)
+        else:
+            req = self._request_from_args(
+                resource_type=resource_type,
+                resource_id=resource_id,
+                **kwargs)
+
         req = self.session.prepare_request(req)
 
         # Now get the SDMX message via HTTP
@@ -495,11 +500,13 @@ def open_file(filename_or_obj, format=None):
             reader = readers[format]
             obj = open(str(filename_or_obj))
         else:
-            raise RuntimeError(('unable to identify SDMX file format from '
-                                'name "{}"; use format="..."')
-                               .format(filename_or_obj.name))
+            msg = ("cannot identify SDMX message format from file name "
+                   f"'{filename_or_obj.name}'; use  format='...'")
+            raise RuntimeError(msg)
     except AttributeError:
         # File is already open
+
+        # Read a line and then return the cursor to the initial position
         pos = filename_or_obj.tell()
         first_line = filename_or_obj.readline().strip()
         filename_or_obj.seek(pos)
@@ -509,8 +516,14 @@ def open_file(filename_or_obj, format=None):
         elif first_line.startswith('<'):
             reader = readers['XML']
         else:
-            raise ValueError(first_line)
+            msg = f"cannot infer SDMX message format from '{first_line[:5]}..'"
+            raise RuntimeError(msg)
 
         obj = filename_or_obj
 
     return reader().read_message(obj)
+
+
+def read_url(url, **kwargs):
+    """Request a URL directly."""
+    return Request().get(url=url, **kwargs)

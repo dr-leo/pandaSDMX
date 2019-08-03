@@ -829,7 +829,8 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
         - keys are :class:`str` ids of Dimensions appearing in this
           DSD's :attr:`dimensions`, and
-        - values are '+'-delimited :class:`str` containing allowable values.
+        - values are '+'-delimited :class:`str` containing allowable values,
+          _or_ iterables of :class:`str`, each an allowable value.
 
         For example::
 

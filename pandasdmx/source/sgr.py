@@ -16,4 +16,4 @@ class Source(BaseSource):
         Override the ``agency`` argument by setting ``agency='all'`` to
         retrieve all data republished by SGR from different providers.
         """
-        kwargs.setdefault('agency', 'all')
+        kwargs.setdefault('provider', 'all')

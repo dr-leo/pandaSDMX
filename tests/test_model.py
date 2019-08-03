@@ -38,7 +38,7 @@ def test_dataset():
     # Enumeration values can be used to initialize
     from pandasdmx.model import ActionType
     print(ActionType)
-    ds = DataSet(action=ActionType['information'])
+    DataSet(action=ActionType['information'])
 
 
 def test_datastructuredefinition():

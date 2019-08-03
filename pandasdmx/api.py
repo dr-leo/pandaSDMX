@@ -258,36 +258,33 @@ class Request:
             Full URL to get directly. If given, other arguments are ignored.
             See also :meth:`url`.
         agency : str
-            ID of the agency providing the data or metadata.
-            Used for URL construction only. It tells the SDMX web service
-            which agency the requested information originates from. Note
-            that an SDMX service may provide information from multiple data
-            providers.
-            Not to be confused with the data source ID passed to
-            :meth:`__init__` which specifies the SDMX web service to be
-            accessed.
+            ID of the agency providing the data or metadata. Used for URL
+            construction only. It tells the SDMX web service which agency the
+            requested information originates from. Note that an SDMX service
+            may provide information from multiple data providers. Not to be
+            confused with the data source ID passed to :meth:`__init__` which
+            specifies the SDMX web service to be accessed.
         key : str or dict
-            Select columns from a dataset by specifying dimension values.
-            If type is str, it must conform to the SDMX REST API, i.e.
-            dot-separated dimension values.
-            If 'key' is of type 'dict', it must map dimension names to
-            allowed dimension values. Two or more values can be separated
-            by '+' as in the str form. The DSD will be downloaded and the
-            items are validated against it before downloading the dataset.
+            Select columns from a dataset by specifying dimension values. If
+            type is str, it must conform to the SDMX REST API, i.e. dot-
+            separated dimension values. If 'key' is of type 'dict', it must map
+            dimension names to allowed dimension values. Two or more values can
+            be separated by '+' as in the str form. The DSD will be downloaded
+            and the items are validated against it before downloading the
+            dataset.
         params : dict
-            Query part of the URL.
-            The SDMX web service guidelines (www.sdmx.org) explain the
-            meaning of permissible parameters. It can be used to restrict
-            the time range of the data to be delivered (startperiod,
-            endperiod), whether parents, siblings or descendants of the
-            specified resource should be returned as well (e.g.
+            Query part of the URL. The SDMX web service guidelines
+            (www.sdmx.org) explain the meaning of permissible parameters. It
+            can be used to restrict the time range of the data to be delivered
+            (startperiod, endperiod), whether parents, siblings or descendants
+            of the specified resource should be returned as well (e.g.
             references='parentsandsiblings'). Sensible defaults are set
             automatically depending on the values of other args such as
             `resource_type`. Defaults to {}.
         headers : dict
-            HTTP headers. Given headers will overwrite
-            instance-wide headers passed to the constructor. Defaults to
-            `None`, i.e. use defaults from agency configuration.
+            HTTP headers. Given headers will overwrite instance-wide headers
+            passed to the constructor. Defaults to `None`, i.e. use defaults
+            from agency configuration.
         dsd : :class:`DataStructureDefinition`
         force : bool
         version : str

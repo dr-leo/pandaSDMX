@@ -34,12 +34,11 @@ def test_read_sdmx(tmp_path):
         sdmx.read_sdmx(bad_file)
 
 
-
 def test_request():
     # Constructor
     r = sdmx.Request(log_level=logging.ERROR)
 
-    # Invalid agency name (replaces former test_request.py)
+    # Invalid source name raise an exception
     with pytest.raises(ValueError):
         sdmx.Request('noagency')
 
@@ -48,6 +47,12 @@ def test_request():
 
     r.timeout = 300
     assert r.timeout == 300
+
+    # dir() includes convenience methods for resource endpoints
+    expected = {'cache', 'clear_cache', 'get', 'preview_data', 'series_keys',
+                'session', 'source', 'timeout'}
+    expected |= set(ep.name for ep in sdmx.Resource)
+    assert set(filter(lambda s: not s.startswith('_'), dir(r))) == expected
 
 
 def test_request_get_exceptions():

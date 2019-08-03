@@ -66,7 +66,6 @@ class TestINSEE:
         data = sdmx.read_sdmx(fp_data)
 
         # Verify series count and values
-        # CHANGED: dataset index added; list() not required
         series = data.data[0].series
         series_count = len(series)
         assert series_count == DATASETS[dataset_code]['series_count']
@@ -100,10 +99,7 @@ class TestINSEE:
 
         fp_data = DATASETS[dataset_code]['data-fp']
         data = sdmx.read_sdmx(fp_data)
-
-        # CHANGED: dataset index added; list() not required
         series = data.data[0].series
-
         series_key = list(series.keys())[0]
 
         assert (list(series_key.values.keys()) ==

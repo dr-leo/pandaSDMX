@@ -17,10 +17,10 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert isinstance(msg, message.DataMessage)
 
     def test_header_attributes(self, msg):
-        # CHANGED: the internal reference ID of the StructureUsage and the
-        #          maintained ID of the DataStructureDefinition it references
-        #          are both available
+        # Internal reference of the StructureUsage is available
         assert msg.dataflow.id == 'STR1'
+
+        # Maintained ID of the DataStructureDefinition is available
         assert msg.structure.id == 'ECB_EXR_NG'
         assert msg.observation_dimension == model.AllDimensions
 
@@ -35,18 +35,10 @@ class TestGenericFlatDataSet(DataMessageTest):
 
         o0 = data.obs[0]
 
-        # REMOVE? What is this measuring?
-        # - Not the length of the Observation.key—that is 6.
-        # - Something else?
-        # assert len(o0) ==  3
-
         assert isinstance(o0.key, model.Key)
         assert o0.key.FREQ == 'M'
         assert o0.key.CURRENCY == 'CHF'
         assert o0.value == '1.3413'
-
-        # REMOVE: duck typing → test for desired behaviour of attrib instead
-        # assert isinstance(o0.attrib, tuple)
 
         assert o0.attrib.OBS_STATUS == 'A'
         assert o0.attrib.DECIMALS == '4'
@@ -74,8 +66,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
     def test_generic_obs(self, msg):
         data = msg.data[0]
 
-        # Number of observations in the dataset
-        # CHANGED: obs gives access to all observations in the data set
+        # Number of observations in the entire dataset
         assert len(data.obs) == 12
 
         # Number of series in the dataset
@@ -83,9 +74,6 @@ class TestGenericSeriesDataSet(DataMessageTest):
 
         # Access to series by index
         s3 = data.series[3]
-
-        # REMOVE: Series is not in the IM
-        # assert isinstance(s3, model.Series)
 
         # Observations in series have .series_key with correct length & values
         assert isinstance(s3[0].series_key, model.Key)
@@ -101,15 +89,9 @@ class TestGenericSeriesDataSet(DataMessageTest):
         # Series observations can be reversed, and accessed by index
         o0 = list(reversed(s3))[2]
 
-        # REMOVE? see TestGenericFlatDataSet.test_generic_obs
-        # assert len(o0) == 3
-
         # Series observations have expected value
         assert o0.dim == '2010-08'
         assert o0.value == '1.2894'
-
-        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
-        # assert isinstance(o0.attrib, tuple)
 
         assert o0.attrib.OBS_STATUS == 'A'
 
@@ -216,14 +198,13 @@ class TestGenericSeriesDataSet2(DataMessageTest):
     def test_header_attributes(self, msg):
         assert msg.dataflow.id == 'STR1'
         assert msg.structure.id == 'ECB_EXR_NG'
-        # CHANGED: observation_dimension can be 1-or-more Dimensions; must
-        #          compare with an iterable of Dimension or Dimension IDs.
+
+        # Observation dimension is 1 or more Dimensions
         assert msg.observation_dimension == ['TIME_PERIOD']
 
     def test_generic_obs(self, msg):
         data = msg.data[0]
 
-        # CHANGED: obs gives access to all observations in the data set
         assert len(data.obs) == 12
 
         assert len(data.series) == 4
@@ -231,12 +212,10 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert len(series_list) == 4
         s3 = series_list[3]
 
-        # REMOVE: Series is not in the IM
-        # assert isinstance(s3, model.Series)
-
-        # CHANGED: access SeriesKey from Observations in the series, or keys of
-        #          DataSet.series.
+        # SeriesKey can be accessed by reference from each Observation in the
+        # series
         assert isinstance(s3[0].series_key, model.Key)
+
         assert len(s3[0].series_key) == 5
         assert s3[0].key.CURRENCY == 'USD'
         assert s3[0].attrib.DECIMALS == '4'
@@ -244,14 +223,8 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert len(obs_list) == 3
         o0 = obs_list[2]
 
-        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
-        # assert len(o0) == 3
-
         assert o0.dim == '2010-08'
         assert o0.value == '1.2894'
-
-        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
-        # assert isinstance(o0.attrib, tuple)
 
         assert o0.attrib.OBS_STATUS == 'A'
 
@@ -270,11 +243,11 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
     def test_groups(self, msg):
         data = msg.data[0]
 
-        # CHANGED: groups → group; list() is no longer required
+        # Data have expected number of groups and series
         assert len(data.group) == 4
         assert len(data.series) == 4
 
-        # CHANGED: access GroupKeys from keys of DataSet.group
+        # GroupKeys can be retrieved from keys of DataSet.group
         g2_key, g2 = list(data.group.items())[2]
         assert g2_key.CURRENCY == 'JPY'
         assert g2[0].attrib.TITLE == ('ECB reference exchange rate, Japanese '
@@ -285,9 +258,6 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
         g_attrib = s.group_attrib
         assert len(g_attrib) == 1
 
-        # REMOVE: duck typing → test for desired behaviour of attrib instead
-        # assert isinstance(g_attrib, tuple)
-
 
 class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
     path = test_data_path / 'exr' / 'ecb_exr_rg' / 'generic'
@@ -296,11 +266,10 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
     def test_groups(self, msg):
         data = msg.data[0]
 
-        # CHANGED: groups → group; list() is no longer required
         assert len(data.group) == 5
         assert len(data.series) == 4
 
-        # CHANGED: .group is DictLike; retrieve the key and obs separately
+        # .group is DictLike; retrieve the key and obs separately
         g2_key, g2 = list(data.group.items())[2]
         assert g2_key.CURRENCY == 'GBP'
         assert g2_key.attrib.TITLE == ('ECB reference exchange rate, U.K. '
@@ -309,9 +278,6 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         s = list(data.series)[0]
         g_attrib = s.group_attrib
         assert len(g_attrib) == 5
-
-        # REMOVE: see TestGenericFlatDataSet.test_generic_obs
-        # assert isinstance(g_attrib, tuple)
 
     def test_footer(self):
         f = sdmx.read_sdmx(test_data_path / 'estat' / 'footer.xml').footer

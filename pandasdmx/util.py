@@ -23,7 +23,27 @@ from pydantic.utils import change_exception
 
 
 class Resource(str, Enum):
-    """SDMX REST API endpoints."""
+    """Enumeration of SDMX REST API endpoints.
+
+    ====================== ================================================
+    :class:`Enum` member   :mod:`pandasdmx.model` class
+    ====================== ================================================
+    ``categoryscheme``     :class:`CategoryScheme \
+                                   <pandasdmx.model.CategoryScheme>`
+    ``codelist``           :class:`Codelist \
+                                   <pandasdmx.model.Codelist>`
+    ``conceptscheme``      :class:`ConceptScheme \
+                                   <pandasdmx.model.ConceptScheme>`
+    ``data``               :class:`DataSet \
+                                   <pandasdmx.model.DataSet>`
+    ``dataflow``           :class:`DataflowDefinition \
+                                   <pandasdmx.model.DataflowDefinition>`
+    ``datastructure``      :class:`DataStructureDefinition \
+                                   <pandasdmx.model.DataStructureDefinition>`
+    ``provisionagreement`` :class:`ProvisionAgreement \
+                                   <pandasdmx.model.ProvisionAgreement>`
+    ====================== ================================================
+    """
 
     # agencyscheme = 'agencyscheme'
     # attachementconstraint = 'attachementconstraint'

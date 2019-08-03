@@ -231,25 +231,23 @@ class Request:
             use_cache=False, dry_run=False, **kwargs):
         """Retrieve SDMX data or metadata.
 
-        get() constructs and queries URLs for the :attr:`source` of the current
-        Request, *except* if the `url` parameter is given.
+        (Meta)data is retrieved from the :attr:`source` of the current Request.
+        The item(s) to retrieve can be specified in one of two ways:
+
+        1. `resource_type`, `resource_id`: These give the type (see
+           :class:`Resource`) and, optionally, ID of the item(s). If the
+           `resource_id` is not given, all items of the given type are
+           retrieved.
+        2. a `resource` object: the `resource_type` and `resource_id` are
+           taken from the object's class and :attr:`id
+           <pandasdmx.model.IdentifiableArtefact.id` attribute.
 
         Parameters
         ----------
         resource_type : str or :class:`Resource`, optional
-            Type of resource to get.
+            Type of resource to retrieve.
         resource_id : str, optional
-            ID of the resource to get.
-        provider : str, optional
-            ID of the agency providing the data or metadata. Default:
-            ID of the same agency as :attr:`source`.
-
-            The agency that operates an SDMX web service is the ‘source’ agency
-            (associated with :attr:`source`); a web service may host data or
-            metadata originally published by one or more ‘provider’ agencies.
-            Many sources are also providers; but other agencies—e.g. the SDMX
-            Global Registry—simply aggregate (meta)data from other providers
-            without providing any (meta)data of their own.
+            ID of the resource to retrieve.
         tofile : str or :py:class:`os.PathLike`, optional
             File path to write SDMX data as it is recieved.
         use_cache : bool, optional
@@ -259,19 +257,29 @@ class Request:
             If :obj:`True`, prepare and return a :class:`requests.Request`
             object, but do not execute the query. The prepared URL and headers
             can be examined by inspecting the returned object.
-        force : bool, optional
-            If :obj:`True`, execute the query even if the :attr:`source` does
-            not support queries for the given `resource_type`.
         **kwargs
-            Other parameters (below) used to construct the query URL.
+            Other, optional parameters (below).
 
         Other Parameters
         ----------------
-        resource : :mod:`pandasdmx.model` object
-            Object to get.
-        url : str
-            Full URL to get directly. If given, other arguments are ignored.
-            See also :meth:`url`.
+        force : bool
+            If :obj:`True`, execute the query even if the :attr:`source` does
+            not support queries for the given `resource_type`. Default:
+            :obj:`False`.
+        provider : str
+            ID of the agency providing the data or metadata. Default:
+            ID of the same agency as :attr:`source`.
+
+            The agency that operates an SDMX web service is the ‘source’ agency
+            (associated with :attr:`source`); a web service may host data or
+            metadata originally published by one or more ‘provider’ agencies.
+            Many sources are also providers; but other agencies—e.g. the SDMX
+            Global Registry—simply aggregate (meta)data from other providers
+            without providing any (meta)data of their own.
+        resource : :mod:`IdentifiableArtefact \
+                         <pandasdmx.model.IdentifiableArtefact>` subclass
+            Object to retrieve. If given, `resource_type` and `resource_id` are
+            ignored.
         key : str or dict
             Select columns from a dataset by specifying dimension values. If
             type is str, it must conform to the SDMX REST API, i.e. dot-

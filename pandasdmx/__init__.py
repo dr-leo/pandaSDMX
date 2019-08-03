@@ -1,10 +1,12 @@
 from pandasdmx.api import Request, open_file
 from pandasdmx.source import add_source, list_sources
+from pandasdmx.util import Resource
 from pandasdmx.writer import write as to_pandas
 import logging
 
 __all__ = [
     'Request',
+    'Resource',
     'add_source',
     'list_sources',
     'open_file',

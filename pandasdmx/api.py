@@ -24,15 +24,13 @@ logger = logging.getLogger(__name__)
 
 
 class Request:
-    """Client for a SDMX data provider.
+    """Client for a SDMX REST web service.
 
     Parameters
     ----------
-    source : str or :obj:`None`
+    source : str or :class:`pandasdmx.source.Source`
         Identifier of a data source. If a string, must be one of the known
-        sources in :meth:`list_sources`. If :obj:`None`, the Request instance
-        can only retrieve data or metadata from complete URLs provided to
-        :meth:`get`.
+        sources in :meth:`list_sources`.
     log_level : int
         Override the package-wide logger with one of the
         :ref:`standard logging levels <py:levels>`.
@@ -167,17 +165,18 @@ class Request:
 
         url_parts.append(resource_type.name)
 
-        # Agency ID to use in the URL
-        agency = kwargs.pop('agency', None)
+        # Data provider ID to use in the URL
+        provider = kwargs.pop('provider', None)
         if resource_type == Resource.data:
             # Requests for data do not specific an agency in the URL
-            if agency is not None:
-                warn(f'agency argument is redundant for {resource_type!r}')
-            agency_id = None
+            if provider is not None:
+                warn(f"'provider' argument is redundant for {resource_type!r}")
+            provider_id = None
         else:
-            agency_id = agency if agency else getattr(self.source, 'id', None)
+            provider_id = provider if provider else getattr(self.source, 'id',
+                                                            None)
 
-        url_parts.extend([agency_id, resource_id])
+        url_parts.extend([provider_id, resource_id])
 
         version = kwargs.pop('version', None)
         if not version and resource_type != Resource.data:
@@ -201,7 +200,7 @@ class Request:
             elif resource_type == Resource.categoryscheme:
                 parameters['references'] = 'parentsandsiblings'
 
-        # Headers: use headers from agency config if not given by the caller
+        # Headers: use headers from source config if not given by the caller
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
@@ -225,72 +224,122 @@ class Request:
             use_cache=False, dry_run=False, **kwargs):
         """Retrieve SDMX data or metadata.
 
-        get() constructs and queries URLs for the :attr:`source` of the current
-        Request, *except* if the `url` parameter is given.
+        (Meta)data is retrieved from the :attr:`source` of the current Request.
+        The item(s) to retrieve can be specified in one of two ways:
+
+        1. `resource_type`, `resource_id`: These give the type (see
+           :class:`Resource`) and, optionally, ID of the item(s). If the
+           `resource_id` is not given, all items of the given type are
+           retrieved.
+        2. a `resource` object, i.e. a :class:`MaintainableArtefact
+           <pandasdmx.model.MaintainableArtefact>`: `resource_type` and
+           `resource_id` are determined by the object's class and :attr:`id
+           <pandasdmx.model.IdentifiableArtefact.id>` attribute, respectively.
+
+        Data is retrieved with `resource_type='data'`. In this case, the
+        optional keyword argument `key` can be used to constrain the data that
+        is retrieved. Examples of the formats for `key`:
+
+        1. ``{'GEO': ['EL', 'ES', 'IE']}``: :class:`dict` with dimension
+           name(s) mapped to an iterable of allowable values.
+        2. ``{'GEO': 'EL+ES+IE'}``: :class:`dict` with dimension name(s)
+           mapped to strings joining allowable values with `'+'`, the logical
+           'or' operator for SDMX web services.
+        3. ``'....EL+ES+IE'``: :class:`str` in which ordered dimension values
+           (some empty, ``''``) are joined with ``'.'``. Using this form
+           requires knowledge of the dimension order in the target data
+           `resource_id`; in the example, dimension 'GEO' is the fifth of five
+           dimensions: ``'.'.join(['', '', '', '', 'EL+ES+IE'])``.
+           :meth:`CubeRegion.to_query_string
+           <pandasdmx.model.CubeRegion.to_query_string>` can also be used to
+           create properly formatted strings.
+
+        For formats 1 and 2, but not 3, the `key` argument is validated against
+        the relevant :class:`DataStructureDefinition
+        <pandasdmx.model.DataStructureDefinition>`, either given with the `dsd`
+        keyword argument, or retrieved from the web service before the main
+        query.
+
+        For the optional `param` keyword argument, some useful parameters are:
+
+        - 'startperiod', 'endperiod': restrict the time range of data to
+          retrieve.
+        - 'references': control which item(s) related to a metadata resource
+          are retrieved, e.g. `references='parentsandsiblings'`.
 
         Parameters
         ----------
         resource_type : str or :class:`Resource`, optional
-            Type of resource to get.
+            Type of resource to retrieve.
         resource_id : str, optional
-            ID of the resource to get.
+            ID of the resource to retrieve.
         tofile : str or :py:class:`os.PathLike`, optional
             File path to write SDMX data as it is recieved.
         use_cache : bool, optional
             If :obj:`True`, return a previously retrieved :class:`Message` from
             :attr:`cache`, or update the cache with a newly-retrieved Message.
         dry_run : bool, optional
-            If :obj:`True`, prepare and return, but do not get, a
-            :class:`requests.Request`.
+            If :obj:`True`, prepare and return a :class:`requests.Request`
+            object, but do not execute the query. The prepared URL and headers
+            can be examined by inspecting the returned object.
         **kwargs
-            Other parameters (below) used to construct the query URL.
+            Other, optional parameters (below).
 
         Other Parameters
         ----------------
-        resource : :mod:`pandasdmx.model` object
-            Object to get.
-        url : str
-            Full URL to get directly. If given, other arguments are ignored.
-            See also :meth:`read_url`.
-        agency : str
-            ID of the agency providing the data or metadata.
-            Used for URL construction only. It tells the SDMX web service
-            which agency the requested information originates from. Note
-            that an SDMX service may provide information from multiple data
-            providers.
-            Not to be confused with the data source ID passed to
-            :meth:`__init__` which specifies the SDMX web service to be
-            accessed.
-        key : str or dict
-            Select columns from a dataset by specifying dimension values.
-            If type is str, it must conform to the SDMX REST API, i.e.
-            dot-separated dimension values.
-            If 'key' is of type 'dict', it must map dimension names to
-            allowed dimension values. Two or more values can be separated
-            by '+' as in the str form. The DSD will be downloaded and the
-            items are validated against it before downloading the dataset.
-        params : dict
-            Query part of the URL.
-            The SDMX web service guidelines (www.sdmx.org) explain the
-            meaning of permissible parameters. It can be used to restrict
-            the time range of the data to be delivered (startperiod,
-            endperiod), whether parents, siblings or descendants of the
-            specified resource should be returned as well (e.g.
-            references='parentsandsiblings'). Sensible defaults are set
-            automatically depending on the values of other args such as
-            `resource_type`. Defaults to {}.
-        headers : dict
-            HTTP headers. Given headers will overwrite
-            instance-wide headers passed to the constructor. Defaults to
-            `None`, i.e. use defaults from agency configuration.
-        dsd : :class:`DataStructureDefinition`
+        dsd : :class:`DataStructureDefinition \
+                      <pandasdmx.model.DataStructureDefinition>`
+            Existing object used to validate the `key` argument. If not
+            provided, an additional query executed to retrieve a DSD in order
+            to validate the `key`.
         force : bool
+            If :obj:`True`, execute the query even if the :attr:`source` does
+            not support queries for the given `resource_type`. Default:
+            :obj:`False`.
+        headers : dict
+            HTTP headers. Given headers will overwrite instance-wide headers
+            passed to the constructor. Default: :obj:`None` to use the default
+            headers of the :attr:`source`.
+        key : str or dict
+            For queries with `resource_type='data'`. :class:`str` values are
+            not validated; :class:`dict` values are validated using
+            :meth:`DataStructureDefinition.make_constraint
+            <pandasdmx.model.DataStructureDefinition.make_constraint>`.
+        params : dict
+            Query parameters. The `SDMX REST web service guidelines <https://\
+            github.com/sdmx-twg/sdmx-rest/tree/master/v2_1/ws/rest/docs>`_
+            describe parameters and allowable values for different queries.
+            `params` is not validated before the query is executed.
+        provider : str
+            ID of the agency providing the data or metadata. Default:
+            ID of the :attr:`source` agency.
+
+            An SDMX web service is a ‘data source’ operated by a specific,
+            ‘source’ agency. A web service may host data or metadata originally
+            published by one or more ‘provider’ agencies. Many sources are also
+            providers. Other agencies—e.g. the SDMX Global Registry—simply
+            aggregate (meta)data from other providers, but do not providing any
+            (meta)data themselves.
+        resource : :mod:`MaintainableArtefact \
+                         <pandasdmx.model.MaintainableArtefact>` subclass
+            Object to retrieve. If given, `resource_type` and `resource_id` are
+            ignored.
         version : str
+            :attr:`version <pandasdmx.model.VersionableArtefact.version>`
+            of a resource to retrieve. Default: the keyword 'latest'.
 
         Returns
         -------
-        :class:`pandasdmx.message.Message`
-            The requested SDMX message.
+        :class:`pandasdmx.message.Message` or :class:`requests.Request`
+            The requested SDMX message or, if `dry_run` is :obj:`True`, the
+            prepared request object.
+
+        Raises
+        ------
+        NotImplementedError
+            If the :attr:`source` does not support the given `resource_type`
+            and `force` is not :obj:`True`.
+
         """
         # Allow sources to modify request args
         # TODO this should occur after most processing, defaults, checking etc.

@@ -64,34 +64,34 @@ def test_request_get_exceptions():
 
 
 @pytest.mark.remote_data
-def test_request_get():
+def test_request_get_args():
     req = sdmx.Request('ESTAT')
-    req.get('datastructure', params={'foo': 'bar'}, dry_run=True)
 
-    # Test Request._make_key_from_dsd()
-    req.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
-             params={'startPeriod': '2007'})
+    # Request._make_key accepts '+'-separated values
+    args = dict(resource_id='une_rt_a', key={'GEO': 'EL+ES+IE'},
+                params={'startPeriod': '2007'}, dry_run=True, use_cache=True)
+    # Store the URL
+    url = req.data(**args).url
 
-    with pytest.warns(UserWarning, match='agency argument is redundant'):
+    # Using an iterable of key values gives the same URL
+    args['key'] = {'GEO': ['EL', 'ES', 'IE']}
+    assert req.data(**args).url == url
+
+    # Using a direct string for a key gives the same URL
+    args['key'] = '....EL+ES+IE'  # No specified values for first 4 dimensions
+    assert req.data(**args).url == url
+
+    # Giving 'provider' is redundant for a data request, causes a warning
+    with pytest.warns(UserWarning, match="'provider' argument is redundant"):
         req.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
                  params={'startPeriod': '2007'},
-                 agency='ESTAT')
+                 provider='ESTAT')
 
     # Using an unknown endpoint is an exception
     with pytest.raises(ValueError):
         req.get('badendpoint', 'id')
 
-    # TODO test req.get(obj) with all IdentifiableArtefact subclasses
-    # TODO test req.get(..., validate=False)
-
-
-@pytest.mark.remote_data
-def test_request_make_series_key():
-    req = sdmx.Request('ECB')  # noqa: F841
-
-    # TODO add a test that exercises _make_key_from_series
-    # req.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
-    #          params={'startPeriod': '2007'})
+    # TODO test req.get(obj) with IdentifiableArtefact subclasses
 
 
 @pytest.mark.remote_data

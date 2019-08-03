@@ -1,6 +1,6 @@
 import pandas as pd
 import pandas.testing as pdt
-import pandasdmx
+import pandasdmx as sdmx
 from pandasdmx import message, model
 
 from . import MessageTest, test_data_path
@@ -53,13 +53,13 @@ class TestGenericFlatDataSet(DataMessageTest):
 
     def test_to_pandas(self, msg):
         # Single data series is converted to pd.Series
-        data_series = pandasdmx.to_pandas(msg.data[0])
+        data_series = sdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
 
         # When len(msg.data) is 1, the data series in a single Dataset are
         # unwrapped automatically
         assert len(msg.data) == 1
-        data_series2 = pandasdmx.to_pandas(msg.data)  # NB no '[0]' index
+        data_series2 = sdmx.to_pandas(msg.data)  # NB no '[0]' index
         pdt.assert_series_equal(data_series, data_series2)
 
 
@@ -123,7 +123,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
 
         # Convert the observations for one SeriesKey to a pd.Series
         s3_key = series_keys[3]
-        s3 = pandasdmx.to_pandas(data.series[s3_key])
+        s3 = sdmx.to_pandas(data.series[s3_key])
         assert isinstance(s3, pd.Series)
 
         # Test a particular value
@@ -133,7 +133,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert len(s3.index.names) == 6
 
         # Convert again, with attributes
-        pd_data = pandasdmx.to_pandas(data, attributes='osgd')
+        pd_data = sdmx.to_pandas(data, attributes='osgd')
 
         # Select one SeriesKey's data out of the DataFrame
         keys, levels = zip(*[(kv.value, kv.id) for kv in s3_key])
@@ -167,18 +167,18 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert len(data.series) == 4
 
         # Conversion without attributes gives a Series with a MultiIndex
-        s_all = pandasdmx.to_pandas(data, attributes='')
+        s_all = sdmx.to_pandas(data, attributes='')
         assert isinstance(s_all, pd.Series)
         assert isinstance(s_all.index, pd.MultiIndex)
 
         # Single series can be converted
-        s3 = pandasdmx.to_pandas(data.series[3], attributes='')
+        s3 = sdmx.to_pandas(data.series[3], attributes='')
         assert isinstance(s3, pd.Series)
         assert s3[0] == 1.2894
 
         # Conversion with attribute gives a DataFrame with attribute columns
         # and a MultiIndex
-        df = pandasdmx.to_pandas(data, attributes='ogsd')
+        df = sdmx.to_pandas(data, attributes='ogsd')
         assert isinstance(df, pd.DataFrame)
         assert isinstance(df.index, pd.MultiIndex)
         assert all(df.columns == ['value', 'OBS_STATUS', 'CONF_STATUS_OBS',
@@ -186,7 +186,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
                                   'COLL_METHOD', 'TITLE'])
 
         # Single series can be converted with attributes
-        s3 = pandasdmx.to_pandas(data.series[3], attributes='ogsd')
+        s3 = sdmx.to_pandas(data.series[3], attributes='ogsd')
         assert isinstance(s3, pd.DataFrame)
         assert isinstance(s3.index, pd.MultiIndex)
 
@@ -197,14 +197,14 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0, :]['OBS_STATUS'] == 'A'
 
     def test_write2pandas(self, msg):
-        df = pandasdmx.to_pandas(msg, attributes='')
+        df = sdmx.to_pandas(msg, attributes='')
 
         assert isinstance(df, pd.Series)
 
         assert df.shape == (12,)
 
         # with metadata
-        df = pandasdmx.to_pandas(msg, attributes='osgd')
+        df = sdmx.to_pandas(msg, attributes='osgd')
         df, mdf = df.iloc[:, 0], df.iloc[:, 1:]
         assert mdf.shape == (12, 7)
         assert mdf.iloc[1].OBS_STATUS == 'A'
@@ -256,7 +256,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert o0.attrib.OBS_STATUS == 'A'
 
     def test_dataframe(self, msg):
-        df = pandasdmx.to_pandas(msg.data[0]).iloc[::-1]
+        df = sdmx.to_pandas(msg.data[0]).iloc[::-1]
 
         assert isinstance(df, pd.Series)
 
@@ -314,7 +314,7 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         # assert isinstance(g_attrib, tuple)
 
     def test_footer(self):
-        f = pandasdmx.read_sdmx(test_data_path / 'estat' / 'footer.xml').footer
+        f = sdmx.read_sdmx(test_data_path / 'estat' / 'footer.xml').footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

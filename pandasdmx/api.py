@@ -245,8 +245,9 @@ class Request:
             If :obj:`True`, return a previously retrieved :class:`Message` from
             :attr:`cache`, or update the cache with a newly-retrieved Message.
         dry_run : bool, optional
-            If :obj:`True`, prepare and return, but do not get, a
-            :class:`requests.Request`.
+            If :obj:`True`, prepare and return a :class:`requests.Request`
+            object, but do not execute the query. The prepared URL and headers
+            can be examined by inspecting the returned object.
         **kwargs
             Other parameters (below) used to construct the query URL.
 
@@ -291,8 +292,10 @@ class Request:
 
         Returns
         -------
-        :class:`pandasdmx.message.Message`
-            The requested SDMX message.
+        :class:`pandasdmx.message.Message` or :class:`requests.Request`
+            The requested SDMX message or, if ``dry_run=True``, the prepared
+            request object.
+
         """
         req = self._request_from_args(
             resource_type=resource_type,

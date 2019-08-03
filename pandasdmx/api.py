@@ -180,18 +180,19 @@ class Request:
         if not direct_url:
             url_parts.append(resource_type.name)
 
-        # Agency ID to use in the URL
-        agency = kwargs.pop('agency', None)
+        # Data provider ID to use in the URL
+        provider = kwargs.pop('provider', None)
         if resource_type == Resource.data:
             # Requests for data do not specific an agency in the URL
-            if agency is not None:
-                warn(f'agency argument is redundant for {resource_type!r}')
-            agency_id = None
+            if provider is not None:
+                warn(f"'provider' argument is redundant for {resource_type!r}")
+            provider_id = None
         else:
-            agency_id = agency if agency else getattr(self.source, 'id', None)
+            provider_id = provider if provider else getattr(self.source, 'id',
+                                                            None)
 
         if not direct_url:
-            url_parts.extend([agency_id, resource_id])
+            url_parts.extend([provider_id, resource_id])
 
         version = kwargs.pop('version', None)
         if not version and (resource_type != Resource.data
@@ -216,7 +217,7 @@ class Request:
             elif resource_type == Resource.categoryscheme:
                 parameters['references'] = 'parentsandsiblings'
 
-        # Headers: use headers from agency config if not given by the caller
+        # Headers: use headers from source config if not given by the caller
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
@@ -239,6 +240,16 @@ class Request:
             Type of resource to get.
         resource_id : str, optional
             ID of the resource to get.
+        provider : str, optional
+            ID of the agency providing the data or metadata. Default:
+            ID of the same agency as :attr:`source`.
+
+            The agency that operates an SDMX web service is the ‘source’ agency
+            (associated with :attr:`source`); a web service may host data or
+            metadata originally published by one or more ‘provider’ agencies.
+            Many sources are also providers; but other agencies—e.g. the SDMX
+            Global Registry—simply aggregate (meta)data from other providers
+            without providing any (meta)data of their own.
         tofile : str or :py:class:`os.PathLike`, optional
             File path to write SDMX data as it is recieved.
         use_cache : bool, optional
@@ -261,13 +272,6 @@ class Request:
         url : str
             Full URL to get directly. If given, other arguments are ignored.
             See also :meth:`url`.
-        agency : str
-            ID of the agency providing the data or metadata. Used for URL
-            construction only. It tells the SDMX web service which agency the
-            requested information originates from. Note that an SDMX service
-            may provide information from multiple data providers. Not to be
-            confused with the data source ID passed to :meth:`__init__` which
-            specifies the SDMX web service to be accessed.
         key : str or dict
             Select columns from a dataset by specifying dimension values. If
             type is str, it must conform to the SDMX REST API, i.e. dot-

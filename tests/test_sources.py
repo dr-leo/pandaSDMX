@@ -237,11 +237,21 @@ class TestISTAT(DataSourceTest):
         }
 
     @pytest.mark.remote_data
-    def test_endpoints(self, req, endpoint):
-        # Using the default 'ISTAT' agency in the URL gives a response "No
-        # structures found for the specific query"
-        req.get(endpoint, provider='all',
-                tofile=self._cache_path.with_suffix('.' + endpoint))
+    def test_gh_75(self, req):
+        """Test of https://github.com/dr-leo/pandaSDMX/pull/75."""
+
+        # Reported Dataflow query works without the DataStructureDefinition ref
+        req.dataflow('47_850', params=dict(references='none'))
+
+        # Reported data query works
+        req.data('47_850', key='A.001001+001002.1.AUTP.ALL.ALL')
+
+        # commented: xfail because of 'datastructure', above
+        # # Use a dict() key to force Request to make a sub-query for the DSD
+        # data_key = dict(FREQ=['A'], ITTER107=['001001'], SETTITOLARE=['1'],
+        #                 TIPO_DATO=['AUTP'], TIPO_GESTIONE=['ALL'],
+        #                 TIPSERVSOC=['ALL'])
+        # req.data('47_850', key=data_key)
 
 
 class TestNB(DataSourceTest):

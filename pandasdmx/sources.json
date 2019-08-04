@@ -71,7 +71,6 @@
     "name": "Instituto Nationale di Statistica (IT)",
     "url": "http://sdmx.istat.it/SDMXWS/rest",
     "supports": {
-      "agencyscheme": false,
       "provisionagreement": false,
       "structure-specific data": true
     }

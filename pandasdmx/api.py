@@ -14,7 +14,7 @@ from pathlib import Path
 from warnings import warn
 
 from pandasdmx import remote
-from .model import DataStructureDefinition, IdentifiableArtefact
+from .model import DataStructureDefinition, MaintainableArtefact
 from .reader import get_reader_for_content_type
 from .source import NoSource, list_sources, sources
 from .util import Resource
@@ -105,14 +105,16 @@ class Request:
             # DSD was provided
             pass
         elif self.source.supports[Resource.datastructure]:
-            # Retrieve the DataflowDefinition
-            df = self.get('dataflow', resource_id, use_cache=True) \
-                     .dataflow[resource_id]
-
             # Retrieve the DataStructureDefinition
-            dsd_id = df.structure.id
-            dsd = self.get('datastructure', dsd_id, use_cache=True) \
-                      .structure[dsd_id]
+            dsd = self.dataflow(resource_id, params=dict(references='all'),
+                                use_cache=True) \
+                      .dataflow[resource_id].structure
+
+            if dsd.is_external_reference:
+                # DataStructureDefinition was not retrieved with the Dataflow
+                # query; retrieve it explicitly
+                dsd = self.get(resource=dsd, use_cache=True) \
+                          .structure[dsd.id]
         else:
             # Construct a DSD from the keys
             dsd = DataStructureDefinition.from_keys(
@@ -120,8 +122,6 @@ class Request:
 
         # Make a ContentConstraint from the key
         cc = dsd.make_constraint(key)
-
-        # TODO check that keys match dataflow constraints
 
         return cc.to_query_string(dsd)
 
@@ -147,13 +147,13 @@ class Request:
 
         if resource:
             # Resource object is given
-            assert isinstance(resource, IdentifiableArtefact)
+            assert isinstance(resource, MaintainableArtefact)
 
             # Class of the object
             if resource_type:
-                assert resource_type == Resource[resource]
+                assert resource_type == Resource.from_obj(resource)
             else:
-                resource_type = Resource[resource]
+                resource_type = Resource.from_obj(resource)
             if resource_id:
                 assert resource_id == resource.id, (
                     f'mismatch between resource_id={resource_id!r} and '

@@ -7,7 +7,7 @@ To force the data to be retrieved over the Internet, delete this directory.
 import logging
 
 from pandasdmx.api import Request
-from pandasdmx.exceptions import HTTPError, ParseError
+from pandasdmx.exceptions import HTTPError
 from pandasdmx.source import DataContentType, sources
 from pandasdmx.util import Resource
 import pytest
@@ -172,11 +172,6 @@ class TestESTAT(DataSourceTest):
 
 class TestIMF(DataSourceTest):
     source_id = 'IMF'
-    xfail = {
-        # TypeError: cannot instantiate from string class name: Code
-        # structure > structures > codelists (skip) > codelist > code > parent
-        'codelist': ParseError,
-        }
 
 
 class TestILO(DataSourceTest):
@@ -208,11 +203,6 @@ class TestINEGI(DataSourceTest):
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
     xfail = {
-        # Code lists contain <Code>…<Parent><Ref id="foo"/</Parent></Code> that
-        # precede the appearance of "foo" itself. Requires a promise pattern/
-        # delayed lookup
-        'codelist': ParseError,
-
         # 400 Bad Request
         'provisionagreement': HTTPError,
         }
@@ -227,31 +217,30 @@ class TestINSEE(DataSourceTest):
 
 class TestISTAT(DataSourceTest):
     source_id = 'ISTAT'
-    xfail = {
-        # References to parent Codes in a hierarchical CodeList are not
-        # implemented. This is distinct from the INSEE/codelist xfail, above.
-        'codelist': ParseError,
-
-        # References in AttributeRelationship
-        'datastructure': ParseError,
-        }
 
     @pytest.mark.remote_data
     def test_gh_75(self, req):
         """Test of https://github.com/dr-leo/pandaSDMX/pull/75."""
 
-        # Reported Dataflow query works without the DataStructureDefinition ref
-        req.dataflow('47_850', params=dict(references='none'))
+        df_id = '47_850'
+
+        # Reported Dataflow query works
+        df = req.dataflow(df_id).dataflow[df_id]
+
+        # dict() key for the query
+        data_key = dict(FREQ=['A'], ITTER107=['001001'], SETTITOLARE=['1'],
+                        TIPO_DATO=['AUTP'], TIPO_GESTIONE=['ALL'],
+                        TIPSERVSOC=['ALL'])
+
+        # Dimension components are in the correct order
+        assert [dim.id for dim in df.structure.dimensions.components] == \
+            list(data_key.keys()) + ['TIME_PERIOD']
 
         # Reported data query works
-        req.data('47_850', key='A.001001+001002.1.AUTP.ALL.ALL')
+        req.data(df_id, key='A.001001+001002.1.AUTP.ALL.ALL')
 
-        # commented: xfail because of 'datastructure', above
-        # # Use a dict() key to force Request to make a sub-query for the DSD
-        # data_key = dict(FREQ=['A'], ITTER107=['001001'], SETTITOLARE=['1'],
-        #                 TIPO_DATO=['AUTP'], TIPO_GESTIONE=['ALL'],
-        #                 TIPSERVSOC=['ALL'])
-        # req.data('47_850', key=data_key)
+        # Use a dict() key to force Request to make a sub-query for the DSD
+        req.data(df_id, key=data_key)
 
 
 class TestNB(DataSourceTest):
@@ -266,14 +255,6 @@ class TestOECD(DataSourceTest):
 
 class TestSGR(DataSourceTest):
     source_id = 'SGR'
-    xfail = {
-        # See IMF xfail for categoryscheme; same issue, this time with key
-        # ESA2010MA.Q
-        'categoryscheme': ParseError,
-
-        # Same as ISTAT/codelist xfail, above.
-        'codelist': ParseError,
-        }
 
 
 class TestUNESCO(DataSourceTest):

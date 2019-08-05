@@ -1,7 +1,9 @@
 """SDMXML v2.1 reader"""
-from collections import ChainMap
+from collections import defaultdict
+from copy import copy
 from inspect import isclass
 from itertools import chain
+import re
 
 from lxml import etree
 from lxml.etree import QName, XPath
@@ -14,17 +16,15 @@ from pandasdmx.message import (
     Header,
     StructureMessage,
     )
-from pandasdmx.model import (  # noqa: F401
+from pandasdmx.model import (
     DEFAULT_LOCALE,
     Agency,
     AgencyScheme,
     AllDimensions,
     Annotation,
     AttributeDescriptor,
-    # AttributeRelationship,
     NoSpecifiedRelationship,
     PrimaryMeasureRelationship,
-    # GroupRelationship,
     DimensionRelationship,
     AttributeValue,
     Categorisation,
@@ -32,7 +32,6 @@ from pandasdmx.model import (  # noqa: F401
     CategoryScheme,
     Code,
     Codelist,
-    Component,
     ComponentValue,
     Concept,
     ConceptScheme,
@@ -75,8 +74,16 @@ from pandasdmx.model import (  # noqa: F401
 
 from pandasdmx.reader import BaseReader
 
+
+# Regular expression for URNs used as references
+URN = re.compile(r'urn:sdmx:org\.sdmx\.infomodel'
+                 r'\.(?P<package>[^\.]*)'
+                 r'\.(?P<class>[^=]*)=((?P<agency>[^:]*):)?'
+                 r'(?P<id>[^\(]*)(\((?P<version>\d*)\))?')
+
+
 # XML namespaces
-_ns = {
+NS = {
     'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
     'data': ('http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/'
              'structurespecific'),
@@ -92,11 +99,11 @@ _ns = {
 
 def qname(ns, name):
     """Return a fully-qualified tag *name* in namespace *ns*."""
-    return QName(_ns[ns], name)
+    return QName(NS[ns], name)
 
 
-# Add namespaces
-_message_class = {qname('mes', name): cls for name, cls in (
+# Mapping tag names → Message classes
+MESSAGE = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
     ('GenericData', DataMessage),
     ('GenericTimeSeriesData', DataMessage),
@@ -107,7 +114,7 @@ _message_class = {qname('mes', name): cls for name, cls in (
 
 
 # XPath expressions for reader._collect()
-_collect_paths = {
+COLLECT = {
     'header': {
         'id': 'mes:ID/text()',
         'prepared': 'mes:Prepared/text()',
@@ -135,100 +142,99 @@ _collect_paths = {
     }
 
 # Precompile paths
-for group, vals in _collect_paths.items():
+for group, vals in COLLECT.items():
     for key, path in vals.items():
-        _collect_paths[group][key] = XPath(path, namespaces=_ns,
-                                           smart_strings=False)
+        COLLECT[group][key] = XPath(path, namespaces=NS, smart_strings=False)
 
 
 # For Reader._parse(): tag name → Reader.parse_[…] method to use
-_parse_alias = {
-    'annotationtext': 'international_string',
-    'name': 'international_string',
-    'department': 'international_string',
-    'description': 'international_string',
-    'role': 'international_string',
-    'text': 'international_string',
-    'dimensionlist': 'grouping',
-    'attributelist': 'grouping',
-    'measurelist': 'grouping',
-    'corerepresentation': 'representation',
-    'localrepresentation': 'representation',
-    'annotationtype': 'text',
-    'annotationtitle': 'text',
-    'annotationurl': 'text',
-    'email': 'text',
-    'telephone': 'text',
-    'uri': 'text',
-    'urn': 'text',
-    'value': 'text',
-    'obskey': 'key',
-    'serieskey': 'key',
-    'groupkey': 'key',
-    'agencyscheme': 'orgscheme',
-    'dataproviderscheme': 'orgscheme',
-    'agency': 'organisation',
-    'dataprovider': 'organisation',
-    'textformat': 'facet',
-    'enumerationformat': 'facet',
-    'timedimension': 'dimension',
-    }
+METHOD = {
+    'AnnotationText': 'international_string',
+    'Name': 'international_string',
+    'Department': 'international_string',
+    'Description': 'international_string',
+    'Role': 'international_string',
+    'Text': 'international_string',
 
-# Class names stored as strings in XML attributes -> pandasdmx.model classes
-_parse_class = {
-    'key': {
-        'groupkey': GroupKey,
-        'obskey': Key,
-        'serieskey': SeriesKey,
-        'key': DataKey,  # for DataKeySet
-        },
-    'ref': {  # Keys here are concatenated 'package' and 'class' attributes
-        'base.DataProvider': DataProvider,
-        'categoryscheme.Category': Category,
-        'codelist.Codelist': Codelist,
-        'conceptscheme.Concept': Concept,
-        'datastructure.Dataflow': DataflowDefinition,
-        'datastructure.DataStructure': DataStructureDefinition,
-        },
-    'ref_parent': {
-        Category: CategoryScheme,
-        Concept: ConceptScheme,
-        DataProvider: DataProviderScheme,
-        },
-    'orgscheme': {
-        'agencyscheme': AgencyScheme,
-        'dataproviderscheme': DataProviderScheme,
-        },
-    'organisation': {
-        'agency': Agency,
-        'dataprovider': DataProvider,
-        },
-    }
+    'DimensionList': 'grouping',
+    'AttributeList': 'grouping',
+    'MeasureList': 'grouping',
 
-# Tag names to skip entirely
-_parse_skip = [
-    # Tags that are bare containers for other XML elements
-    'Annotations',
-    'CategorySchemes',
-    'Categorisations',
-    'Codelists',
-    'Concepts',
-    'Constraints',
-    'Dataflows',
-    'DataStructures',
-    'DataStructureComponents',
-    'Footer',
-    'OrganisationSchemes',
-    'ProvisionAgreements',
+    'CoreRepresentation': 'representation',
+    'LocalRepresentation': 'representation',
+
+    'AnnotationType': 'text',
+    'AnnotationTitle': 'text',
+    'AnnotationURL': 'text',
+    'Email': 'text',
+    'Telephone': 'text',
+    'URI': 'text',
+    'URN': 'text',
+    'Value': 'text',
+
+    'ObsKey': 'key',
+    'SeriesKey': 'key',
+    'GroupKey': 'key',
+
+    'AgencyScheme': 'orgscheme',
+    'DataproviderScheme': 'orgscheme',
+
+    'Agency': 'organisation',
+    'DataProvider': 'organisation',
+
+    'TextFormat': 'facet',
+    'EnumerationFormat': 'facet',
+
+    'TimeDimension': 'dimension',
+
+    # Tags that are bare containers for other XML elements; skip entirely
+    'Annotations': 'SKIP',
+    'CategorySchemes': 'SKIP',
+    'Categorisations': 'SKIP',
+    'Codelists': 'SKIP',
+    'Concepts': 'SKIP',
+    'Constraints': 'SKIP',
+    'Dataflows': 'SKIP',
+    'DataStructures': 'SKIP',
+    'DataStructureComponents': 'SKIP',
+    'Footer': 'SKIP',
+    'OrganisationSchemes': 'SKIP',
+    'ProvisionAgreements': 'SKIP',
+
     # Tag names that only ever contain references
-    'DimensionReference',
-    'Source',
-    'Structure',  # str:Structure, not mes:Structure
-    'Target',
-    'ConceptIdentity',
-    'ConstraintAttachment',
-    'Enumeration',
-    ]
+    'DimensionReference': 'ref',
+    'Parent': 'ref',
+    'Source': 'ref',
+    'Structure': 'ref',  # str:Structure, not mes:Structure
+    'Target': 'ref',
+    'ConceptIdentity': 'ref',
+    # 'ConstraintAttachment': 'ref',
+    'Enumeration': 'ref',
+    }
+
+
+# Mappings from SDMX-ML 'package' to contained classes
+PACKAGE_CLASS = {
+    'base': {Agency, AgencyScheme, DataProvider},
+    'categoryscheme': {Category, Categorisation, CategoryScheme},
+    'codelist': {Code, Codelist},
+    'conceptscheme': {Concept, ConceptScheme},
+    'datastructure': {DataflowDefinition, DataStructureDefinition},
+    'registry': {ContentConstraint},
+    }
+
+
+def get_class(package, cls):
+    """Return a class object for string *cls* and *package* names."""
+    if isinstance(cls, str):
+        if cls in 'Dataflow DataStructure':
+            cls += 'Definition'
+        cls = globals()[cls]
+
+    assert cls in PACKAGE_CLASS[package], \
+        f'Package {package!r} invalid for {cls}'
+
+    return cls
 
 
 def wrap(value):
@@ -247,13 +253,18 @@ def add_localizations(target, values):
     target.localizations.update({locale: label for locale, label in values})
 
 
+class Reparse(Exception):
+    """Raised for a forward reference to trigger reparsing."""
+    pass
+
+
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from :mod:`pandasdmx.model`.
 
     The implementation is recursive, and depends on:
 
     - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
-    - State variables :attr:`_stack, :attr:`_index`.
+    - State variables :attr:`_current`, :attr:`_stack, :attr:`_index`.
     """
     # TODO subclass the main reader for StructureSpecific*Data messages to
     #      avoid branching
@@ -268,20 +279,24 @@ class Reader(BaseReader):
     # Only IdentifiableArtefacts should be stored. See _maintained().
     _index = {}
 
+    # Similar to _index, but specific to the current scope.
+    _current = {}
+
     def read_message(self, source):
         # Root XML element
         root = etree.parse(source).getroot()
 
         # Message class
         try:
-            cls = _message_class[root.tag]
+            cls = MESSAGE[root.tag]
         except KeyError:
             msg = 'Unrecognized message root element {!r}'.format(root.tag)
             raise ParseError(msg) from None
 
         # Reset state
-        self._stack = [QName(root).localname.lower()]
+        self._stack = []
         self._index = {}
+        self._current = {}
 
         # Parse the tree
         values = self._parse(root)
@@ -338,6 +353,8 @@ class Reader(BaseReader):
                     ext_cs.append(cs)
 
             for c in structures.pop('categorisations', []):
+                if not isinstance(c.artefact, DataflowDefinition):
+                    continue
                 assert c.artefact in msg.dataflow.values()
 
                 missing_cs = True
@@ -362,94 +379,120 @@ class Reader(BaseReader):
         A dictionary is returned.
         """
         result = {}
-        for key, xpath in _collect_paths[group].items():
+        for key, xpath in COLLECT[group].items():
             matches = xpath(elem)
             if len(matches) == 0:
                 continue
             result[key] = matches[0] if len(matches) == 1 else matches
         return result
 
-    def _parse(self, elem, rtype=dict, unwrap=True):
+    def _parse(self, elem, unwrap=True):
         """Recursively parse the XML *elem* and return pandasdmx.model objects.
 
         Methods like 'Reader.parse_attribute()' are called for XML elements
         with tag names like '<ns:Attribute>'; each emits pandasdmx.model
         objects.
 
-        *rtype* controls the return type of _parse():
-        - dict: a mapping of tag names to lists of objects.
-        - list: a list of objects.
-
         If *unwrap* is True (the default), then single-entry lists are returned
         as bare objects.
         """
         # Container for results
-        results = rtype()
+        results = defaultdict(list)
+
+        # Store state: tag name for the elem
+        self._stack.append(QName(elem).localname)
 
         # Parse each child
-        for child in elem:
-            # Store state: tag name for the child
-            tag_name = QName(child).localname.lower()
-            self._stack.append(tag_name)
+        reparse = []  # Elements to reparse after the first pass
+        reparse_limit = 2 * len(elem)
+        for i, child in enumerate(chain(elem, reparse)):
+            if i > reparse_limit:
+                # Probably repeated failure to parse the same elements, which
+                # would lead to an infinite loop
+                raise ValueError(f'Unable to parse elements {reparse!r}')
+
+            # Tag name for the child
+            tag_name = QName(child).localname
 
             # Invoke the parser for this element
             try:
-                if QName(child).localname in _parse_skip:
-                    # Element doesn't require any parsing, per se.
-                    # Immediately parse its children, as a list.
-                    self._stack[-1] += ' (skip)'
-                    result = self._parse(child, rtype=list, unwrap=False)
-                elif len(child) == 1 and child[0].tag == 'Ref':
-                    # Element contains nothing but a reference. Parse or look
-                    # up the reference
-                    result = [self.parse_ref(child[0])]
+                # Get the name of the parser method
+                how = METHOD.get(tag_name, tag_name)
+
+                if how == 'SKIP':
+                    # Element is a bare container for other elements; parse its
+                    # children directly
+                    result = list(chain(*self._parse(child, unwrap=False)
+                                        .values()))
+                elif how == 'ref' or (len(child) == 1 and
+                                      child[0].tag == 'Ref'):
+                    # Element contains a reference
+                    # Parse the reference; may raise Reparse (below)
+                    result = [self.parse_ref(child[0], parent=tag_name)]
                 else:
-                    # Parse the element, maybe using an alias
-                    method = 'parse_' + _parse_alias.get(tag_name, tag_name)
-                    result = [getattr(self, method)(child)]
+                    # All other elements
+                    result = [getattr(self, f'parse_{how}'.lower())(child)]
+            except Reparse as r:
+                # Raise one level beyond the original to reparse <Parent><Ref>
+                # instead of <Ref>
+                if r.args[0] < 1:
+                    self._stack.pop()
+                    raise Reparse(r.args[0] + 1)
+
+                # Add to the queue to be reparsed on the second pass
+                reparse.append(child)
+
+                # Continue with next child element
+                continue
             except XMLParseError:
-                # Re-raise without adding to the stack
-                raise
+                raise  # Re-raise without adding to the stack
             except Exception as e:
+                # Other exception, convert to XMLParseError
                 raise XMLParseError(self, child) from e
 
-            # Add objects with IDs to the index
+            # Add objects with IDs to the appropriate index
             for r in result:
-                if (isinstance(r, IdentifiableArtefact) and not
-                        getattr(r, 'is_external_reference', False)):
+                if isinstance(r, MaintainableArtefact) and not \
+                        r.is_external_reference:
+                    # Global index for MaintainableArtefacts
                     self._index[(r.__class__.__name__, r.id)] = r
+                elif isinstance(r, IdentifiableArtefact):
+                    # Current scope index for IdentifiableArtefacts
+                    self._current[(r.__class__, r.id)] = r
 
-            # Store the result
-            if rtype is dict:
-                results[tag_name] = results.get(tag_name, []) + result
-            else:
-                results.extend(result)
+            # Store the parsed elements
+            results[tag_name.lower()].extend(result)
 
-            # Restore state
-            self._stack.pop()
+        # Restore state
+        self._clear_current(self._stack.pop())
 
         if unwrap:
-            if rtype is dict:
-                # Unwrap every value in results that is a length-1 list
-                results = {k: v[0] if len(v) == 1 else v for k, v in
-                           results.items()}
-            else:
-                results = results[0] if len(results) == 1 else results
+            # Unwrap every value in results that is a length-1 list
+            results = {k: v[0] if len(v) == 1 else v for k, v in
+                       results.items()}
 
         return results
 
-    def _maintained(self, cls, id, match_subclass=False, **kwargs):
-        """Retrieve or instantiate a MaintainableArtefact of *cls*.
+    def _maintained(self, cls=None, id=None, urn=None, match_subclass=False,
+                    **kwargs):
+        """Retrieve or instantiate a MaintainableArtefact of *cls* with *ids.
+
+        If the object has been parsed (i.e. is in :attr:`_index`), it is
+        returned; if not and `match_subclass` is :obj:`False`, it is
+        instantiated with ``is_external_reference=True``, passing `kwargs`.
+
+        If *urn* is given, it is used to determine *cls* and *id*, per the URN
+        regular expression.
 
         If *match_subclass* is False, *cls* may either be a string or a class
-        for a subclass of MaintainableArtefact. If an object with a matching
-        *cls* and *id* has been parsed, it is returned; if not, it is
-        instantiated with `is_external_reference=True`.
-
-        If *match_subclass* is True, *cls* must be a class. If an object of
-        class *cls* _or a subclass_, with *id*, has been parsed, it is
-        returned; if not, ValueError is raised.
+        for a subclass of MaintainableArtefact. If *match_subclass* is True,
+        *cls* must be a class.
         """
+        if urn:
+            match = URN.match(urn).groupdict()
+            cls = get_class(match['package'], match['class'])
+            id = match['id']
+
         if match_subclass:
             for key, obj in self._index.items():
                 if isinstance(obj, cls) and obj.id == id:
@@ -458,12 +501,15 @@ class Reader(BaseReader):
 
         key = (cls.__name__, id) if isclass(cls) else (cls, id)
 
+        # Maybe create a new object
         if key not in self._index:
             if not isclass(cls):
-                raise TypeError('cannot instantiate from string class name: {}'
-                                .format(cls))
-            # Create a new object. A reference to a MaintainableArtefact
-            # without it being fully defined is necessarily external
+                raise TypeError(f'cannot instantiate from {cls!r}')
+            elif not issubclass(cls, MaintainableArtefact):
+                raise TypeError(f'{cls} is not maintainable')
+
+            # Create a new object. A reference to a MaintainableArtefact that
+            # is not defined in the current message is, necessarily, external
             assert kwargs.pop('is_external_reference', True)
             self._index[key] = cls(id=id, is_external_reference=True,
                                    **kwargs)
@@ -494,28 +540,29 @@ class Reader(BaseReader):
             'validTo': ('valid_to', str),
             }
 
-        attrs = {}
+        attr = copy(elem.attrib)
         for source, (target, xform) in convert_attrs.items():
             try:
-                value = elem.attrib.pop(source)
-                attrs[target] = xform(value)
+                attr[target] = xform(attr.pop(source))
             except KeyError:
                 continue
 
-        attrs = ChainMap(attrs, elem.attrib)
-
-        if issubclass(cls, MaintainableArtefact):
+        try:
             # Maybe retrieve an existing reference
-            obj = self._maintained(cls, **attrs)
+            obj = self._maintained(cls, **attr)
             # Since the object is now being parsed, it's defined in the current
             # message and no longer an external reference
             obj.is_external_reference = False
-        else:
+        except TypeError:
             # Instantiate the class and store its attributes
-            obj = cls(**attrs)
+            obj = cls(**attr)
+
+        # Store object for parsing children
+        self._current[(cls, obj.id)] = obj
 
         # Parse children
         values = self._parse(elem, **kwargs)
+
         # Store the name, description and annotations
         add_localizations(obj.name, values.pop('name'))
         add_localizations(obj.description, values.pop('description', []))
@@ -536,83 +583,135 @@ class Reader(BaseReader):
                 obs_dim = Dimension(id=value)
             self._obs_dim = wrap(obs_dim)
 
+    def _get_current(self, cls):
+        """Return the sole instance of *cls* in the :attr:`_current` scope.
+
+        Raises AssertionError if there are 0, or 2 or more instances.
+        """
+        results = []
+        for k, obj in self._current.items():
+            if k[0] is cls:
+                results.append(obj)
+
+        assert len(results) == 1
+        return results[0]
+
+    def _clear_current(self, scope):
+        """Clear references from self._current at the end of *scope*."""
+        classes = {
+            'CategoryScheme': (Category, CategoryScheme),
+            'Categorisation': (Categorisation,),
+            'Codelist': (Code,),
+            'ConceptScheme': (Concept, ConceptScheme),
+            'ContentConstraint': (ContentConstraint,),
+            'Dataflow': (DataflowDefinition,),
+            'DataStructure': (DataStructureDefinition,),
+            }.get(scope, [])
+
+        if len(classes) == 0:
+            return
+
+        for k in list(self._current.keys()):
+            if k[0] in classes:
+                self._current.pop(k)
+
+    def _get_cc_dimension(self, id):
+        """Return a Dimension for *id* in the current scope.
+
+        Navigates from a ContentConstraint in self._current, to its Dataflow,
+        DataStructureDefinition, and DimensionDescriptor.
+        """
+        return list(self._get_current(ContentConstraint).content)[0] \
+            .structure.dimensions.get(id)
+
     # Parsers for common elements
 
     def parse_international_string(self, elem):
-        locale = elem.attrib.get(qname('xml', 'lang'), DEFAULT_LOCALE)
-        return (locale, elem.text)
+        return (elem.attrib.get(qname('xml', 'lang'), DEFAULT_LOCALE),
+                elem.text)
 
     def parse_text(self, elem):
         return elem.text
 
-    def parse_ref(self, elem, hint=None):
-        """External and internal references to MaintainableArtefacts."""
-        args = {}
+    def parse_ref(self, elem, parent=None):
+        """References to Identifiable- and MaintainableArtefacts.
 
-        # Parse attributes
+        `parent` is the tag containing the reference.
+        """
+        # Unused attributes
+        attr = copy(elem.attrib)
+        attr.pop('agencyID', None)
+        attr.pop('version', None)
+
+        if elem.tag == 'URN':
+            # Ref is a URN
+            return self._maintained(urn=elem.text)
+
+        # Every non-URN ref has an 'id' attribute
+        ref_id = attr.pop('id')
+
+        # Determine the class of the ref'd object
         try:
-            args['maintainer'] = Agency(id=elem.attrib.pop('agencyID'))
+            # 'package' and 'class' attributes give the class directly
+            cls = get_class(attr.pop('package'), attr.pop('class'))
         except KeyError:
-            pass
+            # No 'package' and 'class' attributes
+
+            if parent == 'Parent':
+                # Ref to parent of an Item in an ItemScheme; the ref'd object
+                # has the same class as the Item
+                cls = globals()[self._stack[-1]]
+            elif parent == 'Group':
+                cls = GroupDimensionDescriptor
+            elif parent in ('Dimension', 'DimensionReference'):
+                # References to Dimensions
+                cls = [Dimension, TimeDimension]
+            else:
+                cls = globals()[parent]
+
+        # Get or instantiate the object itself
         try:
-            args['version'] = elem.attrib.pop('version')
-        except KeyError:
-            pass
+            # Some refs to IdentifiableArtefacts specify the parent
+            # MaintainableArtefact
 
-        ref_id = elem.attrib.pop('id')
+            # Attributes of the maintainable parent; this raises KeyError if
+            # not present
+            parent_attrs = dict(id=attr.pop('maintainableParentID'),
+                                version=attr.pop('maintainableParentVersion'))
+            assert len(attr) == 0
 
-        # Determine the class of the reference
-        try:
-            # If the element has 'package' and 'class' attributes, these give
-            # the class directly
-            cls_key = '.'.join([elem.attrib.pop('package'),
-                                elem.attrib.pop('class')])
-            cls = _parse_class['ref'][cls_key]
-        except KeyError:
-            # Use optional hint at class name
-            cls = hint or self._stack[-1].capitalize()
-
-            if cls == 'Parent':
-                # The parent of an Item in an ItemScheme has the same class as
-                # the Item
-                cls = self._stack[-2].capitalize()
-            elif ((cls == 'Ref' and 'dimensionreference' in self._stack[-2]) or
-                  (cls == 'Dimension' and
-                   self._stack[-2] == 'attributerelationship')):
-                # References to Dimensions. Dimensions are not
-                # MaintainableArtefacts, but are targets for references.
-                # TODO disambiguate the same Dimension appearing in multiple
-                #      DataStructures/DimensionDescriptors in the same Message
-                for dim_cls in 'Dimension', 'TimeDimension':
-                    try:
-                        return self._index[(dim_cls, ref_id)]
-                    except KeyError:
-                        continue
-
-                # No matching dimension found
-                raise IndexError((dim_cls, ref_id))
-
-        try:
             # Class of the maintainable parent object
-            parent_cls = _parse_class['ref_parent'][cls]
-
-            # Attributes of the maintainable parent
-            parent_attrs = dict(
-                id=elem.attrib.pop('maintainableParentID'),
-                version=elem.attrib.pop('maintainableParentVersion'),
-                )
+            parent_cls = {
+                Category: CategoryScheme,
+                Code: Codelist,
+                Concept: ConceptScheme,
+                DataProvider: DataProviderScheme,
+                }[cls]
 
             # Retrieve or create the parent
             parent = self._maintained(parent_cls, **parent_attrs)
 
-            # Retrieve or create the referenced object
-            obj = parent.setdefault(id=ref_id, **elem.attrib)
+            # Retrieve or create the referenced object within the parent
+            return parent.setdefault(id=ref_id, **attr)
         except KeyError:
-            # No parent object
-            obj = self._maintained(cls, id=ref_id)
+            pass
 
-        assert len(elem.attrib) == 0, elem.attrib
-        return obj
+        # Instantiate a new MaintainableArtefact
+        try:
+            return self._maintained(cls, id=ref_id)
+        except TypeError:
+            # 'cls' is not a MaintainableArtefact
+            pass
+
+        # Look up an existing IdentifiableArtefact in the current scope
+        for cls in wrap(cls):
+            try:
+                return self._current[(cls, ref_id)]
+            except KeyError:
+                pass
+
+        # Failed; probably a forward reference
+        raise Reparse(0)
 
     # Parsers for elements appearing in data messages
 
@@ -698,33 +797,46 @@ class Reader(BaseReader):
             result = gk
         elif elem.tag == qname('str', 'Group'):
             # structure → GroupDimensionDescriptor
-            args = dict(components=wrap(values.pop('groupdimension')))
-            gdd = GroupDimensionDescriptor(**args)
+            gdd = GroupDimensionDescriptor(
+                id=elem.attrib['id'],
+                components=wrap(values.pop('groupdimension')))
+
+            # Early update of the DSD so that later definitions in the DSD can
+            # reference gdd
+            dsd = self._get_current(DataStructureDefinition)
+            dsd.group_dimensions = gdd
+
             result = gdd
         else:
             # no namespace → GroupKey in a StructureSpecificData message
 
-            # Discard XML Schema attribute
-            elem.attrib.pop(qname('xsi', 'type'))
+            # commented: destructive
+            # # Discard XML Schema attribute
+            # elem.attrib.pop(qname('xsi', 'type'))
 
             # the 'TITLE' XML attribute is an SDMX Attribute
+            attrib = {}
             try:
                 da = DataAttribute(id='TITLE')
-                av = AttributeValue(value_for=da,
-                                    value=elem.attrib.pop('TITLE'))
-                attrs = {da.id: av}
+                av = AttributeValue(value=elem.attrib['TITLE'], value_for=da)
+                attrib[da.id] = av
             except KeyError:
-                attrs = {}
+                pass
 
             # Remaining attributes are the KeyValues
-            result = GroupKey(**elem.attrib, attrib=attrs)
+            result = GroupKey(**elem.attrib, attrib=attrib)
 
         assert len(values) == 0
         return result
 
     def parse_key(self, elem):
         """SeriesKey, GroupKey, observation dimensions."""
-        cls = _parse_class['key'][self._stack[-1]]
+        cls = {
+            'GroupKey': GroupKey,
+            'ObsKey': Key,
+            'SeriesKey': SeriesKey,
+            'Key': DataKey,  # for DataKeySet
+            }[QName(elem).localname]
         if cls is not DataKey:
             # Most data: the value is specified as an XML attribute
             kv = {e.attrib['id']: e.attrib['value'] for e in
@@ -735,11 +847,10 @@ class Reader(BaseReader):
             # with a <com:Value>...</com:Value> element.
             kvs = {}
             for e in elem.iterchildren():
-                c = self._maintained(Component, e.attrib['id'],
-                                     match_subclass=True)
+                c = self._get_cc_dimension(e.attrib['id'])
                 kvs[c] = ComponentValue(value_for=c,
                                         value=self._parse(e)['value'])
-            return cls(included=elem.attrib.pop('isIncluded', True),
+            return cls(included=elem.attrib.get('isIncluded', True),
                        key_value=kvs)
 
     def parse_obs(self, elem):
@@ -752,40 +863,39 @@ class Reader(BaseReader):
                 new_key = Key()
                 new_key[key.id] = key
                 key = new_key
-            result = Observation(dimension=key, value=values['obsvalue'],
-                                 attached_attribute=values.get('attributes',
-                                                               {}))
+            obs = Observation(dimension=key, value=values['obsvalue'],
+                              attached_attribute=values.get('attributes', {}))
         else:
             # StructureSpecificData message
+            attr = copy(elem.attrib)
 
-            # Pop the value
-            value = elem.attrib.pop('OBS_VALUE')
+            # Value of the observation
+            value = attr.pop('OBS_VALUE')
 
-            key = Key()
+            # Dimensions for the key
             if self._obs_dim is AllDimensions:
-                dims = elem.attrib.keys()
+                dims = list(attr.keys())
             else:
-                # Retrieve the key using the 'dimension at observation'
-                # specified for the message
+                # Use the 'dimension at observation' specified for the message
                 dims = map(lambda d: d.id, self._obs_dim)
-            for dim in dims:
-                key[dim] = elem.attrib.pop(dim)
 
-            # Create the observation
-            result = Observation(dimension=key, value=value)
+            # Create the observation, consuming attr for the key
+            obs = Observation(dimension=Key(**{d: attr.pop(d) for d in dims}),
+                              value=value)
 
-            # Remaining XML attributes are SDMX DataAttributes
-            for id, value in elem.attrib.items():
+            # Remaining attr members are SDMX DataAttributes
+            for id, value in attr.items():
                 da = DataAttribute(id=id)
                 av = AttributeValue(value_for=da, value=value)
-                result.attached_attribute[da.id] = av
+                obs.attached_attribute[da.id] = av
 
-        return result
+        return obs
 
     def parse_obsdimension(self, elem):
-        args = dict(value=elem.attrib.pop('value'))
-        args['id'] = elem.attrib.pop('id', self._obs_dim[0].id)
-        assert len(elem.attrib) == 0
+        attr = copy(elem.attrib)
+        args = dict(value=attr.pop('value'))
+        args['id'] = attr.pop('id', self._obs_dim[0].id)
+        assert len(attr) == 0
         return KeyValue(**args)
 
     def parse_obsvalue(self, elem):
@@ -812,7 +922,7 @@ class Reader(BaseReader):
         return self._parse(elem, unwrap=False)
 
     def parse_organisation(self, elem):
-        cls = _parse_class['organisation'][self._stack[-1]]
+        cls = globals()[QName(elem).localname]
         o, values = self._named(cls, elem)
         o.contact = wrap(values.pop('contact', []))
         assert len(values) == 0
@@ -883,8 +993,18 @@ class Reader(BaseReader):
         assert len(values) == 0
         return c
 
+    def parse_constraintattachment(self, elem):
+        constrainables = self._parse(elem)
+        assert len(constrainables) == 1
+        result = list(constrainables.values())[0]
+
+        # Also add to the parent ContentConstraint for use in parsing KeyValues
+        self._get_current(ContentConstraint).content.add(result)
+
+        return result
+
     def parse_orgscheme(self, elem):
-        cls = _parse_class['orgscheme'][self._stack[-1]]
+        cls = globals()[QName(elem).localname]
         os, values = self._named(cls, elem, unwrap=False)
         _, os.items = values.popitem()
         assert len(values) == 0
@@ -917,9 +1037,10 @@ class Reader(BaseReader):
         return dsd
 
     def parse_grouping(self, elem):
-        Grouping = globals()[elem.attrib.pop('id')]
-        g = Grouping(**elem.attrib)
-        g.components.extend(self._parse(elem, list, unwrap=False))
+        attr = copy(elem.attrib)
+        Grouping = globals()[attr.pop('id')]
+        g = Grouping(**attr)
+        g.components.extend(chain(*self._parse(elem, unwrap=False).values()))
         return g
 
     def parse_dimension(self, elem):
@@ -928,17 +1049,21 @@ class Reader(BaseReader):
         # Object class: Dimension, TimeDimension, etc.
         cls = globals()[QName(elem).localname]
 
-        attrs = {}
+        attr = copy(elem.attrib)
         try:
-            attrs['order'] = int(elem.attrib.pop('position'))
+            attr['order'] = int(attr.pop('position'))
         except KeyError:
             pass
 
         d = cls(
             concept_identity=values.pop('conceptidentity'),
             local_representation=values.pop('localrepresentation', None),
-            **ChainMap(attrs, elem.attrib),
+            **attr,
             )
+
+        # Add to scope
+        self._current[(cls, d.id)] = d
+
         assert len(values) == 0
         return d
 
@@ -959,6 +1084,7 @@ class Reader(BaseReader):
             related_to=values.pop('attributerelationship'),
             **attrs,
             )
+
         assert len(values) == 0
         return da
 
@@ -974,18 +1100,27 @@ class Reader(BaseReader):
 
     def parse_attributerelationship(self, elem):
         tags = set([el.tag for el in elem.iterchildren()])
-        if tags == {qname('str', 'Dimension')}:
+        tag = tags.pop()
+        assert len(tags) == 0
+
+        if tag == qname('str', 'Dimension'):
             values = self._parse(elem, unwrap=False)
             ar = DimensionRelationship(dimensions=values.pop('dimension'))
             assert len(values) == 0
-        elif tags == {qname('str', 'PrimaryMeasure')}:
+        elif tag == qname('str', 'PrimaryMeasure'):
             # Avoid recurive _parse() here, because it may contain a Ref to
             # a PrimaryMeasure that is not yet defined
             ar = PrimaryMeasureRelationship()
-        elif tags == {qname('str', 'None')}:
+        elif tag == qname('str', 'None'):
             ar = NoSpecifiedRelationship()
+        elif tag == qname('str', 'Group'):
+            # Reference to a GroupDimensionDescriptor
+            values = self._parse(elem)
+            ar = DimensionRelationship(group_key=values.pop('group'))
+            assert len(values) == 0
         else:
-            raise NotImplementedError('cannot parse %s' % etree.tostring(elem))
+            raise NotImplementedError(f'cannot parse {etree.tostring(elem)}')
+
         return ar
 
     def parse_representation(self, elem):
@@ -1000,13 +1135,15 @@ class Reader(BaseReader):
                 r.non_enumerated = values.pop('enumerationformat')
         elif 'textformat' in values:
             r.non_enumerated = values.pop('textformat')
+
         assert len(values) == 0
         return r
 
     def parse_facet(self, elem):
         # Convert case of the value_type. In XML, first letter is uppercase;
         # in the spec, lowercase.
-        value_type = elem.attrib.pop('textType', None)
+        attr = copy(elem.attrib)
+        value_type = attr.pop('textType', None)
         if isinstance(value_type, str):
             value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
         f = Facet(value_type=value_type)
@@ -1017,18 +1154,18 @@ class Reader(BaseReader):
             'minLength': 'min_length',
             'maxLength': 'max_length',
             }
-        for key, value in elem.attrib.items():
+        for key, value in attr.items():
             setattr(f.type, key_map.get(key, key), value)
         return f
 
     # Parsers for constraints etc.
     def parse_contentconstraint(self, elem):
         # Munge
+
         role = elem.attrib.pop('type').lower()
         elem.attrib['role'] = 'allowable' if role == 'allowed' else role
         cc, values = self._named(ContentConstraint, elem)
-        ca = values.pop('constraintattachment')
-        cc.content.update(ca if isinstance(ca, list) else [ca])
+        cc.content.update(wrap(values.pop('constraintattachment')))
         cc.data_content_region = values.pop('cuberegion', None)
         cc.data_content_keys = values.pop('datakeyset', None)
         assert len(values) == 0, values
@@ -1046,8 +1183,10 @@ class Reader(BaseReader):
         """<com:KeyValue> NOT inside <com:Key> specifies a MemberSelection."""
         values = self._parse(elem)
         values = list(map(lambda v: MemberValue(value=v), values['value']))
-        values_for = self._index['Dimension', elem.attrib.pop('id')]
-        return MemberSelection(values_for=values_for, values=values)
+
+        return MemberSelection(
+            values=values,
+            values_for=self._get_cc_dimension(elem.attrib['id']))
 
     def parse_datakeyset(self, elem):
         values = self._parse(elem)

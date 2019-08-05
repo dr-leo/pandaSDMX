@@ -1,6 +1,5 @@
 """Tests for pandasdmx/writer.py."""
 # TODO test all possible values of Writer.write() arguments
-# - asframe
 # - attribute
 # - fromfreq
 # - parsetime
@@ -101,6 +100,20 @@ def test_write_agencyscheme():
         data = sdmx.to_pandas(msg)
 
     assert data['organisation_scheme']['AGENCIES']['ESTAT'] == 'Eurostat'
+
+    # to_pandas only returns keys for non-empty attributes of StructureMessage
+    # https://github.com/dr-leo/pandaSDMX/issues/90
+    assert set(data.keys()) == {'organisation_scheme'}
+
+    # Attribute access works
+    assert data.organisation_scheme.AGENCIES.ESTAT == 'Eurostat'
+
+    with pytest.raises(AttributeError):
+        data.codelist
+    with pytest.raises(AttributeError):
+        data.dataflow
+    with pytest.raises(AttributeError):
+        data.structure
 
 
 def test_write_categoryscheme():

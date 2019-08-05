@@ -181,7 +181,7 @@ def write_component(obj):
 
 
 def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
-                  fromfreq=False, parse_time=True):
+                  datetime=False):
     """Convert :class:`DataSet <pandasdmx.model.DataSet>`.
 
     Parameters
@@ -208,15 +208,32 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     constraint : :class:`ContentConstraint \
                  <pandasdmx.model.ContentConstraint>` , optional
         If given, only Observations included by the *constraint* are returned.
-    fromfreq : bool, optional
-        If True, extrapolate time periods from the first item and FREQ
-        dimension.
-    parse_time : bool, optional
-        If True (default), try to generate datetime index, provided that
-        dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_time`` is
-        ignored. If False, always generate index of strings. Set it to
-        False to increase performance and avoid parsing errors for exotic
-        date-time formats unsupported by pandas.
+    datetime : bool or str or dict, optional
+        If given, return :class:`pandas.DataFrame` with a
+        :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodIndex` as the
+        index and all other dimensions as columns. Valid `time_index` values
+        include:
+
+        - :obj:`True`: determine the time dimension automatically by
+          detecting a :class:`TimeDimension <pandasdmx.model.TimeDimension>`.
+        - :class:`str`: ID of the time dimension.
+        - :class:`Dimension <pandasdmx.model.Dimension>`: the matching
+          Dimension is the time dimension.
+        - :class:`dict`: advanced behaviour. Keys may include:
+
+          - **dim** (:class:`Dimension <pandasdmx.model.Dimension>` or
+            :class:`str`): the time dimension or its ID.
+          - **axis** (`{0 or 'index', 1 or 'columns'}`): axis on which to place
+            the time dimension (default: 0).
+          - **freq** (:obj:`True` or :class:`str` or
+            :class:`Dimension <pandasdmx.model.Dimension>` or
+            :class:`Attribute <pandasdmx.model.Attribute>`): produce
+            :class:`pandas.PeriodIndex`. If :class:`str`, the ID of the
+            dimension or attribute containing a frequency specification. If a
+            Dimension or Attribute, the specified dimension or attribute is
+            used for the frequency specification. Any dimension or attribute
+            used for the frequency specification is removed from the returned
+            DataFrame.
 
     Returns
     -------
@@ -264,6 +281,27 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
             result['value'] = result['value'].astype(dtype)
             if not attributes:
                 result = result['value']
+
+    if not datetime:
+        return result
+
+    # Parse arguments
+    dt = dict(dim=None, axis=0, freq=False)
+    if isinstance(datetime, (str, Dimension)):
+        dt['dim'] = datetime
+    elif isinstance(datetime, dict):
+        extra_keys = set(datetime.keys()) - set(dt.keys())
+        if extra_keys:
+            raise ValueError(extra_keys)
+        dt.update(datetime)
+    elif isinstance(datetime, bool):
+        pass  # True
+    else:
+        raise ValueError(datetime)
+
+    # TODO determine time dimension
+    # TODO transpose if axis=1
+    # TODO determine freq dimension or attribute
 
     return result
 

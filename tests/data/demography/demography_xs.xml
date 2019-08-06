@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message:StructureSpecificData xmlns:demo="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ESTAT:DEMOGRAPHY(1.0):ObsLevelDim:DEMO:explicit" xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:data="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../schemas/SDMXMessage.xsd urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ESTAT:DEMOGRAPHY(1.0):ObsLevelDim:DEMO:explicit demography_xs_ex.xsd">
+	<message:Header>
+		<message:ID>DEMO_XS_EX</message:ID>
+		<message:Test>true</message:Test>
+		<message:Prepared>2011-11-25T00:21:49-05:00</message:Prepared>
+		<message:Sender id="ESTSAT"/>
+		<message:Structure structureID="STR1" dimensionAtObservation="DEMO" namespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ESTAT:DEMOGRAPHY(1.0):ObsLevelDim:DEMO:explicit" explicitMeasures="true">
+			<common:Structure>
+				<Ref agencyID="ESTAT" id="DEMOGRAPHY" version="1.0"/>
+			</common:Structure>
+		</message:Structure>
+	</message:Header>
+	<message:DataSet data:structureRef="STR1" xsi:type="demo:DataSetType" data:dataScope="DataStructure">
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="T" COUNTRY="BE">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.82" OBS_STATUS="A" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="80.2" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="124095" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="100658" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="T" COUNTRY="BE">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.82" OBS_STATUS="A" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="80.4" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="124991" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="101599" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="T" COUNTRY="BE">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.83" OBS_STATUS="P" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="80.6" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="126000" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="104000" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="M" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.3" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="63481" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="49804" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="M" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.5" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="63926" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="50270" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="M" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.7" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_STATUS="M" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_STATUS="M" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="F" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="83.3" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="60614" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="50854" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="F" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="83.5" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="61065" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="51329" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="F" COUNTRY="BE">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="83.7" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_STATUS="M" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_STATUS="M" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="T" COUNTRY="EL">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.42" OBS_STATUS="A" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_STATUS="M" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="111926" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="109895" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="T" COUNTRY="EL">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.51" OBS_STATUS="A" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="79.7" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="118302" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="107979" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="T" COUNTRY="EL">
+			<Obs xsi:type="demo:TFRNSI" OBS_VALUE="1.52" OBS_STATUS="P" UNIT_MEASURE="CPW" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="80.0" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="117933" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="108316" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="M" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.0" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="57959" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="57366" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="M" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.5" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="60966" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="56390" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="M" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="77.7" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="60832" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="57015" OBS_STATUS="M" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2007" SEX="F" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="82.0" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="53967" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="52529" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2008" SEX="F" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="82.5" OBS_STATUS="A" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="57336" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="51589" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+		<Series FREQ="A" TIME_PERIOD="2009" SEX="F" COUNTRY="EL">
+			<Obs xsi:type="demo:LEXPNSIT" OBS_VALUE="82.8" OBS_STATUS="P" UNIT_MEASURE="YRS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:LBIRTHST" OBS_VALUE="57101" OBS_STATUS="P" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+			<Obs xsi:type="demo:DEATHST" OBS_VALUE="51301" OBS_STATUS="A" UNIT_MEASURE="PERS" UNIT_MULT="0"/>
+		</Series>
+	</message:DataSet>
+</message:StructureSpecificData>

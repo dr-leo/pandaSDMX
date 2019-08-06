@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message:GenericMetadata xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:metadata="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/metadata/generic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../schemas/SDMXMessage.xsd http://www.w3.org/1999/xhtml xhtml/xhtml11.xsd">
+	<message:Header>
+		<message:ID>GEN</message:ID>
+		<message:Test>true</message:Test>
+		<message:Prepared>2010-11-24T08:00:00-05:00</message:Prepared>
+		<message:Sender id="ESTAT"/>
+		<message:Structure structureID="STR1">
+			<common:Structure>
+				<Ref agencyID="ESTAT" id="ESMS" version="1.0"/>
+			</common:Structure>
+		</message:Structure>
+	</message:Header>
+	<message:MetadataSet structureRef="STR1">
+		<metadata:Report id="ESMS_SIMPLE_REPORT">
+			<metadata:Target id="CATEGORY_TARGET">
+				<metadata:ReferenceValue id="REPORT_PERIOD_TARGET">
+					<metadata:ReportPeriod>2010</metadata:ReportPeriod>
+				</metadata:ReferenceValue>
+				<metadata:ReferenceValue id="CATEGORY">
+					<metadata:ObjectReference>
+						<URN>urn:sdmx:org.sdmx.infomodel.categoryscheme.Category=ESTAT:DATAFLOWS_SCHEME(1.0).PSC.DEM.TOT</URN>
+					</metadata:ObjectReference>
+				</metadata:ReferenceValue>
+				<metadata:ReferenceValue id="DATA_PROVIDER">
+					<metadata:ObjectReference>
+						<URN>urn:sdmx:org.sdmx.infomodel.base.DataProvider=ESTAT:DATA_PROVIDERS(1.0).ESTAT</URN>
+					</metadata:ObjectReference>
+				</metadata:ReferenceValue>
+			</metadata:Target>
+			<metadata:AttributeSet>
+				<metadata:ReportedAttribute id="CONTACT">
+					<metadata:AttributeSet>
+						<metadata:ReportedAttribute id="ORGANISATION" value="Eurostat, the statistical office of the European Union"/>
+						<metadata:ReportedAttribute id="ORGANISATION_UNIT" value="Unit F1: Population"/>
+						<metadata:ReportedAttribute id="ADDRESS">
+							<metadata:AttributeSet>
+								<metadata:ReportedAttribute id="STREET" value="RUE ALPHONSE WEICKER 5"/>
+								<metadata:ReportedAttribute id="CITY" value="LUXEMBOURG"/>
+								<metadata:ReportedAttribute id="POSTAL_CODE" value="2721"/>
+								<metadata:ReportedAttribute id="COUNTRY" value="LU"/>
+							</metadata:AttributeSet>
+						</metadata:ReportedAttribute>
+						<metadata:ReportedAttribute id="EMAIL" value="pop_unit@ec.europa.eu"/>
+					</metadata:AttributeSet>
+				</metadata:ReportedAttribute>
+				<metadata:ReportedAttribute id="META_UPDATE">
+					<metadata:AttributeSet>
+						<metadata:ReportedAttribute id="CERTIFIED" value="2009-12-10"/>
+						<metadata:ReportedAttribute id="POSTED" value="2010-01-13"/>
+						<metadata:ReportedAttribute id="UPDATED" value="2010-01-13">
+							<metadata:AttributeSet>
+								<metadata:ReportedAttribute id="NEXT" value="2011-01-20"/>
+							</metadata:AttributeSet>
+						</metadata:ReportedAttribute>
+					</metadata:AttributeSet>
+				</metadata:ReportedAttribute>
+				<metadata:ReportedAttribute id="STAT_PRES">
+					<metadata:AttributeSet>
+						<metadata:ReportedAttribute id="DATA_DESCR">
+							<common:StructuredText xml:lang="en">
+								<div xmlns="http://www.w3.org/1999/xhtml">
+									<p>The tables presented here cover the 'demography' collection. How complete the tables are depends on the availability of data from the competent National Statistical Institutes.</p> 
+									<p>Eurostat carries out yearly four annual data collections in the field of demography, three at national level and one at regional level:</p> 
+									<p>1) <strong><em>Rapid</em></strong>: carried out in April-May (deadline 15 May of year T); this data collection aims at collecting the main aggregated information for the previous year and the population on 1 January of the current year.</p> 
+									<p>More specifically, for a questionnaire sent in year T the following data are requested:</p> 
+									<ul> 
+									<li>Demographic balance by sex for year (T-1): population on 1 January of years (T-1) and T, live births in year (T-1), deaths in year (T-1), net migration and statistical adjustment in year (T-1).</li> 
+									<li>Other demographic data for year (T-1): live births outside marriage, deaths under 1 year old, marriages, divorces.</li> 
+									<li>Migration flows by sex in year (T-1): immigrants and emigrants.</li> 
+									<li>Demographic indicators in year (T-1): total fertility rate, male, female and total life expectancy at birth.</li> 
+									</ul> 
+									<p>2) <strong><em>Joint</em></strong>: carried out in summer (deadline 15 September of year T); this is the main data collection of the year, and it is done in close co-operation with the United Nation Statistical Division (UNSD). It concerns detailed data by sex, age and other characteristics for the demographic events of the previous year and the population on 1 January of the current and previous years.</p> 
+									<p>More specifically, for a questionnaire sent in year T the following data is requested:</p> 
+									<p>- Population tables:</p> 
+									<ul> 
+									<li>population by age and sex on 1 January of years (T-1) and T;</li> 
+									<li>population by age, sex and legal marital status on 1 January of years (T-1) and T;</li> 
+									</ul> 
+									<p>- Fertility tables: with reference to year (T-1),</p> 
+									<ul> 
+									<li>live births by mother's age, year of birth and legal marital status;</li> 
+									<li>live births by biological order and mother's age and year of birth;</li> 
+									<li>live births by month;</li> 
+									<li>total fertility rate and mean age at childbearing;</li> 
+									<li>legally induced abortions by mother's age and number of previous live births;</li> 
+									<li>late fœtal deaths by mother's age.</li> 
+									</ul> 
+									<p>- Mortality tables: with reference to year (T-1),</p> 
+									<ul> 
+									<li>infant mortality by age and sex;</li> 
+									<li>deaths by age, year of birth and sex;</li> 
+									<li>deaths by month;</li> 
+									<li>life expectancy at birth by sex.</li> 
+									</ul> 
+									<p>- Nuptiality tables: with reference to year (T-1),</p> 
+									<ul> 
+									<li>marriages by previous marital status of bride and groom;</li> 
+									<li>first marriages by age, year of birth and sex;</li> 
+									<li>divorces by duration of marriage.</li> 
+									</ul> 
+									<p>3) <strong><em>Nowcast</em></strong>: carried out in October-November (deadline 15 November of year T); this data collection aims at collecting the latest monthly data for the current year T on</p> 
+									<ul> 
+									<li>births,</li> 
+									<li>deaths,</li> 
+									<li>immigrants and emigrants</li> 
+									</ul> 
+									<p>in order to produce a 1<sup>st</sup> January population forecast for the following year (T+1).</p> 
+									<p>4) <strong><em>Regional</em></strong>: carried out in November-December (deadline 15 December of year T), it is based on a regional breakdown of the countries agreed at EU level using the latest version of the Nomenclature of Territorial Units for Statistics (NUTS) and of the Statistical regions for the EFTA and Candidate countries. Detailed data are collected at regional level NUTS 2 by sex, age and year of birth, on demographic events of the previous year and on population on 1 January of the current and previous year. Aggregated data are collected at NUTS 3 level.</p> 
+									<p>More specifically, for a questionnaire sent in year T the following data is requested:</p> 
+									<p>NUTS2:</p> 
+									<ul> 
+									<li>population by sex and age on 1st January of years (T-1) and T;</li> 
+									</ul> 
+									<p>With reference to year (T-1):</p> 
+									<ul> 
+									<li>live births by age and year of birth of the mother;</li> 
+									<li>deaths by sex and age and year of birth;</li> 
+									<li>internal migration by sex and region of origin and destination (excluding intra-regional migration);</li> 
+									<li>arrivals due to internal migration by sex and year of birth (excluding intra-regional migration);</li> 
+									<li>departures due to internal migration by sex and year of birth (excluding intra-regional migration).</li> 
+									</ul> 
+									<p>NUTS3:</p> 
+									<ul> 
+									<li>surface in km2 on 1st January (total surface including inland water; land area) of year T;</li> 
+									<li>population by sex and broad age groups on 1st of January of years (T-1) and T;</li> 
+									<li>total number of births and deaths in year (T-1).</li> 
+									</ul> 
+									<p>The data coming from the NSIs are validated by Eurostat, processed and loaded into NewCronos (Eurostat's free dissemination website). They are also the basis of the several thematic and horizontal Eurostat publications.</p> 
+									<p>Data are presented by single country and for aggregates of countries. For EU and Euro Area, only the current and the previous version of the aggregates are published, currently EU-27, EU-25, EA-16 and EA-15. Moreover, data is shown for the European Economic Area (EEA) and the European Free Trade Association (EFTA); in the regional demography domain, an aggregate for the current candidate countries is also available.</p>								
+								</div>
+							</common:StructuredText>
+						</metadata:ReportedAttribute>
+					</metadata:AttributeSet>
+				</metadata:ReportedAttribute>
+			</metadata:AttributeSet>
+		</metadata:Report>
+	</message:MetadataSet>
+</message:GenericMetadata>

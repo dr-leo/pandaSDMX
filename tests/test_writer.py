@@ -10,6 +10,7 @@ import pytest
 from pytest import raises
 
 import pandasdmx as sdmx
+from pandasdmx.model import DataStructureDefinition
 
 from . import (
     assert_pd_equal,
@@ -196,6 +197,67 @@ def test_write_dataflow():
         'BPM6-TOTAL': '{}Overall total and main headings'.format(mbop),
         })
     assert_pd_equal(result['dataflow'].head(), expected)
+
+
+def test_write_dataset_datetime():
+    """Test datetime arguments to write_dataset()."""
+    # Load data and structure
+    with specimen('insee-IPI-2010-A21-data.xml') as f:
+        data_msg = sdmx.read_sdmx(f)
+        ds = data_msg.data[0]
+    with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
+        structure_msg = sdmx.read_sdmx(f)
+        dsd = structure_msg.structure['IPI-2010-A21']
+        TIME_PERIOD = dsd.dimensions.get('TIME_PERIOD')
+
+    other_dims = list(filter(lambda n: n != 'TIME_PERIOD',
+                             [d.id for d in dsd.dimensions.components]))
+
+    def expected(df, axis=0):
+        axes = ['index', 'columns'] if axis else ['columns', 'index']
+        assert getattr(df, axes[0]).names == other_dims
+        assert isinstance(getattr(df, axes[1]), pd.DatetimeIndex)
+
+    # Write with datetime=str
+    df = sdmx.to_pandas(ds, datetime='TIME_PERIOD')
+    expected(df)
+
+    # Write with datetime=Dimension instance
+    df = sdmx.to_pandas(ds, datetime=TIME_PERIOD)
+    expected(df)
+
+    # Write with datetime=True fails because the data message contains no
+    # actual structure information
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+        df = sdmx.to_pandas(ds, datetime=True)
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+        df = sdmx.to_pandas(data_msg, datetime=True)
+
+    # Attaching the DSD to the DataSet allows write_dataset to infer the
+    # TimeDimension
+    ds.structured_by = dsd
+    df = sdmx.to_pandas(ds, datetime=True)
+    expected(df)
+
+    # Attaching the DSD to the DataMessage allows write_dataset to infer the
+    # TimeDimension
+    ds.structured_by = DataStructureDefinition()  # Empty
+    data_msg.dataflow.structure = dsd
+    df = sdmx.to_pandas(data_msg, datetime=True)
+    expected(df)
+
+    # As above, with axis=1
+    df = sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', axis=1))
+    expected(df, axis=1)
+    df = sdmx.to_pandas(ds, datetime=dict(dim=TIME_PERIOD, axis=1))
+    expected(df, axis=1)
+    ds.structured_by = dsd
+    df = sdmx.to_pandas(ds, datetime=dict(axis=1))
+    expected(df, axis=1)
+    ds.structured_by = DataStructureDefinition()
+    data_msg.dataflow.structure = dsd
+    df = sdmx.to_pandas(data_msg, datetime=dict(axis=1))
+    expected(df, axis=1)
 
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))

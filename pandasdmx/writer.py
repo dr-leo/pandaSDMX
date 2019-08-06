@@ -116,6 +116,8 @@ def write_response(obj, *args, **kwargs):
 
 def write_datamessage(obj, *args, **kwargs):
     """Convert :class:`DataMessage <pandasdmx.message.DataMessage>`."""
+    # Pass the message's DSD assist datetime handling
+    kwargs.setdefault('dsd', obj.dataflow.structure)
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
     else:
@@ -181,7 +183,7 @@ def write_component(obj):
 
 
 def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
-                  datetime=False):
+                  datetime=False, **kwargs):
     """Convert :class:`DataSet <pandasdmx.model.DataSet>`.
 
     Parameters
@@ -285,10 +287,12 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     if not datetime:
         return result
 
-    # Parse arguments
+    # Check *datetime* argument values
     dt = dict(dim=None, axis=0, freq=False)
-    if isinstance(datetime, (str, Dimension)):
+    if isinstance(datetime, str):
         dt['dim'] = datetime
+    elif isinstance(datetime, Dimension):
+        dt['dim'] = datetime.id
     elif isinstance(datetime, dict):
         extra_keys = set(datetime.keys()) - set(dt.keys())
         if extra_keys:
@@ -299,9 +303,35 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     else:
         raise ValueError(datetime)
 
-    # TODO determine time dimension
-    # TODO transpose if axis=1
+    if not dt['dim']:
+        # Determine time dimension
+        if len(obj.structured_by.dimensions.components):
+            dims = obj.structured_by.dimensions.components
+        elif 'dsd' in kwargs:
+            dims = kwargs['dsd'].dimensions.components
+        else:
+            dims = []
+
+        for dim in dims:
+            if isinstance(dim, TimeDimension):
+                dt['dim'] = dim
+                break
+
+        if not dt['dim']:
+            raise ValueError(f'no TimeDimension in {dims}')
+
+    # Unstack all but the time dimension
+    other_dims = list(filter(lambda d: d != dt['dim'], result.index.names))
+    result = result.unstack(other_dims)
+    result.index = pd.to_datetime(result.index)
+
     # TODO determine freq dimension or attribute
+    if dt['freq']:
+        # Determine frequency dimension or attribute
+        assert False
+
+    if dt['axis'] in {1, 'columns'}:
+        result = result.transpose()
 
     return result
 

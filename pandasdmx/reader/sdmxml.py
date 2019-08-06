@@ -1052,7 +1052,16 @@ class Reader(BaseReader):
 
     def parse_grouping(self, elem):
         attr = copy(elem.attrib)
-        Grouping = globals()[attr.pop('id')]
+        try:
+            cls = attr.pop('id')
+        except KeyError:
+            # SDMX-ML spec: "The id attribute is provided in this case for
+            # completeness. However, its value is fixed to DimensionDescriptor"
+            if QName(elem).localname == 'DimensionList':
+                cls = 'DimensionDescriptor'
+            else:
+                raise
+        Grouping = globals()[cls]
         g = Grouping(**attr)
         g.components.extend(chain(*self._parse(elem, unwrap=False).values()))
         return g

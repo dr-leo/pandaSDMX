@@ -158,8 +158,12 @@ def write_structuremessage(obj, include=None, **kwargs):
         attrs &= all_contents
     attrs = sorted(attrs)
 
-    result = DictLike((a, write(getattr(obj, a), **kwargs))
-                      for a in attrs)
+    result = DictLike()
+    for a in attrs:
+        dl = write(getattr(obj, a), **kwargs)
+        if len(dl):
+            # Only add non-empty elements
+            result[a] = dl
 
     return result
 

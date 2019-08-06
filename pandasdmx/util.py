@@ -71,8 +71,12 @@ class Resource(str, Enum):
     # structureset = 'structureset'
 
     @classmethod
-    def _missing_(cls, value):
-        return cls._member_map_[value.__class__.__name__.lower()]
+    def from_obj(cls, obj):
+        """Return an enumeration value based on the class of *obj*."""
+        clsname = {
+            'DataStructureDefinition': 'datastructure',
+            }.get(obj.__class__.__name__, obj.__class__.__name__)
+        return cls[clsname.lower()]
 
     @classmethod
     def describe(cls):

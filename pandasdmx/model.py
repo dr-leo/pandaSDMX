@@ -685,6 +685,10 @@ class ContentConstraint(Constraint):
                 'ContentConstraint does not contain a CubeRegion.')
 
 
+class AttachmentConstraint(Constraint):
+    pass
+
+
 # 5.2: Data Structure Defintion
 
 class DimensionComponent(Component):
@@ -716,13 +720,15 @@ class MeasureDescriptor(ComponentList):
 
 class AttributeRelationship(BaseModel):
     dimensions: List[Dimension] = []
-    group: 'GroupDimensionDescriptor' = None
+    group_key: 'GroupDimensionDescriptor' = None
 
 
 NoSpecifiedRelationship = AttributeRelationship
 PrimaryMeasureRelationship = AttributeRelationship
-GroupRelationship = AttributeRelationship
 DimensionRelationship = AttributeRelationship
+
+# 'Retained for compatibility reasons' in SDMX 2.1; not used by pandaSDMX
+# GroupRelationship = AttributeRelationship
 
 
 class DataAttribute(Component):
@@ -794,10 +800,11 @@ class DimensionDescriptor(ComponentList):
 
 class GroupDimensionDescriptor(DimensionDescriptor):
     attachment_constraint: bool = None
-    # constraint: AttachmentConstraint = None
+    constraint: AttachmentConstraint = None
 
 
 AttributeRelationship.update_forward_refs()
+# GroupRelationship.update_forward_refs()
 
 
 class DataStructureDefinition(Structure, ConstrainableArtefact):

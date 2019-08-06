@@ -1,9 +1,12 @@
+from itertools import chain
+
 import numpy as np
 import pandas as pd
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AgencyScheme,
+    DataAttribute,
     DataflowDefinition,
     DataStructureDefinition,
     DataSet,
@@ -228,14 +231,12 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
           - **axis** (`{0 or 'index', 1 or 'columns'}`): axis on which to place
             the time dimension (default: 0).
           - **freq** (:obj:`True` or :class:`str` or
-            :class:`Dimension <pandasdmx.model.Dimension>` or
-            :class:`Attribute <pandasdmx.model.Attribute>`): produce
+            :class:`Dimension <pandasdmx.model.Dimension>`): produce
             :class:`pandas.PeriodIndex`. If :class:`str`, the ID of the
-            dimension or attribute containing a frequency specification. If a
-            Dimension or Attribute, the specified dimension or attribute is
-            used for the frequency specification. Any dimension or attribute
-            used for the frequency specification is removed from the returned
-            DataFrame.
+            dimension containing a frequency specification. If a Dimension, the
+            specified dimension is used for the frequency specification. Any
+            dimension used for the frequency specification is removed from the
+            returned DataFrame.
 
     Returns
     -------
@@ -284,56 +285,102 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
             if not attributes:
                 result = result['value']
 
-    if not datetime:
-        return result
+    return _maybe_convert_datetime(result, datetime, obj=obj, **kwargs)
 
-    # Check *datetime* argument values
-    dt = dict(dim=None, axis=0, freq=False)
-    if isinstance(datetime, str):
-        dt['dim'] = datetime
-    elif isinstance(datetime, Dimension):
-        dt['dim'] = datetime.id
-    elif isinstance(datetime, dict):
-        extra_keys = set(datetime.keys()) - set(dt.keys())
+
+def _maybe_convert_datetime(df, arg, obj, dsd=None):
+    """Helper for :meth:`write_dataset` to handle datetime indices."""
+    if not arg:
+        # No datetime conversion
+        return df
+
+    # Check argument values
+    param = dict(dim=None, axis=0, freq=False)
+    if isinstance(arg, str):
+        param['dim'] = arg
+    elif isinstance(arg, Dimension):
+        param['dim'] = arg.id
+    elif isinstance(arg, dict):
+        extra_keys = set(arg.keys()) - set(param.keys())
         if extra_keys:
             raise ValueError(extra_keys)
-        dt.update(datetime)
-    elif isinstance(datetime, bool):
+        param.update(arg)
+    elif isinstance(arg, bool):
         pass  # True
     else:
-        raise ValueError(datetime)
+        raise ValueError(arg)
 
-    if not dt['dim']:
-        # Determine time dimension
+    def _get_dims():
+        """Return an appropriate list of dimensions."""
         if len(obj.structured_by.dimensions.components):
-            dims = obj.structured_by.dimensions.components
-        elif 'dsd' in kwargs:
-            dims = kwargs['dsd'].dimensions.components
+            return obj.structured_by.dimensions.components
+        elif dsd:
+            return dsd.dimensions.components
         else:
-            dims = []
+            return []
 
+    def _get_attrs():
+        """Return an appropriate list of attributes."""
+        if len(obj.structured_by.attributes.components):
+            return obj.structured_by.attributes.components
+        elif dsd:
+            return dsd.attributes.components
+        else:
+            return []
+
+    if not param['dim']:
+        # Determine time dimension
+        dims = _get_dims()
         for dim in dims:
             if isinstance(dim, TimeDimension):
-                dt['dim'] = dim
+                param['dim'] = dim
                 break
-
-        if not dt['dim']:
+        if not param['dim']:
             raise ValueError(f'no TimeDimension in {dims}')
 
-    # Unstack all but the time dimension
-    other_dims = list(filter(lambda d: d != dt['dim'], result.index.names))
-    result = result.unstack(other_dims)
-    result.index = pd.to_datetime(result.index)
+    # Unstack all but the time dimension and convert
+    other_dims = list(filter(lambda d: d != param['dim'], df.index.names))
+    df = df.unstack(other_dims)
+    df.index = pd.to_datetime(df.index)
 
-    # TODO determine freq dimension or attribute
-    if dt['freq']:
-        # Determine frequency dimension or attribute
-        assert False
+    if param['freq']:
+        # Determine frequency string, Dimension, or Attribute
+        freq = param['freq']
+        if isinstance(freq, str) and freq not in pd.offsets.prefix_mapping:
+            # ID of a Dimension or Attribute
+            for component in chain(_get_dims(), _get_attrs()):
+                if component.id == freq:
+                    freq = component
+                    break
+            if isinstance(freq, str):
+                raise ValueError(freq)
 
-    if dt['axis'] in {1, 'columns'}:
-        result = result.transpose()
+        if isinstance(freq, Dimension):
+            # Retrieve Dimension values from pd.MultiIndex level
+            level = freq.id
+            i = df.columns.names.index(level)
+            values = set(df.columns.levels[i])
 
-    return result
+            if len(values) > 1:
+                values = sorted(values)
+                raise ValueError('cannot convert to PeriodIndex with '
+                                 f'non-unique freq={values}')
+
+            # Store the unique value
+            freq = values.pop()
+
+            # Remove the index level
+            df.columns = df.columns.droplevel(i)
+        elif isinstance(freq, DataAttribute):  # pragma: no cover
+            raise NotImplementedError
+
+        df.index = df.index.to_period(freq=freq)
+
+    if param['axis'] in {1, 'columns'}:
+        # Change axis
+        df = df.transpose()
+
+    return df
 
 
 def write_dimensiondescriptor(obj):

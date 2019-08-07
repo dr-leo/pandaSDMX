@@ -91,6 +91,28 @@ if TYPE_CHECKING:
 
 
 class BaseModel(pydantic.BaseModel):
+    """Shim for pydantic.BaseModel.
+
+    This class changes two behaviours in pydantic. The methods are direct
+    copies from pydantic 0.32, with marked changes.
+
+    1. https://github.com/samuelcolvin/pydantic/issues/524
+       - "Multiple RecursionErrors with self-referencing models"
+       - In e.g. pandasdmx.model.Item, having both .parent and .child
+         references leads to infinite recursion during validation.
+       - Fix: override BaseModel.__setattr__.
+       - New value 'limited' for Config.validate_assignment: no sibling
+         field values are passed to Field.validate().
+       - New key Config.validate_assignment_exclude: list of field names that
+         are not validated per se *and* not passed to Field.validate() when
+         validating a sibling field.
+    2. https://github.com/samuelcolvin/pydantic/issues/521
+       - "Assignment to attribute changes id() but not referenced object,"
+         marked as wontfix by pydantic maintainer.
+       - When cls.attr is typed as BaseModel (or a subclass), then
+         a.attr is b.attr is always False, even when set to the same reference.
+       - Fix: override BaseModel.validate() without copy().
+    """
     class Config:
         validate_assignment = 'limited'
         validate_assignment_exclude = []
@@ -127,6 +149,8 @@ class BaseModel(pydantic.BaseModel):
                             'does not support item assignment')
         elif (self.__config__.validate_assignment and name not in
               self.__config__.validate_assignment_exclude):
+            # Changed: if 'limited', don't include values for other fields in
+            # call to 'validate'
             if self.__config__.validate_assignment == 'limited':
                 kw = {'include': {}}
             else:
@@ -139,6 +163,18 @@ class BaseModel(pydantic.BaseModel):
                     raise ValidationError([error_], type(self))
         self.__dict__[name] = value
         self.__fields_set__.add(name)
+
+    @classmethod
+    def validate(cls, value):
+        if isinstance(value, dict):
+            return cls(**value)
+        elif isinstance(value, cls):
+            return value  # Changed: assign reference instead of value.copy()
+        elif cls.__config__.orm_mode:
+            return cls.from_orm(value)
+        else:
+            with change_exception(DictError, TypeError, ValueError):
+                return cls(**dict(value))
 
 
 def get_class_hint(obj, attr):

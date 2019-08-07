@@ -1,5 +1,4 @@
 codecov
-coverage
 pytest-cov
 # TODO remove when https://github.com/samuelcolvin/pydantic/pull/1023 released
 git+git://github.com/samuelcolvin/pydantic.git#egg=pydantic

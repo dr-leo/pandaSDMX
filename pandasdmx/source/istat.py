@@ -12,4 +12,8 @@ class Source(BaseSource):
         'IT1' and 'all' are known to work; we use 'all' to (hopefully) be
         inclusive of 'IT1' and any others.
         """
-        kwargs.setdefault('provider', 'all')
+        # NB this is an indirect test for resource_type != 'data'; because of
+        #    the way the hook is called, resource_type is not available
+        #    directly.
+        if 'key' not in kwargs:
+            kwargs.setdefault('provider', 'all')

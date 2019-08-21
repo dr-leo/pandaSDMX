@@ -1,0 +1,49 @@
+1. Increment the version number in setup.py:
+   - See https://www.python.org/dev/peps/pep-0440/#pre-releases
+   - Use '.dev0', '.dev1', etc. suffixes for test releases.
+
+2. Build the source and binary packages:
+
+    $ python setup.py bdist_wheel sdist
+
+3. Check the built packages for correctness. Address any warnings or errors:
+
+    $ twine check dist/*
+
+4. Upload the packages to the TEST instance of PyPI:
+
+    $ twine upload -r testpypi dist/*
+
+5. Check at https://test.pypi.org/project/pandaSDMX/ that:
+
+   - The package can be downloaded, installed and run.
+   - The README is rendered correctly.
+   - Links to the documentation go to the correct version.
+
+   If not, modify; increment the '.devN' version number suffix, and upload
+   again.
+
+6. Change the version number in setup.py.
+
+   - If releasing e.g. '1.2' remove all suffixes like '1.2b3' or '1.2b3.dev4'.
+   - If releasing e.g. '1.2b3', remove a development release suffix like
+     '1.2b3.dev4'.
+
+7. Commit. This commit should contain only one line change—the version number
+   in setup.py—and have the commit message “Release X.Y”.
+
+8. Tag the commit, e.g.:
+
+    $ git tag 1.2
+
+9. Push the commit and tag to Github.
+
+10. Build the source and binary packages. Be sure to first remove any
+    development builds:
+
+    $ rm dist/*
+    $ python setup.py bdist_wheel sdist
+
+11. Upload to PyPI:
+
+    $ twine upload dist/*

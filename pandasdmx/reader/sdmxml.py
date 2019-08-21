@@ -1059,7 +1059,7 @@ class Reader(BaseReader):
             # completeness. However, its value is fixed to DimensionDescriptor"
             if QName(elem).localname == 'DimensionList':
                 cls = 'DimensionDescriptor'
-            else:
+            else:  # pragma: no cover
                 raise
         Grouping = globals()[cls]
         g = Grouping(**attr)

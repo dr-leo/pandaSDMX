@@ -170,7 +170,7 @@ class BaseModel(pydantic.BaseModel):
             return cls(**value)
         elif isinstance(value, cls):
             return value  # Changed: assign reference instead of value.copy()
-        elif cls.__config__.orm_mode:
+        elif cls.__config__.orm_mode:  # pragma: no cover
             return cls.from_orm(value)
         else:
             with change_exception(DictError, TypeError, ValueError):

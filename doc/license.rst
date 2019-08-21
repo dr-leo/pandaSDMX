@@ -1,14 +1,18 @@
 License
-===========
+=======
 
+Copyright 2014–2019, pandaSDMX developers:
 
+.. include:: ../AUTHORS
 
+Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+these files except in compliance with the License. You may obtain a copy of the
+License:
 
-Notwithstanding other licenses applicable to any third-party software
-included in this package, 
-pandaSDMX is licensed under the
-`Apache 2.0 license <http://www.apache.org/licenses/>`_, a copy of which is included in the 
-source distribution.
+- from the file ``LICENSE`` included with the source code, or
+- at http://www.apache.org/licenses/LICENSE-2.0
 
-
-Copyright 2014, 2015 Dr. Leo <fhaxbox66qgmail.com>, All Rights Reserved.
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.

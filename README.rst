@@ -14,13 +14,13 @@ pandaSDMX: Statistical Data and Metadata eXchange
 `Source code @ Github <https://github.com/dr-leo/pandasdmx/>`_ —
 `Authors <AUTHORS>`_
 
-``pandaSDMX`` is an `Apache 2.0-licensed <LICENSE>`_ Python library that
-implements `SDMX <http://www.sdmx.org>`_ 2.1, (`ISO 17369:2013
+**pandaSDMX** is an `Apache 2.0-licensed <LICENSE>`_ Python package that
+implements `SDMX <http://www.sdmx.org>`_ 2.1 (`ISO 17369:2013
 <https://www.iso.org/standard/52500.html>`_), a format for exchange of
 **statistical data and metadata** used by national statistical agencies,
 central banks, and international organisations.
 
-``pandaSDMX`` can be used to:
+**pandaSDMX** can be used to:
 
 - explore the data available from `data providers
   <https://pandasdmx.readthedocs.io/en/latest/sources.html>`_
@@ -55,7 +55,7 @@ Licensed under the Apache License, Version 2.0 (the “License”); you may not 
 these files except in compliance with the License. You may obtain a copy of the
 License:
 
-- from the file `LICENSE`_, or
+- from the file LICENSE included with the source code, or
 - at http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed

@@ -47,3 +47,7 @@
 11. Upload to PyPI:
 
     $ twine upload dist/*
+
+12. Immediately change the version number in setup.py and make a new commit to
+    indicate development status. E.g. if '1.2' was released, change the version
+    to '1.3.dev0'.

@@ -11,18 +11,19 @@ pandaSDMX: Statistical Data and Metadata eXchange
 .. image:: https://img.shields.io/pypi/v/pandaSDMX.svg
    :target: https://pypi.org/project/pandaSDMX
 
-| Author: Dr. Leo <fhaxbox66@gmail.com>
-| https://github.com/dr-leo/pandasdmx/
+`Source code @ Github <https://github.com/dr-leo/pandasdmx/>`_ —
+`Authors <AUTHORS>`_
 
-``pandaSDMX`` is an `Apache 2.0-licensed <LICENSE.txt>`_ Python library that implements `SDMX <http://www.sdmx.org>`_ 2.1,
-(`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_), a format for
-exchange of **statistical data and metadata** used by national statistical
-agencies, central banks, and international organisations.
+``pandaSDMX`` is an `Apache 2.0-licensed <LICENSE>`_ Python library that
+implements `SDMX <http://www.sdmx.org>`_ 2.1, (`ISO 17369:2013
+<https://www.iso.org/standard/52500.html>`_), a format for exchange of
+**statistical data and metadata** used by national statistical agencies,
+central banks, and international organisations.
 
 ``pandaSDMX`` can be used to:
 
-- explore the data available from
-  `data providers <https://pandasdmx.readthedocs.io/en/latest/sources.html>`_
+- explore the data available from `data providers
+  <https://pandasdmx.readthedocs.io/en/latest/sources.html>`_
   such as the World Bank, International Monetary Fund, Eurostat, OECD, and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
@@ -45,6 +46,24 @@ See https://pandasdmx.readthedocs.io/en/latest for the latest docs, or
 https://pandasdmx.readthedocs.io/en/v0.9 for the 0.9 release.
 
 
+License
+-------
+
+Copyright 2014–2019, `pandaSDMX developers <AUTHORS>`_
+
+Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+these files except in compliance with the License. You may obtain a copy of the
+License:
+
+- from the file `LICENSE`_, or
+- at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+
 History
 -------
 
@@ -57,4 +76,3 @@ feedback.
 pandaSDMX also contains sample data and metadata from the SDMX user guide.
 
 .. _pysdmx: https://github.com/widukind/pysdmx
-.. _aadict: https://github.com/metagriffin/aadict

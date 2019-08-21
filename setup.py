@@ -22,9 +22,9 @@ EXTRAS_REQUIRE = {
     }
 
 setup(name='pandaSDMX',
-      version='1.0a0.dev0',
+      version='1.0a0.dev1',
       description='A client for SDMX - Statistical Data and Metadata eXchange',
-      author='Dr. Leo',
+      author='pandaSDMX developers',
       author_email='fhaxbox66@gmail.com',
       packages=find_packages(),
       package_data={'pandasdmx': ['sources.json']},

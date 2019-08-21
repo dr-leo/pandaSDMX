@@ -22,7 +22,7 @@ EXTRAS_REQUIRE = {
     }
 
 setup(name='pandaSDMX',
-      version='1.0.0-dev',
+      version='1.0a0.dev0',
       description='A client for SDMX - Statistical Data and Metadata eXchange',
       author='Dr. Leo',
       author_email='fhaxbox66@gmail.com',

@@ -1,3 +1,5 @@
-include *.rst LICENSE.txt requirements.txt
+include README.rst requirements.txt
 include doc/README.txt
-graft tests
+include tests
+prune tests/__pycache__
+prune tests/data/cache

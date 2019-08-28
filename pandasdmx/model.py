@@ -329,10 +329,10 @@ class ItemScheme(MaintainableArtefact):
         raise KeyError(name)
 
     def __contains__(self, item):
-        """Recursive containment."""
-        for i in self.items:
-            if item == i or item in i:
-                return True
+        """Check containment. No recursive
+        search on children is performed as 
+        these are assumed to be items themselves."""
+        return item in self.items
 
     def __repr__(self):
         return "<{}: '{}', {} items>".format(

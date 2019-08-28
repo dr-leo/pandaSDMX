@@ -118,12 +118,9 @@ class InternationalString:
     # Duplicate of __getitem__, to pass existing tests in test_dsd.py
     def __getattr__(self, name):
         try:
-            return super().__getattr__(name)
-        except AttributeError:
-            try:
-                return self.__dict__['localizations'][name]
-            except KeyError:
-                raise AttributeError(name)
+            return self.__dict__['localizations'][name]
+        except KeyError:
+            raise AttributeError(name)
 
     def __add__(self, other):
         result = copy(self)
@@ -322,11 +319,8 @@ class ItemScheme(MaintainableArtefact):
 
     # Convenience access to items
     def __getattr__(self, name):
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            # Provided to pass test_dsd.py
-            return self.__getitem__(name)
+        # Provided to pass test_dsd.py
+        return self.__getitem__(name)
 
     def __getitem__(self, name):
         for i in self.items:
@@ -1039,12 +1033,9 @@ class Key(BaseModel):
     # Convenience access to values by attribute
     def __getattr__(self, name):
         try:
-            return super().__getattr__(name)
-        except AttributeError as e:
-            try:
-                return self.__getitem__(name)
-            except KeyError:
-                raise e
+            return self.__getitem__(name)
+        except KeyError as e:
+            raise e
 
     # Copying
     def __copy__(self):

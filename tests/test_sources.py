@@ -221,6 +221,8 @@ class TestISTAT(DataSourceTest):
     @pytest.mark.remote_data
     def test_gh_75(self, req):
         """Test of https://github.com/dr-leo/pandaSDMX/pull/75."""
+        # Remove the following line after fixing Travis builds. 
+        pytest.skip(reason='Try to localize the cause for errored Travis builds.')
 
         df_id = '47_850'
 

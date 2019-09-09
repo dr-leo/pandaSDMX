@@ -9,12 +9,13 @@ python:
 dist: xenial
 
 install:
+  - pip install -U pip
   - pip install -r requirements.txt
   - pip install -e .[cache,docs,tests]
 
 script: >
   pytest
-  --verbose --remote-data
+  --verbose 
   -ra
   --cov pandasdmx --cov-report term-missing
 

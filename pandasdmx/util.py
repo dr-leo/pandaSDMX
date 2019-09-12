@@ -125,10 +125,10 @@ class BaseModel(pydantic.BaseModel):
             if error_:
                 raise ValidationError([error_], self.__class__)
             else:
-                self.__values__[name] = value_
+                self.__dict__[name] = value_
                 self.__fields_set__.add(name)
         else:
-            self.__values__[name] = value
+            self.__dict__[name] = value
             self.__fields_set__.add(name)
 
 

@@ -181,7 +181,7 @@ class DictLike(OrderedDict[KT, VT]):
         result, error = field._apply_validators(
             value, validators=field.validators, values={}, loc=(), cls=None)
         if error:
-            raise ValidationError([error])
+            raise ValidationError([error], self.__class__)
         else:
             return result
 

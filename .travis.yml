@@ -2,9 +2,6 @@ language: python
 
 python:
   - "3.7.4"
-  - "3.8-dev"
-
-dist: xenial
 
 install:
   - pip install -U pip

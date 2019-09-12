@@ -123,7 +123,7 @@ class BaseModel(pydantic.BaseModel):
             value_, error_ = self.fields[name].validate(value, self.dict(**kw),
                                                         loc=name)
             if error_:
-                raise ValidationError([error_])
+                raise ValidationError([error_], self.__class__)
             else:
                 self.__values__[name] = value_
                 self.__fields_set__.add(name)

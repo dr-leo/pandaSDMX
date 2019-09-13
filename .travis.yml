@@ -11,6 +11,7 @@ install:
 script: >
   pytest
   -rfE
+  --remote-data
   --cov pandasdmx --cov-report term-missing
 
 after_success:

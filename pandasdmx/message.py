@@ -104,11 +104,9 @@ class StructureMessage(Message):
         lines = [super().__repr__()]
 
         # StructureMessage contents
-        for name in dir(self):
-            attr = getattr(self, name)
-            if not isinstance(attr, DictLike) or len(attr) == 0:
-                continue
-            lines.append(summarize_dictlike(attr))
+        for attr in self.__dict__.values():
+            if attr and isinstance(attr, DictLike):
+                lines.append(summarize_dictlike(attr))
 
         return '\n  '.join(lines)
 
@@ -134,7 +132,7 @@ class DataMessage(Message):
         lines = [super().__repr__()]
 
         # DataMessage contents
-        if len(self.data):
+        if self.data:
             lines.append('DataSet ({})'.format(len(self.data)))
         lines.extend(_summarize(self, ('dataflow', 'observation_dimension')))
 

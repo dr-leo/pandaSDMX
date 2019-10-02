@@ -105,7 +105,7 @@ class StructureMessage(Message):
 
         # StructureMessage contents
         for attr in self.__dict__.values():
-            if isinstance(attr, DictLike) and len(attr):
+            if isinstance(attr, DictLike) and attr:
                 lines.append(summarize_dictlike(attr))
 
         return '\n  '.join(lines)

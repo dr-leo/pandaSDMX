@@ -315,24 +315,31 @@ Item.update_forward_refs()
 
 class ItemScheme(MaintainableArtefact):
     is_partial: Optional[bool]
-    items: List[Item] = []
+    _item_type = Item
+    items: Dict[str, _item_type] = []
 
+    @validator('items', pre=True, whole=True)
+    def convert_to_dict(cls, v):
+        if isinstance(v, dict):
+            return v
+        return {i.id : i for i in v}
+    
     # Convenience access to items
     def __getattr__(self, name):
         # Provided to pass test_dsd.py
         return self.__getitem__(name)
 
     def __getitem__(self, name):
-        for i in self.items:
-            if i.id == name:
-                return i
-        raise KeyError(name)
+        return self.items[name]
 
-    def __contains__(self, item):
+    def __contains__(self, item : Union[str, _item_type]):
         """Check containment. No recursive
         search on children is performed as 
-        these are assumed to be items themselves."""
-        return item in self.items
+        these are assumed to be items themselves.
+        Allow searching by Item or its id attribute."""
+        if isinstance(item, str):
+            return item in self.items
+        return item in self.items.values()
 
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
@@ -358,11 +365,11 @@ class ItemScheme(MaintainableArtefact):
 
             # Instantiate an object of the correct class by introspecting
             # the items hint
-            obj = get_class_hint(self, 'items')(**kwargs)
+            obj = self._item_type(**kwargs)
 
-        if obj not in self.items:
+        if obj not in self.items.values():
             # Add the object to the ItemScheme
-            self.items.append(obj)
+            self.items[obj.id] = obj
 
         return obj
 
@@ -415,7 +422,9 @@ class Concept(Item):
 
 
 class ConceptScheme(ItemScheme):
-    items: List[Concept] = []
+    _item_type = Concept
+    items: Dict[str, _item_type] = []
+
 
 
 # 3.3: Basic Inheritance
@@ -490,7 +499,8 @@ class Code(Item):
 
 
 class Codelist(ItemScheme):
-    items: List[Code] = []
+    _item_type = Code
+    items: Dict[str, _item_type] = []
 
 
 # 4.5: Category Scheme
@@ -500,7 +510,8 @@ class Category(Item):
 
 
 class CategoryScheme(ItemScheme):
-    items: List[Category] = []
+    _item_type = Category
+    items: Dict[str, _item_type] = []
 
 
 class Categorisation(MaintainableArtefact):
@@ -550,11 +561,14 @@ for cls in list(locals().values()):
 # functionality
 
 class AgencyScheme(ItemScheme):
-    items: List[Agency] = []
+    _item_type = Agency
+    items: Dict[str, _item_type] = []
+
 
 
 class DataProviderScheme(ItemScheme):
-    items: List[DataProvider] = []
+    _item_type = DataProvider
+    items: Dict[str, _item_type] = []
 
 
 # 10.2: Constraint inheritance

@@ -973,13 +973,13 @@ class Reader(BaseReader):
 
     def parse_categoryscheme(self, elem):
         cs, values = self._named(CategoryScheme, elem)
-        cs.items.extend(values.pop('category', []))
+        cs.extend(values.pop('category', []))
         assert len(values) == 0
         return cs
 
     def parse_codelist(self, elem):
         cl, values = self._named(Codelist, elem, unwrap=False)
-        cl.items.extend(values.pop('code', []))
+        cl.extend(values.pop('code', []))
         assert len(values) == 0
         return cl
 
@@ -1006,13 +1006,12 @@ class Reader(BaseReader):
     def parse_orgscheme(self, elem):
         cls = globals()[QName(elem).localname]
         os, values = self._named(cls, elem, unwrap=False)
-        _, os.items = values.popitem()
-        assert len(values) == 0
+        os.extend(values.values())
         return os
 
     def parse_conceptscheme(self, elem):
         cs, values = self._named(ConceptScheme, elem, unwrap=False)
-        cs.items = values.pop('concept', [])
+        cs.extend(values.pop('concept', []))
         assert len(values) == 0
         return cs
 

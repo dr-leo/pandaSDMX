@@ -33,6 +33,7 @@ from operator import attrgetter
 from typing import (
     Any,
     Dict,
+    Iterable,
     List,
     Optional,
     Set,
@@ -316,7 +317,7 @@ Item.update_forward_refs()
 class ItemScheme(MaintainableArtefact):
     is_partial: Optional[bool]
     _item_type = Item
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {}
 
     @validator('items', pre=True, whole=True)
     def convert_to_dict(cls, v):
@@ -341,6 +342,10 @@ class ItemScheme(MaintainableArtefact):
             return item in self.items
         return item in self.items.values()
 
+    def extend(self, items: Iterable[_item_type]):
+        self.items.update({i.id : i for i in items})
+        
+        
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
             self.__class__.__name__,
@@ -423,7 +428,7 @@ class Concept(Item):
 
 class ConceptScheme(ItemScheme):
     _item_type = Concept
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {} 
 
 
 
@@ -500,7 +505,7 @@ class Code(Item):
 
 class Codelist(ItemScheme):
     _item_type = Code
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {}
 
 
 # 4.5: Category Scheme
@@ -511,7 +516,7 @@ class Category(Item):
 
 class CategoryScheme(ItemScheme):
     _item_type = Category
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {}
 
 
 class Categorisation(MaintainableArtefact):
@@ -562,13 +567,13 @@ for cls in list(locals().values()):
 
 class AgencyScheme(ItemScheme):
     _item_type = Agency
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {}
 
 
 
 class DataProviderScheme(ItemScheme):
     _item_type = DataProvider
-    items: Dict[str, _item_type] = []
+    items: Dict[str, _item_type] = {}
 
 
 # 10.2: Constraint inheritance

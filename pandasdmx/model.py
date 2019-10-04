@@ -342,6 +342,9 @@ class ItemScheme(MaintainableArtefact):
             return item in self.items
         return item in self.items.values()
 
+    def __iter__(self):
+        return iter(self.items.values())
+    
     def extend(self, items: Iterable[_item_type]):
         self.items.update({i.id : i for i in items})
         
@@ -368,8 +371,7 @@ class ItemScheme(MaintainableArtefact):
             if isinstance(parent, str):
                 kwargs['parent'] = self[parent]
 
-            # Instantiate an object of the correct class by introspecting
-            # the items hint
+            # Instantiate an object of the correct class 
             obj = self._item_type(**kwargs)
 
         if obj not in self.items.values():

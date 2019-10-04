@@ -312,7 +312,7 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
         for child in item.child:
             add_item(child)
 
-    for item in obj.items:
+    for item in obj:
         add_item(item)
 
     # Convert to DataFrame

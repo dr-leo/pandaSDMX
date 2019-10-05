@@ -115,7 +115,7 @@ def test_request_preview_data():
     assert isinstance(keys, list)
 
     # Count of keys can be determined
-    assert len(keys) == 4291
+    assert len(keys) == 4331
 
     # A filter can be provided, resulting in fewer keys
     keys = req.preview_data('EXR', {'CURRENCY': 'CAD+CHF+CNY'})

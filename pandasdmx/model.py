@@ -348,6 +348,11 @@ class ItemScheme(MaintainableArtefact):
     def extend(self, items: Iterable[_item_type]):
         self.items.update({i.id : i for i in items})
         
+    def __len__(self):
+        return len(self.items)
+        
+    def append(self, item):
+        self.items[item.id] = item
         
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
@@ -806,7 +811,7 @@ class DimensionDescriptor(ComponentList):
         dd = cls()
         for id, kv in key.values.items():
             cl = Codelist(id=id)
-            cl.items.append(Code(id=kv.value))
+            cl.append(Code(id=kv.value))
             d = Dimension(id=id,
                           local_representation=Representation(enumerated=cl))
             dd.components.append(d)
@@ -919,7 +924,7 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
         dd = DimensionDescriptor.from_key(next(iter_keys))
         for k in iter_keys:
             for i, (id, kv) in enumerate(k.values.items()):
-                dd[i].local_representation.enumerated.items.append(
+                dd[i].local_representation.enumerated.append(
                     Code(id=kv.value))
         return cls(dimensions=dd)
 

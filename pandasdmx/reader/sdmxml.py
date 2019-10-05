@@ -1006,7 +1006,13 @@ class Reader(BaseReader):
     def parse_orgscheme(self, elem):
         cls = globals()[QName(elem).localname]
         os, values = self._named(cls, elem, unwrap=False)
-        os.extend(values.values())
+        # Get the list of organisations. The following 
+        # assumes that the `values`dict has only one item.
+        # Otherwise, the returned item will be unpredictable.
+        # TODO: Review the code parsing the children to
+        # verify that the assumption always holds. 
+        _, orgs = values.popitem()
+        os.extend(orgs)
         return os
 
     def parse_conceptscheme(self, elem):

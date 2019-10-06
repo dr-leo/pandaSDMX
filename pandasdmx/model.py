@@ -33,6 +33,7 @@ from operator import attrgetter
 from typing import (
     Any,
     Dict,
+    Iterable,
     List,
     Optional,
     Set,
@@ -118,12 +119,9 @@ class InternationalString:
     # Duplicate of __getitem__, to pass existing tests in test_dsd.py
     def __getattr__(self, name):
         try:
-            return super().__getattr__(name)
-        except AttributeError:
-            try:
-                return self.__dict__['localizations'][name]
-            except KeyError:
-                raise AttributeError(name)
+            return self.__dict__['localizations'][name]
+        except KeyError:
+            raise AttributeError(name)
 
     def __add__(self, other):
         result = copy(self)
@@ -317,29 +315,64 @@ Item.update_forward_refs()
 
 
 class ItemScheme(MaintainableArtefact):
+    '''
+    This class implements the IM class of the same name.
+    Callers should use the below methods rather than 
+    access the ìtems`attribute. The latter is currently a dict. But this
+    may change in future versions. . Items can be accessed via their ìd`attribute as
+    specified in the IM.
+    Both item and attribute
+    syntax is supported as well as iteration over the items.
+    Items can be added in a list-like fashion using :meth:`append`and :meth:`extend``.
+    
+    TODO:
+     
+    * delete method for items 
+    * allow :meth:`extend`to be passed an 
+      ItemScheme instance or subclass
+    * verify field validation for subclasses (validation may currently be
+      limited to ItemScheme rather than the subclass)
+    * add sorting feature, e.g., when new items have been inserted
+    '''
     is_partial: Optional[bool]
-    items: List[Item] = []
+    _item_type = Item
+    items: Dict[str, _item_type] = {}
 
+    @validator('items', pre=True, whole=True)
+    def convert_to_dict(cls, v):
+        if isinstance(v, dict):
+            return v
+        return {i.id : i for i in v}
+    
     # Convenience access to items
     def __getattr__(self, name):
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            # Provided to pass test_dsd.py
-            return self.__getitem__(name)
+        # Provided to pass test_dsd.py
+        return self.__getitem__(name)
 
     def __getitem__(self, name):
-        for i in self.items:
-            if i.id == name:
-                return i
-        raise KeyError(name)
+        return self.items[name]
 
-    def __contains__(self, item):
-        """Recursive containment."""
-        for i in self.items:
-            if item == i or item in i:
-                return True
+    def __contains__(self, item : Union[str, _item_type]):
+        """Check containment. No recursive
+        search on children is performed as 
+        these are assumed to be items themselves.
+        Allow searching by Item or its id attribute."""
+        if isinstance(item, str):
+            return item in self.items
+        return item in self.items.values()
 
+    def __iter__(self):
+        return iter(self.items.values())
+    
+    def extend(self, items: Iterable[_item_type]):
+        self.items.update({i.id : i for i in items})
+        
+    def __len__(self):
+        return len(self.items)
+        
+    def append(self, item):
+        self.items[item.id] = item
+        
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
             self.__class__.__name__,
@@ -362,13 +395,12 @@ class ItemScheme(MaintainableArtefact):
             if isinstance(parent, str):
                 kwargs['parent'] = self[parent]
 
-            # Instantiate an object of the correct class by introspecting
-            # the items hint
-            obj = get_class_hint(self, 'items')(**kwargs)
+            # Instantiate an object of the correct class 
+            obj = self._item_type(**kwargs)
 
-        if obj not in self.items:
+        if obj not in self.items.values():
             # Add the object to the ItemScheme
-            self.items.append(obj)
+            self.items[obj.id] = obj
 
         return obj
 
@@ -421,7 +453,9 @@ class Concept(Item):
 
 
 class ConceptScheme(ItemScheme):
-    items: List[Concept] = []
+    _item_type = Concept
+    items: Dict[str, _item_type] = {} 
+
 
 
 # 3.3: Basic Inheritance
@@ -496,7 +530,8 @@ class Code(Item):
 
 
 class Codelist(ItemScheme):
-    items: List[Code] = []
+    _item_type = Code
+    items: Dict[str, _item_type] = {}
 
 
 # 4.5: Category Scheme
@@ -506,7 +541,8 @@ class Category(Item):
 
 
 class CategoryScheme(ItemScheme):
-    items: List[Category] = []
+    _item_type = Category
+    items: Dict[str, _item_type] = {}
 
 
 class Categorisation(MaintainableArtefact):
@@ -556,11 +592,14 @@ for cls in list(locals().values()):
 # functionality
 
 class AgencyScheme(ItemScheme):
-    items: List[Agency] = []
+    _item_type = Agency
+    items: Dict[str, _item_type] = {}
+
 
 
 class DataProviderScheme(ItemScheme):
-    items: List[DataProvider] = []
+    _item_type = DataProvider
+    items: Dict[str, _item_type] = {}
 
 
 # 10.2: Constraint inheritance
@@ -791,7 +830,7 @@ class DimensionDescriptor(ComponentList):
         dd = cls()
         for id, kv in key.values.items():
             cl = Codelist(id=id)
-            cl.items.append(Code(id=kv.value))
+            cl.append(Code(id=kv.value))
             d = Dimension(id=id,
                           local_representation=Representation(enumerated=cl))
             dd.components.append(d)
@@ -904,7 +943,7 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
         dd = DimensionDescriptor.from_key(next(iter_keys))
         for k in iter_keys:
             for i, (id, kv) in enumerate(k.values.items()):
-                dd[i].local_representation.enumerated.items.append(
+                dd[i].local_representation.enumerated.append(
                     Code(id=kv.value))
         return cls(dimensions=dd)
 
@@ -1039,12 +1078,9 @@ class Key(BaseModel):
     # Convenience access to values by attribute
     def __getattr__(self, name):
         try:
-            return super().__getattr__(name)
-        except AttributeError as e:
-            try:
-                return self.__getitem__(name)
-            except KeyError:
-                raise e
+            return self.__getitem__(name)
+        except KeyError as e:
+            raise e
 
     # Copying
     def __copy__(self):

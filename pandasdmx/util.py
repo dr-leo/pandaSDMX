@@ -123,12 +123,12 @@ class BaseModel(pydantic.BaseModel):
             value_, error_ = self.fields[name].validate(value, self.dict(**kw),
                                                         loc=name)
             if error_:
-                raise ValidationError([error_])
+                raise ValidationError([error_], self.__class__)
             else:
-                self.__values__[name] = value_
+                self.__dict__[name] = value_
                 self.__fields_set__.add(name)
         else:
-            self.__values__[name] = value
+            self.__dict__[name] = value
             self.__fields_set__.add(name)
 
 
@@ -181,7 +181,7 @@ class DictLike(OrderedDict[KT, VT]):
         result, error = field._apply_validators(
             value, validators=field.validators, values={}, loc=(), cls=None)
         if error:
-            raise ValidationError([error])
+            raise ValidationError([error], self.__class__)
         else:
             return result
 

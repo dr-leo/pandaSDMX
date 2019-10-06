@@ -315,6 +315,25 @@ Item.update_forward_refs()
 
 
 class ItemScheme(MaintainableArtefact):
+    '''
+    This class implements the IM class of the same name.
+    Callers should use the below methods rather than 
+    access the ìtems`attribute. The latter is currently a dict. But this
+    may change in future versions. . Items can be accessed via their ìd`attribute as
+    specified in the IM.
+    Both item and attribute
+    syntax is supported as well as iteration over the items.
+    Items can be added in a list-like fashion using :meth:`append`and :meth:`extend``.
+    
+    TODO:
+     
+    * delete method for items 
+    * allow :meth:`extend`to be passed an 
+      ItemScheme instance or subclass
+    * verify field validation for subclasses (validation may currently be
+      limited to ItemScheme rather than the subclass)
+    * add sorting feature, e.g., when new items have been inserted
+    '''
     is_partial: Optional[bool]
     _item_type = Item
     items: Dict[str, _item_type] = {}

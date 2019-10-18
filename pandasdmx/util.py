@@ -22,7 +22,7 @@ except ImportError:
         from typing import MutableMapping
 
         class OrderedDict(MutableMapping[KT, VT],
-                          extra=collections.OrderedDict):
+                          collections.OrderedDict):
             __slots__ = ()
     else:
         raise

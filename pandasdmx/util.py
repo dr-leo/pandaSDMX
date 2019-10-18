@@ -9,17 +9,21 @@ from typing import (
 try:
     from typing import OrderedDict
 except ImportError:
+    import collections
     import sys
 
     if sys.version_info.minor == 7:
         # Python < 3.7.2 compatibility; see
         # https://github.com/python/cpython/commit/68b56d0
-        import collections
         from typing import _alias
         OrderedDict = _alias(collections.OrderedDict, (KT, VT))
     elif sys.version_info.minor == 6:
         # Python 3.6 lacks _alias
-        from typing import Dict as OrderedDict
+        from typing import MutableMapping
+
+        class OrderedDict(MutableMapping[KT, VT],
+                          extra=collections.OrderedDict):
+            __slots__ = ()
     else:
         raise
 

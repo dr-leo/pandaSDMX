@@ -21,9 +21,9 @@ except ImportError:
         # Python 3.6 lacks _alias
         from typing import MutableMapping
 
-        class OrderedDict(MutableMapping[KT, VT],
-                          collections.OrderedDict):
-            __slots__ = ()
+        class OrderedDict(collections.OrderedDict,
+                          MutableMapping[KT, VT]):
+            pass
     else:
         raise
 

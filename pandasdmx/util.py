@@ -9,10 +9,9 @@ from typing import (
 try:
     from typing import OrderedDict
 except ImportError:
-    import collections
-
     # Python < 3.7.2 compatibility; see
     # https://github.com/python/cpython/commit/68b56d0
+    import collections
     from typing import _alias
     OrderedDict = _alias(collections.OrderedDict, (KT, VT))
 

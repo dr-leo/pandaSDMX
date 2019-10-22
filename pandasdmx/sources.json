@@ -81,7 +81,7 @@
   {
     "id": "OECD",
     "data_content_type": "JSON",
-    "url": "http://stats.oecd.org/SDMX-JSON",
+    "url": "https://stats.oecd.org/SDMX-JSON",
     "name": "Organisation for Economic Co-operation and Development"
   },
   {

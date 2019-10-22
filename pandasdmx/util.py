@@ -10,22 +10,11 @@ try:
     from typing import OrderedDict
 except ImportError:
     import collections
-    import sys
 
-    if sys.version_info.minor == 7:
-        # Python < 3.7.2 compatibility; see
-        # https://github.com/python/cpython/commit/68b56d0
-        from typing import _alias
-        OrderedDict = _alias(collections.OrderedDict, (KT, VT))
-    elif sys.version_info.minor == 6:
-        # Python 3.6 lacks _alias
-        from typing import MutableMapping
-
-        class OrderedDict(collections.OrderedDict,
-                          MutableMapping[KT, VT]):
-            pass
-    else:
-        raise
+    # Python < 3.7.2 compatibility; see
+    # https://github.com/python/cpython/commit/68b56d0
+    from typing import _alias
+    OrderedDict = _alias(collections.OrderedDict, (KT, VT))
 
 
 import pydantic

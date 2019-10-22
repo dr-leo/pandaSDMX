@@ -43,7 +43,10 @@
   {
     "id": "IMF",
     "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
-    "name": "International Monetary Fund"
+    "name": "International Monetary Fund",
+    "supports": {
+      "provisionagreement": false
+    }
   },
   {
     "id": "INEGI",

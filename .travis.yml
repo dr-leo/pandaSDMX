@@ -1,12 +1,15 @@
 language: python
 
 python:
-  - "3.7.4"
+  - 3.7.0  # earliest
+  - 3.7
+  - 3.8
+  - 3.8-dev
 
 install:
-  - pip install -U pip
-  - pip install -r requirements.txt
-  - pip install -e .[cache,docs,tests]
+  - pip install --upgrade pip
+  - pip install --requirement requirements.txt
+  - pip install --editable .[cache,docs,tests]
 
 script: >
   pytest

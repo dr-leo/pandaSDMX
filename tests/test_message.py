@@ -49,7 +49,7 @@ EXPECTED = {
 
 
 def test_message_repr():
-    for pattern, result in EXPECTED.items():
+    for pattern, expected in EXPECTED.items():
         with specimen(pattern) as f:
             msg = sdmx.read_sdmx(f)
-        assert str(msg) == result
+        assert expected == repr(msg)

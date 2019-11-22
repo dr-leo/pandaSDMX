@@ -315,25 +315,24 @@ Item.update_forward_refs()
 
 
 class ItemScheme(MaintainableArtefact):
-    '''
-    This class implements the IM class of the same name.
-    Callers should use the below methods rather than 
-    access the ìtems`attribute. The latter is currently a dict. But this
-    may change in future versions. . Items can be accessed via their ìd`attribute as
-    specified in the IM.
-    Both item and attribute
-    syntax is supported as well as iteration over the items.
-    Items can be added in a list-like fashion using :meth:`append`and :meth:`extend``.
-    
-    TODO:
-     
-    * delete method for items 
-    * allow :meth:`extend`to be passed an 
-      ItemScheme instance or subclass
-    * verify field validation for subclasses (validation may currently be
-      limited to ItemScheme rather than the subclass)
-    * add sorting feature, e.g., when new items have been inserted
-    '''
+    """Item Scheme.
+
+    This class implements the IM class of the same name. Callers should use the
+    below methods rather than access the ìtems attribute. The latter is
+    currently a dict. But this may change in future versions. Items can be
+    accessed via their id attribute as specified in the IM. Both item and
+    attribute  syntax is supported as well as iteration over the items.
+    Items can be added in a list-like fashion using :meth:`append` and
+    :meth:`extend`.
+
+    .. todo::
+
+       - Delete method for items
+       - Allow :meth:`extend`to be passed an ItemScheme instance or subclass.
+       - Verify field validation for subclasses (validation may currently be
+         limited to ItemScheme rather than the subclass)
+       - Add sorting feature, e.g., when new items have been inserted.
+    """
     is_partial: Optional[bool]
     _item_type = Item
     items: Dict[str, _item_type] = {}
@@ -342,8 +341,8 @@ class ItemScheme(MaintainableArtefact):
     def convert_to_dict(cls, v):
         if isinstance(v, dict):
             return v
-        return {i.id : i for i in v}
-    
+        return {i.id: i for i in v}
+
     # Convenience access to items
     def __getattr__(self, name):
         # Provided to pass test_dsd.py
@@ -352,9 +351,9 @@ class ItemScheme(MaintainableArtefact):
     def __getitem__(self, name):
         return self.items[name]
 
-    def __contains__(self, item : Union[str, _item_type]):
+    def __contains__(self, item: Union[str, _item_type]):
         """Check containment. No recursive
-        search on children is performed as 
+        search on children is performed as
         these are assumed to be items themselves.
         Allow searching by Item or its id attribute."""
         if isinstance(item, str):
@@ -363,16 +362,16 @@ class ItemScheme(MaintainableArtefact):
 
     def __iter__(self):
         return iter(self.items.values())
-    
+
     def extend(self, items: Iterable[_item_type]):
-        self.items.update({i.id : i for i in items})
-        
+        self.items.update({i.id: i for i in items})
+
     def __len__(self):
         return len(self.items)
-        
+
     def append(self, item):
         self.items[item.id] = item
-        
+
     def __repr__(self):
         return "<{}: '{}', {} items>".format(
             self.__class__.__name__,
@@ -395,7 +394,7 @@ class ItemScheme(MaintainableArtefact):
             if isinstance(parent, str):
                 kwargs['parent'] = self[parent]
 
-            # Instantiate an object of the correct class 
+            # Instantiate an object of the correct class
             obj = self._item_type(**kwargs)
 
         if obj not in self.items.values():
@@ -454,8 +453,7 @@ class Concept(Item):
 
 class ConceptScheme(ItemScheme):
     _item_type = Concept
-    items: Dict[str, _item_type] = {} 
-
+    items: Dict[str, _item_type] = {}
 
 
 # 3.3: Basic Inheritance
@@ -594,7 +592,6 @@ for cls in list(locals().values()):
 class AgencyScheme(ItemScheme):
     _item_type = Agency
     items: Dict[str, _item_type] = {}
-
 
 
 class DataProviderScheme(ItemScheme):

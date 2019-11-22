@@ -213,7 +213,7 @@ def validate_dictlike(*fields):
     def decorator(cls):
         v = make_generic_validator(DictLike.validate)
         for field in fields:
-            cls.__fields__[field].whole_post_validators = [v]
+            cls.__fields__[field].post_validators = [v]
         return cls
 
     return decorator

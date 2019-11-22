@@ -98,14 +98,14 @@ class BaseModel(pydantic.BaseModel):
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/521:
     # - When cls.attr is typed as BaseModel (or a subclass), then
     #   a.attr is b.attr is always False, even when set to the same reference
-    # - Same as pydantic.BaseModel.validate, but without copy().
+    # - Same as pydantic.BaseModel.validate, but without .copy() at ***.
     # - Issue marked as wontfix by pydantic maintainer.
     @classmethod
     def validate(cls: Type['Model'], value: Any) -> 'Model':
         if isinstance(value, dict):
             return cls(**value)
         elif isinstance(value, cls):
-            return value
+            return value  # ***
         elif cls.__config__.orm_mode:
             return cls.from_orm(value)
         else:

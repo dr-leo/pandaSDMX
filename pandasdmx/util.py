@@ -120,27 +120,25 @@ class BaseModel(pydantic.BaseModel):
     def __setattr__(self, name, value):
         if (self.__config__.extra is not Extra.allow and name not in
                 self.__fields__):
-            raise ValueError(f'"{self.__class__.__name__}" object has no '
-                             f'field "{name}"')
+            raise ValueError(f'"{self.__class__.__name__}" object has no field'
+                             '"{name}"')
         elif not self.__config__.allow_mutation:
             raise TypeError(f'"{self.__class__.__name__}" is immutable and '
-                            f'does not support item assignment')
+                            'does not support item assignment')
         elif (self.__config__.validate_assignment and name not in
               self.__config__.validate_assignment_exclude):
             if self.__config__.validate_assignment == 'limited':
                 kw = {'include': {}}
             else:
                 kw = {'exclude': {name}}
-            value_, error_ = self.fields[name].validate(value, self.dict(**kw),
-                                                        loc=name)
-            if error_:
-                raise ValidationError([error_], self.__class__)
-            else:
-                self.__dict__[name] = value_
-                self.__fields_set__.add(name)
-        else:
-            self.__dict__[name] = value
-            self.__fields_set__.add(name)
+            known_field = self.__fields__.get(name, None)
+            if known_field:
+                value, error_ = known_field.validate(value, self.dict(**kw),
+                                                     loc=name)
+                if error_:
+                    raise ValidationError([error_], type(self))
+        self.__dict__[name] = value
+        self.__fields_set__.add(name)
 
 
 def get_class_hint(obj, attr):

@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 INSTALL_REQUIRES = [
     'lxml>=3.6',
     'pandas>=0.20',
-    'pydantic>=0.32.2',
+    'pydantic>=1.1',
     'requests>=2.7',
     'setuptools>19',
 ]

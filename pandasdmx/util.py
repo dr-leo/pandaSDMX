@@ -1,8 +1,12 @@
 from enum import Enum
 from typing import (
+    TYPE_CHECKING,
     KT,
     VT,
+    Any,
     Union,
+    Type,
+    TypeVar,
     get_type_hints,
     no_type_check,
     )
@@ -19,7 +23,6 @@ except ImportError:
 import pydantic
 from pydantic import DictError, Extra, ValidationError
 from pydantic.class_validators import make_generic_validator
-from pydantic.utils import change_exception
 
 
 class Resource(str, Enum):
@@ -83,6 +86,10 @@ class Resource(str, Enum):
         return '{' + ' '.join(v.name for v in cls._member_map_.values()) + '}'
 
 
+if TYPE_CHECKING:
+    Model = TypeVar('Model', bound='BaseModel')
+
+
 class BaseModel(pydantic.BaseModel):
     class Config:
         validate_assignment = 'limited'
@@ -94,15 +101,19 @@ class BaseModel(pydantic.BaseModel):
     # - Same as pydantic.BaseModel.validate, but without copy().
     # - Issue marked as wontfix by pydantic maintainer.
     @classmethod
-    def validate(cls, value):
-        """Same as pydantic.BaseModel, but without copy()."""
+    def validate(cls: Type['Model'], value: Any) -> 'Model':
         if isinstance(value, dict):
             return cls(**value)
         elif isinstance(value, cls):
             return value
+        elif cls.__config__.orm_mode:
+            return cls.from_orm(value)
         else:
-            with change_exception(DictError, TypeError, ValueError):
-                return cls(**dict(value))  # type: ignore
+            try:
+                value_as_dict = dict(value)
+            except (TypeError, ValueError) as e:
+                raise DictError() from e
+            return cls(**value_as_dict)
 
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/524:
     @no_type_check

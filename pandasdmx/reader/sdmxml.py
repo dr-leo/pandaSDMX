@@ -939,9 +939,16 @@ class Reader(BaseReader):
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
-        for attr in ('text', 'title', 'type', 'url'):
+        for attr in ('text', 'title', 'type', 'url', 'id'):
             try:
-                values[attr] = values.pop('annotation' + attr)
+                if attr == "id":
+                    values[attr] = elem.attrib['id']
+                else:
+                    values[attr] = values.pop('annotation' + attr)
+                # turn into a dict in case of multiples of the same tag
+                # ex. Multiple AnnotationText tags for different langs
+                if (type(values[attr]) == list):
+                   values[attr] = dict(values[attr])
             except KeyError:
                 pass
         return Annotation(**values)
@@ -1080,8 +1087,13 @@ class Reader(BaseReader):
 
     def parse_attribute(self, elem):
         attrs = {k: elem.attrib[k] for k in ('id', 'urn')}
-        attrs['usage_status'] = UsageStatus[
-                                       elem.attrib['assignmentStatus'].lower()]
+        elem_assgn_status = elem.attrib['assignmentStatus'].lower()
+        # map an empty attribute value from the xml to conditional
+        if (elem_assgn_status == ""):
+            attrs['usage_status'] = UsageStatus["conditional"]
+        else:
+            attrs['usage_status'] = UsageStatus[elem_assgn_status]
+        
         values = self._parse(elem)
         da = DataAttribute(
             concept_identity=values.pop('conceptidentity'),

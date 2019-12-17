@@ -47,7 +47,7 @@
             <common:Description xml:lang="en">It provides a list of values indicating the "frequency" of the data (e.g. monthly) and, thus, indirectly, also implying the type of "time reference" that could be used for identifying the data with respect time.</common:Description>
             <structure:Code id="A">
                <common:Annotations>
-                  <common:Annotation>
+                  <common:Annotation id="A1">
                      <common:AnnotationType>NOTE</common:AnnotationType>
                      <common:AnnotationText xml:lang="en">It is typically used for annual data. This can also serve cases of multi-annual data (data that appear once every two, three or, possibly, five years). Descriptive information on the multiannual characteristics (e.g. frequency of the series in practice and other methodological information can be provided at the dataflow level, as long as these characteristics are applicable for the entire dataflow).</common:AnnotationText>
                   </common:Annotation>
@@ -56,9 +56,10 @@
             </structure:Code>
             <structure:Code id="B">
                <common:Annotations>
-                  <common:Annotation>
+                  <common:Annotation id="B1">
                      <common:AnnotationType>NOTE</common:AnnotationType>
                      <common:AnnotationText xml:lang="en">Similar to "daily", however there are no observations for Saturday and Sunday (so, neither "missing values" nor "numeric values" should be provided for Saturday and Sunday). This treatment ("business") is one way to deal with such cases, but it is not the only option. Such a time series could alternatively be considered daily ("D"), thus, with missing values in the weekend.</common:AnnotationText>
+                     <common:AnnotationText xml:lang="fr">Semblable à "quotidiennement", il n'y a cependant aucune observation pour le samedi et le dimanche (donc, ni "valeurs manquantes" ni "valeurs numériques" ne doivent être fournies pour le samedi et le dimanche). Ce traitement («entreprise») est une façon de traiter de tels cas, mais ce n'est pas la seule option. Une telle série chronologique pourrait alternativement être considérée quotidiennement ("D"), ainsi, avec des valeurs manquantes le week-end.</common:AnnotationText>
                   </common:Annotation>
                </common:Annotations>
                <common:Name>Daily - business week</common:Name>

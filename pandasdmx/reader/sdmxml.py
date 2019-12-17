@@ -1087,7 +1087,6 @@ class Reader(BaseReader):
 
     def parse_attribute(self, elem):
         attrs = {k: elem.attrib[k] for k in ('id', 'urn')}
-        elem_assgn_status = elem.attrib['assignmentStatus'].lower()
         try:
             attrs['usage_status'] = UsageStatus[
                                     elem.attrib['assignmentStatus'].lower()]

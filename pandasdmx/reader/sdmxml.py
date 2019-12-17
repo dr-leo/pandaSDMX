@@ -1088,12 +1088,12 @@ class Reader(BaseReader):
     def parse_attribute(self, elem):
         attrs = {k: elem.attrib[k] for k in ('id', 'urn')}
         elem_assgn_status = elem.attrib['assignmentStatus'].lower()
-        # map an empty attribute value from the xml to conditional
-        if (elem_assgn_status == ""):
-            attrs['usage_status'] = UsageStatus["conditional"]
-        else:
-            attrs['usage_status'] = UsageStatus[elem_assgn_status]
-        
+        try:
+            attrs['usage_status'] = UsageStatus[
+                                    elem.attrib['assignmentStatus'].lower()]
+        except KeyError:
+            pass
+
         values = self._parse(elem)
         da = DataAttribute(
             concept_identity=values.pop('conceptidentity'),

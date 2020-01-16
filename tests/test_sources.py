@@ -214,6 +214,9 @@ class TestINEGI(DataSourceTest):
 
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
+
+    tolerate_503 = True
+
     xfail = {
         # 400 Bad Request
         'provisionagreement': HTTPError,

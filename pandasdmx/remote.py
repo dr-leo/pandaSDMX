@@ -69,6 +69,7 @@ class ResponseIO(BufferedIOBase):
         as they are received. The file is closed automatically when *response*
         reaches EOF.
     """
+    default_size = ITER_CHUNK_SIZE
 
     def __init__(self, response, tee=None):
         self.response = response
@@ -78,7 +79,10 @@ class ResponseIO(BufferedIOBase):
         # str() here is for Python 3.5 compatibility
         self.tee = open(str(tee), 'wb') if tee else None
 
-    def read(self, size=ITER_CHUNK_SIZE):
+    def readable(self):
+        return True
+
+    def read(self, size=None):
         """Read and return up to *size* bytes.
 
         If the argument is omitted, :py:obj:`None`, or negative, reads and
@@ -90,11 +94,12 @@ class ResponseIO(BufferedIOBase):
         count (unless EOF is reached first).
 
         Returns an empty bytes object on EOF.
-
         """
+        size = size or self.default_size
+
         try:
             # Accumulate chunks until the requested size is reached
-            while len(self.pending) < size:
+            while size < 0 or len(self.pending) < size:
                 self.pending += next(self.chunks)
 
             # Return the requested amount

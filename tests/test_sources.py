@@ -104,7 +104,16 @@ class DataSourceTest:
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):
         # See pytest_generate_tests() for values of 'endpoint'
-        req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
+        cache = self._cache_path.with_suffix('.' + endpoint)
+        result = req.get(endpoint, tofile=cache)
+
+        # For debugging
+        # print(cache)
+        # print(cache.read_text())
+        # print(result)
+        # assert False
+
+        del result
 
 
 class TestABS(DataSourceTest):
@@ -178,7 +187,7 @@ class TestILO(DataSourceTest):
     source_id = 'ILO'
 
     xfail = {
-        # 413 'Too many results, please specify codelist ID'
+        # 413 Client Error: Request Entity Too Large
         'codelist': HTTPError,
         }
 
@@ -188,20 +197,26 @@ class TestILO(DataSourceTest):
                 tofile=self._cache_path.with_suffix('.' + 'codelist-CL_ECO'))
 
 
+@pytest.mark.xfail(reason='500 Server Error returned for all requests.',
+                   raises=HTTPError)
 class TestINEGI(DataSourceTest):
     source_id = 'INEGI'
 
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):
-        # SSL certificate verification currently fails for this server; works
+        # SSL certificate verification sometimes fails for this server; works
         # in Google Chrome
         req.session.verify = False
+
         # Otherwise identical
-        req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
+        super().test_endpoints(req, endpoint)
 
 
 class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
+
+    tolerate_503 = True
+
     xfail = {
         # 400 Bad Request
         'provisionagreement': HTTPError,

@@ -1,8 +1,12 @@
 from enum import Enum
 from typing import (
+    TYPE_CHECKING,
     KT,
     VT,
+    Any,
     Union,
+    Type,
+    TypeVar,
     get_type_hints,
     no_type_check,
     )
@@ -19,7 +23,6 @@ except ImportError:
 import pydantic
 from pydantic import DictError, Extra, ValidationError
 from pydantic.class_validators import make_generic_validator
-from pydantic.utils import change_exception
 
 
 class Resource(str, Enum):
@@ -83,6 +86,10 @@ class Resource(str, Enum):
         return '{' + ' '.join(v.name for v in cls._member_map_.values()) + '}'
 
 
+if TYPE_CHECKING:
+    Model = TypeVar('Model', bound='BaseModel')
+
+
 class BaseModel(pydantic.BaseModel):
     class Config:
         validate_assignment = 'limited'
@@ -91,45 +98,47 @@ class BaseModel(pydantic.BaseModel):
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/521:
     # - When cls.attr is typed as BaseModel (or a subclass), then
     #   a.attr is b.attr is always False, even when set to the same reference
-    # - Same as pydantic.BaseModel.validate, but without copy().
+    # - Same as pydantic.BaseModel.validate, but without .copy() at ***.
     # - Issue marked as wontfix by pydantic maintainer.
     @classmethod
-    def validate(cls, value):
-        """Same as pydantic.BaseModel, but without copy()."""
+    def validate(cls: Type['Model'], value: Any) -> 'Model':
         if isinstance(value, dict):
             return cls(**value)
         elif isinstance(value, cls):
-            return value
+            return value  # ***
+        elif cls.__config__.orm_mode:
+            return cls.from_orm(value)
         else:
-            with change_exception(DictError, TypeError, ValueError):
-                return cls(**dict(value))  # type: ignore
+            try:
+                value_as_dict = dict(value)
+            except (TypeError, ValueError) as e:
+                raise DictError() from e
+            return cls(**value_as_dict)
 
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/524:
     @no_type_check
     def __setattr__(self, name, value):
         if (self.__config__.extra is not Extra.allow and name not in
                 self.__fields__):
-            raise ValueError(f'"{self.__class__.__name__}" object has no '
-                             f'field "{name}"')
+            raise ValueError(f'"{self.__class__.__name__}" object has no field'
+                             '"{name}"')
         elif not self.__config__.allow_mutation:
             raise TypeError(f'"{self.__class__.__name__}" is immutable and '
-                            f'does not support item assignment')
+                            'does not support item assignment')
         elif (self.__config__.validate_assignment and name not in
               self.__config__.validate_assignment_exclude):
             if self.__config__.validate_assignment == 'limited':
                 kw = {'include': {}}
             else:
                 kw = {'exclude': {name}}
-            value_, error_ = self.fields[name].validate(value, self.dict(**kw),
-                                                        loc=name)
-            if error_:
-                raise ValidationError([error_], self.__class__)
-            else:
-                self.__dict__[name] = value_
-                self.__fields_set__.add(name)
-        else:
-            self.__dict__[name] = value
-            self.__fields_set__.add(name)
+            known_field = self.__fields__.get(name, None)
+            if known_field:
+                value, error_ = known_field.validate(value, self.dict(**kw),
+                                                     loc=name)
+                if error_:
+                    raise ValidationError([error_], type(self))
+        self.__dict__[name] = value
+        self.__fields_set__.add(name)
 
 
 def get_class_hint(obj, attr):
@@ -204,7 +213,7 @@ def validate_dictlike(*fields):
     def decorator(cls):
         v = make_generic_validator(DictLike.validate)
         for field in fields:
-            cls.__fields__[field].whole_post_validators = [v]
+            cls.__fields__[field].post_validators = [v]
         return cls
 
     return decorator

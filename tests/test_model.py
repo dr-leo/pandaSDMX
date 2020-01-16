@@ -99,6 +99,15 @@ def test_internationalstring():
     # str() uses the default locale
     assert str(i2.name) == 'European Central Bank'
 
+    # Creating with name=None raises an exception…
+    with raises(pydantic.ValidationError,
+                match='none is not an allowed value'):
+        Item(id='ECB', name=None)
+
+    # …giving empty dict is equivalent to giving nothing
+    i3 = Item(id='ECB', name={})
+    assert i3.name.localizations == Item(id='ECB').name.localizations
+
 
 def test_item():
     items = []

@@ -220,7 +220,7 @@ PACKAGE_CLASS = {
     'codelist': {Code, Codelist},
     'conceptscheme': {Concept, ConceptScheme},
     'datastructure': {DataflowDefinition, DataStructureDefinition},
-    'registry': {ContentConstraint},
+    'registry': {ContentConstraint, ProvisionAgreement},
     }
 
 
@@ -933,8 +933,8 @@ class Reader(BaseReader):
         # Map XML element names to the class attributes in the SDMX-IM spec
         values['name'] = values.pop('name')[0]
         values['telephone'] = values.pop('telephone', [None])[0]
-        values['org_unit'] = values.pop('department')[0]
-        values['responsibility'] = values.pop('role', [None])[0]
+        values['org_unit'] = values.pop('department', [{}])[0]
+        values['responsibility'] = values.pop('role', [{}])[0]
         return Contact(**values)
 
     def parse_annotation(self, elem):
@@ -1006,11 +1006,11 @@ class Reader(BaseReader):
     def parse_orgscheme(self, elem):
         cls = globals()[QName(elem).localname]
         os, values = self._named(cls, elem, unwrap=False)
-        # Get the list of organisations. The following 
-        # assumes that the `values`dict has only one item.
-        # Otherwise, the returned item will be unpredictable.
-        # TODO: Review the code parsing the children to
-        # verify that the assumption always holds. 
+        # Get the list of organisations. The following assumes that the
+        # *values* dict has only one item. Otherwise, the returned item will be
+        # unpredictable.
+        # TODO review the code parsing the children to verify that the
+        #      assumption always holds.
         _, orgs = values.popitem()
         os.extend(orgs)
         return os
@@ -1201,7 +1201,11 @@ class Reader(BaseReader):
         return dks
 
     def parse_provisionagreement(self, elem):
-        return ProvisionAgreement(**self._parse(elem))
+        pa, values = self._named(ProvisionAgreement, elem)
+        pa.structure_usage = values.pop('structureusage')
+        pa.data_provider = values.pop('dataprovider')
+        assert len(values) == 0, values
+        return pa
 
     # Parsers for elements appearing in error messages
 

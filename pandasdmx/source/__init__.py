@@ -50,7 +50,7 @@ class Source(BaseModel):
     #:   See :meth:`preview_data <pandasdmx.Request.preview_data>`.
     #: - ``'structure-specific data'=True`` if the source can return structure-
     #:   specific data messages.
-    supports: Dict[Union[str, Resource], bool] = {}
+    supports: Dict[Union[str, Resource], bool] = {Resource.data: True}
 
     @classmethod
     def from_dict(cls, info):

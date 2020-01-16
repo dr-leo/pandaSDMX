@@ -187,7 +187,7 @@ class TestILO(DataSourceTest):
     source_id = 'ILO'
 
     xfail = {
-        # 413 'Too many results, please specify codelist ID'
+        # 413 Client Error: Request Entity Too Large
         'codelist': HTTPError,
         }
 
@@ -199,14 +199,6 @@ class TestILO(DataSourceTest):
 
 class TestINEGI(DataSourceTest):
     source_id = 'INEGI'
-
-    @pytest.mark.remote_data
-    def test_endpoints(self, req, endpoint):
-        # SSL certificate verification currently fails for this server; works
-        # in Google Chrome
-        req.session.verify = False
-        # Otherwise identical
-        req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
 
 
 class TestINSEE(DataSourceTest):

@@ -157,10 +157,11 @@ class Reader(BaseReader):
         # pre-fill this
         value = ':'.join(['0'] * len(dims)) if value is None else value
 
-        # Iterate over key indices and the corresponding dimensions
-        for index, dim in zip(map(int, value.split(':')), dims):
-            # Look up the value and assign to the Key
-            key[dim.id] = self._dim_values[dim][index]
+        if len(value):
+            # Iterate over key indices and the corresponding dimensions
+            for index, dim in zip(map(int, value.split(':')), dims):
+                # Look up the value and assign to the Key
+                key[dim.id] = self._dim_values[dim][index]
 
         # Order the key
         return self.msg.structure.dimensions.order_key(key)
@@ -174,6 +175,8 @@ class Reader(BaseReader):
                  self._attr_level[a] == level]
         result = {}
         for index, attr in zip(values, attrs):
+            if index is None:
+                continue
             av = self._attr_values[attr][index]
             result[av.value_for.id] = av
         return result

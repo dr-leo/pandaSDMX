@@ -104,7 +104,16 @@ class DataSourceTest:
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):
         # See pytest_generate_tests() for values of 'endpoint'
-        req.get(endpoint, tofile=self._cache_path.with_suffix('.' + endpoint))
+        cache = self._cache_path.with_suffix('.' + endpoint)
+        result = req.get(endpoint, tofile=cache)
+
+        # For debugging
+        # print(cache)
+        # print(cache.read_text())
+        # print(result)
+        # assert False
+
+        del result
 
 
 class TestABS(DataSourceTest):

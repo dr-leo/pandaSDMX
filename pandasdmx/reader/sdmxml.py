@@ -220,7 +220,7 @@ PACKAGE_CLASS = {
     'codelist': {Code, Codelist},
     'conceptscheme': {Concept, ConceptScheme},
     'datastructure': {DataflowDefinition, DataStructureDefinition},
-    'registry': {ContentConstraint},
+    'registry': {ContentConstraint, ProvisionAgreement},
     }
 
 
@@ -1201,7 +1201,9 @@ class Reader(BaseReader):
         return dks
 
     def parse_provisionagreement(self, elem):
-        return ProvisionAgreement(**self._parse(elem))
+        pa, values = self._named(ProvisionAgreement, elem)
+        assert len(values) == 0
+        return pa
 
     # Parsers for elements appearing in error messages
 

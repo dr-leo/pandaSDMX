@@ -1293,5 +1293,5 @@ class RESTDatasource(QueryDatasource):
 
 
 class ProvisionAgreement(MaintainableArtefact, ConstrainableArtefact):
-    structureusage: DataflowDefinition = None
-    dataprovider: DataProvider = None
+    structure_usage: StructureUsage = None
+    data_provider: DataProvider = None

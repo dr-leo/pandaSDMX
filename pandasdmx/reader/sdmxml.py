@@ -1202,7 +1202,9 @@ class Reader(BaseReader):
 
     def parse_provisionagreement(self, elem):
         pa, values = self._named(ProvisionAgreement, elem)
-        assert len(values) == 0
+        pa.structure_usage = values.pop('structureusage')
+        pa.data_provider = values.pop('dataprovider')
+        assert len(values) == 0, values
         return pa
 
     # Parsers for elements appearing in error messages

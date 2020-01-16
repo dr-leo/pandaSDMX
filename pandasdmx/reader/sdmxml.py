@@ -933,7 +933,7 @@ class Reader(BaseReader):
         # Map XML element names to the class attributes in the SDMX-IM spec
         values['name'] = values.pop('name')[0]
         values['telephone'] = values.pop('telephone', [None])[0]
-        values['org_unit'] = values.pop('department')[0]
+        values['org_unit'] = values.pop('department', [None])[0]
         values['responsibility'] = values.pop('role', [None])[0]
         return Contact(**values)
 
@@ -1006,11 +1006,11 @@ class Reader(BaseReader):
     def parse_orgscheme(self, elem):
         cls = globals()[QName(elem).localname]
         os, values = self._named(cls, elem, unwrap=False)
-        # Get the list of organisations. The following 
-        # assumes that the `values`dict has only one item.
-        # Otherwise, the returned item will be unpredictable.
-        # TODO: Review the code parsing the children to
-        # verify that the assumption always holds. 
+        # Get the list of organisations. The following assumes that the
+        # *values* dict has only one item. Otherwise, the returned item will be
+        # unpredictable.
+        # TODO review the code parsing the children to verify that the
+        #      assumption always holds.
         _, orgs = values.popitem()
         os.extend(orgs)
         return os

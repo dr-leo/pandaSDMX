@@ -72,7 +72,9 @@ class InternationalString:
         class Foo(BaseModel):
              name: InternationalString = InternationalString()
 
+        # Equivalent: no localizations
         f = Foo()
+        f = Foo(name={})
 
         # Using an explicit locale
         f.name['en'] = "Foo's name in English"

@@ -933,8 +933,8 @@ class Reader(BaseReader):
         # Map XML element names to the class attributes in the SDMX-IM spec
         values['name'] = values.pop('name')[0]
         values['telephone'] = values.pop('telephone', [None])[0]
-        values['org_unit'] = values.pop('department', [None])[0]
-        values['responsibility'] = values.pop('role', [None])[0]
+        values['org_unit'] = values.pop('department', [{}])[0]
+        values['responsibility'] = values.pop('role', [{}])[0]
         return Contact(**values)
 
     def parse_annotation(self, elem):

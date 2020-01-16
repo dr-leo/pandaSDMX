@@ -27,6 +27,7 @@ class Reader(BaseReader):
         msg = DataMessage()
 
         # Read JSON
+        source.default_size = -1
         tree = json.load(source)
 
         # Read the header

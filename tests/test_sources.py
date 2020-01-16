@@ -197,8 +197,19 @@ class TestILO(DataSourceTest):
                 tofile=self._cache_path.with_suffix('.' + 'codelist-CL_ECO'))
 
 
+@pytest.mark.xfail(reason='500 Server Error returned for all requests.',
+                   raises=HTTPError)
 class TestINEGI(DataSourceTest):
     source_id = 'INEGI'
+
+    @pytest.mark.remote_data
+    def test_endpoints(self, req, endpoint):
+        # SSL certificate verification sometimes fails for this server; works
+        # in Google Chrome
+        req.session.verify = False
+
+        # Otherwise identical
+        super().test_endpoints(req, endpoint)
 
 
 class TestINSEE(DataSourceTest):

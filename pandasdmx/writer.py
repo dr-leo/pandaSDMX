@@ -119,8 +119,9 @@ def write_response(obj, *args, **kwargs):
 
 def write_datamessage(obj, *args, **kwargs):
     """Convert :class:`DataMessage <pandasdmx.message.DataMessage>`."""
-    # Pass the message's DSD assist datetime handling
+    # Pass the message's DSD to assist datetime handling
     kwargs.setdefault('dsd', obj.dataflow.structure)
+
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
     else:
@@ -216,7 +217,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     datetime : bool or str or dict, optional
         If given, return :class:`pandas.DataFrame` with a
         :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodIndex` as the
-        index and all other dimensions as columns. Valid `time_index` values
+        index and all other dimensions as columns. Valid `datetime` values
         include:
 
         - :obj:`True`: determine the time dimension automatically by

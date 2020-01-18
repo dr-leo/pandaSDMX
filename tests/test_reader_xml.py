@@ -45,9 +45,10 @@ def test_read_ss_xml():
 
     # Read a data message
     msg = sdmx.read_sdmx(msg_path, dsd=dsd)
+    ds = msg.data[0]
 
     # The dataset in the message is structured by the DSD
-    assert msg.data[0].structured_by is dsd
+    assert ds.structured_by is dsd
 
-    # TODO test that the contents of the DSD (Dimensions, etc.) are the same
-    #      referenced by the objects in the data message
+    # Structures referenced in the dataset are from the dsd
+    assert ds.obs[0].key.described_by == dsd.dimensions

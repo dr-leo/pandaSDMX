@@ -23,15 +23,6 @@ There are multiple ways to access these:
 3. Create a subclass of :class:`pandasdmx.source.Source`, providing attribute values and optional implementations of hooks.
 
 
-Speed up :meth:`pandasdmx.to_pandas` for large datasets
--------------------------------------------------------
-
-The main performance hit comes from parsing the time or time period strings. In
-case of regular data such as monthly (not trading day!), call the ``write``
-method with ``fromfreq``  set to True so that only the first string will be
-parsed and the rest inferred from the frequency of the series.
-
-
 .. _howto-datetime:
 
 Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodIndex`
@@ -77,6 +68,8 @@ Using the advanced functionality to specify a dimension for the frequency of a P
      datetime=dict(dim='TIME_PERIOD', freq='FREQ', axis=1))
    df2.columns
    df2
+
+.. warning:: For large datasets, parsing datetimes may reduce performance.
 
 
 .. _howto-convert:

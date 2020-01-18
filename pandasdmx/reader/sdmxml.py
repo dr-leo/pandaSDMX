@@ -939,18 +939,20 @@ class Reader(BaseReader):
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
-        for attr in ('text', 'title', 'type', 'url', 'id'):
+
+        # Rename values from child elements: 'annotationurl' → 'url'
+        for attr in ('text', 'title', 'type', 'url'):
             try:
-                if attr == "id":
-                    values[attr] = elem.attrib['id']
-                else:
-                    values[attr] = values.pop('annotation' + attr)
-                # turn into a dict in case of multiples of the same tag
-                # ex. Multiple AnnotationText tags for different langs
-                if (type(values[attr]) == list):
-                   values[attr] = dict(values[attr])
+                values[attr] = values.pop('annotation' + attr)
             except KeyError:
                 pass
+
+        # Optional 'id' attribute
+        try:
+            values['id'] = elem.attrib['id']
+        except KeyError:
+            pass
+
         return Annotation(**values)
 
     def parse_code(self, elem):

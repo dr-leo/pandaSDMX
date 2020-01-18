@@ -16,7 +16,7 @@ from pandasdmx import Request
 from pandasdmx.model import DataSet
 from pandasdmx.util import DictLike
 
-from . import assert_pd_equal
+from . import assert_pd_equal, specimen
 
 
 @pytest.mark.remote_data
@@ -185,3 +185,30 @@ def test_doc_usage_data():
 
     assert_pd_equal(daily.tail().values,
                     np.array([1.0446, 1.0445, 1.0401, 1.0453, 1.0541]))
+
+
+def test_doc_howto_timeseries():
+    with specimen('ecb_exr_sg_ts.xml') as f:
+        ds = sdmx.read_sdmx(f).data[0]
+
+    # Convert to pd.Series and unstack the time dimension to columns
+    base = sdmx.to_pandas(ds)
+    s1 = base.unstack('TIME_PERIOD')
+
+    # DatetimeIndex on columns
+    s1.columns = pd.to_datetime(s1.columns)
+    assert isinstance(s1.columns, pd.DatetimeIndex)
+
+    # DatetimeIndex on index
+    s2 = base.unstack('TIME_PERIOD').transpose()
+    s2.index = pd.to_datetime(s2.index)
+    assert isinstance(s2.index, pd.DatetimeIndex)
+
+    # Same with pd.PeriodIndex
+    s3 = s1.to_period(axis=1)
+    assert isinstance(s3.columns, pd.PeriodIndex)
+    assert s3.columns.freqstr == 'M'
+
+    s4 = s2.to_period(axis=0)
+    assert isinstance(s4.index, pd.PeriodIndex)
+    assert s4.index.freqstr == 'M'

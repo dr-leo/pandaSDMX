@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright SDMX 2010  -   www.sdmx.org -->
+<message:Structure xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:structure="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../schemas/SDMXMessage.xsd">
+   <message:Header>
+      <message:ID>DEMOGRAPHY</message:ID>
+      <message:Test>false</message:Test>
+      <message:Prepared>2010-11-13T08:00:33+08:00</message:Prepared>
+      <message:Sender id="ESTAT"/>
+   </message:Header>
+   <message:Structures>
+      <structure:Codelists>
+         <structure:Codelist id="CL_DECIMALS" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">Code list for Decimals (DECIMALS)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_FREQ" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">Code list for Frequency (FREQ)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_CONF_STATUS" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">
+					code list for Confidentiality Status (CONF_STATUS)
+				</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_OBS_STATUS" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">Observation status</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_UNIT_MULT" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">
+					code list for the Unit Multiplier (UNIT_MULT)
+				</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_UNIT" agencyID="ESTAT" version="1.0" isPartial="true">
+            <common:Name xml:lang="en">Unit code list</common:Name>
+            <structure:Code id="PERS">
+               <common:Name xml:lang="en">Persons</common:Name>
+            </structure:Code>
+            <structure:Code id="CPW">
+               <common:Name xml:lang="en">Children per woman (fertility rate)</common:Name>
+            </structure:Code>
+            <structure:Code id="YRS">
+               <common:Name xml:lang="en">Years</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+         <structure:Codelist id="CL_SEX" agencyID="ESTAT" version="1.0">
+            <common:Name xml:lang="en">Sex codelist</common:Name>
+            <structure:Code id="F">
+               <common:Name xml:lang="en">Female</common:Name>
+            </structure:Code>
+            <structure:Code id="M">
+               <common:Name xml:lang="en">Male</common:Name>
+            </structure:Code>
+            <structure:Code id="T">
+               <common:Name xml:lang="en">Total</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+         <structure:Codelist id="CL_COUNTRY" agencyID="ESTAT" version="1.0" isPartial="true">
+            <common:Name xml:lang="en">Country Codelist</common:Name>
+            <structure:Code id="BE">
+               <common:Name xml:lang="en">Belgium</common:Name>
+            </structure:Code>
+            <structure:Code id="EL">
+               <common:Name xml:lang="en">Greece</common:Name>
+            </structure:Code>
+            <structure:Code id="LU">
+               <common:Name xml:lang="en">Luxembourg</common:Name>
+            </structure:Code>
+            <structure:Code id="UK">
+               <common:Name xml:lang="en">United Kingdom</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+      </structure:Codelists>
+      <structure:Concepts>
+         <structure:ConceptScheme id="CROSS_DOMAIN_CONCEPTS" agencyID="SDMX" version="1.0" isExternalReference="true" structureURL="../common/common.xml">
+            <common:Name xml:lang="en">SDMX Cross Domain Concept Scheme</common:Name>
+         </structure:ConceptScheme>
+         <structure:ConceptScheme id="DEMO_CONCEPTS" agencyID="ESTAT" version="1.0">
+            <common:Name xml:lang="en">Demography domain concept scheme</common:Name>
+            <structure:Concept id="COUNTRY">
+               <common:Name xml:lang="en">Reporting Country</common:Name>
+            </structure:Concept>
+            <structure:Concept id="SEX">
+               <common:Name xml:lang="en">Sex</common:Name>
+            </structure:Concept>
+            <structure:Concept id="DEMO">
+               <common:Name xml:lang="en">Demography</common:Name>
+            </structure:Concept>
+         </structure:ConceptScheme>
+         <structure:ConceptScheme id="DEMO_MEASURES" agencyID="ESTAT" version="1.0">
+            <common:Name xml:lang="en">Demography measures concept scheme</common:Name>
+            <structure:Concept id="PJANT">
+               <common:Name xml:lang="en">Population on 1 January of Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="LBIRTHST">
+               <common:Name xml:lang="en">Births in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="DEATHST">
+               <common:Name xml:lang="en">Deaths in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="ADJT">
+               <common:Name xml:lang="en">Statistical adjustment in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="PJAN1T">
+               <common:Name xml:lang="en">Population on 1 January Year X+1</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="LBIRTHOUT">
+               <common:Name xml:lang="en">Births outside marriage in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="DEATHUN1">
+               <common:Name xml:lang="en">Deaths under 1 year in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="MAR">
+               <common:Name xml:lang="en">Marriages in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="DIV">
+               <common:Name xml:lang="en">Divorces in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="IMMIT">
+               <common:Name xml:lang="en">Immigrants in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="EMIGT">
+               <common:Name xml:lang="en">Emigrants in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer" minValue="0"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="NETMT">
+               <common:Name xml:lang="en">Net migration in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Integer"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="TFRNSI">
+               <common:Name xml:lang="en">Total fertility rate in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Decimal" decimals="2"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="LEXPNSIT">
+               <common:Name xml:lang="en">Life expectancy at birth in Year X</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:TextFormat textType="Decimal" decimals="1"/>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+         </structure:ConceptScheme>
+      </structure:Concepts>
+      <structure:DataStructures>
+         <structure:DataStructure id="DEMOGRAPHY" agencyID="ESTAT" version="1.0">
+            <common:Name xml:lang="en">DEMOGRAPHY Data Structure</common:Name>
+            <structure:DataStructureComponents>
+               <structure:DimensionList>
+                  <structure:Dimension>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="FREQ"/>
+                     </structure:ConceptIdentity>
+                  </structure:Dimension>
+                  <structure:Dimension>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="ESTAT" maintainableParentID="DEMO_CONCEPTS" maintainableParentVersion="1.0" id="COUNTRY"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="ESTAT" id="CL_COUNTRY" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                  </structure:Dimension>
+                  <structure:Dimension>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="ESTAT" maintainableParentID="DEMO_CONCEPTS" maintainableParentVersion="1.0" id="SEX"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="ESTAT" id="CL_SEX" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                  </structure:Dimension>
+                  <structure:MeasureDimension>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="ESTAT" maintainableParentID="DEMO_CONCEPTS" maintainableParentVersion="1.0" id="DEMO"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="ESTAT" id="DEMO_MEASURES" version="1.0" class="ConceptScheme"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                  </structure:MeasureDimension>
+                  <structure:TimeDimension>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="TIME_PERIOD"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:TextFormat textType="ObservationalTimePeriod"/>
+                     </structure:LocalRepresentation>
+                  </structure:TimeDimension>
+               </structure:DimensionList>
+               <structure:AttributeList>
+                  <structure:Attribute assignmentStatus="Mandatory">
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="DECIMALS"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="SDMX" id="CL_DECIMALS" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="DEMO"/>
+                        </structure:Dimension>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory">
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="UNIT_MEASURE"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="ESTAT" id="CL_UNIT" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="DEMO"/>
+                        </structure:Dimension>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="UNIT_MULT">
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="UNIT_MULT"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="SDMX" id="CL_UNIT_MULT" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                     <structure:AttributeRelationship>
+                        <structure:Dimension>
+                           <Ref id="DEMO"/>
+                        </structure:Dimension>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+                  <structure:Attribute assignmentStatus="Mandatory" id="OBS_STATUS">
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="OBS_STATUS"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:Enumeration>
+                           <Ref agencyID="SDMX" id="CL_OBS_STATUS" version="1.0"/>
+                        </structure:Enumeration>
+                     </structure:LocalRepresentation>
+                     <structure:AttributeRelationship>
+                        <structure:PrimaryMeasure>
+                           <Ref id="OBS_VALUE"/>
+                        </structure:PrimaryMeasure>
+                     </structure:AttributeRelationship>
+                  </structure:Attribute>
+               </structure:AttributeList>
+               <structure:MeasureList>
+                  <structure:PrimaryMeasure>
+                     <structure:ConceptIdentity>
+                        <Ref agencyID="SDMX" maintainableParentID="CROSS_DOMAIN_CONCEPTS" maintainableParentVersion="1.0" id="OBS_VALUE"/>
+                     </structure:ConceptIdentity>
+                     <structure:LocalRepresentation>
+                        <structure:TextFormat textType="Decimal"/>
+                     </structure:LocalRepresentation>
+                  </structure:PrimaryMeasure>
+               </structure:MeasureList>
+            </structure:DataStructureComponents>
+         </structure:DataStructure>
+      </structure:DataStructures>
+   </message:Structures>
+</message:Structure>

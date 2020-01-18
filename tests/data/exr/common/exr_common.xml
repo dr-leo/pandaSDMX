@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright SDMX 2010  -   www.sdmx.org -->
+<message:Structure xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:structure="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../../schemas/SDMXMessage.xsd">
+   <message:Header>
+      <message:ID>EXR_COMMON</message:ID>
+      <message:Test>false</message:Test>
+      <message:Prepared>2010-11-13T08:00:33+08:00</message:Prepared>
+      <message:Sender id="ECB"/>
+   </message:Header>
+   <message:Structures>
+      <structure:Codelists>
+         <structure:Codelist id="CL_DECIMALS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_DECIMALS(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>Code list for Decimals (DECIMALS)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_FREQ" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_FREQ(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>Code list for Frequency (FREQ)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_CONF_STATUS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_CONF_STATUS(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>code list for Confidentiality Status (CONF_STATUS)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_OBS_STATUS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_OBS_STATUS(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>Observation status</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_UNIT_MULT" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_UNIT_MULT(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>code list for the Unit Multiplier (UNIT_MULT)</common:Name>
+         </structure:Codelist>
+         <structure:Codelist id="CL_EXR_TYPE" agencyID="ECB" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_TYPE(1.0)">
+            <common:Name>code list for the exchange rates types</common:Name>
+            <structure:Code id="CR00">
+               <common:Name>Official fixing</common:Name>
+            </structure:Code>
+            <structure:Code id="RR00">
+               <common:Name>Reference rate</common:Name>
+            </structure:Code>
+            <structure:Code id="SP00">
+               <common:Name>Spot</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+         <structure:Codelist id="CL_EXR_VAR" agencyID="ECB" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_VAR(1.0)">
+            <common:Name>code list for the exchange rate series variation</common:Name>
+            <structure:Code id="E">
+               <common:Name>End-of-period</common:Name>
+            </structure:Code>
+            <structure:Code id="P">
+               <common:Name>Growth rate over previous period</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+         <structure:Codelist id="CL_CURRENCY" agencyID="ISO" version="1.0" isPartial="true" urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ISO:CL_CURRENCY(1.0)">
+            <common:Name>code list for the exchange rate series variation</common:Name>
+            <structure:Code id="CHF">
+               <common:Name>Swiss franc</common:Name>
+            </structure:Code>
+            <structure:Code id="EUR">
+               <common:Name>Euro</common:Name>
+            </structure:Code>
+            <structure:Code id="GBP">
+               <common:Name>Pound sterling</common:Name>
+            </structure:Code>
+            <structure:Code id="JPY">
+               <common:Name>Japanese yen</common:Name>
+            </structure:Code>
+            <structure:Code id="USD">
+               <common:Name>United States dollar</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+      </structure:Codelists>
+      <structure:Concepts>
+         <structure:ConceptScheme id="CROSS_DOMAIN_CONCEPTS" agencyID="SDMX" version="1.0" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=SDMX:CROSS_DOMAIN_CONCEPTS(1.0)" isExternalReference="true" structureURL="../../common/common.xml">
+            <common:Name>SDMX Cross Domain Concept Scheme</common:Name>
+         </structure:ConceptScheme>
+         <structure:ConceptScheme id="ECB_CONCEPTS" agencyID="ECB" version="1.0" isPartial="true" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=ECB:ECB_CONCEPTS(1.0)">
+            <common:Name>Concepts maintained by the ECB</common:Name>
+            <structure:Concept id="CURRENCY_DENOM" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).CURRENCY_DENOM">
+               <common:Name>Currency denominator</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:Enumeration>
+                     <URN>urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ISO:CL_CURRENCY(1.0)</URN>
+                  </structure:Enumeration>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="EXR_VAR" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).EXR_VAR">
+               <common:Name>Series variation - EXR context</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:Enumeration>
+                     <URN>urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_VAR(1.0)</URN>
+                  </structure:Enumeration>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+            <structure:Concept id="EXR_TYPE" urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=ECB:ECB_CONCEPTS(1.0).EXR_TYPE">
+               <common:Name>Exchange rate type</common:Name>
+               <structure:CoreRepresentation>
+                  <structure:Enumeration>
+                     <URN>urn:sdmx:org.sdmx.infomodel.codelist.Codelist=ECB:CL_EXR_TYPE(1.0)</URN>
+                  </structure:Enumeration>
+               </structure:CoreRepresentation>
+            </structure:Concept>
+         </structure:ConceptScheme>
+      </structure:Concepts>
+   </message:Structures>
+</message:Structure>

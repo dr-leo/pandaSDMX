@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright SDMX 2010  -   www.sdmx.org -->
+<message:Structure xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:structure="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:common="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message ../../schemas/SDMXMessage.xsd">
+   <message:Header>
+      <message:ID>ESMS</message:ID>
+      <message:Test>false</message:Test>
+      <message:Prepared>2010-11-13T08:00:33+08:00</message:Prepared>
+      <message:Sender id="ESTAT"/>
+   </message:Header>
+   <message:Structures>
+   	<structure:Dataflows>
+   		<structure:Dataflow id="DEMO_TOT" agencyID="ESTAT" version="1.0">
+   			<common:Name xml:lang="en">Demography totals</common:Name>
+   			<structure:Structure>
+   				<Ref id="DEMOGRAPHY" agencyID="ESTAT" version="1.0"/>
+   			</structure:Structure>
+   		</structure:Dataflow>
+   	</structure:Dataflows>
+   	<structure:CategorySchemes>
+   		<structure:CategoryScheme id="DATAFLOWS_SCHEME" agencyID="ESTAT" version="1.0">
+				<common:Name xml:lang="en">ESTAT Dataflows Category Scheme</common:Name>
+				<structure:Category id="PSC">
+					<common:Name xml:lang="en">Population and social conditions</common:Name>
+					<structure:Category id="DEM">
+						<common:Name xml:lang="en">Demography</common:Name>
+						<structure:Category id="TOT">
+							<common:Name xml:lang="en">Total population and demographic events</common:Name>
+						</structure:Category>
+						<structure:Category id="POP">
+							<common:Name xml:lang="en">Population</common:Name>
+						</structure:Category>
+						<structure:Category id="FERT">
+							<common:Name xml:lang="en">Fertility</common:Name>
+						</structure:Category>
+						<structure:Category id="MORT">
+							<common:Name xml:lang="en">Mortality</common:Name>
+						</structure:Category>
+						<structure:Category id="MARR">
+							<common:Name xml:lang="en">Marriage and divorce</common:Name>
+						</structure:Category>
+					</structure:Category>
+				</structure:Category>
+   		</structure:CategoryScheme>
+   	</structure:CategorySchemes>
+   	<structure:Categorisations>
+   		<structure:Categorisation id="DEMO_TOT" agencyID="ESTAT" version="1.0">
+   			<common:Name xml:lang="en">Demography totals categorisations</common:Name>
+   			<structure:Source>
+   				<Ref agencyID="ESTAT" id="DEMO_TOT" version="1.0" class="Dataflow" package="datastructure"/>
+   			</structure:Source>
+   			<structure:Target>
+   				<Ref agencyID="ESTAT" maintainableParentID="DATAFLOWS_SCHEME" maintainableParentVersion="1.0" id="PSC.DEM.TOT"/>
+   			</structure:Target>
+   		</structure:Categorisation>
+   	</structure:Categorisations>
+      <structure:Codelists>
+      	<structure:Codelist id="CL_COUNTRY" agencyID="ESTAT" version="1.0" isPartial="true">
+            <common:Name xml:lang="en">Country Codelist</common:Name>
+            <structure:Code id="BE">
+               <common:Name xml:lang="en">Belgium</common:Name>
+            </structure:Code>
+            <structure:Code id="LU">
+               <common:Name xml:lang="en">Luxembourg</common:Name>
+            </structure:Code>
+         </structure:Codelist>
+      </structure:Codelists>
+      <structure:Concepts>
+			<structure:ConceptScheme id="ESMS_CONCEPTS" agencyID="ESTAT" version="1.0">
+				<common:Name xml:lang="en">Eurostat SDMX Metadata Structure concepts</common:Name>
+				<structure:Concept id="ADDRESS">
+					<common:Name xml:lang="en">Address</common:Name>
+				</structure:Concept>
+				<structure:Concept id="ADDRESS_CITY">
+					<common:Name xml:lang="en">Address City</common:Name>
+					<structure:Parent>
+						<Ref id="ADDRESS"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="ADDRESS_COUNTRY">
+					<common:Name xml:lang="en">Address Country</common:Name>
+					<structure:Parent>
+						<Ref id="ADDRESS"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="ADDRESS_STREET">
+					<common:Name xml:lang="en">Address Street</common:Name>
+					<structure:Parent>
+						<Ref id="ADDRESS"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="ADDRESS_POST_CODE">
+					<common:Name xml:lang="en">Address Postal Code</common:Name>
+					<structure:Parent>
+						<Ref id="ADDRESS"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="COMMENT">
+					<common:Name xml:lang="en">Comment</common:Name>
+				</structure:Concept>
+				<structure:Concept id="CONTACT">
+					<common:Name xml:lang="en">Contact</common:Name>
+				</structure:Concept>
+				<structure:Concept id="CONTACT_EMAIL">
+					<common:Name xml:lang="en">Contact email address</common:Name>
+					<structure:Parent>
+						<Ref id="CONTACT"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="CONTACT_NAME">
+					<common:Name xml:lang="en">Contact name</common:Name>
+					<structure:Parent>
+						<Ref id="CONTACT"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="CONTACT_PHONE">
+					<common:Name xml:lang="en">Contact phone number</common:Name>
+					<structure:Parent>
+						<Ref id="CONTACT"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="DATA_DESCR">
+					<common:Name xml:lang="en">Data description</common:Name>
+				</structure:Concept>
+				<structure:Concept id="META_CERTIFIED">
+					<common:Name xml:lang="en">Metadata last ceritfied</common:Name>
+					<structure:Parent>
+						<Ref id="META_UPDATE"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="META_LAST_UPDATE">
+					<common:Name xml:lang="en">Metadata last update</common:Name>
+					<structure:Parent>
+						<Ref id="META_UPDATE"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="META_POSTED">
+					<common:Name xml:lang="en">Metadata last posted</common:Name>
+					<structure:Parent>
+						<Ref id="META_UPDATE"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="META_UPDATE">
+					<common:Name xml:lang="en">Metadata Update</common:Name>
+				</structure:Concept>
+				<structure:Concept id="NEXT_DATE">
+					<common:Name xml:lang="en">Next Date</common:Name>
+				</structure:Concept>
+				<structure:Concept id="ORGANISATION">
+					<common:Name xml:lang="en">Organisation</common:Name>
+				</structure:Concept>
+				<structure:Concept id="ORGANISATION_UNIT">
+					<common:Name xml:lang="en">Organisation unit</common:Name>
+					<structure:Parent>
+						<Ref id="ORGANISATION"/>
+					</structure:Parent>
+				</structure:Concept>
+				<structure:Concept id="STAT_PRES">
+					<common:Name xml:lang="en">Statistical presentation</common:Name>
+				</structure:Concept>
+			</structure:ConceptScheme>
+      </structure:Concepts>
+      <structure:MetadataStructures>
+      	<structure:MetadataStructure id="ESMS_SIMPLE" agencyID="ESTAT" version="1.0">
+      		<common:Name xml:lang="en">Simple Eurostat SDMX Metadata Structure</common:Name>
+      		<common:Description xml:lang="en">Simplified version of the Eurostat SDMX Metadata Structure</common:Description>
+      		<structure:MetadataStructureComponents>
+      			<structure:MetadataTarget id="CATEGORY_TARGET">
+      				<structure:ReportPeriodTarget>
+      					<structure:LocalRepresentation>
+      						<structure:TextFormat textType="ObservationalTimePeriod"/>
+      					</structure:LocalRepresentation>
+      				</structure:ReportPeriodTarget>
+      				<structure:IdentifiableObjectTarget id="DATA_PROVIDER" objectType="DataProvider">
+      					<structure:LocalRepresentation>
+      						<structure:TextFormat textType="IdentifiableReference"/>
+      					</structure:LocalRepresentation>
+      				</structure:IdentifiableObjectTarget>
+      				<structure:IdentifiableObjectTarget id="CATEGORY" objectType="Category">
+      					<structure:LocalRepresentation>
+      						<structure:Enumeration>
+      							<Ref agencyID="ESTAT" id="DATAFLOWS_SCHEME" version="1.0" class="CategoryScheme" package="categoryscheme"/>
+      						</structure:Enumeration>
+      					</structure:LocalRepresentation>
+      				</structure:IdentifiableObjectTarget>
+					</structure:MetadataTarget>
+      			<structure:MetadataTarget id="DATAFLOW_TARGET">
+      				<structure:ReportPeriodTarget>
+      					<structure:LocalRepresentation>
+      						<structure:TextFormat textType="ObservationalTimePeriod"/>
+      					</structure:LocalRepresentation>
+      				</structure:ReportPeriodTarget>
+      				<structure:IdentifiableObjectTarget id="DATA_PROVIDER" objectType="DataProvider">
+      					<structure:LocalRepresentation>
+      						<structure:TextFormat textType="IdentifiableReference"/>
+      					</structure:LocalRepresentation>
+      				</structure:IdentifiableObjectTarget>
+      				<structure:IdentifiableObjectTarget id="DATA_FLOW" objectType="Dataflow">
+      					<structure:LocalRepresentation>
+      						<structure:TextFormat textType="IdentifiableReference"/>
+      					</structure:LocalRepresentation>
+      				</structure:IdentifiableObjectTarget>
+					</structure:MetadataTarget>
+					<structure:ReportStructure id="ESMS_SIMPLE_REPORT">
+						<structure:MetadataAttribute id="CONTACT" isPresentational="true">
+							<structure:ConceptIdentity>
+								<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="CONTACT"/>
+							</structure:ConceptIdentity>
+							<structure:MetadataAttribute id="ORGANISATION">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ORGANISATION"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="String"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="ORGANISATION_UNIT">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ORGANISATION_UNIT"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="String"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="NAME" minOccurs="0">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="CONTACT_NAME"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="String"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="ADDRESS" isPresentational="true">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ADDRESS"/>
+								</structure:ConceptIdentity>
+								<structure:MetadataAttribute id="STREET" maxOccurs="3">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ADDRESS_STREET"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="String"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+								<structure:MetadataAttribute id="CITY">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ADDRESS_CITY"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="String"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+								<structure:MetadataAttribute id="POSTAL_CODE">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ADDRESS_POST_CODE"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="String"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+								<structure:MetadataAttribute id="COUNTRY">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="ADDRESS_COUNTRY"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:Enumeration>
+											<Ref agencyID="ESTAT" id="CL_COUNTRY" version="1.0"/>
+										</structure:Enumeration>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="PHONE" minOccurs="0">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="CONTACT_PHONE"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="String"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="EMAIL">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="CONTACT_EMAIL"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="String"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+						</structure:MetadataAttribute>
+						<structure:MetadataAttribute id="META_UPDATE" isPresentational="true">
+							<structure:ConceptIdentity>
+								<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_UPDATE"/>
+							</structure:ConceptIdentity>
+							<structure:MetadataAttribute id="CERTIFIED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_CERTIFIED"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="GregorianDay"/>
+								</structure:LocalRepresentation>								
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="POSTED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_POSTED"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="DateTime"/>
+								</structure:LocalRepresentation>
+								<structure:MetadataAttribute id="NEXT" minOccurs="0">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="NEXT_DATE"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="DateTime"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="UPDATED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_LAST_UPDATE"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="DateTime"/>
+								</structure:LocalRepresentation>
+								<structure:MetadataAttribute id="NEXT" minOccurs="0">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="NEXT_DATE"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="DateTime"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+							</structure:MetadataAttribute>
+						</structure:MetadataAttribute>
+						<structure:MetadataAttribute id="STAT_PRES" isPresentational="true">
+							<structure:ConceptIdentity>
+								<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="STAT_PRES"/>
+							</structure:ConceptIdentity>
+							<structure:MetadataAttribute id="DATA_DESCR">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="DATA_DESCR"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="XHTML"/>
+								</structure:LocalRepresentation>
+							</structure:MetadataAttribute>
+						</structure:MetadataAttribute>
+						<structure:MetadataTarget>
+							<Ref id="CATEGORY_TARGET"/>
+						</structure:MetadataTarget>
+						<structure:MetadataTarget>
+							<Ref id="DATAFLOW_TARGET"/>
+						</structure:MetadataTarget>
+					</structure:ReportStructure>
+					<structure:ReportStructure id="ESMS_UPDATE_REPORT">
+						<structure:MetadataAttribute id="META_UPDATE" isPresentational="true">
+							<structure:ConceptIdentity>
+								<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_UPDATE"/>
+							</structure:ConceptIdentity>
+							<structure:MetadataAttribute id="CERTIFIED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_CERTIFIED"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="GregorianDay"/>
+								</structure:LocalRepresentation>								
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="POSTED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_POSTED"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="DateTime"/>
+								</structure:LocalRepresentation>
+								<structure:MetadataAttribute id="NEXT" minOccurs="0">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="NEXT_DATE"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="DateTime"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+							</structure:MetadataAttribute>
+							<structure:MetadataAttribute id="UPDATED">
+								<structure:ConceptIdentity>
+									<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="META_LAST_UPDATE"/>
+								</structure:ConceptIdentity>
+								<structure:LocalRepresentation>
+									<structure:TextFormat textType="DateTime"/>
+								</structure:LocalRepresentation>
+								<structure:MetadataAttribute id="NEXT" minOccurs="0">
+									<structure:ConceptIdentity>
+										<Ref agencyID="ESTAT" maintainableParentID="ESMS_CONCEPTS" maintainableParentVersion="1.0" id="NEXT_DATE"/>
+									</structure:ConceptIdentity>
+									<structure:LocalRepresentation>
+										<structure:TextFormat textType="DateTime"/>
+									</structure:LocalRepresentation>
+								</structure:MetadataAttribute>
+							</structure:MetadataAttribute>
+						</structure:MetadataAttribute>
+						<structure:MetadataTarget>
+							<Ref id="DATAFLOW_TARGET"/>
+						</structure:MetadataTarget>
+					</structure:ReportStructure>
+      		</structure:MetadataStructureComponents>
+      	</structure:MetadataStructure>
+      </structure:MetadataStructures>
+      <structure:DataStructures>
+         <structure:DataStructure id="DEMOGRAPHY" agencyID="ESTAT" version="1.0" isExternalReference="true" structureURL="demography.xml">
+         	<common:Name xml:lang="en">DEMOGRAPHY Data Structure</common:Name>
+         </structure:DataStructure>
+      </structure:DataStructures>
+   </message:Structures>
+</message:Structure>

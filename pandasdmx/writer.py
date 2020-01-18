@@ -1,9 +1,12 @@
+from itertools import chain
+
 import numpy as np
 import pandas as pd
 
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AgencyScheme,
+    DataAttribute,
     DataflowDefinition,
     DataStructureDefinition,
     DataSet,
@@ -116,6 +119,9 @@ def write_response(obj, *args, **kwargs):
 
 def write_datamessage(obj, *args, **kwargs):
     """Convert :class:`DataMessage <pandasdmx.message.DataMessage>`."""
+    # Pass the message's DSD to assist datetime handling
+    kwargs.setdefault('dsd', obj.dataflow.structure)
+
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
     else:
@@ -181,42 +187,55 @@ def write_component(obj):
 
 
 def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
-                  fromfreq=False, parse_time=True):
-    """Convert :class:`DataSet <pandasdmx.model.DataSet>`.
+                  datetime=False, **kwargs):
+    """Convert :class:`~.DataSet`.
+
+    See the :ref:`HOWTO <howto-datetime>` for examples of using the `datetime`
+    argument.
 
     Parameters
     ----------
-    obj : :class:`DataSet <pandasdmx.model.DataSet>` or iterable of \
-          :class:`Observation <pandasdmx.model.Observation>`
+    obj : :class:`~.DataSet` or iterable of :class:`~.Observation`
     attributes : str
         Types of attributes to return with the data. A string containing
         zero or more of:
 
-        - ``'o'``: attributes attached to each :class:`Observation
-          <pandasdmx.model.Observation>` .
-        - ``'s'``: attributes attached to any (0 or 1) :class:`SeriesKey
-          <pandasdmx.model.SeriesKey>` associated with each Observation.
-        - ``'g'``: attributes attached to any (0 or more) :class:`GroupKeys
-          <pandasdmx.model.GroupKey>` associated with each Observation.
-        - ``'d'``: attributes attached to the :class:`DataSet
-          <pandasdmx.model.DataSet>` containing the Observations.
+        - ``'o'``: attributes attached to each :class:`~.Observation` .
+        - ``'s'``: attributes attached to any (0 or 1) :class:`~.SeriesKey`
+          associated with each Observation.
+        - ``'g'``: attributes attached to any (0 or more) :class:`~.GroupKey`
+          associated with each Observation.
+        - ``'d'``: attributes attached to the :class:`~.DataSet` containing the
+          Observations.
 
-    dtype : str or :class:`np.dtype` or None
+    dtype : str or :class:`numpy.dtype` or None
         Datatype for values. If None, do not return the values of a series.
         In this case, `attributes` must not be an empty string so that some
         attribute is returned.
-    constraint : :class:`ContentConstraint \
-                 <pandasdmx.model.ContentConstraint>` , optional
+    constraint : :class:`~.ContentConstraint` , optional
         If given, only Observations included by the *constraint* are returned.
-    fromfreq : bool, optional
-        If True, extrapolate time periods from the first item and FREQ
-        dimension.
-    parse_time : bool, optional
-        If True (default), try to generate datetime index, provided that
-        dim_at_obs is 'TIME' or 'TIME_PERIOD'. Otherwise, ``parse_time`` is
-        ignored. If False, always generate index of strings. Set it to
-        False to increase performance and avoid parsing errors for exotic
-        date-time formats unsupported by pandas.
+    datetime : bool or str or or :class:`~.Dimension` or dict, optional
+        If given, return a DataFrame with a :class:`~pandas.DatetimeIndex`
+        or :class:`~pandas.PeriodIndex` as the index and all other dimensions
+        as columns. Valid `datetime` values include:
+
+        - :class:`bool`: if :obj:`True`, determine the time dimension
+          automatically by detecting a :class:`~.TimeDimension`.
+        - :class:`str`: ID of the time dimension.
+        - :class:`~.Dimension`: the matching Dimension is the time dimension.
+        - :class:`dict`: advanced behaviour. Keys may include:
+
+          - **dim** (:class:`~.Dimension` or :class:`str`): the time dimension
+            or its ID.
+          - **axis** (`{0 or 'index', 1 or 'columns'}`): axis on which to place
+            the time dimension (default: 0).
+          - **freq** (:obj:`True` or :class:`str` or :class:`~.Dimension`):
+            produce :class:`pandas.PeriodIndex`. If :class:`str`, the ID of a
+            Dimension containing a frequency specification. If a Dimension, the
+            specified dimension is used for the frequency specification.
+
+            Any Dimension used for the frequency specification is does not
+            appear in the returned DataFrame.
 
     Returns
     -------
@@ -225,9 +244,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
         returned with ``value`` as the first column, and additional
         columns for each attribute.
     """
-    # source will now be a DataSet
-
-    # validate 'attributes'
+    # Validate attributes argument
     if attributes is None or not attributes:
         attributes = ''
     else:
@@ -237,7 +254,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
             raise TypeError("'attributes' argument must be of type str.")
         if set(attributes) - {'o', 's', 'g', 'd'}:
             raise ValueError(
-                "'attributes' must only contain 'o', 's', 'd' or 'g'.")
+                "'attributes' must only contain 'o', 's', 'd' and/or 'g'.")
 
     # Iterate on observations
     result = {}
@@ -265,7 +282,117 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
             if not attributes:
                 result = result['value']
 
-    return result
+    return _maybe_convert_datetime(result, datetime, obj=obj, **kwargs)
+
+
+def _maybe_convert_datetime(df, arg, obj, dsd=None):
+    """Helper for :meth:`write_dataset` to handle datetime indices.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    arg : dict
+        From the `datetime` argument to :meth:`write_dataset`.
+    obj :
+        From the `obj` argument to :meth:`write_dataset`.
+    dsd: ~.DataStructureDefinition, optional
+    """
+    if not arg:
+        # False, None, empty dict: no datetime conversion
+        return df
+
+    # Check argument values
+    param = dict(dim=None, axis=0, freq=False)
+    if isinstance(arg, str):
+        param['dim'] = arg
+    elif isinstance(arg, Dimension):
+        param['dim'] = arg.id
+    elif isinstance(arg, dict):
+        extra_keys = set(arg.keys()) - set(param.keys())
+        if extra_keys:
+            raise ValueError(extra_keys)
+        param.update(arg)
+    elif isinstance(arg, bool):
+        pass  # True
+    else:
+        raise ValueError(arg)
+
+    def _get_dims():
+        """Return an appropriate list of dimensions."""
+        if len(obj.structured_by.dimensions.components):
+            return obj.structured_by.dimensions.components
+        elif dsd:
+            return dsd.dimensions.components
+        else:
+            return []
+
+    def _get_attrs():
+        """Return an appropriate list of attributes."""
+        if len(obj.structured_by.attributes.components):
+            return obj.structured_by.attributes.components
+        elif dsd:
+            return dsd.attributes.components
+        else:
+            return []
+
+    if not param['dim']:
+        # Determine time dimension
+        dims = _get_dims()
+        for dim in dims:
+            if isinstance(dim, TimeDimension):
+                param['dim'] = dim
+                break
+        if not param['dim']:
+            raise ValueError(f'no TimeDimension in {dims}')
+
+    # Unstack all but the time dimension and convert
+    other_dims = list(filter(lambda d: d != param['dim'], df.index.names))
+    df = df.unstack(other_dims)
+    df.index = pd.to_datetime(df.index)
+
+    if param['freq']:
+        # Determine frequency string, Dimension, or Attribute
+        freq = param['freq']
+        if isinstance(freq, str) and freq not in pd.offsets.prefix_mapping:
+            # ID of a Dimension or Attribute
+            for component in chain(_get_dims(), _get_attrs()):
+                if component.id == freq:
+                    freq = component
+                    break
+
+            # No named dimension in the DSD; but perhaps on the df
+            if isinstance(freq, str):
+                if freq in df.columns.names:
+                    freq = Dimension(id=freq)
+                else:
+                    raise ValueError(freq)
+
+        if isinstance(freq, Dimension):
+            # Retrieve Dimension values from pd.MultiIndex level
+            level = freq.id
+            i = df.columns.names.index(level)
+            values = set(df.columns.levels[i])
+
+            if len(values) > 1:
+                values = sorted(values)
+                raise ValueError('cannot convert to PeriodIndex with '
+                                 f'non-unique freq={values}')
+
+            # Store the unique value
+            freq = values.pop()
+
+            # Remove the index level
+            df.columns = df.columns.droplevel(i)
+        elif isinstance(freq, DataAttribute):  # pragma: no cover
+            raise NotImplementedError
+
+        df.index = df.index.to_period(freq=freq)
+
+    if param['axis'] in {1, 'columns'}:
+        # Change axis
+        df = df.transpose()
+
+    return df
 
 
 def write_dimensiondescriptor(obj):

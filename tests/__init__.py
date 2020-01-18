@@ -11,13 +11,20 @@ import pytest
 test_data_path = Path(__file__).parent / 'data'
 
 # List of specimen files. Each is a tuple: (path, xml|json, data|structure)
-_test_files = []
+_test_files = [
+    (test_data_path.joinpath('insee', 'insee-IPI-2010-A21-data.xml'), 'xml',
+     'data'),
+    ]
 
 # XML data files
 for part in 'ng', 'rg', 'sg':
+    path = test_data_path / 'exr' / f'ecb_exr_{part}'
+    # commented: these files cannot be parsed, possibly because they contain
+    # non-standard markup
+    # _test_files.append((path / f'ecb_exr_{part}.xml', 'xml', 'structure'))
     for struct in 'generic', 'structured':
-        path = test_data_path / 'exr' / 'ecb_exr_{}'.format(part) / struct
-        _test_files.extend((p, 'xml', 'data') for p in path.iterdir())
+        struct_path = path / struct
+        _test_files.extend((p, 'xml', 'data') for p in struct_path.iterdir())
 
 # XML structure files
 _test_files.extend(

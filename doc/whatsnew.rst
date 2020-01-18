@@ -43,8 +43,9 @@ Breaking changes
 
 Migrating
 :::::::::
-- ``Writer.write(…, reverse_obs=True)``: use s.iloc[::-1] to reverse a pd.Series.
+- ``Writer.write(…, reverse_obs=True)``: use the standard pandas indexing approach to reverse a pd.Series: ``s.iloc[::-1]``
 - odo support is no longer built-in; however, users can still register a pandaSDMX resource with odo. See the :ref:`HOWTO <howto-convert>`.
+- :func:`.write_dataset`: the `parse_time` and `fromfreq` arguments are replaced by `datetime`; see the method documentation and the :ref:`HOWTO section <howto-datetime>` for examples.
 
 v0.9 (2018-04)
 ----------------------------

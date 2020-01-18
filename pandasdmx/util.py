@@ -91,15 +91,35 @@ if TYPE_CHECKING:
 
 
 class BaseModel(pydantic.BaseModel):
+    """Shim for pydantic.BaseModel.
+
+    This class changes two behaviours in pydantic. The methods are direct
+    copies from pydantic's code, with marked changes.
+
+    1. https://github.com/samuelcolvin/pydantic/issues/524
+
+       - "Multiple RecursionErrors with self-referencing models"
+       - In e.g. pandasdmx.model.Item, having both .parent and .child
+         references leads to infinite recursion during validation.
+       - Fix: override BaseModel.__setattr__.
+       - New value 'limited' for Config.validate_assignment: no sibling
+         field values are passed to Field.validate().
+       - New key Config.validate_assignment_exclude: list of field names that
+         are not validated per se *and* not passed to Field.validate() when
+         validating a sibling field.
+    2. https://github.com/samuelcolvin/pydantic/issues/521
+
+       - "Assignment to attribute changes id() but not referenced object,"
+         marked as wontfix by pydantic maintainer.
+       - When cls.attr is typed as BaseModel (or a subclass), then
+         a.attr is b.attr is always False, even when set to the same reference.
+       - Fix: override BaseModel.validate() without copy().
+    """
     class Config:
         validate_assignment = 'limited'
         validate_assignment_exclude = []
 
-    # Workaround for https://github.com/samuelcolvin/pydantic/issues/521:
-    # - When cls.attr is typed as BaseModel (or a subclass), then
-    #   a.attr is b.attr is always False, even when set to the same reference
-    # - Same as pydantic.BaseModel.validate, but without .copy() at ***.
-    # - Issue marked as wontfix by pydantic maintainer.
+    # Workaround for https://github.com/samuelcolvin/pydantic/issues/521
     @classmethod
     def validate(cls: Type['Model'], value: Any) -> 'Model':
         if isinstance(value, dict):
@@ -115,7 +135,7 @@ class BaseModel(pydantic.BaseModel):
                 raise DictError() from e
             return cls(**value_as_dict)
 
-    # Workaround for https://github.com/samuelcolvin/pydantic/issues/524:
+    # Workaround for https://github.com/samuelcolvin/pydantic/issues/524
     @no_type_check
     def __setattr__(self, name, value):
         if (self.__config__.extra is not Extra.allow and name not in

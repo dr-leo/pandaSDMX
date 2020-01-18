@@ -1,8 +1,6 @@
 """Tests for pandasdmx/writer.py."""
 # TODO test all possible values of Writer.write() arguments
 # - attribute
-# - fromfreq
-# - parsetime
 # …for each type of input argument.
 
 import pandas as pd
@@ -10,6 +8,7 @@ import pytest
 from pytest import raises
 
 import pandasdmx as sdmx
+from pandasdmx.model import DataStructureDefinition
 
 from . import (
     assert_pd_equal,
@@ -196,6 +195,112 @@ def test_write_dataflow():
         'BPM6-TOTAL': '{}Overall total and main headings'.format(mbop),
         })
     assert_pd_equal(result['dataflow'].head(), expected)
+
+
+def test_write_dataset_datetime():
+    """Test datetime arguments to write_dataset()."""
+    # Load data and structure
+    with specimen('insee-IPI-2010-A21-data.xml') as f:
+        data_msg = sdmx.read_sdmx(f)
+        ds = data_msg.data[0]
+    with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
+        structure_msg = sdmx.read_sdmx(f)
+        dsd = structure_msg.structure['IPI-2010-A21']
+        TIME_PERIOD = dsd.dimensions.get('TIME_PERIOD')
+        FREQ = dsd.dimensions.get('FREQ')
+
+    other_dims = list(filter(lambda n: n != 'TIME_PERIOD',
+                             [d.id for d in dsd.dimensions.components]))
+
+    def expected(df, axis=0, cls=pd.DatetimeIndex):
+        axes = ['index', 'columns'] if axis else ['columns', 'index']
+        assert getattr(df, axes[0]).names == other_dims
+        assert isinstance(getattr(df, axes[1]), cls)
+
+    # Write with datetime=str
+    df = sdmx.to_pandas(ds, datetime='TIME_PERIOD')
+    expected(df)
+
+    # Write with datetime=Dimension instance
+    df = sdmx.to_pandas(ds, datetime=TIME_PERIOD)
+    expected(df)
+
+    # Write with datetime=True fails because the data message contains no
+    # actual structure information
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+        sdmx.to_pandas(ds, datetime=True)
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+        sdmx.to_pandas(data_msg, datetime=True)
+
+    # Attaching the DSD to the DataSet allows write_dataset to infer the
+    # TimeDimension
+    ds.structured_by = dsd
+    df = sdmx.to_pandas(ds, datetime=True)
+    expected(df)
+
+    # Attaching the DSD to the DataMessage allows write_dataset to infer the
+    # TimeDimension
+    ds.structured_by = DataStructureDefinition()  # Empty
+    data_msg.dataflow.structure = dsd
+    df = sdmx.to_pandas(data_msg, datetime=True)
+    expected(df)
+
+    # As above, with axis=1
+    df = sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', axis=1))
+    expected(df, axis=1)
+    df = sdmx.to_pandas(ds, datetime=dict(dim=TIME_PERIOD, axis=1))
+    expected(df, axis=1)
+    ds.structured_by = dsd
+    df = sdmx.to_pandas(ds, datetime=dict(axis=1))
+    expected(df, axis=1)
+    ds.structured_by = DataStructureDefinition()
+    data_msg.dataflow.structure = dsd
+    df = sdmx.to_pandas(data_msg, datetime=dict(axis=1))
+    expected(df, axis=1)
+
+    # Write with freq='M' works
+    df = sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', freq='M'))
+    expected(df, cls=pd.PeriodIndex)
+
+    # Write with freq='A' works
+    df = sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', freq='A'))
+    expected(df, cls=pd.PeriodIndex)
+    # …but the index is not unique, because month information was discarded
+    assert not df.index.is_unique
+
+    # Write specifying the FREQ dimension by name fails
+    ds.structured_by = dsd
+    with pytest.raises(ValueError, match='cannot convert to PeriodIndex with '
+                       r"non-unique freq=\['A', 'M'\]"):
+        sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', freq='FREQ'))
+
+    # Remove non-monthly obs
+    # TODO use a constraint, when this is supported
+    ds.obs = list(filter(lambda o: o.key.FREQ != 'A', ds.obs))
+
+    # Now specifying the dimension by name works
+    df = sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', freq='FREQ'))
+
+    # and FREQ is no longer in the columns index
+    other_dims.pop(other_dims.index('FREQ'))
+    expected(df, cls=pd.PeriodIndex)
+
+    # Specifying a Dimension works
+    df = sdmx.to_pandas(ds, datetime=dict(dim=TIME_PERIOD, freq=FREQ))
+    expected(df, cls=pd.PeriodIndex)
+
+    # As above, using DSD attached to the DataMessage
+    ds.structured_by = DataStructureDefinition()
+    df = sdmx.to_pandas(data_msg, datetime=dict(dim=TIME_PERIOD, freq='FREQ'))
+    expected(df, cls=pd.PeriodIndex)
+
+    # Invalid arguments
+    with pytest.raises(ValueError, match='X'):
+        sdmx.to_pandas(data_msg, datetime=dict(dim=TIME_PERIOD, freq='X'))
+    with pytest.raises(ValueError, match='foo'):
+        sdmx.to_pandas(ds, datetime=dict(foo='bar'))
+    with pytest.raises(ValueError, match='43'):
+        sdmx.to_pandas(ds, datetime=43)
 
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))

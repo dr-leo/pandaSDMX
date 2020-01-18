@@ -461,29 +461,7 @@ now generate our pandas DataFrame from daily exchange rate data only:
 Control the output
 ~~~~~~~~~~~~~~~~~~
 
-The docstring of the :meth:`pandasdmx.writer.data2pandas.Writer.write` method
-explains a number of optional arguments to control whether or not another
-dataframe should be generated for the attributes, which attributes it should
-contain, and, most importantly, if the resulting pandas Series should be
-concatenated to a single DataFrame at all (``asframe = True`` is the default).
-
-Control index generation
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``write``  method provides the following parameters to control index
-generation.  This is useful to increase performance for large datasets with
-regular indexes (e.g. monthly data, and to avoid crashes caused by exotic
-datetime formats not parsed by pandas:
-
-- ``fromfreq``: if True, the index will be extrapolated from the first date or
-  period and the frequency.  This is only robust if the dataset has a uniform
-  index, e.g. has no gaps like for daily trading data.
-- ``reverse_obs``:: if True, return observations in a series in reverse
-  document order. This may be useful to establish chronological order,
-  in particular incombination with ``fromfreq``. Default is False.
-- If pandas raises parsing errors due to exotic date-time formats, set
-  ``parse_time`` to False to obtain a string index rather than datetime index.
-  Default is True.
+See :func:`.write_dataset`.
 
 Work with files
 ---------------

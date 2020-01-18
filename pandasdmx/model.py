@@ -339,7 +339,7 @@ class ItemScheme(MaintainableArtefact):
     .. todo::
 
        - Delete method for items
-       - Allow :meth:`extend`to be passed an ItemScheme instance or subclass.
+       - Allow :meth:`extend` to be passed an ItemScheme instance or subclass.
        - Verify field validation for subclasses (validation may currently be
          limited to ItemScheme rather than the subclass)
        - Add sorting feature, e.g., when new items have been inserted.

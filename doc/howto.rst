@@ -29,10 +29,7 @@ Speed up :meth:`pandasdmx.to_pandas` for large datasets
 The main performance hit comes from parsing the time or time period strings. In
 case of regular data such as monthly (not trading day!), call the ``write``
 method with ``fromfreq``  set to True so that only the first string will be
-parsed and the rest inferred from the frequency of the series. Caution: If the
-series is stored in the XML document in reverse chronological order, the
-``reverse_obs``  argument must be set to True as well to prevent the resulting
-dataframe index from extending into a remote future.
+parsed and the rest inferred from the frequency of the series.
 
 
 .. _howto-datetime:

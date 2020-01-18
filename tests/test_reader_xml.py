@@ -51,4 +51,16 @@ def test_read_ss_xml():
     assert ds.structured_by is dsd
 
     # Structures referenced in the dataset are from the dsd
-    assert ds.obs[0].key.described_by == dsd.dimensions
+
+    s0_key = list(ds.series.keys())[0]
+    # AttributeValue.value_for
+    assert s0_key.attrib['DECIMALS'].value_for in dsd.attributes
+
+    # SeriesKey.described_by
+    assert s0_key.described_by is dsd.dimensions
+
+    # Key.described_by
+    assert ds.obs[0].key.described_by is dsd.dimensions
+
+    # KeyValue.value_for
+    assert ds.obs[0].key.values[0].value_for in dsd.dimensions

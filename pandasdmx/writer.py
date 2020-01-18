@@ -298,7 +298,7 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
     dsd: ~.DataStructureDefinition, optional
     """
     if not arg:
-        # No datetime conversion
+        # False, None, empty dict: no datetime conversion
         return df
 
     # Check argument values
@@ -361,11 +361,11 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
                     break
 
             # No named dimension in the DSD; but perhaps on the df
-            if freq in df.columns.names:
-                freq = Dimension(id=freq)
-
             if isinstance(freq, str):
-                raise ValueError(freq)
+                if freq in df.columns.names:
+                    freq = Dimension(id=freq)
+                else:
+                    raise ValueError(freq)
 
         if isinstance(freq, Dimension):
             # Retrieve Dimension values from pd.MultiIndex level

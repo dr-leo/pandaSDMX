@@ -941,9 +941,9 @@ class Reader(BaseReader):
         values = self._parse(elem)
 
         # Rename values from child elements: 'annotationurl' → 'url'
-        for attr in ('text', 'title', 'type', 'url'):
+        for tag in ('text', 'title', 'type', 'url'):
             try:
-                values[attr] = values.pop('annotation' + attr)
+                values[tag] = values.pop('annotation' + tag)
             except KeyError:
                 pass
 

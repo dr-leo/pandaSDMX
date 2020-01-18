@@ -35,6 +35,53 @@ series is stored in the XML document in reverse chronological order, the
 dataframe index from extending into a remote future.
 
 
+.. _howto-datetime:
+
+Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodIndex`
+----------------------------------------------------------------------------------
+
+SDMX datasets often have a :class:`~.Dimension` with a name like ``TIME_PERIOD``.
+To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`~pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
+
+For multi-dimensional datasets, :func:`~.write_dataset` usually returns a :class:`~pandas.Series` with a :class:`~pandas.MultiIndex` that has one level for each dimension.
+However, MultiIndex and DatetimeIndex/PeriodIndex are incompatible; it is not possible to use pandas' date/time features for *just one level* of a MultiIndex (e.g. ``TIME_PERIOD``) while using other types for the other levels/dimensions (e.g. ``CURRENCY``).
+For this reason, when the `datetime` argument is used, :func:`~.write_dataset` returns a :class:`~pandas.DataFrame`: the DatetimeIndex/PeriodIndex is used along axis 0, and *all other dimensions* are collected in a MultiIndex on axis 1.
+
+An example, using the same European Central Bank exchange rate data set as in the :doc:`walkthrough <walkthrough>`:
+
+.. ipython:: python
+
+   import pandasdmx as sdmx
+   ecb = sdmx.Request('ECB')
+   data_msg = ecb.data('EXR', key={'CURRENCY': ['EUR']},
+                        params={'startPeriod': '2019'})
+   data = data_msg.data[0]
+
+Without date-time conversion, :meth:`~.to_pandas` produces a MultiIndex:
+
+.. ipython:: python
+
+   sdmx.to_pandas(data)
+
+With date-time conversion, it produces a DatetimeIndex:
+
+.. ipython:: python
+
+   df1 = sdmx.to_pandas(data, datetime='TIME_PERIOD')
+   df1.index
+   df1
+
+Using the advanced functionality to specify a dimension for the frequency of a PeriodIndex, and change the orientation so that the PeriodIndex is on the columns:
+
+.. ipython:: python
+
+   df2 = sdmx.to_pandas(
+     data,
+     datetime=dict(dim='TIME_PERIOD', freq='FREQ', axis=1))
+   df2.columns
+   df2
+
+
 .. _howto-convert:
 
 Convert SDMX data to other formats

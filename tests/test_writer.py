@@ -1,8 +1,6 @@
 """Tests for pandasdmx/writer.py."""
 # TODO test all possible values of Writer.write() arguments
 # - attribute
-# - fromfreq
-# - parsetime
 # …for each type of input argument.
 
 import pandas as pd

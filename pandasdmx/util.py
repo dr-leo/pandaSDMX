@@ -97,6 +97,7 @@ class BaseModel(pydantic.BaseModel):
     copies from pydantic's code, with marked changes.
 
     1. https://github.com/samuelcolvin/pydantic/issues/524
+
        - "Multiple RecursionErrors with self-referencing models"
        - In e.g. pandasdmx.model.Item, having both .parent and .child
          references leads to infinite recursion during validation.
@@ -107,6 +108,7 @@ class BaseModel(pydantic.BaseModel):
          are not validated per se *and* not passed to Field.validate() when
          validating a sibling field.
     2. https://github.com/samuelcolvin/pydantic/issues/521
+
        - "Assignment to attribute changes id() but not referenced object,"
          marked as wontfix by pydantic maintainer.
        - When cls.attr is typed as BaseModel (or a subclass), then

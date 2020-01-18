@@ -108,6 +108,13 @@ def test_internationalstring():
     i3 = Item(id='ECB', name={})
     assert i3.name.localizations == Item(id='ECB').name.localizations
 
+    # Create with iterable of 2-tuples
+    i4 = Item(id='ECB', name=[
+        ('DE', 'Europäische Zentralbank'),
+        ('FR', 'Banque centrale européenne'),
+    ])
+    assert i4.name['FR'] == 'Banque centrale européenne'
+
 
 def test_item():
     items = []

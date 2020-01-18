@@ -265,6 +265,11 @@ class Reader(BaseReader):
 
     - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
     - State variables :attr:`_current`, :attr:`_stack, :attr:`_index`.
+
+    Parameters
+    ----------
+    dsd : :class:`~.DataStructureDefinition`
+        For “structure-specific” `format`=``XML`` messages only.
     """
     # TODO subclass the main reader for StructureSpecific*Data messages to
     #      avoid branching
@@ -282,7 +287,7 @@ class Reader(BaseReader):
     # Similar to _index, but specific to the current scope.
     _current = {}
 
-    def read_message(self, source):
+    def read_message(self, source, dsd=None):
         # Root XML element
         root = etree.parse(source).getroot()
 

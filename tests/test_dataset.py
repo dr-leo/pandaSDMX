@@ -141,43 +141,6 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0].OBS_STATUS == 'A'
         assert s3.iloc[0].OBS_STATUS.value_for == 'OBS_STATUS'  # consistency!
 
-    def test_pandas_with_freq(self, msg):
-        # TODO actually use the fromfreq and parse_time options
-        data = msg.data[0]
-
-        # Dataset has 4 series keys
-        assert len(data.series) == 4
-
-        # Conversion without attributes gives a Series with a MultiIndex
-        s_all = sdmx.to_pandas(data, attributes='')
-        assert isinstance(s_all, pd.Series)
-        assert isinstance(s_all.index, pd.MultiIndex)
-
-        # Single series can be converted
-        s3 = sdmx.to_pandas(data.series[3], attributes='')
-        assert isinstance(s3, pd.Series)
-        assert s3[0] == 1.2894
-
-        # Conversion with attribute gives a DataFrame with attribute columns
-        # and a MultiIndex
-        df = sdmx.to_pandas(data, attributes='ogsd')
-        assert isinstance(df, pd.DataFrame)
-        assert isinstance(df.index, pd.MultiIndex)
-        assert all(df.columns == ['value', 'OBS_STATUS', 'CONF_STATUS_OBS',
-                                  'DECIMALS', 'UNIT_MEASURE', 'UNIT_MULT',
-                                  'COLL_METHOD', 'TITLE'])
-
-        # Single series can be converted with attributes
-        s3 = sdmx.to_pandas(data.series[3], attributes='ogsd')
-        assert isinstance(s3, pd.DataFrame)
-        assert isinstance(s3.index, pd.MultiIndex)
-
-        # Values are in the first column
-        assert s3.iloc[0, 0] == 1.2894
-
-        # Access an attribute of the first value
-        assert s3.iloc[0, :]['OBS_STATUS'] == 'A'
-
     def test_write2pandas(self, msg):
         df = sdmx.to_pandas(msg, attributes='')
 

@@ -164,18 +164,6 @@ class BaseModel(pydantic.BaseModel):
         self.__dict__[name] = value
         self.__fields_set__.add(name)
 
-    # @classmethod
-    # def validate(cls, value):
-    #     if isinstance(value, dict):
-    #         return cls(**value)
-    #     elif isinstance(value, cls):
-    #         return value  # Changed: assign reference instead of value.copy()
-    #     elif cls.__config__.orm_mode:  # pragma: no cover
-    #         return cls.from_orm(value)
-    #     else:
-    #         with change_exception(DictError, TypeError, ValueError):
-    #             return cls(**dict(value))
-
 
 def get_class_hint(obj, attr):
     klass = get_type_hints(obj.__class__)[attr].__args__[0]

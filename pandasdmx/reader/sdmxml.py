@@ -939,11 +939,20 @@ class Reader(BaseReader):
 
     def parse_annotation(self, elem):
         values = self._parse(elem)
-        for attr in ('text', 'title', 'type', 'url'):
+
+        # Rename values from child elements: 'annotationurl' → 'url'
+        for tag in ('text', 'title', 'type', 'url'):
             try:
-                values[attr] = values.pop('annotation' + attr)
+                values[tag] = values.pop('annotation' + tag)
             except KeyError:
                 pass
+
+        # Optional 'id' attribute
+        try:
+            values['id'] = elem.attrib['id']
+        except KeyError:
+            pass
+
         return Annotation(**values)
 
     def parse_code(self, elem):
@@ -1080,8 +1089,12 @@ class Reader(BaseReader):
 
     def parse_attribute(self, elem):
         attrs = {k: elem.attrib[k] for k in ('id', 'urn')}
-        attrs['usage_status'] = UsageStatus[
-                                       elem.attrib['assignmentStatus'].lower()]
+        try:
+            attrs['usage_status'] = UsageStatus[
+                                    elem.attrib['assignmentStatus'].lower()]
+        except KeyError:
+            pass
+
         values = self._parse(elem)
         da = DataAttribute(
             concept_identity=values.pop('conceptidentity'),

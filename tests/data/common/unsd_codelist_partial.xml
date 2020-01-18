@@ -18,9 +18,10 @@
         </Code>
         <Code id="000_099_Y" urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=UNSD:CL_AGE_GROUP_SDG(1.0).000_099_Y">
           <Annotations xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">
-            <Annotation>
+            <Annotation id="A1">
               <AnnotationTitle>PresentationTitle</AnnotationTitle>
               <AnnotationText xml:lang="en">Total</AnnotationText>
+              <AnnotationText xml:lang="fr">Total</AnnotationText>
             </Annotation>
           </Annotations>
           <Name xml:lang="en" xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">All age ranges or no breakdown by age</Name>

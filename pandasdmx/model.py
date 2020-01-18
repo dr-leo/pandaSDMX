@@ -26,6 +26,7 @@ Details of the implementation:
 #   - Guess URNs using the standard format.
 
 from copy import copy
+from collections.abc import Collection, Iterable as IterableABC
 from datetime import date, datetime, timedelta
 from enum import Enum
 from inspect import isclass
@@ -98,13 +99,22 @@ class InternationalString:
     def __init__(self, value=None, **kwargs):
         super().__init__()
 
+        # Handle initial values according to type
         if isinstance(value, str):
+            # Bare string
             value = {DEFAULT_LOCALE: value}
-        elif isinstance(value, tuple) and len(value) == 2:
+        elif (isinstance(value, Collection) and len(value) == 2
+              and isinstance(value[0], str)):
+            # 2-tuple of str is (locale, label)
             value = {value[0]: value[1]}
+        elif isinstance(value, IterableABC):
+            # Iterable of 2-tuples
+            value = {locale: label for (locale, label) in value}
         elif value is None:
+            # Keyword arguments → dict, possibly empty
             value = dict(kwargs)
         elif isinstance(value, dict):
+            # dict; use directly
             pass
         else:
             raise ValueError(value, kwargs)
@@ -154,18 +164,17 @@ class InternationalString:
 
     @classmethod
     def __validate(cls, value, values, config, field):
+        # Any value that the constructor can handle can be assigned
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
 
-        # Maybe update existing value
         try:
+            # Update existing value
             existing = values[field.name]
-        except KeyError:
-            existing = None
-        if isinstance(existing, InternationalString):
             existing.localizations.update(value.localizations)
             return existing
-        else:
+        except KeyError:
+            # No existing value/None; return the assigned value
             return value
 
 

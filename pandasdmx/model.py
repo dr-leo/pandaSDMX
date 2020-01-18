@@ -962,12 +962,27 @@ class DataflowDefinition(StructureUsage, ConstrainableArtefact):
 
 # 5.4: Data Set
 
+def value_for_dsd_ref(kind, args, kwargs):
+    """Maybe replace a string 'value_for' in *kwargs* with a DSD reference."""
+    try:
+        dsd = kwargs.pop('dsd')
+        descriptor = getattr(dsd, kind + 's')
+        kwargs['value_for'] = descriptor.get(kwargs['value_for'])
+    except KeyError:
+        pass
+    return args, kwargs
+
+
 class KeyValue(BaseModel):
     """One value in a multi-dimensional :class:`Key`."""
     id: str
-
     #: The actual value.
     value: Any
+    value_for: Dimension = None
+
+    def __init__(self, *args, **kwargs):
+        args, kwargs = value_for_dsd_ref('dimension', args, kwargs)
+        super(KeyValue, self).__init__(*args, **kwargs)
 
     def __eq__(self, other):
         """Compare the value to a Python built-in type, e.g. str."""
@@ -990,16 +1005,6 @@ class KeyValue(BaseModel):
 TimeKeyValue = KeyValue
 
 
-def value_for_dsd_ref(args, kwargs):
-    """Maybe replace a string 'value_for' in *kwargs* with a DSD reference."""
-    try:
-        dsd = kwargs.pop('dsd')
-        kwargs['value_for'] = dsd.attributes.get(kwargs['value_for'])
-    except KeyError:
-        pass
-    return args, kwargs
-
-
 class AttributeValue(BaseModel):
     """SDMX-IM AttributeValue.
 
@@ -1012,7 +1017,7 @@ class AttributeValue(BaseModel):
     start_date: Optional[date]
 
     def __init__(self, *args, **kwargs):
-        args, kwargs = value_for_dsd_ref(args, kwargs)
+        args, kwargs = value_for_dsd_ref('attribute', args, kwargs)
         super(AttributeValue, self).__init__(*args, **kwargs)
 
     def __eq__(self, other):

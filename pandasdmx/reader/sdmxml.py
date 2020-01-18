@@ -3,6 +3,7 @@ from collections import defaultdict
 from copy import copy
 from inspect import isclass
 from itertools import chain
+import logging
 import re
 
 from lxml import etree
@@ -73,6 +74,9 @@ from pandasdmx.model import (
     )
 
 from pandasdmx.reader import BaseReader
+
+
+log = logging.getLogger(__name__)
 
 
 # Regular expression for URNs used as references
@@ -302,6 +306,14 @@ class Reader(BaseReader):
         self._stack = []
         self._index = {}
         self._current = {}
+
+        # With 'dsd' argument, the message should be structure-specific
+        self._structure_specific = dsd is not None
+        if self._structure_specific:
+            if 'StructureSpecific' not in root.tag:
+                log.warning('Ambiguous: dsd= argument for non-structure-'
+                            'specific message')
+            self._index[('DataStructureDefinition', dsd.id)] = dsd
 
         # Parse the tree
         values = self._parse(root)
@@ -746,8 +758,11 @@ class Reader(BaseReader):
             attrs['id'] = values['structure_id']
 
         if 'id' in attrs:
-            # Create the DSD and DFD
+            # Create or retrieve the DSD. NB if the dsd argument was provided
+            # to read_message(), this should be the same DSD
             dsd = self._maintained(DataStructureDefinition, **attrs)
+
+            # Create a DataflowDefinition
             dfd = DataflowDefinition(id=values.pop('structure_id'),
                                      structure=dsd)
 

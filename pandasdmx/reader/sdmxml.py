@@ -87,15 +87,14 @@ URN = re.compile(r'urn:sdmx:org\.sdmx\.infomodel'
 
 
 # XML namespaces
+_base_ns = 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1'
 NS = {
-    'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
-    'data': ('http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/'
-             'structurespecific'),
-    'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-    'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-    'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
-    'footer':
-        'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer',
+    'com': f'{_base_ns}/common',
+    'data': f'{_base_ns}/data/structurespecific',
+    'str': f'{_base_ns}/structure',
+    'mes': f'{_base_ns}/message',
+    'gen': f'{_base_ns}/data/generic',
+    'footer': f'{_base_ns}/message/footer',
     'xml': 'http://www.w3.org/XML/1998/namespace',
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     }
@@ -275,9 +274,6 @@ class Reader(BaseReader):
     dsd : :class:`~.DataStructureDefinition`
         For “structure-specific” `format`=``XML`` messages only.
     """
-    # TODO subclass the main reader for StructureSpecific*Data messages to
-    #      avoid branching
-
     # State variables for reader
 
     # Stack (0 = top) of tag names being parsed by _parse().
@@ -468,14 +464,7 @@ class Reader(BaseReader):
                 raise XMLParseError(self, child) from e
 
             # Add objects with IDs to the appropriate index
-            for r in result:
-                if isinstance(r, MaintainableArtefact) and not \
-                        r.is_external_reference:
-                    # Global index for MaintainableArtefacts
-                    self._index[(r.__class__.__name__, r.id)] = r
-                elif isinstance(r, IdentifiableArtefact):
-                    # Current scope index for IdentifiableArtefacts
-                    self._current[(r.__class__, r.id)] = r
+            self._add_to_index(result)
 
             # Store the parsed elements
             results[tag_name.lower()].extend(result)
@@ -489,6 +478,17 @@ class Reader(BaseReader):
                        results.items()}
 
         return results
+
+    def _add_to_index(self, items):
+        """Add objects with IDs to the appropriate index."""
+        for item in items:
+            if isinstance(item, MaintainableArtefact) and not \
+                    item.is_external_reference:
+                # Global index for MaintainableArtefacts
+                self._index[(item.__class__.__name__, item.id)] = item
+            elif isinstance(item, IdentifiableArtefact):
+                # Current scope index for IdentifiableArtefacts
+                self._current[(item.__class__, item.id)] = item
 
     def _maintained(self, cls=None, id=None, urn=None, match_subclass=False,
                     **kwargs):
@@ -782,17 +782,23 @@ class Reader(BaseReader):
         return f
 
     def parse_dataset(self, elem):
-        values = self._parse(elem, unwrap=False)
-        # Store groups
-        ds = DataSet(group={g: [] for g in values.pop('group', [])})
-
-        # Attributes
+        # Attributes: structure reference to a DSD
         for attr in ['structureRef', qname('data', 'structureRef')]:
             if attr in elem.attrib:
                 structure_ref = elem.attrib[attr]
                 break
-        ds.structured_by = self._maintained(DataStructureDefinition,
-                                            structure_ref)
+
+        # Create or retrieve (structure-specific message) the DSD
+        dsd = self._maintained(DataStructureDefinition, structure_ref)
+        # Add DSD contents to the indices for use in recursive parsing
+        self._add_to_index(indexables_from_dsd(dsd))
+
+        ds = DataSet(structured_by=dsd)
+
+        values = self._parse(elem, unwrap=False)
+
+        # Process groups
+        ds.group = {g: [] for g in values.pop('group', [])}
 
         # Process series
         for series_key, obs_list in values.pop('series', []):
@@ -1256,3 +1262,18 @@ class Reader(BaseReader):
         values['text'] = [InternationalString(values['text'])]
         values['code'] = elem.attrib['code']
         return values
+
+
+def indexables_from_dsd(dsd):
+    """Return indexable items from a DSD."""
+    # Properties of the DSD itself
+    yield from filter(None, (
+        dsd.attributes,
+        dsd.dimensions,
+        dsd.measures,
+        dsd.group_dimensions,
+    ))
+
+    # Components of the attributes
+    yield from dsd.attributes.components
+    yield from dsd.dimensions.components

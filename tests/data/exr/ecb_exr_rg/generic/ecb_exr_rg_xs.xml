@@ -86,7 +86,7 @@
 				<generic:Value value="2010-08" id="TIME_PERIOD"/>
 			</generic:SeriesKey>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="CHF"/>
+				<generic:ObsDimension id="CURRENCY" value="CHF"/>
 				<generic:ObsValue value="1.3413"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -94,7 +94,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="GBP"/>
+				<generic:ObsDimension id="CURRENCY" value="GBP"/>
 				<generic:ObsValue value="0.82363"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -102,7 +102,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="JPY"/>
+				<generic:ObsDimension id="CURRENCY" value="JPY"/>
 				<generic:ObsValue value="110.04"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -110,7 +110,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="USD"/>
+				<generic:ObsDimension id="CURRENCY" value="USD"/>
 				<generic:ObsValue value="1.2894"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -127,7 +127,7 @@
 				<generic:Value value="2010-09" id="TIME_PERIOD"/>
 			</generic:SeriesKey>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="CHF"/>
+				<generic:ObsDimension id="CURRENCY" value="CHF"/>
 				<generic:ObsValue value="1.3809"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -135,7 +135,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="GBP"/>
+				<generic:ObsDimension id="CURRENCY" value="GBP"/>
 				<generic:ObsValue value="0.83987"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -143,7 +143,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="JPY"/>
+				<generic:ObsDimension id="CURRENCY" value="JPY"/>
 				<generic:ObsValue value="110.26"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -151,7 +151,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="USD"/>
+				<generic:ObsDimension id="CURRENCY" value="USD"/>
 				<generic:ObsValue value="1.3067"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -168,7 +168,7 @@
 				<generic:Value value="2010-08" id="TIME_PERIOD"/>
 			</generic:SeriesKey>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="CHF"/>
+				<generic:ObsDimension id="CURRENCY" value="CHF"/>
 				<generic:ObsValue value="1.3452"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -176,7 +176,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="GBP"/>
+				<generic:ObsDimension id="CURRENCY" value="GBP"/>
 				<generic:ObsValue value="0.87637"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -184,7 +184,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="JPY"/>
+				<generic:ObsDimension id="CURRENCY" value="JPY"/>
 				<generic:ObsValue value="113.67"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>
@@ -192,7 +192,7 @@
 				</generic:Attributes>
 			</generic:Obs>
 			<generic:Obs>
-				<generic:ObsDimension id="CURRENY" value="USD"/>
+				<generic:ObsDimension id="CURRENCY" value="USD"/>
 				<generic:ObsValue value="1.3898"/>
 				<generic:Attributes>
 					<generic:Value value="A" id="OBS_STATUS"/>

@@ -227,9 +227,9 @@ def test_write_dataset_datetime():
 
     # Write with datetime=True fails because the data message contains no
     # actual structure information
-    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[.*\]'):
         sdmx.to_pandas(ds, datetime=True)
-    with pytest.raises(ValueError, match=r'no TimeDimension in \[\]'):
+    with pytest.raises(ValueError, match=r'no TimeDimension in \[.*\]'):
         sdmx.to_pandas(data_msg, datetime=True)
 
     # Attaching the DSD to the DataSet allows write_dataset to infer the

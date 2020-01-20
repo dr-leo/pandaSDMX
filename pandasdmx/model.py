@@ -486,6 +486,8 @@ class Component(IdentifiableArtefact):
 class ComponentList(IdentifiableArtefact):
     components: List[Component] = []
 
+    auto_order = 1
+
     # Convenience access to the components
     def append(self, value):
         self.components.append(value)
@@ -513,6 +515,16 @@ class ComponentList(IdentifiableArtefact):
                 return c
 
         # No match; store and return the candidate
+
+        if 'order' not in kwargs:
+            # For automatically created dimensions, give a serial value to the
+            # order property
+            try:
+                candidate.order = self.auto_order
+                self.auto_order += 1
+            except ValueError:
+                pass
+
         self.components.append(candidate)
         return candidate
 
@@ -1059,9 +1071,19 @@ class Key(BaseModel):
                 raise ValueError("Key() accepts either a single argument, or "
                                  "keyword arguments; not both.")
             kwargs.update(arg)
+
+        # DimensionDescriptor
         self.described_by = kwargs.pop('described_by', None)
+
+        # Convert keyword arguments to KeyValues
         for id, value in kwargs.items():
-            self.values[id] = KeyValue(id=id, value=value)
+            kv = KeyValue(id=id, value=value)
+            try:
+                # Reference a Dimension from the DimensionDescriptor
+                kv.value_for = self.described_by.get(id)
+            except AttributeError:
+                pass
+            self.values[id] = kv
 
     def __len__(self):
         """The length of the Key is the number of KeyValues it contains."""
@@ -1195,6 +1217,7 @@ class Observation(BaseModel):
     @property
     def attrib(self):
         """Return a view of combined observation, series & group attributes."""
+        print(self.attached_attribute)
         view = self.attached_attribute.copy()
         view.update(getattr(self.series_key, 'attrib', {}))
         for gk in self.group_keys:

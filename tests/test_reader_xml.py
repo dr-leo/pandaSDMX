@@ -53,8 +53,10 @@ def test_read_ss_xml():
     # Structures referenced in the dataset are from the dsd
 
     s0_key = list(ds.series.keys())[0]
+
     # AttributeValue.value_for
-    assert s0_key.attrib['DECIMALS'].value_for in dsd.attributes
+    assert s0_key.attrib['DECIMALS'].value_for \
+        is dsd.attributes.get('DECIMALS')
 
     # SeriesKey.described_by
     assert s0_key.described_by is dsd.dimensions
@@ -63,4 +65,10 @@ def test_read_ss_xml():
     assert ds.obs[0].key.described_by is dsd.dimensions
 
     # KeyValue.value_for
-    assert ds.obs[0].key.values[0].value_for in dsd.dimensions
+    assert ds.obs[0].key.values[0].value_for \
+        is dsd.dimensions.get('FREQ')
+
+    # DSD information that is not in the data message can be looked up through
+    # navigating object relationships
+    TIME_FORMAT = s0_key.attrib['TIME_FORMAT'].value_for
+    assert len(TIME_FORMAT.related_to.dimensions) == 5

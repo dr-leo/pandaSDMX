@@ -63,7 +63,6 @@ from pandasdmx.model import (
     MemberSelection,
     MemberValue,
     Key,
-    KeyValue,
     Observation,
     PrimaryMeasure,
     ProvisionAgreement,
@@ -136,11 +135,6 @@ COLLECT = {
             ('(mes:Structure/com:Structure/Ref/@version | '
              'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
         'structure_ref_urn': 'mes:Structure/com:Structure/URN/text()',
-        },
-    'obs': {
-        'dimension': 'gen:ObsDimension/@value',
-        'value': 'gen:ObsValue/@value',
-        'attribs': 'gen:Attributes',
         },
     }
 
@@ -462,6 +456,8 @@ class Reader(BaseReader):
             except Exception as e:
                 # Other exception, convert to XMLParseError
                 raise XMLParseError(self, child) from e
+                # NOTE to debug, use:
+                # raise e
 
             # Add objects with IDs to the appropriate index
             self._add_to_index(result)
@@ -610,7 +606,7 @@ class Reader(BaseReader):
             if k[0] is cls:
                 results.append(obj)
 
-        assert len(results) == 1
+        assert len(results) == 1, results
         return results[0]
 
     def _clear_current(self, scope):
@@ -734,9 +730,11 @@ class Reader(BaseReader):
 
     def parse_attributes(self, elem):
         result = {}
+
+        ad = self._get_current(AttributeDescriptor)
         for e in elem.iterchildren():
-            da = DataAttribute(id=e.attrib['id'])
-            av = AttributeValue(value_for=da, value=e.attrib['value'])
+            da = ad.get(e.attrib['id'])
+            av = AttributeValue(value=e.attrib['value'], value_for=da)
             result[da.id] = av
         return result
 
@@ -792,6 +790,7 @@ class Reader(BaseReader):
         dsd = self._maintained(DataStructureDefinition, structure_ref)
         # Add DSD contents to the indices for use in recursive parsing
         self._add_to_index(indexables_from_dsd(dsd))
+        self._current[(DataStructureDefinition, None)] = dsd
 
         ds = DataSet(structured_by=dsd)
 
@@ -864,10 +863,13 @@ class Reader(BaseReader):
             'Key': DataKey,  # for DataKeySet
             }[QName(elem).localname]
         if cls is not DataKey:
+            dd = self._get_current(DimensionDescriptor)
+
             # Most data: the value is specified as an XML attribute
             kv = {e.attrib['id']: e.attrib['value'] for e in
                   elem.iterchildren()}
-            return cls(**kv)
+
+            return cls(**kv, described_by=dd)
         else:
             # <str:DataKeySet> and <str:CubeRegion>: the value(s) are specified
             # with a <com:Value>...</com:Value> element.
@@ -880,19 +882,28 @@ class Reader(BaseReader):
                        key_value=kvs)
 
     def parse_obs(self, elem):
-        # TODO handle key-values as attribs
         values = self._parse(elem)
+
+        dd = self._get_current(DimensionDescriptor)
+
+        # Attached attributes
+        aa = values.pop('attributes', {})
+
+        if 'obskey' in values:
+            key = values.pop('obskey')
+        elif 'obsdimension' in values:
+            od = values.pop('obsdimension')
+            assert len(self._obs_dim) == 1
+            dim = self._obs_dim[0].id
+            if len(od) == 2:
+                assert od['id'] == dim, (values, dim)
+            key = Key(**{dim: od['value']}, described_by=dd)
+
         if len(values):
-            key = (values['obskey'] if 'obskey' in values else
-                   values['obsdimension'])
-            if 'obsdimension' in values:
-                new_key = Key()
-                new_key[key.id] = key
-                key = new_key
-            obs = Observation(dimension=key, value=values['obsvalue'],
-                              attached_attribute=values.get('attributes', {}))
+            value = values.pop('obsvalue')
         else:
-            # StructureSpecificData message
+            # StructureSpecificData message—all information stored as XML
+            # attributes of the <Observation>.
             attr = copy(elem.attrib)
 
             # Value of the observation
@@ -905,26 +916,23 @@ class Reader(BaseReader):
                 # Use the 'dimension at observation' specified for the message
                 dims = map(lambda d: d.id, self._obs_dim)
 
-            # Create the observation, consuming attr for the key
-            obs = Observation(dimension=Key(**{d: attr.pop(d) for d in dims}),
-                              value=value)
+            key = Key(**{d: attr.pop(d) for d in dims}, described_by=dd)
 
             # Remaining attr members are SDMX DataAttributes
-            for id, value in attr.items():
-                da = DataAttribute(id=id)
-                av = AttributeValue(value_for=da, value=value)
-                obs.attached_attribute[da.id] = av
+            ad = self._get_current(AttributeDescriptor)
+            for a_id, a_value in attr.items():
+                aa[a_id] = AttributeValue(value=a_value,
+                                          value_for=ad.get(a_id))
 
-        return obs
+        assert len(values) == 0, values
+        return Observation(dimension=key, value=value, attached_attribute=aa)
 
     def parse_obsdimension(self, elem):
-        attr = copy(elem.attrib)
-        args = dict(value=attr.pop('value'))
-        args['id'] = attr.pop('id', self._obs_dim[0].id)
-        assert len(attr) == 0
-        return KeyValue(**args)
+        assert set(elem.attrib.keys()) <= {'id', 'value'}
+        return copy(elem.attrib)
 
     def parse_obsvalue(self, elem):
+        assert len(elem.attrib) == 1, elem.attrib
         return elem.attrib['value']
 
     def parse_series(self, elem):
@@ -1266,14 +1274,18 @@ class Reader(BaseReader):
 
 def indexables_from_dsd(dsd):
     """Return indexable items from a DSD."""
-    # Properties of the DSD itself
-    yield from filter(None, (
-        dsd.attributes,
-        dsd.dimensions,
-        dsd.measures,
-        dsd.group_dimensions,
-    ))
-
-    # Components of the attributes
+    # AttributeDescriptor and DataAttributes
+    yield dsd.attributes
     yield from dsd.attributes.components
+
+    # DimensionDescriptor and *Dimensions
+    yield dsd.dimensions
     yield from dsd.dimensions.components
+
+    if dsd.measures:
+        yield dsd.measures
+        yield from dsd.measures.components
+
+    if dsd.group_dimensions:
+        yield dsd.group_dimensions
+        yield from dsd.group_dimensions.components

@@ -326,26 +326,38 @@ Item.update_forward_refs()
 
 
 class ItemScheme(MaintainableArtefact):
-    """Item Scheme.
+    """SDMX-IM Item Scheme.
 
-    This class implements the IM class of the same name. Callers should use the
-    below methods rather than access the ìtems attribute. The latter is
-    currently a dict. But this may change in future versions. Items can be
-    accessed via their id attribute as specified in the IM. Both item and
-    attribute  syntax is supported as well as iteration over the items.
-    Items can be added in a list-like fashion using :meth:`append` and
-    :meth:`extend`.
+    The IM states that ItemScheme “defines a *set* of :class:`Items <.Item>`…”
+    To simplify indexing/retrieval, this implementation uses a :class:`dict`
+    for the :attr:`items` attribute, in which the keys are the
+    :attr:`~.IdentifiableArtefact.id` of the Item.
 
-    .. todo::
+    Because this may change in future versions of pandaSDMX, user code should
+    not access :attr:`items` directly. Instead, use the :func:`getattr` and
+    indexing features of ItemScheme, or the public methods, to access and
+    manipulate Items:
 
-       - Delete method for items
-       - Allow :meth:`extend` to be passed an ItemScheme instance or subclass.
-       - Verify field validation for subclasses (validation may currently be
-         limited to ItemScheme rather than the subclass)
-       - Add sorting feature, e.g., when new items have been inserted.
+    >>> foo = ItemScheme(id='foo')
+    >>> bar = Item(id='bar')
+    >>> foo.append(bar)
+    >>> foo
+    <ItemScheme: 'foo', 1 items>
+    >>> (foo.bar is bar) and (foo['bar'] is bar) and (bar in foo)
+    True
+
     """
+    # TODO add delete()
+    # TODO add sorting capability; perhaps sort when new items are inserted
+
     is_partial: Optional[bool]
+
+    # Internal: the type of the Items in the ItemScheme.
     _item_type = Item
+
+    #: Members of the ItemScheme. Both ItemScheme and Item are abstract
+    #: classes. Concrete classes are paired: for example, a
+    #: :class:`.Codelist` contains :class:`Codes <.Code>`.
     items: Dict[str, _item_type] = {}
 
     @validator('items', pre=True, whole=True)
@@ -363,10 +375,12 @@ class ItemScheme(MaintainableArtefact):
         return self.items[name]
 
     def __contains__(self, item: Union[str, _item_type]):
-        """Check containment. No recursive
-        search on children is performed as
-        these are assumed to be items themselves.
-        Allow searching by Item or its id attribute."""
+        """Check containment.
+
+        No recursive search on children is performed as these are assumed to be
+        included in :attr:`items`. Allow searching by Item or its id
+        attribute.
+        """
         if isinstance(item, str):
             return item in self.items
         return item in self.items.values()
@@ -375,12 +389,27 @@ class ItemScheme(MaintainableArtefact):
         return iter(self.items.values())
 
     def extend(self, items: Iterable[_item_type]):
+        """Extend the ItemScheme with members of *items*.
+
+        Parameters
+        ----------
+        items : iterable of :class:`.Item`
+            Elements must be of the same class as :attr:`items`.
+        """
+        # TODO enhance to accept an ItemScheme
         self.items.update({i.id: i for i in items})
 
     def __len__(self):
         return len(self.items)
 
-    def append(self, item):
+    def append(self, item: Item):
+        """Add *item* to the ItemScheme.
+
+        Parameters
+        ----------
+        item : same class as :attr:`items`
+            Item to add.
+        """
         self.items[item.id] = item
 
     def __repr__(self):
@@ -395,11 +424,11 @@ class ItemScheme(MaintainableArtefact):
         The returned object is a reference to an object in the ItemScheme, and
         is of the appropriate class.
         """
-        if obj:
-            assert not len(kwargs), ValueError('cannot give both *obj* and '
-                                               'keyword arguments to '
-                                               'setdefault()')
-        else:
+        if obj and len(kwargs):
+            raise ValueError('cannot give both *obj* and keyword arguments to '
+                             'setdefault()')
+
+        if not obj:
             # Replace a string 'parent' ID with a reference to the object
             parent = kwargs.pop('parent', None)
             if isinstance(parent, str):
@@ -848,12 +877,14 @@ class DimensionDescriptor(ComponentList):
         key : :class:`Key` or :class:`GroupKey` or :class:`SeriesKey`
         """
         dd = cls()
-        for id, kv in key.values.items():
+        for order, (id, kv) in enumerate(key.values.items()):
             cl = Codelist(id=id)
             cl.append(Code(id=kv.value))
-            d = Dimension(id=id,
-                          local_representation=Representation(enumerated=cl))
-            dd.components.append(d)
+            dd.components.append(Dimension(
+                id=id,
+                local_representation=Representation(enumerated=cl),
+                order=order,
+            ))
         return dd
 
 

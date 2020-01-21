@@ -3,7 +3,6 @@
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeValue,
-    ConceptScheme,
     ContentConstraint,
     ConstraintRole,
     ConstraintRoleType,
@@ -13,18 +12,14 @@ from pandasdmx.model import (
     DataStructureDefinition,
     DataflowDefinition,
     Dimension,
+    DimensionDescriptor,
     Item,
+    ItemScheme,
     Key,
     Observation,
     )
 import pydantic
 from pytest import raises
-
-
-def test_itemscheme_setdefault():
-    # Setting works even if the 'items' trait has not been initialized
-    cs = ConceptScheme()
-    cs.setdefault(id='FOO')
 
 
 def test_contentconstraint():
@@ -51,10 +46,27 @@ def test_datastructuredefinition():
     d = dsd.dimension(id='baz', order=-1)
     assert isinstance(d, Dimension)
 
+    # from_keys()
+    key1 = Key(foo=1, bar=2, baz=3)
+    key2 = Key(foo=4, bar=5, baz=6)
+    dsd.from_keys([key1, key2])
+
 
 def test_dimension():
     # Constructor
     Dimension(id='CURRENCY', order=0)
+
+
+def test_dimensiondescriptor():
+    # from_key()
+    key1 = Key(foo=1, bar=2, baz=3)
+    dd = DimensionDescriptor.from_key(key1)
+
+    # Key in reverse order
+    key2 = Key(baz=3, bar=2, foo=1)
+    assert list(key1.values.keys()) == list(reversed(key2.values.keys()))
+    key3 = dd.order_key(key2)
+    assert list(key1.values.keys()) == list(key3.values.keys())
 
 
 def test_internationalstring():
@@ -117,6 +129,7 @@ def test_internationalstring():
 
 
 def test_item():
+    # Add a tree of 10 items
     items = []
     for i in range(10):
         items.append(Item(id='Foo {}'.format(i)))
@@ -125,7 +138,81 @@ def test_item():
             items[-1].parent = items[-2]
             items[-2].child.append(items[-1])
 
+    # __init__(parent=...)
+    Item(id='Bar 1', parent=items[0])
+    assert len(items[0].child) == 2
+
+    # __init__(child=)
+    bar2 = Item(id='Bar 2', child=[items[0]])
+
+    # __contains__()
+    assert items[0] in bar2
     assert items[-1] in items[0]
+
+    # get_child()
+    assert items[0].get_child('Foo 1') == items[1]
+
+    with raises(ValueError):
+        items[0].get_child('Foo 2')
+
+
+def test_itemscheme():
+    is0 = ItemScheme(id='is0')
+    foo0 = Item(id='foo0')
+
+    # With a single Item
+
+    # append()
+    is0.append(foo0)
+
+    # __getattr__
+    assert is0.foo0 is foo0
+
+    # __getitem__
+    assert is0['foo0'] is foo0
+
+    # __contains__
+    assert 'foo0' in is0
+    assert foo0 in is0
+
+    # __len__
+    assert len(is0) == 1
+
+    # __repr__
+    assert repr(is0) == "<ItemScheme: 'is0', 1 items>"
+
+    # __iter__
+    assert all(i is foo0 for i in is0)
+
+    # With multiple Items
+
+    foo1 = Item(id='foo1')
+    foo2 = Item(id='foo2')
+    items_list = [foo0, foo1, foo2]
+    items_dict = {'foo0': foo0, 'foo1': foo1, 'foo2': foo2}
+
+    # set with a non-dict
+    is0.items = items_list
+    assert is0.items == items_dict
+
+    # set with a dict
+    is0.items = items_dict
+    assert is0.items == items_dict
+
+    # extend()
+    is0.items = [foo0]
+    is0.extend(items_list)
+    assert is0.items == items_dict
+
+    # setdefault()
+    bar0 = is0.setdefault(id='bar')
+    assert bar0.id == 'bar'
+
+    with raises(ValueError):
+        is0.setdefault(foo0, id='bar')
+
+    is0.setdefault(id='bar1', parent='foo0')
+    is0.setdefault(id='bar1', parent=foo0)
 
 
 def test_key():

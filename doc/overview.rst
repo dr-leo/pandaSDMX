@@ -1,25 +1,44 @@
-.. _sdmx-tour:
+Overview of SDMX
+****************
 
-A short introduction to SDMX
-============================
+Extensive information on SDMX, including learning material, is available in multiple places on the Internet.
+:ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information
+This overview page provides notes to help explain *how* :mod:`pandaSDMX` implements the standards, in order to help you make use of it.
+
+.. _resources:
+
+Other resources
+===============
+
+If you want to learn about SDMX *in general*, please make use of the following resources—and offer feedback to help improve them!
+
+- Wikipedia's `SDMX page <https://en.wikipedia.org/wiki/SDMX>`_ page gives a simple summary in 6 languages.
+- Eurostat's `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
+- The SDMX website includes both `the authoritative standards <https://sdmx.org/?page_id=5008>`_ and `many detailed guidelines <https://sdmx.org/?page_id=4345>`_ for their use.
+  In particular, see `Section 2 — Information Model <http://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf>`_.
+
+- The GitHub organization of the `SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_ hosts other standards information, such as the `Section 7 — REST web service <https://github.com/sdmx-twg/sdmx-rest>`_ standard.
+- The European Central Bank `SDMX REST service help pages <https://sdw-wsrest.ecb.europa.eu/help/>`_ give many examples.
+- `SDMXSource <http://www.sdmxsource.org>`_ provides reference implementations of SDMX in Java, .NET and ActionScript.
 
 .. contents::
-   :local:
    :backlinks: none
 
-Overall purpose
----------------
 
-`SDMX <http://www.sdmx.org>`_ (short for: Statistical Data and Metadata eXchange) is a set of `standards and guidelines <http://sdmx.org/?cat=5>`_ aimed at facilitating the production, dissemination, retrieval, and processing of statistical data and metadata.
-SDMX is sponsored by a wide range of public institutions including the UN, the IMF, the Worldbank, BIS, ILO, FAO, the OECD, the ECB, Eurostat, and a number of national statistics offices.
-These and other institutions provide a vast array of current and historic data sets and metadata sets via free or fee-based REST and SOAP web services.
-pandaSDMX only supports SDMX v2.1, that is, the latest version of this standard.
-Some agencies such as the ILO and WHO still offer SDMX 2.0-compliant services.
-These cannot be accessed by pandaSDMX.
-It is expected that most SDMX providers will ultimately upgrade to the latest version of the standard.
+Standards versions
+==================
 
-Information model
------------------
+:mod:`pandaSDMX` supports the SDMX version 2.1, the latest.
+SDMX 2.0 and 1.0 were released previously.
+
+Some agencies offer :ref:`web-service` that give users the option to retrieve data in SDMX 2.1 *or* 2.0 formats.
+Others *only* provide SDMX 2.0-formatted data; these services cannot be used with :mod:`pandaSDMX`.
+
+
+.. _im:
+
+The SDMX Information Model (IM)
+===============================
 
 At its core, SDMX defines an :index:`information model` consisting of a set of :index:`classes`, their logical relations, and semantics.
 There are classes defining things like data sets, metadata sets, data and metadata structures, processes, organisations and their specific roles to name but a few.
@@ -31,7 +50,7 @@ And a more efficient JSON-variant called SDMXJSON is being standardised by the
 The following sections briefly introduces some key elements of the information model.
 
 Data sets
-:::::::::
+---------
 
 a :index:`data set` can broadly be described as a
 container of ordered :index:`observations` and :index:`attributes` attached to them. Observations (e.g. the annual unemployment rate) are classified
@@ -56,7 +75,7 @@ serve as a convenient attachment point for attributes. Hence, a given attribute 
 within the group at once. Attributes may finally be attached to the entire data set, i.e. to all series/observations therein.
 
 Structural metadata: data structure definition, concept scheme, and code list
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-----------------------------------------------------------------------------
 
 In the above section on data sets, we have carelessly used structural terms such as dimension, dimension value and
 attachment of attributes. This is because it is almost impossible to talk about data sets without talking about their structure. The information model
@@ -72,7 +91,7 @@ The set of allowed observation values such as the unemployment rate measured in 
 defined by a special dimension called :index:`MeasureDimension`.
 
 Dataflow definition
-:::::::::::::::::::
+-------------------
 
 A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD),
 how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
@@ -90,7 +109,7 @@ dataflow ID. For instance, in the frontpage example we used the dataflow ID 'une
 
 
 Constraints
-:::::::::::
+-----------
 
 Constraints are a mechanism to specify a subset of
 keys from the set of possible combinations of keys
@@ -121,7 +140,7 @@ data set generation. However, pandaSDMX does support attributes in the informati
 and when exporting data sets to pandas.
 
 Category schemes and categorisations
-::::::::::::::::::::::::::::::::::::
+------------------------------------
 
 Categories serve to classify or categorise things like dataflows, e.g., by subject matter.
 Multiple categories may belong to a container called :index:`CategorySchemes`.
@@ -130,7 +149,7 @@ A :index:`Categorisation` links the thing to be
 categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
 
 Class hierarchy
-:::::::::::::::::
+---------------
 
 The SDMX information model defines a number of abstract base classes from which subclasses
 such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` are derived.
@@ -140,33 +159,141 @@ agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, 
 ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes full advantage from
 this class hierarchy.
 
-Implementations of the information model
-----------------------------------------
 
-Background
-::::::::::
+The SDMX Information Model (IM) 2
+=================================
 
-There are two implementations of the information model:
+:mod:`pandasdmx.model` implements the SDMX Information Model (SDMX-IM).
+The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF format); this page gives a
+brief overview of the SDMX-IM classes as they appear in :mod:`pandaSDMX`.
 
-* SDMXML is XML-based. It is fully standardised and covers the
-  complete information model. However, it is a bit heavy-weight and data providers
-  are gradually shifting to the JSON flavor currently in the works.
-* `SDMXJSON <https://github.com/sdmx-twg/sdmx-json>`_:
-  This recent JSON-based implementation is more lightweight and efficient.
-  While standardisation is in an advanced stage, structure-messages are not yet covered. Data messages work well
-  though, and pandaSDMX supports them as from v0.5.
+.. _sdmx-im: https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
+
+Abstract classes and data types
+-------------------------------
+
+.. currentmodule:: pandasdmx.model
+
+Many classes inherit from one of the following classes.
+For example, a :class:`Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
+The API reference for :mod:`pandasdmx.model` shows the parent classes for each class.
+
+- An :class:`IdentifiableArtefact` has an :attr:`id <IdentifiableArtefact.id>`,
+  :attr:`URI <IdentifiableArtefact.uri>`, and
+  :attr:`URN <IdentifiableArtefact.urn>`.
+
+  - The ``id`` uniquely identifies the object against others of the same type in
+    a SDMX message.
+  - The URI and URN are *globally* unique. See `Wikipedia <https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#URLs_and_URNs>`_ for a
+    discussion of the differences between the two.
+
+- A :class:`NameableArtefact` has a :attr:`name <NameableArtefact.name>` and
+  :attr:`description <NameableArtefact.description>`. It is identifiable; this
+  means that it *also* has the `id`, `uri`, and `urn` attributes of a
+  ``NameableArtefact``.
+- A :class:`VersionableArtefact` has a
+  :attr:`version <VersionableArtefact.version>` number and may be valid between
+  certain times (:attr:`valid_from <VersionableArtefact.valid_from>`,
+  :attr:`valid_to <VersionableArtefact.valid_to>`). It is nameable *and*
+  identifiable.
+- A :class:`MaintainableArtefact` is under the authority of a particular
+  :attr:`maintainer <MaintainableArtefact.maintainer>`. In an SDMX message,
+  a maintainable object might not be given in full; only as a reference (with
+  :attr:`is_external_reference <MaintainableArtefact.is_external_reference>`
+  set to True). If so, it might have a :attr:`structure_url
+  <MaintainableArtefact.structure_url>`, where the maintainer provides more
+  information about the object. It is versionable, nameable, and identifiable.
+
+Because SDMX is used worldwide, an :class:`InternationalString` type is used in
+the IM—for instance, the `name` of a Nameable object is an
+``InternationalString``, with zero or more :attr:`localizations <InternationalString.localizations>` in different locales.
+
+.. [1] Indirectly, through :class:`Item`.
+
+Data
+----
+
+- The base :class:`DataSet` class is an unordered collection of
+  :class:`Observation`. Each `Observation` is a single datum.
+
+- :class:`Key`, :class:`SeriesKey`, :class:`GroupKey`.
+
+Metadata: attributes
+--------------------
+
+- :class:`AttributeValue`.
+- :class:`DataAttribute`.
+
+
+Items and schemes
+-----------------
+
+- :class:`Item`.
+- :class:`ItemScheme`.
+- :class:`CategoryScheme`, :class:`ConceptScheme`, :class:`Codelist`.
+
+Data structure and flow
+-----------------------
+
+- :class:`Dimension`, :class:`DimensionDescriptor`.
+- :class:`AttributeDescriptor`.
+- :class:`DataStructureDefinition`.
+- :class:`DataflowDefinition`.
+
+
+.. _formats:
+
+Formats
+=======
+
+The :ref:`IM <im>` provides terms and concepts for data and metadata, but does not specify *how that (meta)data is stored or represented*.
+The SDMX standards include multiple ways to store data, in the following formats:
 
 SDMX-ML
-:::::::
+    Based on eXtensible Markup Language (XML).
+    SDMX-ML provides a *complete* specification: it can represent every class and property in the IM.
 
-The SDMX standard defines an XML-based implementation of the information model called :index:`SDMXML`.
-An SDMXML document contains exactly one SDMX :index:`Message`. There are several types of Message such as
+    Reference: https://sdmx.org/?page_id=5008
+
+    - An SDMX-ML document contains exactly one Message.
+      See :mod:`pandaSDMX.message` for the different types of Messages and their component parts.
+    - See :mod:`.reader.sdmxml`.
+
+SDMX-JSON
+    Based on JavaScript Object Notation (JSON).
+    The SDMX-JSON format is only defined for data, not metadata.
+
+    Reference: https://github.com/sdmx-twg/sdmx-json
+
+    - See :mod:`.reader.sdmxjson`.
+
+    .. versionadded:: 0.5
+
+       Support for SDMX-JSON.
+
+SDMX-CSV
+    Based on Comma-Separated Value (CSV).
+    Like SDMX-JSON, the SDMX-CSV format are only defined for data, not metadata.
+
+    Reference: https://github.com/sdmx-twg/sdmx-csv
+
+    pandaSDMX **does not** currently support SDMX-CSV.
+
+pandaSDMX:
+
+- reads all kinds of SDMX-ML and SDMX-JSON messages.
+- contains, in the `tests/data/ <https://github.com/dr-leo/pandaSDMX/tree/master/tests/data>`_ source directory, specimens of messages in both data formats.
+  These are used by the test suite to check that the code functions as intended, but can also be viewed to understand the data formats.
+
+SDMX-ML
+-------
+
+There are several types of Message such as
 :index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing
 all the information required to interpret it. Hence, data sets in generic representation may be used without
 knowing the related :index:`DataStructureDefinition`. The downside is that generic data set messages are
 much larger than their sister format :index:`StructureSpecificdata set`. pandaSDMX has always supported generic
-data set messages. In v0.8, support for structure-specific
-data messages was aded. SDMX-JSON messages can be consumed as well.
+data set messages.
 
 The term 'structure-specific dataset' reflects the fact that in order to interpret such
 dataset, one needs to know the datastructure definition (DSD). Otherwise, it would be impossible
@@ -182,52 +309,24 @@ Finally, SDMXML messages may contain a :index:`Footer` element. It provides info
 that have occurred on the server side, e.g., if the requested data set exceeds the size limit, or the server needs
 some time to make it available under a given link.
 
-The test suite comes with a number of small SDMXML demo files. View them in your favorite
-XML editor to get a deeper understanding of the structure and content of various message types.
-
 SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX does not
 yet support validation.
 
-SDMX-JSON
-:::::::::
 
-`SDMXJSON <https://github.com/sdmx-twg/sdmx-json>`_ represents SDMX data sets and related metadata as
-JSON files provided by RESTful web services. Early adopters of this format are OECD, ECB and IMF. As of v0.5, pandaSDMX
-supports the OECD's REST interface for SDMXJSON. However, note that
-structural metadata is not yet fully standardised. Hence, it is impossible at
-this stage to download dataflow definitions, codelists etc. from ABS (Australia) and OECD.
+.. _web-service:
 
+Web services
+============
 
-SDMX web services
------------------
+The SDMX standard defines both `REST <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ and `SOAP <https://en.wikipedia.org/wiki/SOAP>`_ web service APIs.
+:mod:`pandaSDMX` only supports the SDMX RESTful web services API.
 
-The SDMX standard defines both a REST and a SOAP web service API. As of v0.8, pandaSDMX only supports the REST API.
+Reference: https://github.com/sdmx-twg/sdmx-rest/tree/master/v2_1/ws/rest/docs
 
-The URL specifies the type, providing agency, and ID of the requested SDMX resource (dataflow, categoryscheme, data etc.).
-The query part of the URL (after the '?') may be used to give optional query parameters. For instance, when
-requesting data, the scope of the data set may be narrowed down by specifying a key to select only matching
-columns (e.g. on a particular country). The dimension names and values
-used to select the rows can be validated by checking if they are
-contained in the relevant codelists referenced by the
-datastructure definition (see above), and any content-constraint attached
-to the dataflow definition for the queried data set.
-Moreover, rows may be chosen by specifying a startperiod and endperiod for the time series. In addition,
-the query part may set a :index:`references` parameter to instruct the
-SDMX server to return a number of other artefacts along with the resource actually requested.
-For example, a DataStructureDefinition contains references to code lists and concept schemes (see above). If the
-'references' parameter is set to 'all', these will be returned in the same StructureMessage.
-The next chapter contains some examples to demonstrate this mechanism. Further details can be found in the
-SDMX User Guide, and the Web Service Guidelines.
+To use a RESTful web service, a *client* (like pandaSDMX) makes HTTP queries to particular URLs, sometimes with HTTP headers.
+Both the Eurostat and ECB :ref:`resources linked above <resources>` provide detailed descriptions of these URLs and headers, and how to use these to control the data or metadata returned for a query.
 
-Further reading
-------------------------------------
+:class:`~pandasdmx.api.Request` and its :meth:`~.Request.get` construct valid URLs by automatically:
 
-* The `SDMX standards and guidelines <http://sdmx.org/?cat=5>`_ are the
-  authoritative resource. This page is a must for anyone eager to dive deeper into
-  SDMX. Start with the User Guide and the Information Model (Part 2 of the standard).
-  The Web Services Guidelines contain instructive examples for typical queries.
-* `Eurostat SDMX page <http://ec.europa.eu/eurostat/data/sdmx-data-metadata-exchange>`_
-* `European Central Bank SDMX page <https://sdw-wsrest.ecb.europa.eu/>`_
-  It links to a range of study guides and helpful video tutorials.
-* `SDMXSource <http://www.sdmxsource.org/>`_:
-  - Java, .NET and ActionScript implementations of SDMX software, in part open source
+- fetching metadata need to validate a query, and
+- handling variations in supported features and accepted URL parts and parameters across different :doc:`data sources <sources>`.

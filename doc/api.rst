@@ -19,7 +19,7 @@ Top-level methods and classes
 
 ``model``: SDMX Information Model
 ---------------------------------
-See :doc:`im`.
+See :ref:`im`.
 
 .. automodule:: pandasdmx.model
    :members:
@@ -28,17 +28,23 @@ See :doc:`im`.
 
 ``reader``: Parsers for SDMX file formats
 -----------------------------------------
+
 SDMX-ML
 :::::::
+.. currentmodule:: pandasdmx.reader.sdmxml
 
-.. autoclass:: pandasdmx.reader.sdmxjson.Reader
+pandaSDMX supports the several types of SDMX-ML messages.
+
+.. autoclass:: pandasdmx.reader.sdmxml.Reader
     :members:
     :undoc-members:
 
 SDMX-JSON
 :::::::::
 
-.. autoclass:: pandasdmx.reader.sdmxml.Reader
+.. currentmodule:: pandasdmx.reader.sdmxjson
+
+.. autoclass:: pandasdmx.reader.sdmxjson.Reader
     :members:
     :undoc-members:
 

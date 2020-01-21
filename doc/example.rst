@@ -6,23 +6,28 @@ All we need to know in advance is the data provider: Eurostat.
 
 pandaSDMX makes it easy to search the directory of dataflows, and the complete
 structural metadata about the datasets available through the selected dataflow.
-We will skip this step here; for details, see :doc:`the walkthrough
-<walkthrough>`. The data we want is in the dataflow with the identifier
-``une_rt_a``. This dataflow references a data structure with the ID
-``DSD_une_rt_a``, that contains or references all the metadata describing data
-sets available through this dataflow: the dimensions, concept schemes, and
-corresponding code lists.
+(We will skip this step here; see :doc:`the walkthrough
+<walkthrough>`.)
+
+The data we want is in the dataflow with the identifier ``une_rt_a``.
+This dataflow references a data structure with the ID ``DSD_une_rt_a``, that contains or references all the metadata describing data sets available through this dataflow: the dimensions, concept schemes, and corresponding code lists.
 
 .. ipython:: python
 
     import pandasdmx as sdmx
     estat = sdmx.Request('ESTAT')
 
-    # Download the metadata and expose
+Download the metadata and expose:
+
+.. ipython:: python
+
     metadata = estat.datastructure('DSD_une_rt_a')
     metadata
 
-    # Show some code lists
+Explore the contents of some code lists:
+
+.. ipython:: python
+
     for cl in 'CL_AGE', 'CL_UNIT':
         print(sdmx.to_pandas(metadata.codelist[cl]))
 
@@ -37,16 +42,29 @@ to obtain data on Greece, Ireland and Spain only.
         params={'startPeriod': '2007'},
         )
 
-    # Convert to a pandas.Series and select on the 'AGE' dimension
+Convert to a :class:`pandas.Series` and select on the ``AGE`` dimension:
+
+.. ipython:: python
+
     data = (sdmx.to_pandas(resp)
                 .xs('TOTAL', level='AGE', drop_level=False))
 
-    # Explore the data set. First, show dimension names
+We can now explore the data set as expressed in a familiar pandas object.
+First, show dimension names:
+
+.. ipython:: python
+
     data.index.names
 
-    # and corresponding dimension values
+
+…and corresponding key values along these dimensions:
+
+.. ipython:: python
+
     data.index.levels
 
-    # Show aggregate unemployment rates across ages and sexes as
-    # percentage of active population
+Select some data of interest: show aggregate unemployment rates across ages and sexes, as percentage of active population:
+
+.. ipython:: python
+
     data.loc[('PC_ACT', 'TOTAL', 'T')]

@@ -12,14 +12,15 @@ SDMX makes a distinction between data providers and sources:
 
 Each data *source* might aggregate and provide data or metadata from multiple
 data *providers*. Or, an agency might operate a data source that only contains
-information provided by the same agency.
+information they provide themselves; in this case, the source and provider are
+identical.
 
-pandaSDMX identifies each data source using a string such as ``ABS``, and has
+pandaSDMX identifies each data source using a string such as ``'ABS'``, and has
 built-in support for a number of data sources. Use :meth:`list_sources` to list
 these. Read the following sections, or the file ``sources.json`` in the
 package source code, for more details.
 
-pandaSDMX also supports adding other data sources; see :meth:`add_source` and :class:`pandasdmx.source.Source`.
+pandaSDMX also supports adding other data sources; see :meth:`add_source` and :class:`~.source.Source`.
 
 .. contents::
    :local:
@@ -34,9 +35,10 @@ same request made to two different sources may yield different results, or an
 error message.
 
 A key difference is between sources offering SDMX-ML and SDMX-JSON APIs.
-SDMX-JSON APIs do not support structure queries; only data queries.
+SDMX-JSON APIs do not support metadata, or structure queries; only data queries.
 
-.. note:: For JSON APIs, start by browsing the website to retrieve the dataflow you're interested in. Then try to fine-tune a planned data request by providing a valid key (= selection of series from the dataset). No automatic validation can be performed as structural metadata is unavailable.
+.. note:: For JSON APIs, start by browsing the source's website to retrieve the dataflow you're interested in. Then try to fine-tune a planned data request by providing a valid key (= selection of series from the dataset).
+   Because structure metadata is unavailable, :mod:`pandaSDMX` cannot automatically validate keys.
 
 In order to anticipate and handle these differences:
 
@@ -60,9 +62,9 @@ In order to anticipate and handle these differences:
    "datastructure" API endpoint of either of these data sources.
 
 2. :mod:`pandasdmx.source` includes adapters (subclasses of
-   :class:`pandasdmx.source.Source`) with hooks used when querying sources and
-   interpreting their HTTP responses. These are documented below: ABS_, ESTAT_,
-   and SGR_.
+   :class:`~.source.Source`) with hooks used when querying sources and
+   interpreting their HTTP responses.
+   These are documented below: ABS_, ESTAT_, and SGR_.
 
 
 .. _ABS:

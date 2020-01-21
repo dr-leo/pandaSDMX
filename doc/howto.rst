@@ -5,22 +5,22 @@ How to…
    :local:
    :backlinks: none
 
-Access other SDMX data providers
---------------------------------
+Access other SDMX data sources
+------------------------------
 
-Any data provider that generates SDMX 2.1 messages is supported.
+:mod:`pandaSDMX` ships with a file, `sources.json`, that includes information about the capabilities of many :doc:`data sources <sources>`.
+However, any data source that generates SDMX 2.1 messages is supported.
 There are multiple ways to access these:
 
-1. Create a :class:`pandasdmx.Request` without a named data source, then
-   provide the `url` argument to :meth:`pandasdmx.api.Request.get`::
+1. Create a :class:`pandasdmx.Request` without a named data source, then call the :meth:`~.Request.get` method using the `url` argument::
 
     import pandasdmx as sdmx
     req = sdmx.Request()
     req.get(url='https://sdmx.example.org/path/to/webservice', ...)
 
-2. Call :meth:`pandasdmx.source.add_source` with a JSON snippet describing the data provider.
+2. Call :meth:`~pandasdmx.source.add_source` with a JSON snippet describing the data provider.
 
-3. Create a subclass of :class:`pandasdmx.source.Source`, providing attribute values and optional implementations of hooks.
+3. Create a subclass of :class:`~pandasdmx.source.Source`, providing attribute values and optional implementations of hooks.
 
 
 .. _howto-datetime:
@@ -29,10 +29,11 @@ Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodInde
 ----------------------------------------------------------------------------------
 
 SDMX datasets often have a :class:`~.Dimension` with a name like ``TIME_PERIOD``.
-To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`~pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
+To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
 
-For multi-dimensional datasets, :func:`~.write_dataset` usually returns a :class:`~pandas.Series` with a :class:`~pandas.MultiIndex` that has one level for each dimension.
-However, MultiIndex and DatetimeIndex/PeriodIndex are incompatible; it is not possible to use pandas' date/time features for *just one level* of a MultiIndex (e.g. ``TIME_PERIOD``) while using other types for the other levels/dimensions (e.g. ``CURRENCY``).
+For multi-dimensional datasets, :func:`~.write_dataset` usually returns a :class:`pandas.Series` with a :class:`~pandas.MultiIndex` that has one level for each dimension.
+However, MultiIndex and DatetimeIndex/PeriodIndex are incompatible; it is not possible to use pandas' date/time features for *just one level* of a MultiIndex (e.g. ``TIME_PERIOD``) while using other types for the other levels/dimensions (e.g. strings for ``CURRENCY``).
+
 For this reason, when the `datetime` argument is used, :func:`~.write_dataset` returns a :class:`~pandas.DataFrame`: the DatetimeIndex/PeriodIndex is used along axis 0, and *all other dimensions* are collected in a MultiIndex on axis 1.
 
 An example, using the same European Central Bank exchange rate data set as in the :doc:`walkthrough <walkthrough>`:
@@ -77,8 +78,9 @@ Using the advanced functionality to specify a dimension for the frequency of a P
 Convert SDMX data to other formats
 ----------------------------------
 
-`Pandas <https://pandas.pydata.org>`_ supports output to `many popular file formats <http://pandas.pydata.org/pandas-docs/stable/user_guide/io.html>`_.
-Call these methods on the :class:`pandas.DataFrame` objects returned by :meth:`pandasdmx.to_pandas`. For instance::
+Pandas supports output to `many popular file formats <http://pandas.pydata.org/pandas-docs/stable/user_guide/io.html>`_.
+Call these methods on the objects returned by :meth:`~pandasdmx.to_pandas`.
+For instance::
 
     msg = sdmx.read_sdmx('data.xml')
     sdmx.to_pandas(msg).to_excel('data.xlsx')
@@ -110,10 +112,10 @@ pandaSDMX can also be used with `odo <https://github.com/blaze/odo>`_ by registe
         return sdxm.to_pandas(msg, **keyfilter(op.contains(keywords(write)),
                                                kwargs))
 
-.. versionadded:: 0.4
-
-   ``pandasdmx.odo_register()`` added, providing automatic registration.
-
 .. deprecated:: 1.0
 
    odo `appears unmaintained <https://github.com/blaze/odo/issues/619>`_ since about 2016, so pandaSDMX no longer provides built-in registration.
+
+.. versionadded:: 0.4
+
+   :meth:`pandasdmx.odo_register` was added, providing automatic registration.

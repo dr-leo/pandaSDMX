@@ -1,7 +1,10 @@
 """Classes for SDMX messages.
 
-The module implements classes that are NOT described in the SDMX Information
-Model (SDMX-IM) spec, but are used in XML and JSON messages.
+:class:`Message` and related classes are not defined in the SDMX
+:ref:`information model <im>`, but in the :ref:`SDMX-ML standard <formats>`.
+
+pandaSDMX also uses :class:`DataMessage` to encapsulate SDMX-JSON data returned
+by data sources.
 """
 from typing import (
     List,
@@ -38,10 +41,20 @@ def _summarize(obj, fields):
 
 
 class Header(BaseModel):
+    """Header of an SDMX-ML message.
+
+    SDMX-JSON messages do not have headers.
+    """
+    #: (optional) Error code for the message.
     error: Text = None
+    #: Identifier for the message.
     id: Text = None
+    #: Date and time at which the message was generated.
     prepared: Text = None
+    #: Intended recipient of the message, e.g. the user's name for an
+    #: authenticated service.
     receiver: Text = None
+    #: The :class:`.Agency` associated with the data :class:`~.source.Source`.
     sender: Union[Item, Text] = None
 
     def __repr__(self):
@@ -52,13 +65,17 @@ class Header(BaseModel):
 
 
 class Footer(BaseModel):
+    """Footer of an SDMX-ML message.
+
+    SDMX-JSON messages do not have footers.
+    """
     severity: Text
+    #: The body text of the Footer contains zero or more blocks of text.
     text: List[InternationalString] = []
     code: int
 
 
 class Message(BaseModel):
-    """Message."""
     class Config:
         # for .response
         arbitrary_types_allowed = True
@@ -69,7 +86,8 @@ class Message(BaseModel):
     header: Header = Header()
     #: (optional) :class:`Footer` instance.
     footer: Footer = None
-    #: :class:`requests.Response` instance.
+    #: :class:`requests.Response` instance for the response to the HTTP request
+    #: that returned the Message. This is not part of the SDMX standard.
     response: Response = None
 
     def __str__(self):
@@ -90,13 +108,21 @@ class ErrorMessage(Message):
 
 
 class StructureMessage(Message):
+    #: Collection of :class:`.CategoryScheme`.
     category_scheme: DictLike[str, CategoryScheme] = DictLike()
+    #: Collection of :class:`.Codelist`.
     codelist: DictLike[str, Codelist] = DictLike()
+    #: Collection of :class:`.ConceptScheme`.
     concept_scheme: DictLike[str, ConceptScheme] = DictLike()
+    #: Collection of :class:`.ContentConstraint`.
     constraint: DictLike[str, ContentConstraint] = DictLike()
+    #: Collection of :class:`.DataflowDefinition`.
     dataflow: DictLike[str, DataflowDefinition] = DictLike()
+    #: Collection of :class:`.DataStructureDefinition`.
     structure: DictLike[str, DataStructureDefinition] = DictLike()
+    #: Collection of :class:`.AgencyScheme`.
     organisation_scheme: DictLike[str, AgencyScheme] = DictLike()
+    #: Collection of :class:`.ProvisionAgreement`.
     provisionagreement: DictLike[str, ProvisionAgreement] = DictLike()
 
     def __repr__(self):
@@ -112,8 +138,16 @@ class StructureMessage(Message):
 
 
 class DataMessage(Message):
-    #: :class:`list` of :class:`pandasdmx.model.DataSet`
+    """Data Message.
+
+    .. note:: A DataMessage may contain zero or more :class:`.DataSet`, so
+       :attr:`data` is a list. To retrieve the first (and possibly only)
+       data set in the message, access the first element of the list:
+       ``msg.data[0]``.
+    """
+    #: :class:`list` of :class:`.DataSet`.
     data: List[DataSet] = []
+    #: :class:`.DataflowDefinition` that contains the data.
     dataflow: DataflowDefinition = DataflowDefinition()
 
     # TODO infer the observation dimension from the DSD, e.g.
@@ -124,7 +158,7 @@ class DataMessage(Message):
     # Convenience access
     @property
     def structure(self):
-        """The DataStructureDefinition used in the DataMessage.dataflow."""
+        """DataStructureDefinition used in the :attr:`dataflow`."""
         return self.dataflow.structure
 
     def __repr__(self):

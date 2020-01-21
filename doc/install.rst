@@ -7,13 +7,12 @@ Required dependencies
 pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.7 or higher, which can be installed:
 
 - from `the Python website <https://www.python.org/downloads/>`_, or
-- using a scientific Python distribution. These include other packages useful
-  for data analysis.
-
-  - `Anaconda <https://store.continuum.io/cshop/anaconda/>`_,
-  - `Canopy <https://www.enthought.com/products/canopy/>`_.
-  - Others listed on `the Python wiki
-    <https://wiki.python.org/moin/PythonDistributions>`_.
+- using a scientific Python distribution that includes other packages useful
+  for data analysis, such as
+  `Anaconda <https://store.continuum.io/cshop/anaconda/>`_,
+  `Canopy <https://www.enthought.com/products/canopy/>`_, or
+  others listed on `the Python wiki
+  <https://wiki.python.org/moin/PythonDistributions>`_.
 
 pandaSDMX also depends on:
 
@@ -52,20 +51,27 @@ From source
 
 1. Download the latest code:
 
-   - `from PyPI <https://pypi.org/project/pandaSDMX/#files>`_
-   - `from Github <https://github.com/dr-leo/pandaSDMX>`_
+   - `from PyPI <https://pypi.org/project/pandaSDMX/#files>`_,
+   - `from Github <https://github.com/dr-leo/pandaSDMX>`_ as a zip archive, or
    - by cloning the Github respository::
 
      $ git clone git@github.com:dr-leo/pandaSDMX.git
 
 2. In the package directory, issue::
 
+    $ pip install --editable .
+
+   or::
+
     $ python setup.py install
 
    To also install optional dependencies, use commands like::
 
-    $ pip install .[cache]             # just requests-cache
-    $ pip install .[cache,docs,tests]  # all extras
+    $ pip install --editable .[cache]             # just requests-cache
+    $ pip install --editable .[cache,docs,tests]  # all extras
+
+
+.. note:: The pip ``--editable`` flag is recommended for development, so that changes to your code are reflected the next time :mod:`pandaSDMX` is imported.
 
 Running tests
 -------------

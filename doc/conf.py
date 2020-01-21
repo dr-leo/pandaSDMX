@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pandaSDMX'
-copyright = '2014–2019 pandaSDMX developers'
+copyright = '2014–2020 pandaSDMX developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

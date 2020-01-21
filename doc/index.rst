@@ -17,7 +17,7 @@ agencies, central banks, and international organisations.
 - convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data
   science ecosystem;
-- apply the :doc:`SDMX Information Model <im>` to your own data;
+- apply the :ref:`SDMX Information Model <im>` to your own data;
 
 …and much more.
 
@@ -29,17 +29,20 @@ This also means it is complex, with many abstract concepts for describing data,
 metadata, and their relationships.
 These are called the “SDMX Information Model” (IM).
 
-This documentation does not repeat the full description of the IM, but focuses on functionality provided by :mod:`pandaSDMX` itself.
-Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
-:doc:`usage example in only 10 lines of code <example>`, and then the longer :doc:`walkthrough`.
+.. _not-the-standard:
 
-To learn about the IM and unlock the full power of SDMX, skim a :doc:`short introduction <intro>`, consult the linked reference materials, and/or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM.
+This documentation does not repeat full descriptions of SDMX, the IM, or SDMX web services; it focuses on functionality provided by :mod:`pandaSDMX` itself.
+Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
+:doc:`usage example in only 10 lines of code <example>`, and then the longer :doc:`walkthrough <walkthrough>`.
+
+To learn about SDMX in more detail, use the resources linked from the :doc:`overview <overview>`, and read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM.
 
 **Get started**
 
 * :doc:`example`
 * :doc:`install`
 * :doc:`walkthrough`
+* :doc:`overview`
 
 .. toctree::
    :hidden:
@@ -47,29 +50,22 @@ To learn about the IM and unlock the full power of SDMX, skim a :doc:`short intr
    10-line example <example>
    install
    walkthrough
+   overview
 
-**Learn more**
-
-.. toctree::
-   :maxdepth: 2
-
-   Intro to SDMX <intro>
-   advanced
-
-**User guide**
+:mod:`pandaSDMX` **user guide**
 
 * :doc:`sources`
-* :doc:`im`
 * :doc:`api`
 * :doc:`howto`
+* :doc:`advanced`
 
 .. toctree::
     :hidden:
 
     sources
-    Information model <im>
     api
     howto
+    advanced
 
 **Help & development**
 

@@ -184,9 +184,6 @@ class TestESTAT(DataSourceTest):
 
         Examples from:
         https://ec.europa.eu/eurostat/web/sdmx-web-services/example-queries
-
-        NOTE that ESTAT does not currently respond correctly to this query;
-        a <message:GenericData> is returned.
         """
         df_id = 'nama_10_gdp'
         args = dict(resource_id=df_id)

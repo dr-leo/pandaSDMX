@@ -140,20 +140,22 @@ def test_item():
 
 def test_itemscheme():
     is0 = ItemScheme(id='is0')
+    foo0 = Item(id='foo0')
+
+    # With a single Item
 
     # append()
-    foo = Item(id='foo')
-    is0.append(foo)
+    is0.append(foo0)
 
     # __getattr__
-    assert is0.foo is foo
+    assert is0.foo0 is foo0
 
     # __getitem__
-    assert is0['foo'] is foo
+    assert is0['foo0'] is foo0
 
     # __contains__
-    assert 'foo' in is0
-    assert foo in is0
+    assert 'foo0' in is0
+    assert foo0 in is0
 
     # __len__
     assert len(is0) == 1
@@ -162,10 +164,37 @@ def test_itemscheme():
     assert repr(is0) == "<ItemScheme: 'is0', 1 items>"
 
     # __iter__
-    assert all(i is foo for i in is0)
+    assert all(i is foo0 for i in is0)
+
+    # With multiple Items
+
+    foo1 = Item(id='foo1')
+    foo2 = Item(id='foo2')
+    items_list = [foo0, foo1, foo2]
+    items_dict = {'foo0': foo0, 'foo1': foo1, 'foo2': foo2}
+
+    # set with a non-dict
+    is0.items = items_list
+    assert is0.items == items_dict
+
+    # set with a dict
+    is0.items = items_dict
+    assert is0.items == items_dict
+
+    # extend()
+    is0.items = [foo0]
+    is0.extend(items_list)
+    assert is0.items == items_dict
 
     # setdefault()
-    is0.setdefault(id='bar')
+    bar0 = is0.setdefault(id='bar')
+    assert bar0.id == 'bar'
+
+    with raises(ValueError):
+        is0.setdefault(foo0, id='bar')
+
+    is0.setdefault(id='bar1', parent='foo0')
+    is0.setdefault(id='bar1', parent=foo0)
 
 
 def test_key():

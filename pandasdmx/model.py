@@ -424,11 +424,11 @@ class ItemScheme(MaintainableArtefact):
         The returned object is a reference to an object in the ItemScheme, and
         is of the appropriate class.
         """
-        if obj:
-            assert not len(kwargs), ValueError('cannot give both *obj* and '
-                                               'keyword arguments to '
-                                               'setdefault()')
-        else:
+        if obj and len(kwargs):
+            raise ValueError('cannot give both *obj* and keyword arguments to '
+                             'setdefault()')
+
+        if not obj:
             # Replace a string 'parent' ID with a reference to the object
             parent = kwargs.pop('parent', None)
             if isinstance(parent, str):

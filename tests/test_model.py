@@ -3,7 +3,6 @@
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeValue,
-    ConceptScheme,
     ContentConstraint,
     ConstraintRole,
     ConstraintRoleType,
@@ -14,17 +13,12 @@ from pandasdmx.model import (
     DataflowDefinition,
     Dimension,
     Item,
+    ItemScheme,
     Key,
     Observation,
     )
 import pydantic
 from pytest import raises
-
-
-def test_itemscheme_setdefault():
-    # Setting works even if the 'items' trait has not been initialized
-    cs = ConceptScheme()
-    cs.setdefault(id='FOO')
 
 
 def test_contentconstraint():
@@ -117,6 +111,7 @@ def test_internationalstring():
 
 
 def test_item():
+    # Add a tree of 10 items
     items = []
     for i in range(10):
         items.append(Item(id='Foo {}'.format(i)))
@@ -125,7 +120,52 @@ def test_item():
             items[-1].parent = items[-2]
             items[-2].child.append(items[-1])
 
+    # __init__(parent=...)
+    Item(id='Bar 1', parent=items[0])
+    assert len(items[0].child) == 2
+
+    # __init__(child=)
+    bar2 = Item(id='Bar 2', child=[items[0]])
+
+    # __contains__()
+    assert items[0] in bar2
     assert items[-1] in items[0]
+
+    # get_child()
+    assert items[0].get_child('Foo 1') == items[1]
+
+    with raises(ValueError):
+        items[0].get_child('Foo 2')
+
+
+def test_itemscheme():
+    is0 = ItemScheme(id='is0')
+
+    # append()
+    foo = Item(id='foo')
+    is0.append(foo)
+
+    # __getattr__
+    assert is0.foo is foo
+
+    # __getitem__
+    assert is0['foo'] is foo
+
+    # __contains__
+    assert 'foo' in is0
+    assert foo in is0
+
+    # __len__
+    assert len(is0) == 1
+
+    # __repr__
+    assert repr(is0) == "<ItemScheme: 'is0', 1 items>"
+
+    # __iter__
+    assert all(i is foo for i in is0)
+
+    # setdefault()
+    is0.setdefault(id='bar')
 
 
 def test_key():

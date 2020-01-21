@@ -877,12 +877,14 @@ class DimensionDescriptor(ComponentList):
         key : :class:`Key` or :class:`GroupKey` or :class:`SeriesKey`
         """
         dd = cls()
-        for id, kv in key.values.items():
+        for order, (id, kv) in enumerate(key.values.items()):
             cl = Codelist(id=id)
             cl.append(Code(id=kv.value))
-            d = Dimension(id=id,
-                          local_representation=Representation(enumerated=cl))
-            dd.components.append(d)
+            dd.components.append(Dimension(
+                id=id,
+                local_representation=Representation(enumerated=cl),
+                order=order,
+            ))
         return dd
 
 

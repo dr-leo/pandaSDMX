@@ -12,6 +12,7 @@ from pandasdmx.model import (
     DataStructureDefinition,
     DataflowDefinition,
     Dimension,
+    DimensionDescriptor,
     Item,
     ItemScheme,
     Key,
@@ -45,10 +46,27 @@ def test_datastructuredefinition():
     d = dsd.dimension(id='baz', order=-1)
     assert isinstance(d, Dimension)
 
+    # from_keys()
+    key1 = Key(foo=1, bar=2, baz=3)
+    key2 = Key(foo=4, bar=5, baz=6)
+    dsd.from_keys([key1, key2])
+
 
 def test_dimension():
     # Constructor
     Dimension(id='CURRENCY', order=0)
+
+
+def test_dimensiondescriptor():
+    # from_key()
+    key1 = Key(foo=1, bar=2, baz=3)
+    dd = DimensionDescriptor.from_key(key1)
+
+    # Key in reverse order
+    key2 = Key(baz=3, bar=2, foo=1)
+    assert list(key1.values.keys()) == list(reversed(key2.values.keys()))
+    key3 = dd.order_key(key2)
+    assert list(key1.values.keys()) == list(key3.values.keys())
 
 
 def test_internationalstring():

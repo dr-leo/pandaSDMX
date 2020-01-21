@@ -1,10 +1,7 @@
 Walkthrough
 ===========
 
-This page walks through the steps of a basic pandaSDMX workflow:
-
-.. todo:: Many of the paragraphs describe workarounds/non-IM behaviour of the
-   pre-1.0 code. The text is also ~4000 words. Revise.
+This page walks through the steps of a pandaSDMX workflow, providing in-depth explanations of concepts along the way.
 
 .. contents::
    :local:

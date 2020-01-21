@@ -3,6 +3,7 @@ from collections import defaultdict
 from copy import copy
 from inspect import isclass
 from itertools import chain
+import logging
 import re
 
 from lxml import etree
@@ -62,7 +63,6 @@ from pandasdmx.model import (
     MemberSelection,
     MemberValue,
     Key,
-    KeyValue,
     Observation,
     PrimaryMeasure,
     ProvisionAgreement,
@@ -75,6 +75,9 @@ from pandasdmx.model import (
 from pandasdmx.reader import BaseReader
 
 
+log = logging.getLogger(__name__)
+
+
 # Regular expression for URNs used as references
 URN = re.compile(r'urn:sdmx:org\.sdmx\.infomodel'
                  r'\.(?P<package>[^\.]*)'
@@ -83,15 +86,14 @@ URN = re.compile(r'urn:sdmx:org\.sdmx\.infomodel'
 
 
 # XML namespaces
+_base_ns = 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1'
 NS = {
-    'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common',
-    'data': ('http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/'
-             'structurespecific'),
-    'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-    'mes': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message',
-    'gen': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic',
-    'footer':
-        'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message/footer',
+    'com': f'{_base_ns}/common',
+    'data': f'{_base_ns}/data/structurespecific',
+    'str': f'{_base_ns}/structure',
+    'mes': f'{_base_ns}/message',
+    'gen': f'{_base_ns}/data/generic',
+    'footer': f'{_base_ns}/message/footer',
     'xml': 'http://www.w3.org/XML/1998/namespace',
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     }
@@ -133,11 +135,6 @@ COLLECT = {
             ('(mes:Structure/com:Structure/Ref/@version | '
              'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
         'structure_ref_urn': 'mes:Structure/com:Structure/URN/text()',
-        },
-    'obs': {
-        'dimension': 'gen:ObsDimension/@value',
-        'value': 'gen:ObsValue/@value',
-        'attribs': 'gen:Attributes',
         },
     }
 
@@ -265,10 +262,12 @@ class Reader(BaseReader):
 
     - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
     - State variables :attr:`_current`, :attr:`_stack, :attr:`_index`.
-    """
-    # TODO subclass the main reader for StructureSpecific*Data messages to
-    #      avoid branching
 
+    Parameters
+    ----------
+    dsd : :class:`~.DataStructureDefinition`
+        For “structure-specific” `format`=``XML`` messages only.
+    """
     # State variables for reader
 
     # Stack (0 = top) of tag names being parsed by _parse().
@@ -282,7 +281,7 @@ class Reader(BaseReader):
     # Similar to _index, but specific to the current scope.
     _current = {}
 
-    def read_message(self, source):
+    def read_message(self, source, dsd=None):
         # Root XML element
         root = etree.parse(source).getroot()
 
@@ -297,6 +296,14 @@ class Reader(BaseReader):
         self._stack = []
         self._index = {}
         self._current = {}
+
+        # With 'dsd' argument, the message should be structure-specific
+        self._structure_specific = dsd is not None
+        if self._structure_specific:
+            if 'StructureSpecific' not in root.tag:
+                log.warning('Ambiguous: dsd= argument for non-structure-'
+                            'specific message')
+            self._index[('DataStructureDefinition', dsd.id)] = dsd
 
         # Parse the tree
         values = self._parse(root)
@@ -449,16 +456,11 @@ class Reader(BaseReader):
             except Exception as e:
                 # Other exception, convert to XMLParseError
                 raise XMLParseError(self, child) from e
+                # NOTE to debug, use:
+                # raise e
 
             # Add objects with IDs to the appropriate index
-            for r in result:
-                if isinstance(r, MaintainableArtefact) and not \
-                        r.is_external_reference:
-                    # Global index for MaintainableArtefacts
-                    self._index[(r.__class__.__name__, r.id)] = r
-                elif isinstance(r, IdentifiableArtefact):
-                    # Current scope index for IdentifiableArtefacts
-                    self._current[(r.__class__, r.id)] = r
+            self._add_to_index(result)
 
             # Store the parsed elements
             results[tag_name.lower()].extend(result)
@@ -472,6 +474,17 @@ class Reader(BaseReader):
                        results.items()}
 
         return results
+
+    def _add_to_index(self, items):
+        """Add objects with IDs to the appropriate index."""
+        for item in items:
+            if isinstance(item, MaintainableArtefact) and not \
+                    item.is_external_reference:
+                # Global index for MaintainableArtefacts
+                self._index[(item.__class__.__name__, item.id)] = item
+            elif isinstance(item, IdentifiableArtefact):
+                # Current scope index for IdentifiableArtefacts
+                self._current[(item.__class__, item.id)] = item
 
     def _maintained(self, cls=None, id=None, urn=None, match_subclass=False,
                     **kwargs):
@@ -593,7 +606,7 @@ class Reader(BaseReader):
             if k[0] is cls:
                 results.append(obj)
 
-        assert len(results) == 1
+        assert len(results) == 1, results
         return results[0]
 
     def _clear_current(self, scope):
@@ -717,9 +730,11 @@ class Reader(BaseReader):
 
     def parse_attributes(self, elem):
         result = {}
+
+        ad = self._get_current(AttributeDescriptor)
         for e in elem.iterchildren():
-            da = DataAttribute(id=e.attrib['id'])
-            av = AttributeValue(value_for=da, value=e.attrib['value'])
+            da = ad.get(e.attrib['id'])
+            av = AttributeValue(value=e.attrib['value'], value_for=da)
             result[da.id] = av
         return result
 
@@ -741,8 +756,11 @@ class Reader(BaseReader):
             attrs['id'] = values['structure_id']
 
         if 'id' in attrs:
-            # Create the DSD and DFD
+            # Create or retrieve the DSD. NB if the dsd argument was provided
+            # to read_message(), this should be the same DSD
             dsd = self._maintained(DataStructureDefinition, **attrs)
+
+            # Create a DataflowDefinition
             dfd = DataflowDefinition(id=values.pop('structure_id'),
                                      structure=dsd)
 
@@ -762,17 +780,24 @@ class Reader(BaseReader):
         return f
 
     def parse_dataset(self, elem):
-        values = self._parse(elem, unwrap=False)
-        # Store groups
-        ds = DataSet(group={g: [] for g in values.pop('group', [])})
-
-        # Attributes
+        # Attributes: structure reference to a DSD
         for attr in ['structureRef', qname('data', 'structureRef')]:
             if attr in elem.attrib:
                 structure_ref = elem.attrib[attr]
                 break
-        ds.structured_by = self._maintained(DataStructureDefinition,
-                                            structure_ref)
+
+        # Create or retrieve (structure-specific message) the DSD
+        dsd = self._maintained(DataStructureDefinition, structure_ref)
+        # Add DSD contents to the indices for use in recursive parsing
+        self._add_to_index(indexables_from_dsd(dsd))
+        self._current[(DataStructureDefinition, None)] = dsd
+
+        ds = DataSet(structured_by=dsd)
+
+        values = self._parse(elem, unwrap=False)
+
+        # Process groups
+        ds.group = {g: [] for g in values.pop('group', [])}
 
         # Process series
         for series_key, obs_list in values.pop('series', []):
@@ -838,10 +863,13 @@ class Reader(BaseReader):
             'Key': DataKey,  # for DataKeySet
             }[QName(elem).localname]
         if cls is not DataKey:
+            dd = self._get_current(DimensionDescriptor)
+
             # Most data: the value is specified as an XML attribute
             kv = {e.attrib['id']: e.attrib['value'] for e in
                   elem.iterchildren()}
-            return cls(**kv)
+
+            return cls(**kv, described_by=dd)
         else:
             # <str:DataKeySet> and <str:CubeRegion>: the value(s) are specified
             # with a <com:Value>...</com:Value> element.
@@ -854,19 +882,28 @@ class Reader(BaseReader):
                        key_value=kvs)
 
     def parse_obs(self, elem):
-        # TODO handle key-values as attribs
         values = self._parse(elem)
+
+        dd = self._get_current(DimensionDescriptor)
+
+        # Attached attributes
+        aa = values.pop('attributes', {})
+
+        if 'obskey' in values:
+            key = values.pop('obskey')
+        elif 'obsdimension' in values:
+            od = values.pop('obsdimension')
+            assert len(self._obs_dim) == 1
+            dim = self._obs_dim[0].id
+            if len(od) == 2:
+                assert od['id'] == dim, (values, dim)
+            key = Key(**{dim: od['value']}, described_by=dd)
+
         if len(values):
-            key = (values['obskey'] if 'obskey' in values else
-                   values['obsdimension'])
-            if 'obsdimension' in values:
-                new_key = Key()
-                new_key[key.id] = key
-                key = new_key
-            obs = Observation(dimension=key, value=values['obsvalue'],
-                              attached_attribute=values.get('attributes', {}))
+            value = values.pop('obsvalue')
         else:
-            # StructureSpecificData message
+            # StructureSpecificData message—all information stored as XML
+            # attributes of the <Observation>.
             attr = copy(elem.attrib)
 
             # Value of the observation
@@ -879,26 +916,23 @@ class Reader(BaseReader):
                 # Use the 'dimension at observation' specified for the message
                 dims = map(lambda d: d.id, self._obs_dim)
 
-            # Create the observation, consuming attr for the key
-            obs = Observation(dimension=Key(**{d: attr.pop(d) for d in dims}),
-                              value=value)
+            key = Key(**{d: attr.pop(d) for d in dims}, described_by=dd)
 
             # Remaining attr members are SDMX DataAttributes
-            for id, value in attr.items():
-                da = DataAttribute(id=id)
-                av = AttributeValue(value_for=da, value=value)
-                obs.attached_attribute[da.id] = av
+            ad = self._get_current(AttributeDescriptor)
+            for a_id, a_value in attr.items():
+                aa[a_id] = AttributeValue(value=a_value,
+                                          value_for=ad.get(a_id))
 
-        return obs
+        assert len(values) == 0, values
+        return Observation(dimension=key, value=value, attached_attribute=aa)
 
     def parse_obsdimension(self, elem):
-        attr = copy(elem.attrib)
-        args = dict(value=attr.pop('value'))
-        args['id'] = attr.pop('id', self._obs_dim[0].id)
-        assert len(attr) == 0
-        return KeyValue(**args)
+        assert set(elem.attrib.keys()) <= {'id', 'value'}
+        return copy(elem.attrib)
 
     def parse_obsvalue(self, elem):
+        assert len(elem.attrib) == 1, elem.attrib
         return elem.attrib['value']
 
     def parse_series(self, elem):
@@ -1236,3 +1270,22 @@ class Reader(BaseReader):
         values['text'] = [InternationalString(values['text'])]
         values['code'] = elem.attrib['code']
         return values
+
+
+def indexables_from_dsd(dsd):
+    """Return indexable items from a DSD."""
+    # AttributeDescriptor and DataAttributes
+    yield dsd.attributes
+    yield from dsd.attributes.components
+
+    # DimensionDescriptor and *Dimensions
+    yield dsd.dimensions
+    yield from dsd.dimensions.components
+
+    if dsd.measures:
+        yield dsd.measures
+        yield from dsd.measures.components
+
+    if dsd.group_dimensions:
+        yield dsd.group_dimensions
+        yield from dsd.group_dimensions.components

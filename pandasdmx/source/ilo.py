@@ -17,6 +17,8 @@ class Source(BaseSource):
               children, descendants, all, or a specific structure reference
               such as 'codelist'.
         """
+        super().modify_request_args(kwargs)
+
         kwargs.setdefault('params', {})
         kwargs['params'].setdefault('format', 'generic_2_1')
         kwargs['params'].setdefault('references', 'none')

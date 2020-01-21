@@ -277,11 +277,12 @@ class Request:
             Type of resource to retrieve.
         resource_id : str, optional
             ID of the resource to retrieve.
-        tofile : str or :py:class:`os.PathLike`, optional
+        tofile : str or :class:`~os.PathLike`, optional
             File path to write SDMX data as it is recieved.
         use_cache : bool, optional
-            If :obj:`True`, return a previously retrieved :class:`Message` from
-            :attr:`cache`, or update the cache with a newly-retrieved Message.
+            If :obj:`True`, return a previously retrieved :class:`~.Message`
+            from :attr:`cache`, or update the cache with a newly-retrieved
+            Message.
         dry_run : bool, optional
             If :obj:`True`, prepare and return a :class:`requests.Request`
             object, but do not execute the query. The prepared URL and headers
@@ -291,8 +292,7 @@ class Request:
 
         Other Parameters
         ----------------
-        dsd : :class:`DataStructureDefinition \
-                      <pandasdmx.model.DataStructureDefinition>`
+        dsd : :class:`~.DataStructureDefinition`
             Existing object used to validate the `key` argument. If not
             provided, an additional query executed to retrieve a DSD in order
             to validate the `key`.
@@ -307,8 +307,7 @@ class Request:
         key : str or dict
             For queries with `resource_type='data'`. :class:`str` values are
             not validated; :class:`dict` values are validated using
-            :meth:`DataStructureDefinition.make_constraint
-            <pandasdmx.model.DataStructureDefinition.make_constraint>`.
+            :meth:`~.DataStructureDefinition.make_constraint`.
         params : dict
             Query parameters. The `SDMX REST web service guidelines <https://\
             github.com/sdmx-twg/sdmx-rest/tree/master/v2_1/ws/rest/docs>`_
@@ -324,17 +323,16 @@ class Request:
             providers. Other agencies—e.g. the SDMX Global Registry—simply
             aggregate (meta)data from other providers, but do not providing any
             (meta)data themselves.
-        resource : :mod:`MaintainableArtefact \
-                         <pandasdmx.model.MaintainableArtefact>` subclass
+        resource : :class:`~.MaintainableArtefact` subclass
             Object to retrieve. If given, `resource_type` and `resource_id` are
             ignored.
         version : str
-            :attr:`version <pandasdmx.model.VersionableArtefact.version>`
-            of a resource to retrieve. Default: the keyword 'latest'.
+            :attr:`~.VersionableArtefact.version>` of a resource to retrieve.
+            Default: the keyword 'latest'.
 
         Returns
         -------
-        :class:`pandasdmx.message.Message` or :class:`requests.Request`
+        :class:`~.Message` or :class:`~requests.Request`
             The requested SDMX message or, if `dry_run` is :obj:`True`, the
             prepared request object.
 
@@ -473,13 +471,18 @@ class Request:
             return list(all_keys)
 
 
-def read_sdmx(filename_or_obj, format=None):
+def read_sdmx(filename_or_obj, format=None, **kwargs):
     """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
 
     Parameters
     ----------
-    filename_or_obj : str or os.PathLike or file
-    format: 'XML' or 'JSON', optional
+    filename_or_obj : str or :class:`~os.PathLike` or file
+    format : 'XML' or 'JSON', optional
+
+    Other Parameters
+    ----------------
+    dsd : :class:`~.DataStructureDefinition`
+        For “structure-specific” `format`=``XML`` messages only.
     """
     import pandasdmx.reader.sdmxml
     import pandasdmx.reader.sdmxjson
@@ -525,7 +528,7 @@ def read_sdmx(filename_or_obj, format=None):
 
         obj = filename_or_obj
 
-    return reader().read_message(obj)
+    return reader().read_message(obj, **kwargs)
 
 
 def read_url(url, **kwargs):

@@ -21,6 +21,7 @@ CONTENT_TYPES = {
         'application/xml',
         'application/vnd.sdmx.genericdata+xml',
         'application/vnd.sdmx.structure+xml',
+        'application/vnd.sdmx.structurespecificdata+xml',
         'text/xml',
     ],
     'json': [

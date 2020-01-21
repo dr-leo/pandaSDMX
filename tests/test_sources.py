@@ -178,6 +178,37 @@ class TestESTAT(DataSourceTest):
 
         assert len(msg.data[0].obs) == 43
 
+    @pytest.mark.remote_data
+    def test_ss_data(self, req):
+        """Test a request for structure-specific data.
+
+        Examples from:
+        https://ec.europa.eu/eurostat/web/sdmx-web-services/example-queries
+        """
+        df_id = 'nama_10_gdp'
+        args = dict(resource_id=df_id)
+
+        # Query for the DSD
+        dsd = req.dataflow(**args).dataflow[df_id].structure
+
+        # Even with ?references=all, ESTAT returns a short message with the
+        # DSD as an external reference. Query again to get its actual contents.
+        if dsd.is_external_reference:
+            dsd = req.get(resource=dsd).structure[0]
+            print(dsd)
+
+        assert not dsd.is_external_reference
+
+        # Example query, using the DSD already retrieved
+        args.update(dict(
+            key=dict(UNIT=['CP_MEUR'], NA_ITEM=['B1GQ'], GEO=['LU']),
+            params={'startPeriod': '2012', 'endPeriod': '2015'},
+            dsd=dsd,
+            # commented: for debugging
+            # tofile='temp.xml',
+        ))
+        req.data(**args)
+
 
 class TestIMF(DataSourceTest):
     source_id = 'IMF'
@@ -243,9 +274,14 @@ class TestISTAT(DataSourceTest):
         df = req.dataflow(df_id).dataflow[df_id]
 
         # dict() key for the query
-        data_key = dict(FREQ=['A'], ITTER107=['001001'], SETTITOLARE=['1'],
-                        TIPO_DATO=['AUTP'], TIPO_GESTIONE=['ALL'],
-                        TIPSERVSOC=['ALL'])
+        data_key = dict(
+            FREQ=['A'],
+            ITTER107=['001001'],
+            SETTITOLARE=['1'],
+            TIPO_DATO=['AUTP'],
+            TIPO_GESTIONE=['ALL'],
+            TIPSERVSOC=['ALL'],
+        )
 
         # Dimension components are in the correct order
         assert [dim.id for dim in df.structure.dimensions.components] == \

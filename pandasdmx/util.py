@@ -141,7 +141,7 @@ class BaseModel(pydantic.BaseModel):
         if (self.__config__.extra is not Extra.allow and name not in
                 self.__fields__):
             raise ValueError(f'"{self.__class__.__name__}" object has no field'
-                             '"{name}"')
+                             f' "{name}"')
         elif not self.__config__.allow_mutation:
             raise TypeError(f'"{self.__class__.__name__}" is immutable and '
                             'does not support item assignment')

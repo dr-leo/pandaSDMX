@@ -10,6 +10,7 @@ from typing import (
 
 from pkg_resources import resource_stream
 
+from pandasdmx.model import DataStructureDefinition
 from pandasdmx.util import BaseModel, Resource
 from pydantic import validator
 
@@ -34,14 +35,19 @@ class Source(BaseModel):
     """
     #: ID of the data source
     id: str
+
     #: Base URL for queries
     url: str
+
     #: Human-readable name of the data source
     name: str
+
     headers: Dict[str, Any] = {}
+
     #: :class:`pandasdmx.util.DataContentType` indicating the type of data
     #: returned by the source.
     data_content_type: DataContentType = DataContentType.XML
+
     #: Mapping from :class:`Resource <pandasdmx.util.Resource>` to
     #: :class:`bool` indicating support for SDMX REST API features. Two
     #: additional keys are valid:
@@ -95,10 +101,25 @@ class Source(BaseModel):
         This hook is called by :meth:`pandasdmx.Request.get` to modify the
         keyword arguments before the query URL is built.
 
+        The default implementation handles requests for 'structure-specific
+        data' by adding an HTTP 'Accepts:' header when a 'dsd' is supplied as
+        one of the `kwargs`.
+
         See :meth:`SGR <pandasdmx.source.sgr.Source.modify_request_args>` for
-        an example implementation.
+        an example override.
+
+        Returns
+        -------
+        None
         """
-        pass
+        if self.data_content_type is DataContentType.XML:
+            dsd = kwargs.get('dsd', None)
+            if isinstance(dsd, DataStructureDefinition):
+                kwargs.setdefault('headers', {})
+                kwargs['headers'].setdefault(
+                    'Accept',
+                    'application/vnd.sdmx.structurespecificdata+xml;'
+                    'version=2.1')
 
     @validator('id')
     def _validate_id(cls, value):

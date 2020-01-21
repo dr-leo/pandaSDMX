@@ -6,4 +6,6 @@ class Source(BaseSource):
 
     def modify_request_args(self, kwargs):
         """World Bank's agency ID."""
+        super().modify_request_args(kwargs)
+
         kwargs.setdefault('provider', 'WBG_WITS')

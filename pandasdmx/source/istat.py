@@ -12,6 +12,8 @@ class Source(BaseSource):
         'IT1' and 'all' are known to work; we use 'all' to (hopefully) be
         inclusive of 'IT1' and any others.
         """
+        super().modify_request_args(kwargs)
+
         # NB this is an indirect test for resource_type != 'data'; because of
         #    the way the hook is called, resource_type is not available
         #    directly.

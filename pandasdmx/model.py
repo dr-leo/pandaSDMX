@@ -1248,7 +1248,6 @@ class Observation(BaseModel):
     @property
     def attrib(self):
         """Return a view of combined observation, series & group attributes."""
-        print(self.attached_attribute)
         view = self.attached_attribute.copy()
         view.update(getattr(self.series_key, 'attrib', {}))
         for gk in self.group_keys:

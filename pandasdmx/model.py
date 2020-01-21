@@ -375,12 +375,26 @@ class ItemScheme(MaintainableArtefact):
         return iter(self.items.values())
 
     def extend(self, items: Iterable[_item_type]):
+        """Extend the ItemScheme with members of *items*.
+
+        Parameters
+        ----------
+        items : iterable of object
+            Items must be of the same class as :attr:`items`.
+        """
         self.items.update({i.id: i for i in items})
 
     def __len__(self):
         return len(self.items)
 
     def append(self, item):
+        """Add *item* to the ItemScheme.
+
+        Parameters
+        ----------
+        item : same class as :attr:`items`
+            Items to add to the ItemScheme.
+        """
         self.items[item.id] = item
 
     def __repr__(self):

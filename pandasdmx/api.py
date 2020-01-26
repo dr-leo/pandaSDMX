@@ -277,8 +277,8 @@ class Request:
             Type of resource to retrieve.
         resource_id : str, optional
             ID of the resource to retrieve.
-        tofile : str or :class:`~os.PathLike`, optional
-            File path to write SDMX data as it is recieved.
+        tofile : str or :class:`~os.PathLike` or `file-like object`, optional
+            File path or file-like to write SDMX data as it is recieved.
         use_cache : bool, optional
             If :obj:`True`, return a previously retrieved :class:`~.Message`
             from :attr:`cache`, or update the cache with a newly-retrieved
@@ -388,7 +388,7 @@ class Request:
                 raise
 
         # Maybe copy the response to file as it's received
-        arg = [tofile] if tofile else []
+        arg = [tofile] if tofile else [] # explain or remove this. Why wrap in list and unpack it in next line?
         response_content = remote.ResponseIO(response, *arg)
 
         # Select reader class

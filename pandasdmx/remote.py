@@ -64,7 +64,7 @@ class ResponseIO(BufferedIOBase):
     ----------
     response : :class:`requests.Response`
         HTTP response to wrap.
-    tee : :py:class:`os.PathLike`, optional
+    tee : :py:class:`os.PathLike` or :py:class:`io.BufferedIOBasè`, optional
         If provided, the contents of the response are also written to this file
         as they are received. The file is closed automatically when *response*
         reaches EOF.
@@ -75,9 +75,14 @@ class ResponseIO(BufferedIOBase):
         self.response = response
         self.chunks = response.iter_content(ITER_CHUNK_SIZE)
         self.pending = bytes()
-        self.tee_filename = tee
-        # str() here is for Python 3.5 compatibility
-        self.tee = open(str(tee), 'wb') if tee else None
+        # check for file-like or tempfile
+        if isinstance(tee, BufferedIOBase) or hasattr(tee, 'file'):
+            self.tee_filename = tee.name
+            self.tee = tee
+        else:
+            # so tee must be str or os.PathLike or None
+            self.tee_filename = tee
+            self.tee = open(tee, 'wb') if tee else None
 
     def readable(self):
         return True
@@ -87,7 +92,7 @@ class ResponseIO(BufferedIOBase):
 
         If the argument is omitted, :py:obj:`None`, or negative, reads and
         returns all data until EOF. If *tee* was provided to the constructor,
-        data is echoed to file.
+        data is echoed to file. file is not closed.
 
         If the argument is positive, and the underlying raw stream is not
         ‘interactive’, multiple raw reads may be issued to satisfy the byte
@@ -116,8 +121,5 @@ class ResponseIO(BufferedIOBase):
 
         if self.tee:
             self.tee.write(result)
-            if len(result) == 0:
-                # Also close the results file
-                self.tee.close()
 
         return result

@@ -388,8 +388,7 @@ class Request:
                 raise
 
         # Maybe copy the response to file as it's received
-        arg = [tofile] if tofile else [] # explain or remove this. Why wrap in list and unpack it in next line?
-        response_content = remote.ResponseIO(response, *arg)
+        response_content = remote.ResponseIO(response, tee=tofile)
 
         # Select reader class
         content_type = response.headers.get('content-type', None)

@@ -92,7 +92,7 @@ class ResponseIO(BufferedIOBase):
 
         If the argument is omitted, :py:obj:`None`, or negative, reads and
         returns all data until EOF. If *tee* was provided to the constructor,
-        data is echoed to file. file is not closed.
+        data is echoed to file; *tee* is not closed.
 
         If the argument is positive, and the underlying raw stream is not
         ‘interactive’, multiple raw reads may be issued to satisfy the byte

@@ -260,7 +260,8 @@ class TestINSEE(DataSourceTest):
         req.get(endpoint, provider='all',
                 tofile=self._cache_path.with_suffix('.' + endpoint))
 
-
+@pytest.mark.xfail(reason='Service is currently unavailable.',
+                   raises=HTTPError)
 class TestISTAT(DataSourceTest):
     source_id = 'ISTAT'
 

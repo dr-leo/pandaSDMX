@@ -57,18 +57,18 @@ class Source(BaseSource):
         wait_seconds, attempts = get_footer_url
 
         # Create a temporary file to store the ZIP response
-        with NamedTemporaryFile(prefix='pandasdmx-') as ntf:
-            # Make a limited number of attempts to retrieve the file
-            for a in range(attempts):
-                sleep(wait_seconds)
-                try:
-                    # This line succeeds if the file exists; the ZIP response
-                    # is stored to ntf.name, and then used by the
-                    # handle_response() hook below
-                    return request.get(url=url, tofile=ntf.name)
-                except requests.HTTPError:
-                    raise
-
+        ntf = NamedTemporaryFile(prefix='pandasdmx-')
+        # Make a limited number of attempts to retrieve the file
+        for a in range(attempts):
+            sleep(wait_seconds)
+            try:
+                # This line succeeds if the file exists; the ZIP response
+                # is stored to ntf, and then used by the
+                # handle_response() hook below
+                return request.get(url=url, tofile=ntf)
+            except requests.HTTPError:
+                raise
+        ntf.close()
         raise RuntimeError('Maximum attempts exceeded')
 
     def handle_response(self, response, content):
@@ -79,6 +79,7 @@ class Source(BaseSource):
         contained XML file.
 
         """
+        
         if response.headers['content-type'] != 'application/octet-stream':
             return response, content
 
@@ -89,7 +90,7 @@ class Source(BaseSource):
                 break
 
         # Open the zip archive
-        with ZipFile(content.tee_filename, mode='r') as zf:
+        with ZipFile(content.tee, mode='r') as zf:
             # The archive should contain only one file
             infolist = zf.infolist()
             assert len(infolist) == 1

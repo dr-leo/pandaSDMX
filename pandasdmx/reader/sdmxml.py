@@ -1208,15 +1208,9 @@ class Reader(BaseReader):
         if isinstance(value_type, str):
             value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
         f = Facet(value_type=value_type)
-        key_map = {
-            'isSequence': 'is_sequence',
-            'minValue': 'min_value',
-            'maxValue': 'max_value',
-            'minLength': 'min_length',
-            'maxLength': 'max_length',
-            }
         for key, value in attr.items():
-            setattr(f.type, key_map.get(key, key), value)
+            # Convert attribute name from camelCase to snake_case
+            setattr(f.type, re.sub('([A-Z]+)', r'_\1', key).lower(), value)
         return f
 
     # Parsers for constraints etc.

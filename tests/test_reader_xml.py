@@ -1,6 +1,8 @@
 import warnings
 
+from lxml.etree import Element
 import pandasdmx as sdmx
+from pandasdmx.reader.sdmxml import Reader
 import pytest
 
 from . import test_data_path, test_files
@@ -72,3 +74,19 @@ def test_read_ss_xml():
     # navigating object relationships
     TIME_FORMAT = s0_key.attrib['TIME_FORMAT'].value_for
     assert len(TIME_FORMAT.related_to.dimensions) == 5
+
+
+@pytest.mark.parametrize('elem', [
+    # Reader.parse_facet
+    Element('Facet', isSequence='False', startValue='3.4', endValue='1'),
+])
+def test_parse_elem(elem):
+    """Test individual XML elements.
+
+    This method allows unit-level testing of specific XML elements appearing in
+    SDMX-ML messages. Add elements by extending the list passed to the
+    parametrize() decorator.
+    """
+    # Create a reader and parse just one element; test passes if no exception
+    # is raised
+    Reader()._parse(elem)

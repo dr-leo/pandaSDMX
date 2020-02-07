@@ -11,65 +11,21 @@ from lxml.etree import QName, XPath
 
 from pandasdmx.exceptions import ParseError, XMLParseError
 from pandasdmx.message import (
-    DataMessage,
-    ErrorMessage,
-    Footer,
-    Header,
-    StructureMessage,
+    DataMessage, ErrorMessage, Footer, Header, StructureMessage,
     )
-from pandasdmx.model import (
-    DEFAULT_LOCALE,
-    Agency,
-    AgencyScheme,
-    AllDimensions,
-    Annotation,
-    AttributeDescriptor,
-    NoSpecifiedRelationship,
-    PrimaryMeasureRelationship,
-    DimensionRelationship,
-    AttributeValue,
-    Categorisation,
-    Category,
-    CategoryScheme,
-    Code,
-    Codelist,
-    ComponentValue,
-    Concept,
-    ConceptScheme,
-    Contact,
-    ContentConstraint,
-    ConstraintRole,
-    ConstraintRoleType,
-    CubeRegion,
-    DataAttribute,
-    DataflowDefinition,
-    DataKey,
-    DataKeySet,
-    DataProvider,
-    DataProviderScheme,
-    DataSet,
-    DataStructureDefinition,
-    Dimension,
-    DimensionDescriptor,
-    Facet,
-    FacetValueType,
-    GroupDimensionDescriptor,
-    GroupKey,
-    IdentifiableArtefact,
-    InternationalString,
-    ItemScheme,
-    MaintainableArtefact,
-    MeasureDescriptor,
-    MemberSelection,
-    MemberValue,
-    Key,
-    Observation,
-    PrimaryMeasure,
-    ProvisionAgreement,
-    Representation,
-    SeriesKey,
-    TimeDimension,
-    UsageStatus,
+from pandasdmx.model import (  # noqa: F401
+    DEFAULT_LOCALE, Agency, AgencyScheme, AllDimensions, Annotation,
+    AttributeDescriptor, NoSpecifiedRelationship, PrimaryMeasureRelationship,
+    DimensionRelationship, AttributeValue, Categorisation, Category,
+    CategoryScheme, Code, Codelist, ComponentValue, Concept, ConceptScheme,
+    Contact, ContentConstraint, ConstraintRole, ConstraintRoleType, CubeRegion,
+    DataAttribute, DataflowDefinition, DataKey, DataKeySet, DataProvider,
+    DataProviderScheme, DataSet, DataStructureDefinition, Dimension,
+    DimensionDescriptor, Facet, FacetValueType, GroupDimensionDescriptor,
+    GroupKey, IdentifiableArtefact, InternationalString, ItemScheme,
+    MaintainableArtefact, MeasureDescriptor, MeasureDimension, MemberSelection,
+    MemberValue, Key, Observation, PrimaryMeasure, ProvisionAgreement,
+    Representation, SeriesKey, TimeDimension, UsageStatus,
     )
 
 from pandasdmx.reader import BaseReader
@@ -182,6 +138,7 @@ METHOD = {
     'TextFormat': 'facet',
     'EnumerationFormat': 'facet',
 
+    'MeasureDimension': 'dimension',
     'TimeDimension': 'dimension',
 
     # Tags that are bare containers for other XML elements; skip entirely
@@ -1103,7 +1060,7 @@ class Reader(BaseReader):
     def parse_dimension(self, elem):
         values = self._parse(elem)
 
-        # Object class: Dimension, TimeDimension, etc.
+        # Object class: Dimension, MeasureDimension, or TimeDimension
         cls = globals()[QName(elem).localname]
 
         attr = copy(elem.attrib)

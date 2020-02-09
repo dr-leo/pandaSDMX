@@ -12,7 +12,7 @@ install:
   - pip install --editable .[cache,docs,tests]
 
 script: >
-  python tests/pytest_travis.py
+  pytest
   -rfE
   --remote-data
   --cov pandasdmx --cov-report term-missing

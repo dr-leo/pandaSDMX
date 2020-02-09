@@ -21,13 +21,11 @@ log = logging.getLogger(__name__)
 
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get('TRAVIS_EVENT_TYPE', '') != 'cron',
-    reason="Fragile source tests only run on Travis 'cron' events.")
-
-# For development/debugging, uncomment the following
-# pytestmark = pytest.mark.skipif(
-#     'TRAVIS_EVENT_TYPE' not in os.environ,
-#     reason='Run on all Travis jobs, for debugging.')
+    # Default value in get() ensures that when *not* on Travis, the tests run
+    condition=os.environ.get('TRAVIS_EVENT_TYPE', 'cron') != 'cron',
+    # For development/debugging, uncomment the following to *always* run
+    # condition=False,
+    reason="Fragile source tests only run on Travis for 'cron' events.")
 
 
 structure_endpoints = list(filter(lambda r: r != Resource.data, Resource))

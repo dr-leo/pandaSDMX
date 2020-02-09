@@ -5,6 +5,7 @@ To force the data to be retrieved over the Internet, delete this directory.
 """
 # TODO add a pytest argument for clearing this cache in conftest.py
 import logging
+import os
 
 from pandasdmx.api import Request
 from pandasdmx.exceptions import HTTPError
@@ -17,6 +18,16 @@ from . import test_data_path
 
 
 log = logging.getLogger(__name__)
+
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get('TRAVIS_EVENT_TYPE', '') != 'cron',
+    reason="Fragile source tests only run on Travis 'cron' events.")
+
+# For development/debugging, uncomment the following
+# pytestmark = pytest.mark.skipif(
+#     'TRAVIS_EVENT_TYPE' not in os.environ,
+#     reason='Run on all Travis jobs, for debugging.')
 
 
 structure_endpoints = list(filter(lambda r: r != Resource.data, Resource))

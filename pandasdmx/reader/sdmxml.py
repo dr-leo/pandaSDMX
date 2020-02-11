@@ -507,23 +507,19 @@ class Reader(BaseReader):
         """
         # Apply conversions to attributes
         convert_attrs = {
-            'agencyID': ('maintainer', lambda value: Agency(id=value)),
-            'isExternalReference': ('is_external_reference', bool),
-            'isFinal': ('is_final', bool),
-            'isPartial': ('is_partial', bool),
-            'structureURL': ('structure_url', lambda value: value),
+            'agency_id': ('maintainer', lambda value: Agency(id=value)),
             'role': ('role', lambda value:
                      ConstraintRole(role=ConstraintRoleType[value])),
-            'validFrom': ('valid_from', str),
-            'validTo': ('valid_to', str),
             }
 
-        attr = copy(elem.attrib)
-        for source, (target, xform) in convert_attrs.items():
-            try:
-                attr[target] = xform(attr.pop(source))
-            except KeyError:
-                continue
+        attr = {}
+        for name, value in elem.attrib.items():
+            # Name in snake case
+            name = to_snake(name)
+            # Optional new name and function to transform the value
+            (name, xform) = convert_attrs.get(name, (name, lambda v: v))
+            # Store transformed value
+            attr[name] = xform(value)
 
         try:
             # Maybe retrieve an existing reference

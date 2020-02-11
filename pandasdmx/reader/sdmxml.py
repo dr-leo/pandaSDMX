@@ -60,6 +60,14 @@ def qname(ns, name):
     return QName(NS[ns], name)
 
 
+_TO_SNAKE_RE = re.compile('([A-Z]+)')
+
+
+def to_snake(value):
+    """Convert *value* from lowerCamelCase to snake_case."""
+    return _TO_SNAKE_RE.sub(r'_\1', value).lower()
+
+
 # Mapping tag names → Message classes
 MESSAGE = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
@@ -1158,16 +1166,25 @@ class Reader(BaseReader):
         return r
 
     def parse_facet(self, elem):
-        # Convert case of the value_type. In XML, first letter is uppercase;
-        # in the spec, lowercase.
         attr = copy(elem.attrib)
-        value_type = attr.pop('textType', None)
-        if isinstance(value_type, str):
-            value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
-        f = Facet(value_type=value_type)
+        f = Facet()
+
+        # Parse facet value type
+        try:
+            fvt = attr.pop('textType')
+        except KeyError:
+            # No such attribute
+            pass
+        else:
+            # Convert case of the value. In XML, first letter is uppercase; in
+            # the spec and Python enum, lowercase.
+            f.value_type = FacetValueType[fvt[0].lower() + fvt[1:]]
+
+        # Remaining attributes are for Facet.type, an instance of FacetType
         for key, value in attr.items():
             # Convert attribute name from camelCase to snake_case
-            setattr(f.type, re.sub('([A-Z]+)', r'_\1', key).lower(), value)
+            setattr(f.type, to_snake(key), value)
+
         return f
 
     # Parsers for constraints etc.

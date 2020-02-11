@@ -450,8 +450,7 @@ class Reader(BaseReader):
                 # Current scope index for IdentifiableArtefacts
                 self._current[(item.__class__, item.id)] = item
 
-    def _maintained(self, cls=None, id=None, urn=None, match_subclass=False,
-                    **kwargs):
+    def _maintained(self, cls=None, id=None, urn=None, **kwargs):
         """Retrieve or instantiate a MaintainableArtefact of *cls* with *ids.
 
         If the object has been parsed (i.e. is in :attr:`_index`), it is
@@ -460,21 +459,11 @@ class Reader(BaseReader):
 
         If *urn* is given, it is used to determine *cls* and *id*, per the URN
         regular expression.
-
-        If *match_subclass* is False, *cls* may either be a string or a class
-        for a subclass of MaintainableArtefact. If *match_subclass* is True,
-        *cls* must be a class.
         """
         if urn:
             match = URN.match(urn).groupdict()
             cls = get_class(match['package'], match['class'])
             id = match['id']
-
-        if match_subclass:
-            for key, obj in self._index.items():
-                if isinstance(obj, cls) and obj.id == id:
-                    return obj
-            raise ValueError(cls, id)
 
         key = (cls.__name__, id) if isclass(cls) else (cls, id)
 
@@ -486,7 +475,8 @@ class Reader(BaseReader):
                 raise TypeError(f'{cls} is not maintainable')
 
             # Create a new object. A reference to a MaintainableArtefact that
-            # is not defined in the current message is, necessarily, external
+            # is not (yet) defined in the current message is, necessarily,
+            # external
             assert kwargs.pop('is_external_reference', True)
             self._index[key] = cls(id=id, is_external_reference=True,
                                    **kwargs)

@@ -14,6 +14,7 @@ from pandasdmx.exceptions import ParseError, XMLParseError
 from pandasdmx.message import (
     DataMessage, ErrorMessage, Footer, Header, StructureMessage,
     )
+import pandasdmx.model
 from pandasdmx.model import (  # noqa: F401
     DEFAULT_LOCALE, Agency, AgencyScheme, AllDimensions, Annotation,
     AttributeDescriptor, NoSpecifiedRelationship, PrimaryMeasureRelationship,
@@ -186,7 +187,7 @@ def get_class(package, cls):
     if isinstance(cls, str):
         if cls in 'Dataflow DataStructure':
             cls += 'Definition'
-        cls = globals()[cls]
+        cls = getattr(pandasdmx.model, cls)
 
     assert cls in PACKAGE_CLASS[package], \
         f'Package {package!r} invalid for {cls}'
@@ -633,14 +634,14 @@ class Reader(BaseReader):
             if parent == 'Parent':
                 # Ref to parent of an Item in an ItemScheme; the ref'd object
                 # has the same class as the Item
-                cls = globals()[self._stack[-1]]
+                cls = getattr(pandasdmx.model, self._stack[-1])
             elif parent == 'Group':
                 cls = GroupDimensionDescriptor
             elif parent in ('Dimension', 'DimensionReference'):
                 # References to Dimensions
                 cls = [Dimension, TimeDimension]
             else:
-                cls = globals()[parent]
+                cls = getattr(pandasdmx.model, parent)
 
         # Get or instantiate the object itself
         try:
@@ -922,7 +923,7 @@ class Reader(BaseReader):
         return self._parse(elem, unwrap=False)
 
     def parse_organisation(self, elem):
-        cls = globals()[QName(elem).localname]
+        cls = getattr(pandasdmx.model, QName(elem).localname)
         o, values = self._named(cls, elem)
         o.contact = wrap(values.pop('contact', []))
         assert len(values) == 0
@@ -1013,7 +1014,7 @@ class Reader(BaseReader):
         return result
 
     def parse_orgscheme(self, elem):
-        cls = globals()[QName(elem).localname]
+        cls = getattr(pandasdmx.model, QName(elem).localname)
         os, values = self._named(cls, elem, unwrap=False)
         # Get the list of organisations. The following assumes that the
         # *values* dict has only one item. Otherwise, the returned item will be
@@ -1061,7 +1062,7 @@ class Reader(BaseReader):
                 cls = 'DimensionDescriptor'
             else:  # pragma: no cover
                 raise
-        Grouping = globals()[cls]
+        Grouping = getattr(pandasdmx.model, cls)
         g = Grouping(**attr)
         g.components.extend(chain(*self._parse(elem, unwrap=False).values()))
         return g
@@ -1070,7 +1071,7 @@ class Reader(BaseReader):
         values = self._parse(elem)
 
         # Object class: Dimension, MeasureDimension, or TimeDimension
-        cls = globals()[QName(elem).localname]
+        cls = getattr(pandasdmx.model, QName(elem).localname)
 
         attr = copy(elem.attrib)
         try:
@@ -1190,8 +1191,6 @@ class Reader(BaseReader):
 
     # Parsers for constraints etc.
     def parse_contentconstraint(self, elem):
-        # Munge
-
         role = elem.attrib.pop('type').lower()
         elem.attrib['role'] = 'allowable' if role == 'allowed' else role
         cc, values = self._named(ContentConstraint, elem)

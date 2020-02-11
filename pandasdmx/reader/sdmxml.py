@@ -1,4 +1,4 @@
-"""SDMXML v2.1 reader"""
+"""SDMXML v2.1 reader."""
 from collections import defaultdict
 from copy import copy
 from inspect import isclass
@@ -79,33 +79,26 @@ MESSAGE = {qname('mes', name): cls for name, cls in (
     )}
 
 
-# XPath expressions for reader._collect()
-COLLECT = {
-    'header': {
-        'id': 'mes:ID/text()',
-        'prepared': 'mes:Prepared/text()',
-        'sender': 'mes:Sender/@*',
-        'receiver': 'mes:Receiver/@*',
-        'structure_id': 'mes:Structure/@structureID',
-        'dim_at_obs': 'mes:Structure/@dimensionAtObservation',
-        'structure_ref_id':
-            # 'Structure' vs 'StructureUsage' varies across XML specimens.
-            ('(mes:Structure/com:Structure/Ref/@id | '
-             'mes:Structure/com:StructureUsage/Ref/@id)[1]'),
-        'structure_ref_agencyid':
-            ('(mes:Structure/com:Structure/Ref/@agencyID | '
-             'mes:Structure/com:StructureUsage/Ref/@agencyID)[1]'),
-        'structure_ref_version':
-            ('(mes:Structure/com:Structure/Ref/@version | '
-             'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
-        'structure_ref_urn': 'mes:Structure/com:Structure/URN/text()',
-        },
-    }
-
-# Precompile paths
-for group, vals in COLLECT.items():
-    for key, path in vals.items():
-        COLLECT[group][key] = XPath(path, namespaces=NS, smart_strings=False)
+# XPath expressions for parse_header()
+HEADER_XPATH = {key: XPath(expr, namespaces=NS, smart_strings=False) for
+                key, expr in (
+    ('id', 'mes:ID/text()'),
+    ('prepared', 'mes:Prepared/text()'),
+    ('sender', 'mes:Sender/@*'),
+    ('receiver', 'mes:Receiver/@*'),
+    ('structure_id', 'mes:Structure/@structureID'),
+    ('dim_at_obs', 'mes:Structure/@dimensionAtObservation'),
+    # 'Structure' vs 'StructureUsage' varies across XML specimens.
+    ('structure_ref_id', '(mes:Structure/com:Structure/Ref/@id | '
+                         'mes:Structure/com:StructureUsage/Ref/@id)[1]'),
+    ('structure_ref_agencyid', '(mes:Structure/com:Structure/Ref/@agencyID | '
+                               'mes:Structure/com:StructureUsage/Ref/'
+                               '@agencyID)[1]'),
+    ('structure_ref_version', '(mes:Structure/com:Structure/Ref/@version | '
+                              'mes:Structure/com:StructureUsage/Ref/'
+                              '@version)[1]'),
+    ('structure_ref_urn', 'mes:Structure/com:Structure/URN/text()'),
+    )}
 
 
 # For Reader._parse(): tag name → Reader.parse_[…] method to use
@@ -225,7 +218,7 @@ class Reader(BaseReader):
 
     The implementation is recursive, and depends on:
 
-    - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
+    - :meth:`_parse`, :meth:`_named` and :meth:`_maintained`.
     - State variables :attr:`_current`, :attr:`_stack, :attr:`_index`.
 
     Parameters
@@ -344,19 +337,6 @@ class Reader(BaseReader):
 
         assert len(values) == 0, values
         return msg
-
-    def _collect(self, group, elem):
-        """Collect values from *elem* and its children using XPaths in *group*.
-
-        A dictionary is returned.
-        """
-        result = {}
-        for key, xpath in COLLECT[group].items():
-            matches = xpath(elem)
-            if len(matches) == 0:
-                continue
-            result[key] = matches[0] if len(matches) == 1 else matches
-        return result
 
     def _parse(self, elem, unwrap=True):
         """Recursively parse the XML *elem* and return pandasdmx.model objects.
@@ -700,7 +680,13 @@ class Reader(BaseReader):
         return result
 
     def parse_header(self, elem):
-        values = self._collect('header', elem)
+        # Collect values from *elem* and its children using XPath
+        values = {}
+        for key, xpath in HEADER_XPATH.items():
+            matches = xpath(elem)
+            if len(matches) == 0:
+                continue
+            values[key] = matches[0] if len(matches) == 1 else matches
 
         # Handle a reference to a DataStructureDefinition
         attrs = {}

@@ -1,4 +1,5 @@
 """SDMXML v2.1 reader."""
+# See comments on the Reader() class for implementation details
 from collections import defaultdict
 from copy import copy
 from inspect import isclass
@@ -102,6 +103,7 @@ HEADER_XPATH = {key: XPath(expr, namespaces=NS, smart_strings=False) for
 
 
 # For Reader._parse(): tag name → Reader.parse_[…] method to use
+# TODO make this data structure more compact/avoid repetition
 METHOD = {
     'AnnotationText': 'international_string',
     'Name': 'international_string',
@@ -213,6 +215,22 @@ class Reparse(Exception):
     pass
 
 
+# Reader operates by recursion through the _parse() method:
+#
+# - _parse(elem) uses the XML tag name of elem, plus METHOD, to find a method
+#    like Reader.parse_X().
+# - parse_X(elem) is called. These methods perform similar tasks such as:
+#   - Create an instance of a pandasdmx.model class,
+#   - Recursively:
+#     - call _parse() on the children of elem,
+#     - call _named(), which also creates an instance of a NameableArtefact,
+#   - Handle the returned values (i.e. parsed XML child elements) and attach
+#     them to the model object,
+#   - Handle the XML attributes of elem and attach these to the model object,
+#   - ``assert len(values) == 0`` or similar to assert that all parsed child
+#     elements and/or attributes have been consumed,
+#   - Return the parsed model object to be used further up the recursive stack.
+#
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from :mod:`pandasdmx.model`.
 
@@ -581,6 +599,7 @@ class Reader(BaseReader):
     # Parsers for common elements
 
     def parse_international_string(self, elem):
+        # Return a tuple (locale, text)
         return (elem.attrib.get(qname('xml', 'lang'), DEFAULT_LOCALE),
                 elem.text)
 

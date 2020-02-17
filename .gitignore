@@ -12,3 +12,4 @@ doc/_build
 prof/
 tests/data/cache
 htmlcov
+.vscode/settings.json

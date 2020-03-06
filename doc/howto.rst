@@ -42,8 +42,11 @@ An example, using the same European Central Bank exchange rate data set as in th
 
    import pandasdmx as sdmx
    ecb = sdmx.Request('ECB')
-   data_msg = ecb.data('EXR', key={'CURRENCY': ['EUR']},
-                        params={'startPeriod': '2019'})
+   data_msg = ecb.data(
+       'EXR',
+       key=dict(CURRENCY_DENOM='EUR', FREQ='M', EXR_SUFFIX='A'),
+       params=dict(startPeriod='2019-01', endPeriod='2019-06'),
+   )
    data = data_msg.data[0]
 
 Without date-time conversion, :meth:`~.to_pandas` produces a MultiIndex:
@@ -60,7 +63,7 @@ With date-time conversion, it produces a DatetimeIndex:
    df1.index
    df1
 
-Using the advanced functionality to specify a dimension for the frequency of a PeriodIndex, and change the orientation so that the PeriodIndex is on the columns:
+Use the advanced functionality to specify a dimension for the frequency of a PeriodIndex, and change the orientation so that the PeriodIndex is on the columns:
 
 .. ipython:: python
 

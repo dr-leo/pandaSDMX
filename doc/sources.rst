@@ -91,6 +91,7 @@ SDMX-ML —
 - No categorisations available.
 - Long response times are reported. Increase the timeout attribute to avoid
   timeout exceptions.
+- Does not return DSDs for dataflow requests with the ``references='all'`` query parameter.
 
 .. autoclass:: pandasdmx.source.estat.Source
    :members:

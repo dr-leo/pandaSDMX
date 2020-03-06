@@ -25,8 +25,8 @@ There are multiple ways to access these:
 
 .. _howto-datetime:
 
-Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`pandas.PeriodIndex`
-----------------------------------------------------------------------------------
+Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`~pandas.PeriodIndex`
+-----------------------------------------------------------------------------------
 
 SDMX datasets often have a :class:`~.Dimension` with a name like ``TIME_PERIOD``.
 To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
@@ -74,6 +74,65 @@ Use the advanced functionality to specify a dimension for the frequency of a Per
    df2
 
 .. warning:: For large datasets, parsing datetimes may reduce performance.
+
+
+.. _howto-references:
+
+Use the 'references' query parameter
+------------------------------------
+
+SDMX web services support a ``references`` parameter in HTTP requests which can take values such as 'all', 'descendants', etc.
+This parameter instructs the web service to include, when generating a Data- or StructureMessage, the objects implicitly designated by the ``references`` parameter alongside the explicit resource.
+For example, for the request:
+
+>>> response = some_agency.dataflow('SOME_ID', params={'references': 'all'})
+
+the response will include:
+
+- the dataflow 'SOME_ID' explicitly specified,
+- the DSD referenced by the dataflow's ``structure`` attribute,
+- the code lists referenced by the DSD, and
+- any content-constraints which reference the dataflow or the DSD.
+
+It is much more efficient to request many objects in a single request.
+Thus, pandaSDMX provides default values for ``references`` in common queries.
+For instance, when a single dataflow is requested by specifying its ID, pandaSDMX sets ``references`` to 'all'.
+On the other hand, when the dataflow ID is wildcarded, it is more practical not to request all referenced objects alongside as the response would likely be excessively large, and the user is deemed to be interested in the bird's eye perspective (list of dataflows) prior to focusing on a particular dataflow and its descendents and ancestors.
+The default value for the ``references`` parameter can be overridden.
+
+Some web services differ in how they handle ``references``—for instance, :ref:`ESTAT <ESTAT>`.
+See :doc:`sources` for details.
+
+
+.. _howto-categoryscheme:
+
+Use category schemes to explore data
+------------------------------------
+
+SDMX supports category-schemes to categorize dataflow definitions and other objects.
+This helps retrieve, e.g., a dataflow of interest. Note that not all agencies support categoryschemes.
+A good example is the ECB.
+However, as the ECB's SDMX service offers less than 100 dataflows, using categoryschemes is not strictly necessary.
+A counter-example is Eurostat which offers more than 6000 dataflows, yet does not categorize them.
+Hence, the user must search through the flat list of dataflows.
+
+To search the list of dataflows by category, we request the category scheme from the ECB's SDMX service and explore the response:
+
+.. ipython:: python
+
+    import pandasdmx as sdmx
+    ecb = sdmx.Request('ecb')
+    cat_response = ecb.categoryscheme()
+
+Like any other scheme, a category scheme is essentially a dict mapping ID's to the actual SDMX objects.
+To display the categorised items, in our case the dataflow definitions contained in the category on exchange rates, we iterate over the `Category` instance:
+
+.. ipython:: python
+
+    sdmx.to_pandas(cat_response.category_scheme.MOBILE_NAVI)
+    cat_response.category_scheme.MOBILE_NAVI
+
+.. versionadded:: 0.5
 
 
 .. _howto-convert:

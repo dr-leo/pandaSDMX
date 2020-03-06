@@ -54,7 +54,6 @@ To learn about SDMX in more detail, use the resources linked from the :doc:`over
    sources
    api
    howto
-   advanced
    whatsnew
    roadmap
 

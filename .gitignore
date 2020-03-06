@@ -12,4 +12,6 @@ doc/_build
 prof/
 tests/data/cache
 htmlcov
+
+# Editors
 .vscode/settings.json

@@ -1158,21 +1158,18 @@ class Reader(BaseReader):
         return r
 
     def parse_facet(self, elem):
-        f = Facet()
-
-        # Parse facet value type
-        # The following handles xml nodes tagged 'TextFormat' 
-        # TODO: Check if EnumerationFormat is properly handled? '. 
-        # In SDMXML, textType defaults to String.
+        # Parse facet value type; SDMX-ML default is 'String'
         fvt = elem.attrib.get('textType', 'String')
         # Convert case of the value. In XML, first letter is uppercase; in
         # the spec and Python enum, lowercase.
-        f.value_type = FacetValueType[fvt[0].lower() + fvt[1:]]
+        f = Facet(value_type=FacetValueType[fvt[0].lower() + fvt[1:]])
+
         # Other attributes are for Facet.type, an instance of FacetType
         for key, value in elem.attrib.items():
-            if key != 'textType':  
-                # Convert attribute name from camelCase to snake_case
-                setattr(f.type, to_snake(key), value)
+            if key == 'textType':
+                continue
+            # Convert attribute name from camelCase to snake_case
+            setattr(f.type, to_snake(key), value)
 
         return f
 

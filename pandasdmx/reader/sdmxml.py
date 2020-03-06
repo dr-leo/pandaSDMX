@@ -1,4 +1,5 @@
-"""SDMXML v2.1 reader"""
+"""SDMXML v2.1 reader."""
+# See comments on the Reader() class for implementation details
 from collections import defaultdict
 from copy import copy
 from inspect import isclass
@@ -11,65 +12,22 @@ from lxml.etree import QName, XPath
 
 from pandasdmx.exceptions import ParseError, XMLParseError
 from pandasdmx.message import (
-    DataMessage,
-    ErrorMessage,
-    Footer,
-    Header,
-    StructureMessage,
+    DataMessage, ErrorMessage, Footer, Header, StructureMessage,
     )
-from pandasdmx.model import (
-    DEFAULT_LOCALE,
-    Agency,
-    AgencyScheme,
-    AllDimensions,
-    Annotation,
-    AttributeDescriptor,
-    NoSpecifiedRelationship,
-    PrimaryMeasureRelationship,
-    DimensionRelationship,
-    AttributeValue,
-    Categorisation,
-    Category,
-    CategoryScheme,
-    Code,
-    Codelist,
-    ComponentValue,
-    Concept,
-    ConceptScheme,
-    Contact,
-    ContentConstraint,
-    ConstraintRole,
-    ConstraintRoleType,
-    CubeRegion,
-    DataAttribute,
-    DataflowDefinition,
-    DataKey,
-    DataKeySet,
-    DataProvider,
-    DataProviderScheme,
-    DataSet,
-    DataStructureDefinition,
-    Dimension,
-    DimensionDescriptor,
-    Facet,
-    FacetValueType,
-    GroupDimensionDescriptor,
-    GroupKey,
-    IdentifiableArtefact,
-    InternationalString,
-    ItemScheme,
-    MaintainableArtefact,
-    MeasureDescriptor,
-    MemberSelection,
-    MemberValue,
-    Key,
-    Observation,
-    PrimaryMeasure,
-    ProvisionAgreement,
-    Representation,
-    SeriesKey,
-    TimeDimension,
-    UsageStatus,
+import pandasdmx.model
+from pandasdmx.model import (  # noqa: F401
+    DEFAULT_LOCALE, Agency, AgencyScheme, AllDimensions, Annotation,
+    AttributeDescriptor, NoSpecifiedRelationship, PrimaryMeasureRelationship,
+    DimensionRelationship, AttributeValue, Categorisation, Category,
+    CategoryScheme, Code, Codelist, ComponentValue, Concept, ConceptScheme,
+    Contact, ContentConstraint, ConstraintRole, ConstraintRoleType, CubeRegion,
+    DataAttribute, DataflowDefinition, DataKey, DataKeySet, DataProvider,
+    DataProviderScheme, DataSet, DataStructureDefinition, Dimension,
+    DimensionDescriptor, Facet, FacetValueType, GroupDimensionDescriptor,
+    GroupKey, IdentifiableArtefact, InternationalString, ItemScheme,
+    MaintainableArtefact, MeasureDescriptor, MeasureDimension, MemberSelection,
+    MemberValue, Key, Observation, PrimaryMeasure, ProvisionAgreement,
+    Representation, SeriesKey, TimeDimension, UsageStatus,
     )
 
 from pandasdmx.reader import BaseReader
@@ -104,6 +62,14 @@ def qname(ns, name):
     return QName(NS[ns], name)
 
 
+_TO_SNAKE_RE = re.compile('([A-Z]+)')
+
+
+def to_snake(value):
+    """Convert *value* from lowerCamelCase to snake_case."""
+    return _TO_SNAKE_RE.sub(r'_\1', value).lower()
+
+
 # Mapping tag names → Message classes
 MESSAGE = {qname('mes', name): cls for name, cls in (
     ('Structure', StructureMessage),
@@ -115,36 +81,30 @@ MESSAGE = {qname('mes', name): cls for name, cls in (
     )}
 
 
-# XPath expressions for reader._collect()
-COLLECT = {
-    'header': {
-        'id': 'mes:ID/text()',
-        'prepared': 'mes:Prepared/text()',
-        'sender': 'mes:Sender/@*',
-        'receiver': 'mes:Receiver/@*',
-        'structure_id': 'mes:Structure/@structureID',
-        'dim_at_obs': 'mes:Structure/@dimensionAtObservation',
-        'structure_ref_id':
-            # 'Structure' vs 'StructureUsage' varies across XML specimens.
-            ('(mes:Structure/com:Structure/Ref/@id | '
-             'mes:Structure/com:StructureUsage/Ref/@id)[1]'),
-        'structure_ref_agencyid':
-            ('(mes:Structure/com:Structure/Ref/@agencyID | '
-             'mes:Structure/com:StructureUsage/Ref/@agencyID)[1]'),
-        'structure_ref_version':
-            ('(mes:Structure/com:Structure/Ref/@version | '
-             'mes:Structure/com:StructureUsage/Ref/@version)[1]'),
-        'structure_ref_urn': 'mes:Structure/com:Structure/URN/text()',
-        },
-    }
-
-# Precompile paths
-for group, vals in COLLECT.items():
-    for key, path in vals.items():
-        COLLECT[group][key] = XPath(path, namespaces=NS, smart_strings=False)
+# XPath expressions for parse_header()
+HEADER_XPATH = {key: XPath(expr, namespaces=NS, smart_strings=False) for
+                key, expr in (
+    ('id', 'mes:ID/text()'),
+    ('prepared', 'mes:Prepared/text()'),
+    ('sender', 'mes:Sender/@*'),
+    ('receiver', 'mes:Receiver/@*'),
+    ('structure_id', 'mes:Structure/@structureID'),
+    ('dim_at_obs', 'mes:Structure/@dimensionAtObservation'),
+    # 'Structure' vs 'StructureUsage' varies across XML specimens.
+    ('structure_ref_id', '(mes:Structure/com:Structure/Ref/@id | '
+                         'mes:Structure/com:StructureUsage/Ref/@id)[1]'),
+    ('structure_ref_agencyid', '(mes:Structure/com:Structure/Ref/@agencyID | '
+                               'mes:Structure/com:StructureUsage/Ref/'
+                               '@agencyID)[1]'),
+    ('structure_ref_version', '(mes:Structure/com:Structure/Ref/@version | '
+                              'mes:Structure/com:StructureUsage/Ref/'
+                              '@version)[1]'),
+    ('structure_ref_urn', 'mes:Structure/com:Structure/URN/text()'),
+    )}
 
 
 # For Reader._parse(): tag name → Reader.parse_[…] method to use
+# TODO make this data structure more compact/avoid repetition
 METHOD = {
     'AnnotationText': 'international_string',
     'Name': 'international_string',
@@ -182,6 +142,7 @@ METHOD = {
     'TextFormat': 'facet',
     'EnumerationFormat': 'facet',
 
+    'MeasureDimension': 'dimension',
     'TimeDimension': 'dimension',
 
     # Tags that are bare containers for other XML elements; skip entirely
@@ -226,7 +187,7 @@ def get_class(package, cls):
     if isinstance(cls, str):
         if cls in 'Dataflow DataStructure':
             cls += 'Definition'
-        cls = globals()[cls]
+        cls = getattr(pandasdmx.model, cls)
 
     assert cls in PACKAGE_CLASS[package], \
         f'Package {package!r} invalid for {cls}'
@@ -255,12 +216,28 @@ class Reparse(Exception):
     pass
 
 
+# Reader operates by recursion through the _parse() method:
+#
+# - _parse(elem) uses the XML tag name of elem, plus METHOD, to find a method
+#    like Reader.parse_X().
+# - parse_X(elem) is called. These methods perform similar tasks such as:
+#   - Create an instance of a pandasdmx.model class,
+#   - Recursively:
+#     - call _parse() on the children of elem,
+#     - call _named(), which also creates an instance of a NameableArtefact,
+#   - Handle the returned values (i.e. parsed XML child elements) and attach
+#     them to the model object,
+#   - Handle the XML attributes of elem and attach these to the model object,
+#   - ``assert len(values) == 0`` or similar to assert that all parsed child
+#     elements and/or attributes have been consumed,
+#   - Return the parsed model object to be used further up the recursive stack.
+#
 class Reader(BaseReader):
     """Read SDMX-ML 2.1 and expose it as instances from :mod:`pandasdmx.model`.
 
     The implementation is recursive, and depends on:
 
-    - :meth:`_parse`, :meth:`_collect`, :meth:`_named` and :meth:`_maintained`.
+    - :meth:`_parse`, :meth:`_named` and :meth:`_maintained`.
     - State variables :attr:`_current`, :attr:`_stack, :attr:`_index`.
 
     Parameters
@@ -380,19 +357,6 @@ class Reader(BaseReader):
         assert len(values) == 0, values
         return msg
 
-    def _collect(self, group, elem):
-        """Collect values from *elem* and its children using XPaths in *group*.
-
-        A dictionary is returned.
-        """
-        result = {}
-        for key, xpath in COLLECT[group].items():
-            matches = xpath(elem)
-            if len(matches) == 0:
-                continue
-            result[key] = matches[0] if len(matches) == 1 else matches
-        return result
-
     def _parse(self, elem, unwrap=True):
         """Recursively parse the XML *elem* and return pandasdmx.model objects.
 
@@ -486,8 +450,7 @@ class Reader(BaseReader):
                 # Current scope index for IdentifiableArtefacts
                 self._current[(item.__class__, item.id)] = item
 
-    def _maintained(self, cls=None, id=None, urn=None, match_subclass=False,
-                    **kwargs):
+    def _maintained(self, cls=None, id=None, urn=None, **kwargs):
         """Retrieve or instantiate a MaintainableArtefact of *cls* with *ids.
 
         If the object has been parsed (i.e. is in :attr:`_index`), it is
@@ -496,21 +459,11 @@ class Reader(BaseReader):
 
         If *urn* is given, it is used to determine *cls* and *id*, per the URN
         regular expression.
-
-        If *match_subclass* is False, *cls* may either be a string or a class
-        for a subclass of MaintainableArtefact. If *match_subclass* is True,
-        *cls* must be a class.
         """
         if urn:
             match = URN.match(urn).groupdict()
             cls = get_class(match['package'], match['class'])
             id = match['id']
-
-        if match_subclass:
-            for key, obj in self._index.items():
-                if isinstance(obj, cls) and obj.id == id:
-                    return obj
-            raise ValueError(cls, id)
 
         key = (cls.__name__, id) if isclass(cls) else (cls, id)
 
@@ -522,7 +475,8 @@ class Reader(BaseReader):
                 raise TypeError(f'{cls} is not maintainable')
 
             # Create a new object. A reference to a MaintainableArtefact that
-            # is not defined in the current message is, necessarily, external
+            # is not (yet) defined in the current message is, necessarily,
+            # external
             assert kwargs.pop('is_external_reference', True)
             self._index[key] = cls(id=id, is_external_reference=True,
                                    **kwargs)
@@ -542,23 +496,19 @@ class Reader(BaseReader):
         """
         # Apply conversions to attributes
         convert_attrs = {
-            'agencyID': ('maintainer', lambda value: Agency(id=value)),
-            'isExternalReference': ('is_external_reference', bool),
-            'isFinal': ('is_final', bool),
-            'isPartial': ('is_partial', bool),
-            'structureURL': ('structure_url', lambda value: value),
+            'agency_id': ('maintainer', lambda value: Agency(id=value)),
             'role': ('role', lambda value:
                      ConstraintRole(role=ConstraintRoleType[value])),
-            'validFrom': ('valid_from', str),
-            'validTo': ('valid_to', str),
             }
 
-        attr = copy(elem.attrib)
-        for source, (target, xform) in convert_attrs.items():
-            try:
-                attr[target] = xform(attr.pop(source))
-            except KeyError:
-                continue
+        attr = {}
+        for name, value in elem.attrib.items():
+            # Name in snake case
+            name = to_snake(name)
+            # Optional new name and function to transform the value
+            (name, xform) = convert_attrs.get(name, (name, lambda v: v))
+            # Store transformed value
+            attr[name] = xform(value)
 
         try:
             # Maybe retrieve an existing reference
@@ -640,6 +590,7 @@ class Reader(BaseReader):
     # Parsers for common elements
 
     def parse_international_string(self, elem):
+        # Return a tuple (locale, text)
         return (elem.attrib.get(qname('xml', 'lang'), DEFAULT_LOCALE),
                 elem.text)
 
@@ -673,14 +624,14 @@ class Reader(BaseReader):
             if parent == 'Parent':
                 # Ref to parent of an Item in an ItemScheme; the ref'd object
                 # has the same class as the Item
-                cls = globals()[self._stack[-1]]
+                cls = getattr(pandasdmx.model, self._stack[-1])
             elif parent == 'Group':
                 cls = GroupDimensionDescriptor
             elif parent in ('Dimension', 'DimensionReference'):
                 # References to Dimensions
                 cls = [Dimension, TimeDimension]
             else:
-                cls = globals()[parent]
+                cls = getattr(pandasdmx.model, parent)
 
         # Get or instantiate the object itself
         try:
@@ -739,7 +690,13 @@ class Reader(BaseReader):
         return result
 
     def parse_header(self, elem):
-        values = self._collect('header', elem)
+        # Collect values from *elem* and its children using XPath
+        values = {}
+        for key, xpath in HEADER_XPATH.items():
+            matches = xpath(elem)
+            if len(matches) == 0:
+                continue
+            values[key] = matches[0] if len(matches) == 1 else matches
 
         # Handle a reference to a DataStructureDefinition
         attrs = {}
@@ -956,7 +913,7 @@ class Reader(BaseReader):
         return self._parse(elem, unwrap=False)
 
     def parse_organisation(self, elem):
-        cls = globals()[QName(elem).localname]
+        cls = getattr(pandasdmx.model, QName(elem).localname)
         o, values = self._named(cls, elem)
         o.contact = wrap(values.pop('contact', []))
         assert len(values) == 0
@@ -1047,7 +1004,7 @@ class Reader(BaseReader):
         return result
 
     def parse_orgscheme(self, elem):
-        cls = globals()[QName(elem).localname]
+        cls = getattr(pandasdmx.model, QName(elem).localname)
         os, values = self._named(cls, elem, unwrap=False)
         # Get the list of organisations. The following assumes that the
         # *values* dict has only one item. Otherwise, the returned item will be
@@ -1095,7 +1052,7 @@ class Reader(BaseReader):
                 cls = 'DimensionDescriptor'
             else:  # pragma: no cover
                 raise
-        Grouping = globals()[cls]
+        Grouping = getattr(pandasdmx.model, cls)
         g = Grouping(**attr)
         g.components.extend(chain(*self._parse(elem, unwrap=False).values()))
         return g
@@ -1103,8 +1060,8 @@ class Reader(BaseReader):
     def parse_dimension(self, elem):
         values = self._parse(elem)
 
-        # Object class: Dimension, TimeDimension, etc.
-        cls = globals()[QName(elem).localname]
+        # Object class: Dimension, MeasureDimension, or TimeDimension
+        cls = getattr(pandasdmx.model, QName(elem).localname)
 
         attr = copy(elem.attrib)
         try:
@@ -1201,28 +1158,23 @@ class Reader(BaseReader):
         return r
 
     def parse_facet(self, elem):
-        # Convert case of the value_type. In XML, first letter is uppercase;
-        # in the spec, lowercase.
-        attr = copy(elem.attrib)
-        value_type = attr.pop('textType', None)
-        if isinstance(value_type, str):
-            value_type = FacetValueType[value_type[0].lower() + value_type[1:]]
-        f = Facet(value_type=value_type)
-        key_map = {
-            'isSequence': 'is_sequence',
-            'minValue': 'min_value',
-            'maxValue': 'max_value',
-            'minLength': 'min_length',
-            'maxLength': 'max_length',
-            }
-        for key, value in attr.items():
-            setattr(f.type, key_map.get(key, key), value)
+        # Parse facet value type; SDMX-ML default is 'String'
+        fvt = elem.attrib.get('textType', 'String')
+        # Convert case of the value. In XML, first letter is uppercase; in
+        # the spec and Python enum, lowercase.
+        f = Facet(value_type=FacetValueType[fvt[0].lower() + fvt[1:]])
+
+        # Other attributes are for Facet.type, an instance of FacetType
+        for key, value in elem.attrib.items():
+            if key == 'textType':
+                continue
+            # Convert attribute name from camelCase to snake_case
+            setattr(f.type, to_snake(key), value)
+
         return f
 
     # Parsers for constraints etc.
     def parse_contentconstraint(self, elem):
-        # Munge
-
         role = elem.attrib.pop('type').lower()
         elem.attrib['role'] = 'allowable' if role == 'allowed' else role
         cc, values = self._named(ContentConstraint, elem)

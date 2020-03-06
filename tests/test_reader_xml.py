@@ -1,12 +1,14 @@
 import warnings
 
+from lxml.etree import Element
 import pandasdmx as sdmx
+from pandasdmx.model import (
+    Facet, FacetType, FacetValueType,
+    )
+from pandasdmx.reader.sdmxml import XMLParseError, Reader
 import pytest
 
 from . import test_data_path, test_files
-
-
-warnings.filterwarnings('error')
 
 
 # Read example data files
@@ -72,3 +74,55 @@ def test_read_ss_xml():
     # navigating object relationships
     TIME_FORMAT = s0_key.attrib['TIME_FORMAT'].value_for
     assert len(TIME_FORMAT.related_to.dimensions) == 5
+
+
+E = Element
+
+# Each entry is a tuple with 2 elements:
+# 1. an instance of lxml.etree.Element to be parsed.
+# 2. Either:
+#   - A pandasdmx.model object, in which case the parsed element must match
+#     the object.
+#   - A string, in which case parsing the element is expected to fail, raising
+#     an exception matching the string.
+ELEMENTS = [
+    # Reader.parse_facet
+    (E('Facet', isSequence='False', startValue='3.4', endValue='1'), None),
+    # …attribute names are munged; default textType is supplied
+    (E('EnumerationFormat', minLength='1', maxLength='6'),
+     Facet(type=FacetType(min_length=1, max_length=6),
+           value_type=FacetValueType['string'])),
+    # …invalid attributes cause an exception
+    (E('TextFormat', invalidFacetTypeAttr='foo'),
+     'ValueError: "FacetType" object has no field "invalid_facet_type_attr"'),
+]
+
+
+@pytest.mark.parametrize('elem, expected', ELEMENTS,
+                         ids=list(map(str, range(len(ELEMENTS)))))
+def test_parse_elem(elem, expected):
+    """Test individual XML elements.
+
+    This method allows unit-level testing of specific XML elements appearing in
+    SDMX-ML messages. Add elements by extending the list passed to the
+    parametrize() decorator.
+    """
+    # _parse() operates on the child elements of the first argument. Create a
+    # temporary element to contain *elem*
+    tmp = Element('root')
+    tmp.append(elem)
+
+    # Create a reader
+    reader = Reader()
+
+    if isinstance(expected, str):
+        # Parsing the element raises an exception
+        with pytest.raises(XMLParseError, match=expected):
+            reader._parse(tmp)
+    else:
+        # The element is parsed successfully
+        result = reader._parse(tmp).popitem()[1]
+
+        if expected:
+            # Expected value supplied
+            assert expected == result

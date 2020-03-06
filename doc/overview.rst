@@ -2,8 +2,15 @@ Overview of SDMX
 ****************
 
 Extensive information on SDMX, including learning material, is available in multiple places on the Internet.
-:ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information
+:ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information.
 This overview page provides notes to help explain *how* :mod:`pandaSDMX` implements the standards, in order to help you make use of it.
+
+.. todo:: Edit this text to:
+
+   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
+   - Reduce repetition, including of things described both here and in :doc:`walkthrough`.
+   - Eliminate descriptions/justifications of removed workarounds.
+   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
 
 .. _resources:
 
@@ -52,92 +59,74 @@ The following sections briefly introduces some key elements of the information m
 Data sets
 ---------
 
-a :index:`data set` can broadly be described as a
-container of ordered :index:`observations` and :index:`attributes` attached to them. Observations (e.g. the annual unemployment rate) are classified
-by :index:`dimensions` such as country, age, sex, and time period. Attributes may further describe an individual observation or
-a set of observations. Typical uses for attributes are the level of confidentiality, or data quality.
-Observations may be clustered into :index:`series`, in particular, time series. The data set
-must explicitly specify the :index:`dimension at observation` such as 'time', 'time_period' or anything else.
-If a data set consists of series whose
-dimension at observation is neither time nor time period, the data set is called :index:`cross-sectional`.
-A data set that is not grouped into series, i.e.
-where all dimension values including time, if available, are stated for each observation, are called :index:`flat data sets`. These are hardly
-memory-efficient, but benefit from a very simple representation.
+A :index:`data set` can broadly be described as a container of ordered :index:`observations` and :index:`attributes` attached to them.
+Observations (e.g. the annual unemployment rate) are classified by :index:`dimensions` such as country, age, sex, and time period.
+Attributes may further describe an individual observation or a set of observations.
+Typical uses for attributes are the level of confidentiality, or data quality.
+Observations may be clustered into :index:`series`, in particular, time series.
+The data set must explicitly specify the :index:`dimension at observation` such as 'time', 'time_period' or anything else.
+If a data set consists of series whose dimension at observation is neither time nor time period, the data set is called :index:`cross-sectional`.
+A data set that is not grouped into series, i.e. where all dimension values including time, if available, are stated for each observation, are called :index:`flat data sets`.
+These are hardly memory-efficient, but benefit from a very simple representation.
 
-An attribute may be attached to a series to express
-the fact that it applies to all contained observations. This increases
-efficiency and adds meaning. Subsets of series within a data set may be clustered into :index:`groups`.
-A group is
-defined by specifying one or more dimension values, but not all: At least the dimension at observation and one other
-dimension must remain free (or wild-carded). Otherwise, the group would in fact be either a single observation or a series.
-The main purpose of :index:`group` is to
-serve as a convenient attachment point for attributes. Hence, a given attribute may be attached to all series
-within the group at once. Attributes may finally be attached to the entire data set, i.e. to all series/observations therein.
+An attribute may be attached to a series to express the fact that it applies to all contained observations.
+This increases efficiency and adds meaning.
+Subsets of series within a data set may be clustered into :index:`groups`.
+A group is defined by specifying one or more dimension values, but not all: At least the dimension at observation and one other dimension must remain free (or wild-carded).
+Otherwise, the group would in fact be either a single observation or a series.
+The main purpose of :index:`group` is to serve as a convenient attachment point for attributes.
+Hence, a given attribute may be attached to all series within the group at once.
+Attributes may finally be attached to the entire data set, i.e. to all series/observations therein.
 
 Structural metadata: data structure definition, concept scheme, and code list
 -----------------------------------------------------------------------------
 
-In the above section on data sets, we have carelessly used structural terms such as dimension, dimension value and
-attachment of attributes. This is because it is almost impossible to talk about data sets without talking about their structure. The information model
-provides a number of classes to describe the structure of data sets without talking about data. The container class for this is called
-:index:`DataStructureDefinition` (in short: :abbr:`DSD`). It contains a list of dimensions and for each dimension a reference to exactly one
-:index:`concept` describing its meaning. A concept describes the set of permissible dimension values. This can
-be done in various ways depending on the intended data type. Finite value sets (such as country codes, currencies, a data quality classification etc.) are
-described by reference to :index:`code lists`. Infinite value sets are described by :index:`facets` which is simply a
-way to express that a dimension may have int, float or time-stamp values, to name but a few. A set of concepts referred to in the
-dimension descriptors of a data structure definition is called :index:`concept scheme`.
+In the above section on data sets, we have carelessly used structural terms such as dimension, dimension value and attachment of attributes.
+This is because it is almost impossible to talk about data sets without talking about their structure.
+The information model provides a number of classes to describe the structure of data sets without talking about data.
+The container class for this is called :index:`DataStructureDefinition` (in short: :abbr:`DSD`).
+It contains a list of dimensions and for each dimension a reference to exactly one :index:`concept` describing its meaning.
+A concept describes the set of permissible dimension values.
+This can be done in various ways depending on the intended data type.
+Finite value sets (such as country codes, currencies, a data quality classification etc.) are described by reference to :index:`code lists`.
+Infinite value sets are described by :index:`facets` which is simply a way to express that a dimension may have int, float or time-stamp values, to name but a few.
+A set of concepts referred to in the dimension descriptors of a data structure definition is called :index:`concept scheme`.
 
-The set of allowed observation values such as the unemployment rate measured in per cent is
-defined by a special dimension called :index:`MeasureDimension`.
+The set of allowed observation values such as the unemployment rate measured in per cent is defined by a special dimension called :index:`MeasureDimension`.
 
 Dataflow definition
 -------------------
 
-A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD),
-how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
-The terminology is a bit confusing: You cannot actually
-obtain a dataflow from an SDMX web service. Rather, you can request one or more dataflow definitions
-describing how datasets under this dataflow are structured, which codes may be used to
-query for desired columns etc. The dataflow definition and the artefacts to which it refers give you
-all the information you need to exploit the data sets you can request using the dataflow's ID.
+A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
+The terminology is a bit confusing: You cannot actually obtain a dataflow from an SDMX web service.
+Rather, you can request one or more dataflow definitions describing how datasets under this dataflow are structured, which codes may be used to query for desired columns etc.
+The dataflow definition and the artefacts to which it refers give you all the information you need to exploit the data sets you can request using the dataflow's ID.
 
-A :index:`DataFlowDefinition` is a class that describes a dataflow. A DataFlowDefinition
-has a unique identifier, a human-readable name and potentially a more detailed description. Both may be multi-lingual.
-The dataflow's ID is used to query the data set it describes. The dataflow also features a
-reference to the DSD which structures the data sets available under this
-dataflow ID. For instance, in the frontpage example we used the dataflow ID 'une_rt_a'.
+A :index:`DataFlowDefinition` is a class that describes a dataflow.
+A DataFlowDefinition has a unique identifier, a human-readable name and potentially a more detailed description.
+Both may be multi-lingual.
+The dataflow's ID is used to query the data set it describes.
+The dataflow also features a reference to the DSD which structures the data sets available under this dataflow ID.
+For instance, in the frontpage example we used the dataflow ID 'une_rt_a'.
 
 
 Constraints
 -----------
 
-Constraints are a mechanism to specify a subset of
-keys from the set of possible combinations of keys
-available in the referenced code lists for which there is actually data. For example,
-a constraint may reflect the fact that in a certain country
-there are no lakes or hospitals, and hence no data about water quality or
-hospitalization.
+Constraints are a mechanism to specify a subset of keys from the set of possible combinations of keys available in the referenced code lists for which there is actually data.
+For example, a constraint may reflect the fact that in a certain country there are no lakes or hospitals, and hence no data about water quality or hospitalization.
 
 There are two types of constraints:
 
-A :index:`content-constraint` is a mechanism to express the fact
-that data sets of a given dataflow only comprise columns for a subset of values from
-the code-lists representing dimension values. For example,
-the datastructure definition for a dataflow on exchange rates
-references the code list of all country codes in the world, whereas
-the data sets provided under this dataflow only covers the ten largest currencies. These can be
-enumerated by a content-constraint attached to the dataflow definition or DSD.
-Content-constraints can be used to validate dimension names and values (a.k.a. keys)
-when requesting data sets selecting columns of interest. pandaSDMX supports content
-constraints and provides convenient methods to validate keys, compute
-the constrained code lists etc.
+A :index:`content-constraint` is a mechanism to express the fact that data sets of a given dataflow only comprise columns for a subset of values from the code-lists representing dimension values.
+For example, the datastructure definition for a dataflow on exchange rates references the code list of all country codes in the world, whereas the data sets provided under this dataflow only covers the ten largest currencies.
+These can be enumerated by a content-constraint attached to the dataflow definition or DSD.
+Content-constraints can be used to validate dimension names and values (a.k.a. keys) when requesting data sets selecting columns of interest.
+pandaSDMX supports content constraints and provides convenient methods to validate keys, compute the constrained code lists etc.
 
-
-An :index:`attachment-constraint` describes to which parts of a data set (column/series,
-group of series, observation, the entire data set) certain attributes may be attached. Attachment-constraints are not
-supported by pandaSDMX as this feature is needed only for
-data set generation. However, pandaSDMX does support attributes in the information model
-and when exporting data sets to pandas.
+An :index:`attachment-constraint` describes to which parts of a data set (column/series, group of series, observation, the entire data set) certain attributes may be attached.
+Attachment-constraints are not supported by pandaSDMX as this feature is needed only for data set generation.
+However, pandaSDMX does support attributes in the information model and when exporting data sets to pandas.
 
 Category schemes and categorisations
 ------------------------------------
@@ -145,19 +134,16 @@ Category schemes and categorisations
 Categories serve to classify or categorise things like dataflows, e.g., by subject matter.
 Multiple categories may belong to a container called :index:`CategorySchemes`.
 
-A :index:`Categorisation` links the thing to be
-categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
+A :index:`Categorisation` links the thing to be categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
 
 Class hierarchy
 ---------------
 
-The SDMX information model defines a number of abstract base classes from which subclasses
-such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` are derived.
-E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining
-agency. MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from
-:index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth. Hence, DataStructureDefinition may have a unique
-ID, a version, a natural language name in multiple languages, a description, and annotations. pandaSDMX takes full advantage from
-this class hierarchy.
+The SDMX information model defines a number of abstract base classes from which subclasses such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` are derived.
+E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining agency.
+MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from :index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth.
+Hence, DataStructureDefinition may have a unique ID, a version, a natural language name in multiple languages, a description, and annotations.
+pandaSDMX takes full advantage from this class hierarchy.
 
 
 The SDMX Information Model (IM) 2
@@ -288,29 +274,23 @@ pandaSDMX:
 SDMX-ML
 -------
 
-There are several types of Message such as
-:index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing
-all the information required to interpret it. Hence, data sets in generic representation may be used without
-knowing the related :index:`DataStructureDefinition`. The downside is that generic data set messages are
-much larger than their sister format :index:`StructureSpecificdata set`. pandaSDMX has always supported generic
-data set messages.
+There are several types of Message such as :index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing all the information required to interpret it.
+Hence, data sets in generic representation may be used without knowing the related :index:`DataStructureDefinition`.
+The downside is that generic data set messages are much larger than their sister format :index:`StructureSpecificdata set`.
+pandaSDMX has always supported generic data set messages.
 
-The term 'structure-specific dataset' reflects the fact that in order to interpret such
-dataset, one needs to know the datastructure definition (DSD). Otherwise, it would be impossible
-to distinguish dimension values from attributes etc. Hence, when downloading a structure-specific
-dataset, pandaSDMX will download the DSD on the fly or retrieves it from a local cash.
+The term 'structure-specific dataset' reflects the fact that in order to interpret such dataset, one needs to know the datastructure definition (DSD).
+Otherwise, it would be impossible to distinguish dimension values from attributes etc.
+Hence, when downloading a structure-specific dataset, pandaSDMX will download the DSD on the fly or retrieves it from a local cache.
 
-Another important SDMXML message type is :index:`StructureMessage`
-which may contain artefacts such as DataStructureDefinitions, code lists,
-conceptschemes, categoryschemes and so forth.
+Another important SDMXML message type is :index:`StructureMessage` which may contain artefacts such as DataStructureDefinitions, code lists, conceptschemes, categoryschemes and so forth.
 
 SDMXML provides that each message contains a :index:`Header` containing some metadata about the message.
-Finally, SDMXML messages may contain a :index:`Footer` element. It provides information on any errors
-that have occurred on the server side, e.g., if the requested data set exceeds the size limit, or the server needs
-some time to make it available under a given link.
+Finally, SDMXML messages may contain a :index:`Footer` element.
+It provides information on any errors that have occurred on the server side, e.g., if the requested data set exceeds the size limit, or the server needs some time to make it available under a given link.
 
-SDMX services provide XML schemas to validate a particular SDMXML file. However, pandaSDMX does not
-yet support validation.
+SDMX services provide XML schemas to validate a particular SDMXML file.
+However, pandaSDMX does not yet support validation.
 
 
 .. _web-service:

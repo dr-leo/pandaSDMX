@@ -3,14 +3,14 @@ Overview of SDMX
 
 Extensive information on SDMX, including learning material, is available in multiple places on the Internet.
 :ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information.
-This overview page provides notes to help explain *how* :mod:`pandaSDMX` implements the standards, in order to help you make use of it.
+This overview page provides (1) references and (2) brief explanation of *how* :mod:`pandaSDMX` implements the standards.
 
 .. _resources:
 
 Other resources
 ===============
 
-If you want to learn about SDMX *in general*, please make use of the following resources—and offer feedback to help improve them!
+The following references and learning materials explain SDMX *in general*:
 
 - Wikipedia's `SDMX page <https://en.wikipedia.org/wiki/SDMX>`_ page gives a simple summary in 6 languages.
 - Eurostat's `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
@@ -40,34 +40,16 @@ The SDMX Information Model (IM)
 
 .. todo:: Edit this verbose text into following section.
 
-   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
+   - Refer to the API documentation instead of repeating it as prose.
    - Reduce repetition, including of things described both here and in :doc:`walkthrough`.
    - Eliminate descriptions/justifications of removed workarounds.
-   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
+   - Avoid repeating descriptions of SDMX that are provided more clearly by other sources; link to them instead.
 
-There are classes defining things like data sets, metadata sets, data and metadata structures, processes, organisations and their specific roles to name but a few.
+.. todo:: Move the following narrative sentences to the :doc:`walkthrough`:
 
-Data sets
----------
+   “[…] dimensions such as country, age, sex, and time period.”
 
-A :index:`data set` can broadly be described as a container of ordered :index:`observations` and :index:`attributes` attached to them.
-Observations (e.g. the annual unemployment rate) are classified by :index:`dimensions` such as country, age, sex, and time period.
-Attributes may further describe an individual observation or a set of observations.
-Typical uses for attributes are the level of confidentiality, or data quality.
-Observations may be clustered into :index:`series`, in particular, time series.
-The data set must explicitly specify the :index:`dimension at observation` such as 'time', 'time_period' or anything else.
-If a data set consists of series whose dimension at observation is neither time nor time period, the data set is called :index:`cross-sectional`.
-A data set that is not grouped into series, i.e. where all dimension values including time, if available, are stated for each observation, are called :index:`flat data sets`.
-These are hardly memory-efficient, but benefit from a very simple representation.
-
-An attribute may be attached to a series to express the fact that it applies to all contained observations.
-This increases efficiency and adds meaning.
-Subsets of series within a data set may be clustered into :index:`groups`.
-A group is defined by specifying one or more dimension values, but not all: At least the dimension at observation and one other dimension must remain free (or wild-carded).
-Otherwise, the group would in fact be either a single observation or a series.
-The main purpose of :index:`group` is to serve as a convenient attachment point for attributes.
-Hence, a given attribute may be attached to all series within the group at once.
-Attributes may finally be attached to the entire data set, i.e. to all series/observations therein.
+   “Typical uses for attributes are the level of confidentiality, or data quality.”
 
 Structural metadata: data structure definition, concept scheme, and code list
 -----------------------------------------------------------------------------
@@ -80,7 +62,7 @@ It contains a list of dimensions and for each dimension a reference to exactly o
 A concept describes the set of permissible dimension values.
 This can be done in various ways depending on the intended data type.
 Finite value sets (such as country codes, currencies, a data quality classification etc.) are described by reference to :index:`code lists`.
-Infinite value sets are described by :index:`facets` which is simply a way to express that a dimension may have int, float or time-stamp values, to name but a few.
+Infinite value sets are described by :index:`facets` which is simply a way to express that a dimension may have int, float or time-stamp values.
 A set of concepts referred to in the dimension descriptors of a data structure definition is called :index:`concept scheme`.
 
 The set of allowed observation values such as the unemployment rate measured in per cent is defined by a special dimension called :index:`MeasureDimension`.
@@ -147,31 +129,32 @@ Abstract classes and data types
 Many classes inherit from one of the following.
 For example, a :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
 
-- An :class:`.IdentifiableArtefact` has an :attr:`id <.IdentifiableArtefact.id>`,
-  :attr:`URI <.IdentifiableArtefact.uri>`, and
-  :attr:`URN <.IdentifiableArtefact.urn>`.
+:class:`.IdentifiableArtefact`
 
-  - The ``id`` uniquely identifies the object against others of the same type in
-    a SDMX message.
-  - The URI and URN are *globally* unique. See `Wikipedia <https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#URLs_and_URNs>`_ for a
-    discussion of the differences between the two.
+   - has an :attr:`id <.IdentifiableArtefact.id>`, :attr:`URI <.IdentifiableArtefact.uri>`, and :attr:`URN <.IdentifiableArtefact.urn>`.
 
-- A :class:`.NameableArtefact` has a :attr:`name <.NameableArtefact.name>` and
-  :attr:`description <.NameableArtefact.description>`. It is identifiable; this
-  means that it *also* has the `id`, `uri`, and `urn` attributes of a
-  ``NameableArtefact``.
-- A :class:`.VersionableArtefact` has a
-  :attr:`version <.VersionableArtefact.version>` number and may be valid between
-  certain times (:attr:`valid_from <.VersionableArtefact.valid_from>`,
-  :attr:`valid_to <.VersionableArtefact.valid_to>`). It is nameable *and*
-  identifiable.
-- A :class:`.MaintainableArtefact` is under the authority of a particular
-  :attr:`maintainer <.MaintainableArtefact.maintainer>`. In an SDMX message,
-  a maintainable object might not be given in full; only as a reference (with
-  :attr:`is_external_reference <.MaintainableArtefact.is_external_reference>`
-  set to True). If so, it might have a :attr:`structure_url
-  <.MaintainableArtefact.structure_url>`, where the maintainer provides more
-  information about the object. It is versionable, nameable, and identifiable.
+   The ``id`` uniquely identifies the object against others of the same type in a SDMX message.
+   The URI and URN are *globally* unique. See `Wikipedia <https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#URLs_and_URNs>`_ for a discussion of the differences between the two.
+
+:class:`.NameableArtefact`
+
+  - has a :attr:`name <.NameableArtefact.name>` and :attr:`description <.NameableArtefact.description>`, and
+  - is “identifiable”; this means that it *also* has the `id`, `uri`, and `urn` attributes of a NameableArtefact.
+
+:class:`.VersionableArtefact`
+
+  - has a :attr:`version <.VersionableArtefact.version>` number,
+  - may be valid between certain times (:attr:`valid_from <.VersionableArtefact.valid_from>`, :attr:`valid_to <.VersionableArtefact.valid_to>`), and
+  - is nameable, therefore *also* identifiable.
+
+:class:`.MaintainableArtefact`
+
+  - is under the authority of a particular :attr:`maintainer <.MaintainableArtefact.maintainer>`, and
+  - is versionable, nameable, *and* identifiable.
+
+  In an SDMX message, a maintainable object might not be given in full; only as a reference (with :attr:`is_external_reference <.MaintainableArtefact.is_external_reference>` set to :obj:`True`).
+  If so, it might have a :attr:`structure_url <.MaintainableArtefact.structure_url>`, where the maintainer provides more information about the object.
+
 
 The API reference for :mod:`pandasdmx.model` shows the parent classes for each class, to describe whether they are versionable, nameable, identifiable, and/or maintainable.
 
@@ -184,17 +167,61 @@ the IM—for instance, the `name` of a Nameable object is an
 Data
 ----
 
-- The base :class:`DataSet` class is an unordered collection of
-  :class:`Observation`. Each `Observation` is a single datum.
+:class:`.Observation`
 
-- :class:`Key`, :class:`SeriesKey`, :class:`GroupKey`.
+  A single data point/datum.
+  The value is stored as the :attr:`~.Observation.value` attribute.
 
-Metadata: attributes
---------------------
+:class:`.DataSet`
 
-- :class:`AttributeValue`.
-- :class:`DataAttribute`.
+  A collection of Observations, SeriesKeys, and/or GroupKeys.
 
+  .. note:: **There are no 'Series' or 'Group' classes** in the IM!
+
+     Instead, the *idea* of 'data series' within a DataSet is modeled as:
+
+     - SeriesKeys and GroupKeys are associated with a DataSet.
+     - Observations are each associated with one SeriesKey and, optionally, referred to by one or more GroupKeys.
+
+     One can choose to think of a SeriesKey *and* the associated Observations, collectively, as a 'data series'.
+     But, in order to avoid confusion with the IM, :mod:`pandaSDMX` does not provide 'Series' or 'Group' objects.
+
+   :mod:`pandaSDMX` provides:
+
+   - the :attr:`.DataSet.series` and :attr:`.DataSet.group` mappings from SeriesKey or GroupKey (respectively) to lists of Observations.
+   - :attr:`.DataSet.obs`, which is a list of *all* observations in the DataSet.
+
+   Depending on its structure, a DataSet may be :term:`flat`, :term:`cross-sectional` or :term:`time series`.
+
+
+:class:`.Key`
+   Values (:attr:`.Key.values`) for one or more Dimensions.
+   The meaning varies:
+
+   Ordinary Keys, e.g. :attr:`.Observation.dimension`
+      The dimension(s) varying at the level of a specific observation.
+
+   :class:`.SeriesKey`
+      The dimension(s) shared by all Observations in a conceptual series.
+
+   :class:`.GroupKey`.
+      The dimension(s) comprising the group.
+      These may be a subset of all the dimensions in the DataSet, in which case all matching Observations are considered part of the 'group'—even if they are associated with different SeriesKeys.
+
+      GroupKeys are often used to attach AttributeValues; see below.
+
+
+Attributes
+----------
+
+:class:`AttributeValue`
+  Value (:attr:`.AttributeValue.value`) for a DataAttribute (:attr:`.AttributeValue.value_for`).
+
+  May be attached to any of: DataSet, SeriesKey, GroupKey, or Observation.
+  In the first three cases, the attachment means that the attribute applies to all Observations associated with the object.
+
+:class:`DataAttribute`
+   ...
 
 Items and schemes
 -----------------

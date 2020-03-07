@@ -1092,7 +1092,10 @@ class Key(BaseModel):
 
     """
     attrib: DictLike[str, AttributeValue] = DictLike()
+
+    #: Individual KeyValues that describe the key.
     values: DictLike[str, KeyValue] = DictLike()
+
     described_by: DimensionDescriptor = None
 
     def __init__(self, arg=None, **kwargs):
@@ -1238,8 +1241,13 @@ class Observation(BaseModel):
     """
     attached_attribute: DictLike[str, AttributeValue] = DictLike()
     series_key: SeriesKey = None
+
+    #: Key for dimension(s) varying at the observation level.
     dimension: Key = None
+
+    #: Data value.
     value: Union[Any, Code] = None
+
     value_for: PrimaryMeasure = None
 
     #: :mod:`pandaSDMX` extension not in the IM.
@@ -1278,6 +1286,8 @@ class DataSet(AnnotableArtefact):
     attrib: DictLike[str, AttributeValue] = DictLike()
     valid_from: str = None
     structured_by: DataStructureDefinition = None
+
+    #: All observations in the DataSet.
     obs: List[Observation] = []
 
     #: Map of series key → list of observations.

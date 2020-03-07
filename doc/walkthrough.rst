@@ -56,7 +56,7 @@ Configure the HTTP connection
 
 To pre-configure the HTTP connections to be established by a ``Request`` instance, you can pass all keyword arguments consumed by the underlying HTTP library `requests <http://www.python-requests.org/>`_.
 For a complete description of the options see the ``requests``  documentation.
-For example, a proxy server can be specified for subsequent requests like so:
+For example, a proxy server can be specified for subsequent requests:
 
 .. ipython:: python
 

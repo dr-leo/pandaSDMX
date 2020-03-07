@@ -3,6 +3,13 @@ Glossary
 
 .. glossary::
 
+   cross-sectional
+      A data structure where the 'innermost' dimension is not a time dimension.
+      Contrast with :term:`flat`, :term:`time series`.
+
+   flat
+      A data set that is not grouped using SeriesKeys.
+
    information
       Data and :term:`metadata`.
 
@@ -20,3 +27,7 @@ Glossary
       - the units for the measurements,
       - labels in one or more dimensions for what the three points means, or
       - info about how the data was produced, and by whom.
+
+   time series
+      A data structure where the 'innermost' dimension—the one that varies from one observation to the next—is time-related.
+      Contrast with :term:`cross-sectional`, :term:`flat`.

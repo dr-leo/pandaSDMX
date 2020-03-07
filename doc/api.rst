@@ -9,6 +9,22 @@ Top-level methods and classes
 -----------------------------
 .. automodule:: pandasdmx
    :members:
+   :exclude-members: logger
+
+.. autodata:: logger
+
+   By default, messages at the :ref:`log level <py:levels>` ``ERROR`` or
+   greater are printed to :obj:`sys.stderr`.
+   These include the web service query details (URL and headers) used by :class:`.Request`.
+
+   To debug requets to web services, set to a more permissive level::
+
+       import logging
+
+       sdmx.logger.setLevel(logging.DEBUG)
+
+   .. versionadded:: 0.4
+
 
 ``message``: SDMX messages
 --------------------------

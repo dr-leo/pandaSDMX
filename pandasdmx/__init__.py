@@ -9,6 +9,7 @@ __all__ = [
     'Resource',
     'add_source',
     'list_sources',
+    'logger',
     'read_sdmx',
     'read_url',
     'to_pandas',
@@ -17,15 +18,16 @@ __all__ = [
 __version__ = '1.0.0-dev'
 
 
+#: Top-level logger for pandaSDMX.
+logger = logging.getLogger(__name__)
+
+
 def _init_logger():
-    logger = logging.getLogger('pandasdmx')
     handler = logging.StreamHandler()
-    fmt = logging.Formatter(
-        '%(asctime)s %(name)s - %(levelname)s: %(message)s')
-    handler.setFormatter(fmt)
+    fmt = '{asctime} {name} - {levelname}: {message}'
+    handler.setFormatter(logging.Formatter(fmt, style='{'))
     logger.addHandler(handler)
     logger.setLevel(logging.ERROR)
-    return logger
 
 
-logger = _init_logger()
+_init_logger()

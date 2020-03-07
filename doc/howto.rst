@@ -76,6 +76,13 @@ Use the advanced functionality to specify a dimension for the frequency of a Per
 .. warning:: For large datasets, parsing datetimes may reduce performance.
 
 
+.. _howto-logging:
+
+View log messages
+-----------------
+
+See the description of :obj:`pandasdmx.logger`.
+
 .. _howto-references:
 
 Use the 'references' query parameter

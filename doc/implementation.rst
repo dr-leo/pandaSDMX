@@ -133,8 +133,6 @@ Data structures
 
    A component can be either a DataAttribute that appears as an AttributeValue in data sets; or a Dimension that appears in Keys.
 
-   
-
 :class:`.Representation`, :class:`.Facet`
    For example: the concept 'country' can be represented as:
 
@@ -264,16 +262,9 @@ See :doc:`sources` and the source code for the details for each data source.
 Messages
 ========
 
+For data sources that support it, :mod:`pandaSDMX` automatically adds the HTTP header ``Accept: application/vnd.sdmx.structurespecificdata+xml;`` when the `dsd` argument is provided to :meth:`.Request.get`.
+
 .. todo:: Simplify this text.
-
-There are several types of Message such as :index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing all the information required to interpret it.
-Hence, data sets in generic representation may be used without knowing the related :index:`DataStructureDefinition`.
-The downside is that generic data set messages are much larger than their sister format :index:`StructureSpecificdata set`.
-pandaSDMX has always supported generic data set messages.
-
-The term 'structure-specific dataset' reflects the fact that in order to interpret such dataset, one needs to know the datastructure definition (DSD).
-Otherwise, it would be impossible to distinguish dimension values from attributes etc.
-Hence, when downloading a structure-specific dataset, pandaSDMX will download the DSD on the fly or retrieves it from a local cache.
 
 Another important SDMXML message type is :index:`StructureMessage` which may contain artefacts such as DataStructureDefinitions, code lists, conceptschemes, categoryschemes and so forth.
 

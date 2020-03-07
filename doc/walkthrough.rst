@@ -290,38 +290,61 @@ Attribute names and allowed values can be obtained in a similar fashion.
 Select and request data from a dataflow
 =======================================
 
-Next, we will obtain some data.
+Next, we will query for some data.
+The step is simple: call :meth:`.Request.get` with `[resource_type=]'data'` as the first argument, or the alias :meth:`.Request.data`.
 
-.. todo:: Edit text below this point to:
+First, however, we describe some of the many options offered by SDMX and :mod:`pandSDMX` for data queries.
 
-   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
-   - Reduce repetition, including of things described both here and in :doc:`implementation`.
-   - Eliminate descriptions/justifications of removed workarounds.
-   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
+Choose a data format
+--------------------
 
-Requesting a dataset is as easy as requesting a dataflow definition or any other SDMX artefact: just call :meth:`.Request.get` and pass it 'data' as the resource_type and the dataflow ID as resource_id.
-As a shortcut, you can use the ``data`` descriptor which calls the ``get`` method implicitly.
+Web services offering SDMX-ML–formatted :class:`DataMessages <.DataMessage>` can return them in one of two formats:
 
-Generic or structure-specific data format?
-------------------------------------------
+Generic data
+   use XML elements that explicitly identify whether values associated with an Observation are dimensions, or attributes.
 
-Data providers which support SDMX-ML offer data sets in two distinct formats:
+   For example, in the 'EXR' data flow, the XML content for the ``CURRENCY_DENOM`` dimension and for the ``OBS_STATUS`` attribute are stored differently:
 
-- generic data sets: These are self-contained but less memory-efficient.
-  They are suitable for small to medium data sets, but less so for large ones.
-- Structure-specific data sets: This format is memory-efficient (typically about 60 per cent smaller than a generic data set) but it requires the datastructure definition (DSD) to interpret the XML file.
-  The DSD must be downloaded prior to parsing the dataset.
-  pandaSDMX can do this behind the scenes.
-  However, as we shall see in the next section, the DSD can also be provided by the caller to save an additional request.
+   .. code-block:: xml
 
-The intended data format is chosen by selecting the agency.
-For example, 'ECB' provides generic data sets, whereas 'ECB_S' provides structure-specific data sets.
-Hence, there are actually two agency ID's for ECB, ESTAT etc.
-Note that data providers supporting SDMXJSON only work with a single format for data sets.
-Hence, there is merely one agency ID for OECD and ABS.
+      <generic:Obs>
+        <generic:ObsKey>
+          <!-- NB. Other dimensions omitted. -->
+          <generic:Value value="EUR" id="CURRENCY_DENOM"/>
+          <!-- … -->
+        </generic:ObsKey>
+        <generic:ObsValue value="0.82363"/>
+        <generic:Attributes>
+          <!-- NB. Other attributes omitted. -->
+          <generic:Value value="A" id="OBS_STATUS"/>
+          <!-- … -->
+        </generic:Attributes>
+      </generic:Obs>
+
+Structure-specific data
+   use a more concise format:
+
+   .. code-block:: xml
+
+      <!-- NB. Other dimensions and attributes omitted: -->
+      <Obs CURRENCY_DENOM="EUR" OBS_VALUE="0.82363" OBS_STATUS="A" />
+
+   This can result in much smaller messages.
+   However, because this format does not distinguish dimensions and attributes, it cannot be properly parsed by :mod:`pandaSDMX` without separately obtaining the data structure definition.
+
+:mod:`pandaSDMX` adds appropriate HTTP headers for retrieving structure-specific data (see :ref:`implementation notes <impl-messages>`).
+In general, to minimize queries and message size:
+
+1. First query for the DSD associated with a data flow.
+2. When requesting data, pass the obtained object as the `dsd=` argument to :meth:`.Request.get` or :meth:`.Request.data`.
+
+This allows :mod:`pandaSDMX` to retrieve structure-specific data whenever possible.
+It can also avoid an additional request when validating data query keys (below).
 
 Filtering
 ---------
+
+.. todo:: Edit text below this point.
 
 In most cases we want to filter the data by columns or rows in order to request only the data we are interested in.
 Not only does this increase performance.

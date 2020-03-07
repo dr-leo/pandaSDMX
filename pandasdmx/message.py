@@ -70,9 +70,11 @@ class Footer(BaseModel):
 
     SDMX-JSON messages do not have footers.
     """
+    #:
     severity: Text
     #: The body text of the Footer contains zero or more blocks of text.
     text: List[InternationalString] = []
+    #:
     code: int
 
 

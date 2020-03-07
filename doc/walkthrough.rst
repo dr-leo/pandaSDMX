@@ -4,14 +4,6 @@ Walkthrough
 This page walks through an example pandaSDMX workflow, providing explanations of some SDMX concepts along the way.
 See also :doc:`resources`, :doc:`HOWTOs <howto>` for miscellaneous tasks, and follow links to the :doc:`glossary` where some terms are explained.
 
-.. todo:: Maybe incorporate the following narrative sentences that were formerly in :doc:`implementation`:
-
-   “Typical uses for attributes are the level of confidentiality, or data quality.”
-
-   “For example, a constraint may reflect the fact that in a certain country there are no lakes or hospitals, and hence no data about water quality or hospitalization.”
-
-   “Explore the returned :class:`.Message` instance (see :ref:`implementation notes <impl-messages>`)”
-
 .. contents::
    :local:
    :backlinks: none
@@ -73,8 +65,8 @@ The :attr:`~.Request.session` attribute is a :class:`.Session` object that can b
 
 For convenience, :attr:`~.Session.timeout` stores the timeout in seconds for HTTP requests, and is passed automatically for all queries.
 
-Cache HTTP responses
---------------------
+Cache HTTP responses and parsed objects
+---------------------------------------
 
 .. versionadded:: 0.3.0
 
@@ -91,14 +83,9 @@ For example, to force :mod:`requests_cache <requests_cache.core>` to use SQLite 
         expire_after=600,
     )
 
-Load messages from file
------------------------
 
-:func:`.read_sdmx` can be used to load SDMX messages stored in local files:
-
-.. ipython:: python
-
-    sdmx.read_sdmx('saved_message.xml')
+:class:`.Request` provides an optional, simple cache for retrieved and parsed :class:`.Message` instances, where the cache key is the constructed query URL.
+This cache is disabled by default; to activate it, supply `use_cache=True` to the constructor.
 
 
 Obtain and explore metadata
@@ -287,11 +274,11 @@ We also see that 'USD' and 'JPY' are valid values along both dimensions.
 Attribute names and allowed values can be obtained in a similar fashion.
 
 
-Select and request data from a dataflow
-=======================================
+Select and query data from a dataflow
+=====================================
 
 Next, we will query for some data.
-The step is simple: call :meth:`.Request.get` with `[resource_type=]'data'` as the first argument, or the alias :meth:`.Request.data`.
+The step is simple: call :meth:`.Request.get` with `resource_type='data'` as the first argument, or the alias :meth:`.Request.data`.
 
 First, however, we describe some of the many options offered by SDMX and :mod:`pandSDMX` for data queries.
 
@@ -332,7 +319,7 @@ Structure-specific data
    This can result in much smaller messages.
    However, because this format does not distinguish dimensions and attributes, it cannot be properly parsed by :mod:`pandaSDMX` without separately obtaining the data structure definition.
 
-:mod:`pandaSDMX` adds appropriate HTTP headers for retrieving structure-specific data (see :ref:`implementation notes <impl-messages>`).
+:mod:`pandaSDMX` adds appropriate HTTP headers for retrieving structure-specific data (see :ref:`implementation notes <web-service>`).
 In general, to minimize queries and message size:
 
 1. First query for the DSD associated with a data flow.
@@ -341,113 +328,87 @@ In general, to minimize queries and message size:
 This allows :mod:`pandaSDMX` to retrieve structure-specific data whenever possible.
 It can also avoid an additional request when validating data query keys (below).
 
-Filtering
----------
+Construct a selection `key` for a query
+---------------------------------------
 
-.. todo:: Edit text below this point.
+SDMX web services can offer access to very large data flows.
+Queries for *all* the data in a data flow are not usually necessary, and in some cases servers will refuse to respond.
+By selecting a subset of data, performance is increased.
 
-In most cases we want to filter the data by columns or rows in order to request only the data we are interested in.
-Not only does this increase performance.
-Rather, some dataflows are really huge, and would exceed the server or client limits.
-The REST API of SDMX offers two ways to narrow down a data request:
+The SDMX REST API offers two ways to narrow a data request:
 
-- specifying dimension values which the series to be returned must match (filtering by column labels), or
-- limiting the time range or number of observations per series (filtering by row labels)
+- specify a **key**, i.e. values for 1 or more dimensions to be matched by returned Observations and SeriesKeys.
+  The key is included as part of the URL constructed for the query.
+  Using :mod:`pandaSDMX`, a key is specified by the `key=` argument to :mod:`.Request.get`.
+- limit the time period, using the HTTP parameters 'startPeriod' and 'endPeriod'.
+  Using :mod:`pandaSDMX`, these are specified using the `params=` argument to :mod:`.Request.get`.
 
-From the ECB's dataflow on exchange rates, we specify the CURRENCY dimension to be either 'USD' or 'JPY'.
-This can be done by passing a ``key``  keyword argument to the ``get``  method or the ``data`` descriptor.
-It may either be a string (low-level API) or a dict.
-The dict form introduced in v0.3.0 is more convenient and pythonic as it allows pandaSDMX to infer the string form from the dict.
-Its keys (= dimension names) and values (= dimension values) will be validated against the datastructure definition as well as the content-constraint if available.
+From the ECB's dataflow on exchange rates, we specify the ``CURRENCY`` dimension to contain either of the codes 'USD' or 'JPY'.
+The documentation for :meth:`.Request.get` describes the multiple forms of the `key` argument and the validation applied.
+The following are all equivalent:
+
+.. ipython:: python
+
+    key = dict(CURRENCY=['USD', 'JPY'])
+    key = '.USD+JPY...'
+
+We also set a start period to exclude older data:
+
+.. ipython:: python
+
+    params = dict(startPeriod='2016')
 
 Another way to validate a key against valid codes are series-key-only datasets, i.e. a dataset with all possible series keys where no series contains any observation.
 pandaSDMX supports this validation method as well.
 However, it is disabled by default.
 Pass ``series_keys=True`` to the Request method to validate a given key against a series-keys only dataset rather than the DSD.
 
-If we choose the string form of the key, it must consist of '.'-separated slots representing the dimensions.
-Values are optional.
-As we saw in the previous section, the ECB's dataflow for exchange rates has five relevant dimensions, the 'CURRENCY' dimension being at position two.
-This yields the key '.USD+JPY...'.
-The '+' can be read as an 'OR' operator.
-The dict form is shown below.
+Query data
+----------
 
-Further, we will set a meaningful start period for the time series to exclude any prior data from the request.
-
-To request the data in generic format, we could simply issue:
+Finally, we request the data in generic format:
 
 .. ipython:: python
 
-    data_msg = ecb.data(
-        resource_id='EXR',
-        key={'CURRENCY': ['USD', 'JPY']},
-        params={'startPeriod': '2016'})
+    import sys
+
+    ecb = sdmx.Request('ECB', backend='memory')
+    data_msg = ecb.data('EXR', key=key, params=params)
+
+    # Generic data was returned
+    data_msg.response.headers['content-type']
+
+    # Number of bytes in the cached response
+    bytes1 = sys.getsizeof(ecb.session.cache.responses.popitem()[1][0]._content)
+    bytes1
+
+To demonstrate a query for a structure-specific data set, we pass the DSD obtained in the previous section:
+
+.. ipython:: python
+
+    ss_msg = ecb.data('EXR', key=key, params=params, dsd=dsd)
+
+    # Structure-specific data was requested and returned
+    ss_msg.response.request.headers['accept']
+    ss_msg.response.headers['content-type']
+
+    # Number of bytes in the cached response
+    bytes2 = sys.getsizeof(ecb.session.cache.responses.popitem()[1][0]._content)
+    bytes2 / bytes1
+
+The structure-specific message is a fraction of the size of the generic message.
+
+.. ipython:: python
+
     data = data_msg.data[0]
     type(data)
-
-However, we want to demonstrate how structure-specific data sets are requested.
-To this end, we instantiate a one-off Request object configured to make requests for efficient structure-specific data, and we pass it the DSD obtained in the previous section.
-Without passing the DSD, it would be downloaded automatically right after the data set:
-
-.. ipython:: python
-   :okexcept:
-
-    data_msg = sdmx.Request('ecb_s').data(
-        resource_id='EXR',
-        key={'CURRENCY': ['USD', 'JPY']},
-        params={'startPeriod': '2017'}, dsd=dsd)
-    data = data_msg.data[0]
-    type(data)
-
-Data sets
----------
-
-This section explains the key elements and structure of datasets.
-You can skip it on first read when you just want to be able to download data and export it to pandas.
-More advanced operations, e.g., exporting only a subset of series to pandas, requires some understanding of the anatomy of a dataset including observations and attributes.
-
-As we saw in the previous section, the datastructure definition (DSD) is crucial to understanding the data structure, the meaning of dimension and attribute values, and to select series of interest from the entire dataset by specifying a valid key.
-
-The :class:`pandasdmx.model.DataSet` class has the following features:
-
-``dim_at_obs``
-    attribute showing which dimension is at observation level.
-    For time series its value is either 'TIME' or 'TIME_PERIOD'.
-    If it is 'AllDimensions', the dataset is said to be flat.
-    In this case there are no series, just a flat list of observations.
-series
-    property returning an iterator over :class:`pandasdmx.model.Series` instances
-obs
-    method returning an iterator over the observations.
-    Only for flat datasets.
-attributes
-    namedtuple of attributes, if any, that are attached at dataset level.
-
-
-The :class:`pandasdmx.model.Series` class has the following features:
-
-key
-    nnamedtuple mapping dimension names to dimension values
-obs
-    method returning an iterator over observations within the series
-attributes:
-    namedtuple mapping any attribute names to values
-groups
-    list of :class:`pandasdmx.model.Group` instances to which this series
-    belongs.
-    Note that groups are merely attachment points for attributes.
-
-.. ipython:: python
-   :okexcept:
-
-    data.dim_at_obs
     len(data.series)
     list(data.series.keys())[5]
     set(series_key.FREQ for series_key in data.series.keys())
 
 This dataset thus comprises 16 time series of several different period lengths.
-We could have chosen to request only daily data in the first place by providing the value ``D`` for the ``FREQ`` dimension.
-In the next section we will show how columns from a dataset can be selected through the information model when writing to a pandas DataFrame.
+We could have chosen to request only daily data in the first place by providing the value 'D' for the ``FREQ`` dimension.
+In the next section we will show how columns from a dataset can be selected through the information model when writing to a :mod:`pandas` object.
 
 Convert data to pandas
 ======================
@@ -457,7 +418,7 @@ Select columns using the model API
 
 As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, we avoid mixing up different frequencies as pandas may raise an error when passed data with incompatible frequencies.
 Therefore, we single out the series with daily data.
-The :meth:`pandasdmx.api.Response.write` method accepts an optional iterable to select a subset of the series contained in the dataset.
+:func:`to_pandas` method accepts an optional iterable to select a subset of the series contained in the dataset.
 Thus we can now generate our pandas DataFrame from daily exchange rate data only:
 
 .. ipython:: python
@@ -468,64 +429,81 @@ Thus we can now generate our pandas DataFrame from daily exchange rate data only
     cur_df.shape
     cur_df.tail()
 
-Control the output
-------------------
 
-See :func:`.write_dataset`.
+.. _datetime:
+
+Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`~pandas.PeriodIndex`
+-----------------------------------------------------------------------------------
+
+SDMX datasets often have a :class:`~.Dimension` with a name like ``TIME_PERIOD``.
+To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
+
+For multi-dimensional datasets, :func:`~.write_dataset` usually returns a :class:`pandas.Series` with a :class:`~pandas.MultiIndex` that has one level for each dimension.
+However, MultiIndex and DatetimeIndex/PeriodIndex are incompatible; it is not possible to use pandas' date/time features for *just one level* of a MultiIndex (e.g. ``TIME_PERIOD``) while using other types for the other levels/dimensions (e.g. strings for ``CURRENCY``).
+
+For this reason, when the `datetime` argument is used, :func:`~.write_dataset` returns a :class:`~pandas.DataFrame`: the DatetimeIndex/PeriodIndex is used along axis 0, and *all other dimensions* are collected in a MultiIndex on axis 1.
+
+An example, using the same data flow as above:
+
+.. ipython:: python
+
+   key = dict(CURRENCY_DENOM='EUR', FREQ='M', EXR_SUFFIX='A')
+   params = dict(startPeriod='2019-01', endPeriod='2019-06')
+   data = ecb.data('EXR', key=key, params=params).data[0]
+
+Without date-time conversion, :meth:`~.to_pandas` produces a MultiIndex:
+
+.. ipython:: python
+
+   sdmx.to_pandas(data)
+
+With date-time conversion, it produces a DatetimeIndex:
+
+.. ipython:: python
+
+   df1 = sdmx.to_pandas(data, datetime='TIME_PERIOD')
+   df1.index
+   df1
+
+Use the advanced functionality to specify a dimension for the frequency of a PeriodIndex, and change the orientation so that the PeriodIndex is on the columns:
+
+.. ipython:: python
+
+   df2 = sdmx.to_pandas(
+     data,
+     datetime=dict(dim='TIME_PERIOD', freq='FREQ', axis=1))
+   df2.columns
+   df2
+
+.. warning:: For large datasets, parsing datetimes may reduce performance.
+
 
 Work with files
 ===============
 
-The :meth:`pandasdmx.api.Request.get` method accepts two optional keyword arguments ``tofile``  and ``fromfile``.
-If a file path or, in case of ``fromfile``, a  file-like object is given, any SDMX message received from the server will be written to a file, or a file will be read instead of making a request to a remote server.
+:meth:`.Request.get` accepts the optional keyword argument `tofile`.
+If given, the response from the web service is written to the specified file, *and* the parse :class:`.Message` returned.
 
 .. versionadded:: 0.2.1
 
-The file to be read may be a zip file.
-In this case, the SDMX message must be the first file in the archive.
-The same works for zip files returned from an SDMX server.
-This happens, e.g., when Eurostat finds that the requested dataset has been too large.
-In this case the first request will yield a message with a footer containing a link to a zip file to be made available after some time.
-The link may be extracted by issuing something like:
+:func:`.read_sdmx` can be used to load SDMX messages stored in local files:
 
-    >>> resp.footer.text[1]
+.. ipython:: python
 
-and passed as ``url`` argument when calling ``get`` a second time to get the zipped data message.
-
-This second request can be performed automatically through the ``get_footer_url`` parameter.
-It defaults to ``(30, 3)`` which means that three attempts will be made in 30 seconds intervals.
-This behavior is useful when requesting large datasets from Eurostat.
-Deactivate it by setting ``get_footer_url`` to None.
-
-You can use :meth:`pandasdmx.api.Response.write_source` to save the serialized XML tree to a file.
-
-.. versionadded:: 0.4
-
-Cache Response instances in memory
-==================================
-
-The ''get'' API provides a rudimentary cache for Response instances.
-It is a simple dict mapping user-provided names to the Response instances.
-If we want to cache a Response, we can provide a suitable name by passing the keyword argument ``memcache`` to the get method.
-Pre-existing items under the same key will be overwritten.
-
-.. note::
-
-   Caching of http responses can also be achieved through ''requests-cache'.
-   Activate the cache by instantiating :class:`pandasdmx.api.Request` passing a keyword argument ``cache``.
-   It must be a dict mapping config and other values.
+    sdmx.read_sdmx('saved_message.xml')
 
 
 Handle errors
 =============
 
-The :class:`pandasdmx.api.Response` instance generated upon receipt of the response from the server has a ``status_code``  attribute.
-The SDMX web services guidelines explain the meaning of these codes.
-In addition, if the SDMX server has encountered an error, it may return a message which includes a footer containing explanatory notes.
-pandaSDMX exposes the content of a footer via a ``text`` attribute which is a list of strings.
+:attr:`.Message.response` carries the :attr:`requests.Response.status_code` attribute;
+in the successful queries above, the status code is ``200``.
+The SDMX web services guidelines explain the meaning of other codes.
+In addition, if the SDMX server has encountered an error, it may return a Message with a footer containing explanatory notes.
+:mod:`pandaSDMX` exposes footer content as :attr:`.Message.footer` and :attr:`.Footer.text`.
 
 .. note::
 
-   pandaSDMX raises only http errors with status code between 400 and 499.
+   :mod:`pandaSDMX` raises only HTTP errors with status code between 400 and 499.
    Codes >= 500 do not raise an error as the SDMX web services guidelines define special meanings to those codes.
    The caller must therefore raise an error if needed.

@@ -185,7 +185,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
                   datetime=False, **kwargs):
     """Convert :class:`~.DataSet`.
 
-    See the :ref:`HOWTO <howto-datetime>` for examples of using the `datetime`
+    See the :ref:`walkthrough <datetime>` for examples of using the `datetime`
     argument.
 
     Parameters

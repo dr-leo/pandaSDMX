@@ -3,8 +3,8 @@
 What's new?
 ===========
 
-v1.0 (unreleased)
------------------
+v1.0.0 (2020-??-??, unreleased)
+-------------------------------
 
 - :mod:`pandasdmx.model` is reimplemented.
 
@@ -17,7 +17,7 @@ v1.0 (unreleased)
 
 - :mod:`pandasdmx.api` and :mod:`pandasdmx.remote` are reimplemented to (1)
   match the semantics of the requests_ package and (2) be much thinner.
-- Data sources are modularized in :class:`pandasdmx.source.Source`.
+- Data sources are modularized in :class:`~.source.Source`.
 
   - Idiosyncrasies of particular data sources (e.g. ESTAT's process for large
     requests) are handled by source-specific subclasses. As a result,
@@ -27,8 +27,7 @@ v1.0 (unreleased)
 
   - Promised, but untested, features of the 0.x series now have tests, to
     ensure feature parity.
-  - There are tests for each data source (``tests/test_sources.py``) to ensure
-    the package can handle idiosyncratic behaviour.
+  - There are tests for each data source (:file:`tests/test_sources.py``) to ensure the package can handle idiosyncratic behaviour.
   - The pytest-remotedata_ pytest plugin allows developers and users to run or
     skip network tests with `--remote-data`.
 
@@ -45,7 +44,7 @@ Migrating
 :::::::::
 - ``Writer.write(…, reverse_obs=True)``: use the standard pandas indexing approach to reverse a pd.Series: ``s.iloc[::-1]``
 - odo support is no longer built-in; however, users can still register a pandaSDMX resource with odo. See the :ref:`HOWTO <howto-convert>`.
-- :func:`.write_dataset`: the `parse_time` and `fromfreq` arguments are replaced by `datetime`; see the method documentation and the :ref:`HOWTO section <howto-datetime>` for examples.
+- :func:`.write_dataset`: the `parse_time` and `fromfreq` arguments are replaced by `datetime`; see the method documentation and the :ref:`walkthrough section <datetime>` for examples.
 
 v0.9 (2018-04)
 ----------------------------

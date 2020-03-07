@@ -178,12 +178,6 @@ Constraints
    None of the data sources supported by :mod:`pandaSDMX` appears to use this latter form.
 
 
-.. todo:: Simplify this text.
-
-Content-constraints can be used to validate dimension names and values (a.k.a. keys) when requesting data sets selecting columns of interest.
-pandaSDMX supports content constraints and provides convenient methods to validate keys, compute the constrained code lists etc.
-
-
 .. _formats:
 
 Formats
@@ -254,20 +248,6 @@ In some cases, Request will make an additional query to fetch metadata and valid
 - parameters or headers that are not supported, or must take very specific, non-standard values, or
 - unusual ways of returning data.
 
-See :doc:`sources` and the source code for the details for each data source.
-
-
-.. _impl-messages:
-
-Messages
-========
-
 For data sources that support it, :mod:`pandaSDMX` automatically adds the HTTP header ``Accept: application/vnd.sdmx.structurespecificdata+xml;`` when the `dsd` argument is provided to :meth:`.Request.get`.
 
-.. todo:: Simplify this text.
-
-Another important SDMXML message type is :index:`StructureMessage` which may contain artefacts such as DataStructureDefinitions, code lists, conceptschemes, categoryschemes and so forth.
-
-SDMXML provides that each message contains a :index:`Header` containing some metadata about the message.
-Finally, SDMXML messages may contain a :index:`Footer` element.
-It provides information on any errors that have occurred on the server side, e.g., if the requested data set exceeds the size limit, or the server needs some time to make it available under a given link.
+See :doc:`sources` and the source code for the details for each data source.

@@ -1,7 +1,8 @@
 Walkthrough
 ***********
 
-This page walks through the steps of a pandaSDMX workflow, providing in-depth explanations of concepts along the way.
+This page walks through an example pandaSDMX workflow, providing explanations of some SDMX concepts along the way.
+See also :doc:`resources`, :doc:`HOWTOs <howto>` for miscellaneous tasks, and follow links to the :doc:`glossary` where some terms are explained.
 
 .. todo:: Edit this text to:
 
@@ -10,7 +11,7 @@ This page walks through the steps of a pandaSDMX workflow, providing in-depth ex
    - Eliminate descriptions/justifications of removed workarounds.
    - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
 
-.. todo:: Incorporate the following narrative sentences that were formerly in :doc:`implementation`:
+   Incorporate the following narrative sentences that were formerly in :doc:`implementation`:
 
    “[…] dimensions such as country, age, sex, and time period.”
 
@@ -33,21 +34,16 @@ This page walks through the steps of a pandaSDMX workflow, providing in-depth ex
 
 Each of the steps share common tasks which flow from the architecture of pandaSDMX:
 
-1. Use an :class:`pandasdmx.api.Request` instance to get an SDMX message from a web service or file.
-#. Explore the returned :class:`pandasdmx.api.Response` instance.
-   The SDMX message is contained in its ``msg`` attribute.
-   Note that there are two types of message: DataMessage and StructureMessage.
-   The former contains a data set, the latter contains structural metadata about one or more dataflows, most importantly one or more dataflow definitions and related metadata such as the datastructure definition, codelists, constraints etc.
-
-   - Check for errors
-   - Explore the SDMX message contained in the :class:`pandasdmx.api.Response` instance.
-   - Write data or metadata to a pandas DataFrame or Series by calling :meth:`pandasdmx.api.Response.write` on the Response instance.
+1. Use an :class:`.Request` instance to get an SDMX message from a web service or file.
+#. Explore the returned :class:`.Message` instance (see :ref:`implementation notes <impl-messages>`)
+#. Check for errors
+#. Write data or metadata to a pandas DataFrame or Series by calling :func:`to_pandas`.
 
 
 Connect to an SDMX web service
 ------------------------------
 
-First, we instantiate :class:`pandasdmx.api.Request`.
+First, we instantiate :class:`.Request`.
 The constructor accepts an optional agency ID as string.
 The list of supported agencies can be viewed :doc:`here <sources>`, or as shown below.
 
@@ -473,17 +469,3 @@ pandaSDMX exposes the content of a footer via a ``text`` attribute which is a li
    pandaSDMX raises only http errors with status code between 400 and 499.
    Codes >= 500 do not raise an error as the SDMX web services guidelines define special meanings to those codes.
    The caller must therefore raise an error if needed.
-
-Configure logging
------------------
-
-.. versionadded:: 0.4
-
-pandaSDMX can log certain events such as when a connection to a web service is made or a file has been successfully downloaded.
-It uses the logging package from the Python stdlib.
-To activate logging, you must set the parent logger's level to the desired value as described in the logging docs:
-
-.. ipython:: python
-
-    import logging
-    sdmx.logger.setLevel(logging.DEBUG)

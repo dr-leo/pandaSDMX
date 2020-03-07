@@ -12,27 +12,24 @@ Other resources
 
 The following references and learning materials explain SDMX *in general*:
 
-- Wikipedia's `SDMX page <https://en.wikipedia.org/wiki/SDMX>`_ page gives a simple summary in 6 languages.
-- Eurostat's `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
-- The SDMX website includes both `the authoritative standards <https://sdmx.org/?page_id=5008>`_ and `many detailed guidelines <https://sdmx.org/?page_id=4345>`_ for their use.
-  In particular, see `Section 2 — Information Model <http://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf>`_.
+- `SDMX page <https://en.wikipedia.org/wiki/SDMX>`_ on Wikipedia, with a simple summary in 6 languages.
+- The **SDMX website** includes:
 
-- The GitHub organization of the `SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_ hosts other standards information, such as the `Section 7 — REST web service <https://github.com/sdmx-twg/sdmx-rest>`_ standard.
-- The European Central Bank `SDMX REST service help pages <https://sdw-wsrest.ecb.europa.eu/help/>`_ give many examples.
-- `SDMXSource <http://www.sdmxsource.org>`_ provides reference implementations of SDMX in Java, .NET and ActionScript.
+  - `the authoritative standards <https://sdmx.org/?page_id=5008>`_, and
+  - `many detailed guidelines <https://sdmx.org/?page_id=4345>`_ for their use.
+
+  In particular, see `Section 2 — Information Model <http://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf>`_ (PDF link).
+
+- The GitHub organization of the `SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_ hosts other standards information, such as:
+
+  - `Section 7 — REST web service <https://github.com/sdmx-twg/sdmx-rest>`_.
+
+- Eurostat `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
+- European Central Bank `SDMX REST service help pages <https://sdw-wsrest.ecb.europa.eu/help/>`_ give many examples.
+- `SDMXSource <http://www.sdmxsource.org>`_ provides reference implementations of SDMX in Java, .NET, and ActionScript.
 
 .. contents::
    :backlinks: none
-
-
-Standards versions
-==================
-
-:mod:`pandaSDMX` supports the SDMX version 2.1, the latest.
-SDMX 2.0 and 1.0 were released previously.
-
-Some agencies offer :ref:`web-service` that give users the option to retrieve data in SDMX 2.1 *or* 2.0 formats.
-Others *only* provide SDMX 2.0-formatted data; these services cannot be used with :mod:`pandaSDMX`.
 
 
 The SDMX Information Model (IM)
@@ -112,13 +109,16 @@ A :index:`Categorisation` links the thing to be categorised, e.g., a DataFlowDef
 
 .. _im:
 
-The Information Model (IM)
-==========================
+Information Model (IM)
+======================
 
-:mod:`pandasdmx.model` implements an the SDMX :term:`Information Model <information model>` (SDMX-IM, or IM).
+:mod:`pandasdmx.model` implements the SDMX Information Model` (SDMX-IM, or IM).
+(:term:`What is an 'information model'? <information model>`)
 The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF link); this page gives a brief overview of the IM classes as they appear in :mod:`pandaSDMX`.
 
 .. _sdmx-im: https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
+
+:mod:`pandaSDMX` supports only SDMX version 2.1, the latest.
 
 
 .. _im-base-classes:
@@ -193,7 +193,6 @@ Data
 
    Depending on its structure, a DataSet may be :term:`flat`, :term:`cross-sectional` or :term:`time series`.
 
-
 :class:`.Key`
    Values (:attr:`.Key.values`) for one or more Dimensions.
    The meaning varies:
@@ -210,34 +209,37 @@ Data
 
       GroupKeys are often used to attach AttributeValues; see below.
 
-
-Attributes
-----------
-
 :class:`AttributeValue`
   Value (:attr:`.AttributeValue.value`) for a DataAttribute (:attr:`.AttributeValue.value_for`).
 
   May be attached to any of: DataSet, SeriesKey, GroupKey, or Observation.
   In the first three cases, the attachment means that the attribute applies to all Observations associated with the object.
 
-:class:`DataAttribute`
+Data structures
+---------------
+
+:class:`.DataStructureDefinition`
+   ...
+:class:`.DataflowDefinition`
+   ...
+:class:`.Dimension`, :class:`.DimensionDescriptor`
+   ...
+:class:`.DataAttribute`, :class:`.AttributeDescriptor`
    ...
 
-Items and schemes
------------------
+Metadata
+--------
 
-- :class:`Item`.
-- :class:`ItemScheme`.
-- :class:`CategoryScheme`, :class:`ConceptScheme`, :class:`Codelist`.
-
-Data structure and flow
------------------------
-
-- :class:`Dimension`, :class:`DimensionDescriptor`.
-- :class:`AttributeDescriptor`.
-- :class:`DataStructureDefinition`.
-- :class:`DataflowDefinition`.
-
+:class:`.Item`.
+   ...
+:class:`.ItemScheme`.
+   ...
+:class:`.Codelist`
+   ...
+:class:`.CategoryScheme`
+   ...
+:class:`.ConceptScheme`
+   ...
 
 .. _formats:
 
@@ -283,8 +285,37 @@ pandaSDMX:
 - contains, in the `tests/data/ <https://github.com/dr-leo/pandaSDMX/tree/master/tests/data>`_ source directory, specimens of messages in both data formats.
   These are used by the test suite to check that the code functions as intended, but can also be viewed to understand the data formats.
 
-SDMX-ML
--------
+
+.. _web-service:
+
+Web services
+============
+
+The SDMX standards describe both `RESTful <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ and `SOAP <https://en.wikipedia.org/wiki/SOAP>`_ web service APIs.
+:ref:`See above <resources>` for the SDMG Technical Working Group's specification of the REST API.
+The Eurostat and ECB help materials provide descriptions and examples of HTTP using URLs, parameters and headers to construct queries.
+
+:mod:`pandaSDMX` supports:
+
+- REST web services, i.e. not SOAP services;
+- Data retrieved in SDMX version 2.1 :ref:`formats <formats>`.
+  Some existing services offer a parameter to select SDMX 2.1 *or* 2.0 format; :mod:`pandaSDMX` does not support the latter.
+  Other services *only* provide SDMX 2.0-formatted data; these cannot be used with :mod:`pandaSDMX`.
+
+:class:`.Request` constructs valid URLs and automatically add some parameter and header values.
+These can be overridden; see :meth:`.Request.get`.
+In some cases, Request will make an additional query to fetch metadata and validate a query.
+
+:class:`.pandasdmx.Source` and its subclasses handle idiosyncrasies of the web services operated by different agencies, such as:
+
+- parameters or headers that are not supported, or must take very specific, non-standard values, or
+- unusual ways of returning data.
+
+See :doc:`sources` and the source code for the details for each data source.
+
+
+Messages
+========
 
 There are several types of Message such as :index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing all the information required to interpret it.
 Hence, data sets in generic representation may be used without knowing the related :index:`DataStructureDefinition`.
@@ -300,25 +331,3 @@ Another important SDMXML message type is :index:`StructureMessage` which may con
 SDMXML provides that each message contains a :index:`Header` containing some metadata about the message.
 Finally, SDMXML messages may contain a :index:`Footer` element.
 It provides information on any errors that have occurred on the server side, e.g., if the requested data set exceeds the size limit, or the server needs some time to make it available under a given link.
-
-SDMX services provide XML schemas to validate a particular SDMXML file.
-However, pandaSDMX does not yet support validation.
-
-
-.. _web-service:
-
-Web services
-============
-
-The SDMX standard defines both `REST <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ and `SOAP <https://en.wikipedia.org/wiki/SOAP>`_ web service APIs.
-:mod:`pandaSDMX` only supports the SDMX RESTful web services API.
-
-Reference: https://github.com/sdmx-twg/sdmx-rest/tree/master/v2_1/ws/rest/docs
-
-To use a RESTful web service, a *client* (like pandaSDMX) makes HTTP queries to particular URLs, sometimes with HTTP headers.
-Both the Eurostat and ECB :ref:`resources linked above <resources>` provide detailed descriptions of these URLs and headers, and how to use these to control the data or metadata returned for a query.
-
-:class:`~pandasdmx.api.Request` and its :meth:`~.Request.get` construct valid URLs by automatically:
-
-- fetching metadata need to validate a query, and
-- handling variations in supported features and accepted URL parts and parameters across different :doc:`data sources <sources>`.

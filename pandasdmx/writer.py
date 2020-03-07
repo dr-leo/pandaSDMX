@@ -42,11 +42,10 @@ _alias = {
 def write(obj, *args, **kwargs):
     """Convert an SDMX *obj* to :mod:`pandas` object(s).
 
-    :meth:`write` implements a dispatch pattern according to the type of
-    *obj*. For instance, a :class:`pandasdmx.model.DataSet` object is
-    converted using :meth:`write_dataset`. See individual ``write_*`` methods
-    named for more information on their behaviour, including accepted *args*
-    and *kwargs*.
+    Implements a dispatch pattern according to the type of *obj*. For instance,
+    a :class:`.DataSet` object is converted using :func:`.write_dataset`. See
+    individual ``write_*`` methods named for more information on their
+    behaviour, including accepted *args* and *kwargs*.
     """
     cls = obj.__class__
     function = 'write_' + _alias.get(cls, cls).__name__.lower()
@@ -107,18 +106,15 @@ def write_dict(obj, *args, **kwargs):
         raise ValueError(result_type)
 
 
+def write_set(obj, *args, **kwargs):
+    """Convert :class:`set`."""
+    result = {write(o, *args, **kwargs) for o in obj}
+    return result
+
+
 # Functions for message classes
-def write_response(obj, *args, **kwargs):
-    """Convert :class:`pandasdmx.api.Response`.
-
-    The :attr:`msg <pandasdmx.api.Response.msg>` attribute of *obj* is
-    converted.
-    """
-    return write(obj.msg, *args, **kwargs)
-
-
 def write_datamessage(obj, *args, **kwargs):
-    """Convert :class:`DataMessage <pandasdmx.message.DataMessage>`."""
+    """Convert :class:`.DataMessage`."""
     # Pass the message's DSD to assist datetime handling
     kwargs.setdefault('dsd', obj.dataflow.structure)
 
@@ -129,11 +125,11 @@ def write_datamessage(obj, *args, **kwargs):
 
 
 def write_structuremessage(obj, include=None, **kwargs):
-    """Convert :class:`StructureMessage <pandasdmx.message.StructureMessage>`.
+    """Convert :class:`.StructureMessage`.
 
     Parameters
     ----------
-    obj : pandasdmx.message.StructureMessage
+    obj : .StructureMessage
     include : iterable of str or str, optional
         One or more of the attributes of the StructureMessage (
         'category_scheme', 'codelist', etc.) to transform.
@@ -142,7 +138,7 @@ def write_structuremessage(obj, include=None, **kwargs):
 
     Returns
     -------
-    :class:`pandasdmx.util.DictLike`
+    .DictLike
         Keys are StructureMessage attributes; values are pandas objects.
     """
     all_contents = {
@@ -177,11 +173,10 @@ def write_structuremessage(obj, include=None, **kwargs):
 # Functions for model classes
 
 def write_component(obj):
-    """Convert :class:`Component <pandasdmx.model.Component>`.
+    """Convert :class:`.Component`.
 
-    The :attr:`Concept.id <pandasdmx.model.Concept.id>` attribute of the
-    :attr:`Component.concept_identity
-    <pandasdmx.model.Component.concept_identity>` is returned.
+    The :attr:`~.Concept.id` attribute of the
+    :attr:`~.Component.concept_identity` is returned.
     """
     return str(obj.concept_identity.id)
 
@@ -286,7 +281,7 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
 
 
 def _maybe_convert_datetime(df, arg, obj, dsd=None):
-    """Helper for :meth:`write_dataset` to handle datetime indices.
+    """Helper for :meth:`.write_dataset` to handle datetime indices.
 
     Parameters
     ----------
@@ -396,17 +391,16 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
 
 
 def write_dimensiondescriptor(obj):
-    """Convert :class:`DimensionDescriptor
-    <pandasdmx.model.DimensionDescriptor>`.
+    """Convert :class:`.DimensionDescriptor`.
 
-    The :attr:`components <pandasdmx.model.DimensionDescriptor.components>` of
-    the DimensionDescriptor are written.
+    The :attr:`~.DimensionDescriptor.components` of the DimensionDescriptor
+    are written.
     """
     return write(obj.components)
 
 
 def write_itemscheme(obj, locale=DEFAULT_LOCALE):
-    """Convert :class:`ItemScheme <pandasdmx.model.ItemScheme>`.
+    """Convert :class:`.ItemScheme`.
 
     Names from *locale* are serialized.
 
@@ -453,17 +447,21 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
     return result
 
 
-def write_nameableartefact(obj):
-    """Convert :class:`NameableArtefact <pandasdmx.model.NameableArtefact>`.
+def write_membervalue(obj):
+    """Convert :class:`.MemberValue`."""
+    return obj.value
 
-    The :attr:`name <pandasdmx.model.NameableArtefact.name>` attribute of *obj*
-    is returned.
+
+def write_nameableartefact(obj):
+    """Convert :class:`.NameableArtefact`.
+
+    The :attr:`~.NameableArtefact.name` attribute of *obj* is returned.
     """
     return str(obj.name)
 
 
 def write_serieskeys(obj):
-    """Convert a list of :class:`SeriesKey <pandasdmx.model.SeriesKey>`."""
+    """Convert a list of :class:`.SeriesKey`."""
     result = []
     for sk in obj:
         result.append({dim: kv.value for dim, kv in sk.order().values.items()})

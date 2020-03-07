@@ -152,20 +152,6 @@ Data structures
 
    See the API documentation for details.
 
-:class:`.DataflowDefinition`
-   .. todo:: Simplify this text.
-
-   A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
-   The terminology is a bit confusing: You cannot actually obtain a dataflow from an SDMX web service.
-   Rather, you can request one or more dataflow definitions describing how datasets under this dataflow are structured, which codes may be used to query for desired columns etc.
-   The dataflow definition and the artefacts to which it refers give you all the information you need to exploit the data sets you can request using the dataflow's ID.
-
-   A :index:`DataFlowDefinition` is a class that describes a dataflow.
-   A DataFlowDefinition has a unique identifier, a human-readable name and potentially a more detailed description.
-   Both may be multi-lingual.
-   The dataflow's ID is used to query the data set it describes.
-   The dataflow also features a reference to the DSD which structures the data sets available under this dataflow ID.
-
 Metadata
 ========
 

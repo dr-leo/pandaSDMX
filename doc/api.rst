@@ -87,8 +87,8 @@ SDMX-JSON
          write_dimensiondescriptor
          write_itemscheme
          write_list
+         write_membervalue
          write_nameableartefact
-         write_response
          write_serieskeys
          write_structuremessage
 

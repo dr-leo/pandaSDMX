@@ -4,138 +4,162 @@ Walkthrough
 This page walks through an example pandaSDMX workflow, providing explanations of some SDMX concepts along the way.
 See also :doc:`resources`, :doc:`HOWTOs <howto>` for miscellaneous tasks, and follow links to the :doc:`glossary` where some terms are explained.
 
-.. todo:: Edit this text to:
-
-   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
-   - Reduce repetition, including of things described both here and in :doc:`implementation`.
-   - Eliminate descriptions/justifications of removed workarounds.
-   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
-
-   Incorporate the following narrative sentences that were formerly in :doc:`implementation`:
-
-   “[…] dimensions such as country, age, sex, and time period.”
+.. todo:: Maybe incorporate the following narrative sentences that were formerly in :doc:`implementation`:
 
    “Typical uses for attributes are the level of confidentiality, or data quality.”
 
    “For example, a constraint may reflect the fact that in a certain country there are no lakes or hospitals, and hence no data about water quality or hospitalization.”
 
+   “Explore the returned :class:`.Message` instance (see :ref:`implementation notes <impl-messages>`)”
 
 .. contents::
    :local:
    :backlinks: none
 
-1. Choose a data provider
-#. Download the catalogue of dataflows available from the data provider and select a dataflow for further inspection.
-#. Download metadata on the selected dataflow including the datastructure definition, concepts, codelists and content constraints describing the datasets available through that dataflow.
-#. Analyze the metadata as pandas DataFrames or by directly inspecting objects.
-#. Specify the needed portions of the data from the dataflow by constructing a selection ('key') of series and a period/time range for the prospective dataset.
-#. Download the actual dataset specified by dataflow ID, key and period/time range.
-#. Write the dataset or selected series thereof to a pandas DataFrame or Series to analyze the dataset.
 
-Each of the steps share common tasks which flow from the architecture of pandaSDMX:
+SDMX workflow
+=============
 
-1. Use an :class:`.Request` instance to get an SDMX message from a web service or file.
-#. Explore the returned :class:`.Message` instance (see :ref:`implementation notes <impl-messages>`)
-#. Check for errors
-#. Write data or metadata to a pandas DataFrame or Series by calling :func:`to_pandas`.
+Working with statistical data often includes some or all of the following steps.
+:mod:`pandaSDMX` builds on SDMX features to make the steps straightforward:
+
+1. Choose a data provider.
+      :mod:`pandaSDMX` provides a built-in list of :doc:`sources`.
+2. Investigate *what data is available*.
+      Using :mod:`pandaSDMX`, download the catalogue of data flows available from the data provider and select a data flow for further inspection.
+3. Understand *what form* the data comes in.
+      Using :mod:`pandaSDMX`, download structure and metadata on the selected data flow and the data it contains, including the data structure definition, concepts, codelists and content constraints.
+4. Decide *what data is required*.
+      Using :mod:`pandaSDMX`, analyze the structural metadata, by directly inspecting objects or converting them to :mod:`pandas` types.
+5. Download the actual data.
+      Using :mod:`pandaSDMX`, specify the needed portions of the data from the data flow by constructing a selection ('key') of series and a period/time range.
+      Then, retrieve the data using :meth:`Request.get`.
+6. Analyze or manipulate the data.
+      Convert to :mod:`pandas` types using :func:`pandasmdx.to_pandas` and use the result in further Python code and scripts.
 
 
-Connect to an SDMX web service
-------------------------------
+Choose and connect to an SDMX web service
+=========================================
 
-First, we instantiate :class:`.Request`.
-The constructor accepts an optional agency ID as string.
-The list of supported agencies can be viewed :doc:`here <sources>`, or as shown below.
+First, we instantiate a :class:`.pandasdmx.Request` object, using the string ID of a :doc:`data source <sources>` recognized by :mod:`pandaSDMX`:
 
 .. ipython:: python
 
     import pandasdmx as sdmx
     ecb = sdmx.Request('ECB')
 
-``ecb`` is now configured so as to make requests to the European Central Bank.
-If you want to send requests to multiple agencies, instantiate multiple ``Request`` objects.
-
+The object ``ecb`` is now ready to make multiple data and metadata queries to the European Central Bank's web service.
+To send requests to multiple web services, we could instantiate multiple :class:`Requests <.Request>`.
 
 Configure the HTTP connection
-:::::::::::::::::::::::::::::
+-----------------------------
 
-To pre-configure the HTTP connections to be established by a ``Request`` instance, you can pass all keyword arguments consumed by the underlying HTTP library `requests <http://www.python-requests.org/>`_.
-For a complete description of the options see the ``requests``  documentation.
-For example, a proxy server can be specified for subsequent requests:
+:mod:`pandaSDMX` builds on the widely-used :mod:`requests` Python HTTP library.
+To pre-configure all queries made by a :class:`.Request`, we can pass any of the keyword arguments recognized by :func:`requests.request`.
+For example, a proxy server can be specified:
 
 .. ipython:: python
 
-    ecb_via_proxy = sdmx.Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
+    ecb_via_proxy = sdmx.Request(
+        'ECB',
+        proxies={'http': 'http://1.2.3.4:5678'}
+    )
 
-HTTP request parameters are exposed through a dict.
-It may be modified between requests.
+The :attr:`~.Request.session` attribute is a :class:`.Session` object that can be used to inspect and modify configuration between queries:
 
 .. ipython:: python
 
     ecb_via_proxy.session.proxies
 
-The ``Request.client`` attribute acts a bit like a ``requests.Session`` in that it conveniently stores the configuration for subsequent HTTP requests.
-Modify it to change the configuration.
-For convenience, :class:`pandasdmx.api.Request` has a ``timeout`` property to set the timeout in seconds for HTTP requests.
+For convenience, :attr:`~.Session.timeout` stores the timeout in seconds for HTTP requests, and is passed automatically for all queries.
 
-Cache received files
-::::::::::::::::::::
+Cache HTTP responses
+--------------------
 
 .. versionadded:: 0.3.0
 
-`requests-cache <https://readthedocs.io/projects/requests-cache/>`_ is supported.
-To use it, pass an optional ``cache`` keyword argument to ``Request()`` constructor.
-If given, it must be a dict whose items will be passed to ``requests_cache.install_cache`` function.
-Use it if you want to cache SDMX messages in databases such as MongoDB, Redis or SQLite.
-See the `requests-cache`` docs for further information.
+If :mod:`requests_cache <requests_cache.core>` is installed, it is used automatically by :class:`.Session`.
+To configure it, we can pass any of the arguments accepted by :class:`requests_cache.core.CachedSession` when creating a :class:`.Request`.
+For example, to force :mod:`requests_cache <requests_cache.core>` to use SQLite to store cached data with the ``fast_save`` option, and expire cache entries after 10 minutes:
+
+.. ipython:: python
+
+    ecb_with_cache = sdmx.Request(
+        'ECB',
+        backend='sqlite',
+        fast_save=True,
+        expire_after=600,
+    )
 
 Load messages from file
-:::::::::::::::::::::::
+-----------------------
 
-:meth:`read_sdmx` can be used to load SDMX messages from local files:
+:func:`.read_sdmx` can be used to load SDMX messages stored in local files:
 
 .. ipython:: python
 
     sdmx.read_sdmx('saved_message.xml')
 
+
 Obtain and explore metadata
----------------------------
+===========================
 
 This section illustrates how to download and explore metadata.
-Assume we are looking for time-series on exchange rates.
-Our best guess is that the European Central Bank provides a relevant dataflow.
-We could search the Internet for the dataflow ID or browse the ECB's website.
-However, we choose to use SDMX metadata to get a complete overview of the dataflows the ECB provides.
+Suppose we are looking for time-series on exchange rates, and we know that the European Central Bank provides a relevant :term:`data flow`.
+
+.. sidebar:: What is a data flow?
+
+   SDMX allows that multiple data providers might publish, at different times, data points about the same measure, with the same dimensions, units, etc. For instance, two different countries might each publish their own exchange rates with a third country.
+
+   These individual releases are called 'data sets'; the whole collection of similarly-structured data sets is a 'data flow'.
+
+   When using SDMX web services, a request for data from a data flow with a certain ID will yield one or more data sets with observations that match the query parameters.
+
+We *could* search the Internet for the dataflow ID or browse the ECB's website.
+However, we can also use :mod:`pandaSDMX` to retrieve metadata and get a complete overview of the dataflows the ECB provides.
 
 Getting the dataflow and related metadata
-:::::::::::::::::::::::::::::::::::::::::
+-----------------------------------------
 
-SDMX allows to download a list of dataflow definitions for all dataflows provided by a given data provider.
-Note that the terms 'dataflow' and 'dataflow definition' are used synonymously.
+We use :mod:`pandaSDMX` to download the definitions for all data flows available from our chosen source.
+We could call :meth:`.Request.get` with ``[resource_type=]'dataflow'`` as the first argument, but can also use a shorter alias:
 
 .. ipython:: python
 
     flow_msg = ecb.dataflow()
 
-The content of the SDMX message, its header and its payload are exposed as attributes.
-These are also accessible directly from the containing :class:`pandasdmx.api.Response` instance (new in version 0.4).
-We will use this shortcut throughout this documentation.
-But keep in mind that all payload such as data or metadata is stored as attributes of a :class:`pandasdmx.model.Message` instance which can be explicitly accessed from a ``Response`` instance via its ``msg`` attribute.
-
-Let's find out what we have received.
-We can obtain the URL of the request that resulted in the present Response as well as the HTTP headers returned by the SDMX server:
+The query returns a :class:`.Message` instance.
+We can also see the URL that was queried and the response headers by accessing the :attr:`.Message.response` attribute:
 
 .. ipython:: python
 
-    flow_msg
-    flow_msg.response.url
-    flow_msg.response.headers
+   flow_msg.response.url
+   flow_msg.response.headers
 
-Now let's export our list of dataflow definitions to a pandas DataFrame.
+All the content of the response—SDMX data and metadata objects—has been parsed and is accessible from ``flow_msg``.
+Let's find out what we have received:
 
-The :meth:`pandasdmx.api.Response.write` returns a mapping from the metadata contained in the :class:`pandasdmx.model.StructureMessage` instance to pandas DataFrames.
-E.g., there is a key and corresponding DataFrame for the resource ``dataflow``.
-The mapping object is a thin wrapper around :class:`dict` which essentially enables attribute syntax for read access.
+.. ipython:: python
+
+   flow_msg
+
+The string representation of the Message shows us a few things:
+
+- This is a Structure-, rather than DataMessage.
+- It contains 67 :class:`.DataflowDefinition` objects.
+  Because we didn't specify an ID of a particular data flow, we received the definitions for *all* data flows available from the ECB web service.
+- The first of these have ID attributes like 'AME', 'BKN', …
+
+We could inspect these each individually using :attr:`.StructureMessage.dataflow` attribute, a :class:`.DictLike` object that allows attribute- and index-style access:
+
+.. ipython:: python
+
+   flow_msg.dataflow.BOP
+
+Convert metadata to :class:`pandas.Series`
+------------------------------------------
+
+However, an easier way is to use :func:`.pandasdmx.to_pandas` to convert some of the information to a :class:`pandas.Series`:
 
 .. ipython:: python
 
@@ -143,120 +167,143 @@ The mapping object is a thin wrapper around :class:`dict` which essentially enab
     dataflows.head()
     len(dataflows)
 
-The ``write``-method accepts a number of keyword arguments to choose the resources to be exported, the attributes to be included in the DataFrame columns, and the desired language for human-readable international strings.
-See the doc string for details.
+:func:`.to_pandas` accepts most instances and Python collections of :mod:`pandasdmx.model` objects, and we can use keyword arguments to control how each of these is handled.
+See the method documentation for detailed.
 
-As we are interested in exchange rate data, we will have a closer look at the dataflow 'EXR'.
-
-Note that some agencies including ECB and INSEE categorize dataflow definitions to help retrieve the desired dataflow.
-See the chapter on advanced topics for details.
-
-Extracting the metadata related to a dataflow
------------------------------------------------------------
-
-We will download the dataflow definition with the ID 'EXR' from the European Central Bank.
-This dataflow definition is already contained in the complete list of dataflows we studied in the last chapter, but without any related metadata.
-Now we will pass the dataflow ID 'EXR' to tell pandaSDMX that we want to drill down into a single dataflow.
-Passing a dataflow ID prompts pandaSDMX to set the ''references'' parameter to ``all`` which instructs the SDMX server to return any metadata related to the dataflow definition as well.
+As we are interested in exchange rate data, let's use built-in Pandas methods to choose an appropriate data flow:
 
 .. ipython:: python
 
-    exr_flow = ecb.dataflow('EXR')
-    exr_flow.response.url
-    exr_flow.dataflow
-    # Show the datastructure definition referred to by the dataflow
-    dsd = exr_flow.dataflow.EXR.structure
+   dataflows[dataflows.str.contains('exchange', case=False)]
+
+We decide to look at 'EXR'.
+
+Some agencies, including ECB and INSEE, offer categorizations of data flows to help with this step.
+See :ref:`this HOWTO entry <howto-categoryscheme>`.
+
+Extract the metadata related to a data flow
+-------------------------------------------
+
+We will download the data flow definition with the ID 'EXR' from the European Central Bank.
+This data flow definition is already contained in the ``flow_msg`` we retrieved with the last query, but without the data structure or any related metadata.
+Now we will pass the data flow ID 'EXR', which prompts :mod:`pandaSDMX` to set the ``references`` query parameter to 'all'.
+The ECB SDMX service responds by returning all metadata related to the dataflow:
+
+.. ipython:: python
+
+    # Here we could also use the object we have in hand:
+    # exr_msg = ecb.dataflow(resource=flow_msg.dataflow.EXR)
+    exr_msg = ecb.dataflow('EXR')
+    exr_msg.response.url
+
+    # The response includes several classes of SDMX objects
+    exr_msg
+
+    exr_flow = exr_msg.dataflow.EXR
+
+The :attr:`.DataflowDefinition.structure` attribute refers to the data structure definition (DSD, an instance of :class:`.DataStructureDefinition`).
+As the name implies, this object contains metadata that we can use to explore the structure of data from the 'EXR' flow:
+
+.. ipython:: python
+
+    # Show the data structure definition referred to by the data flow
+    dsd = exr_flow.structure
     dsd
-    dsd is exr_flow.structure.ECB_EXR1
+
+    # The same object instance is accessible from the StructureMessage
+    dsd is exr_msg.structure.ECB_EXR1
+
+Among other things, the DSD defines:
+
+- the order and names of the :class:`Dimensions <.Dimension>`, and the allowed values, data type or codes for each dimension, and
+- the names, allowed values, and valid points of attachment for :class:`DataAttributes <.DataAttribute>`.
+- the :class:`.PrimaryMeasure`, i.e. a description of the thing being measured by the observation values.
+
+.. ipython:: python
+
     # Explore the DSD
     dsd.dimensions.components
     dsd.attributes.components
-    # Show a codelist referenced by a dimension.
-    # It contains a superset of the allowed values.
-    cl = dsd.dimensions.get('FREQ').local_representation.enumerated
-    cl
-    sdmx.to_pandas(cl)
+    dsd.measures.components
 
-Dataflow definitions at a glance
-::::::::::::::::::::::::::::::::
-
-A :class:`pandasdmx.model.DataFlowDefinition` ("DSD") has an ``id`` , ``name`` , ``version``  and other attributes inherited from various base classes.
-It is worthwhile to look at the method resolution order.
-Many other classes from the model have similar base classes.
-
-It is crucial to bear in mind two things when working with dataflows:
-
-- the ``id``  of a dataflow definition is also used to request data of this dataflow.
-- the ``structure``  attribute of the dataflow definition is a reference to the data structure definition describing datasets of this dataflow.
-  References can be called to return the referenced object
-  Call it with ``request`` set to True, and it will download the referenced object remotely if it cannot be retrieved in the present message.
-  Set ``target_only`` to False to get the SDMX response rather than just the referenced object.
-  See the code example on the front page for a demonstration of this feature.
-
-A DSD essentially defines three things:
-
-- the dimensions of the datasets of this dataflow, i.e. the order and names of the dimensions and the allowed values or the data type for each dimension, and
-- the attributes, i.e. their names, allowed values and where each may be attached.
-  There are four possible attachment points:
-
-  - at the individual observation,
-  - at series level,
-  - at group level (i.e. a subset of series defined by dimension values), or
-  - at dataset level.
-
-- the measure dimension and the primary measure.
-
-A DSD, a dataflow definition and some other entities may be referenced by what is called a content constraint.
-A content constraint constrains the codelists referenced by the DSD's dimensions and attributes (collectively called 'components').
-
-Let's look at the dimensions and for the 'CURRENCY' dimension also at the allowed values as contained in the potentially constrained codelists.
-We now use pandas:
-
-.. todo:: ``_constrained_codes`` is no longer provided; update this snippet.
+Chosing just the 'FREQ' dimension, we can explore the :class:`.CodeList` that contains valid values for this dimension in the data flow:
 
 .. ipython:: python
-   :okexcept:
 
-    sdmx.to_pandas(exr_flow.codelist.CL_CURRENCY).head()
-    # An example for constrained codelists (code ID's only as frozenset)
-    exr_flow._constrained_codes.FREQ
+    # Show a codelist referenced by a dimension, containing a superset
+    # of existing values
+    cl = dsd.dimensions.get('FREQ').local_representation.enumerated
+    cl
 
-The order of dimensions will determine the order of column index levels of the pandas DataFrame (see below).
-Note that the pandas DataFrame containing the codelists is indexed by dimension and attribute ID rather than codelist ID.
-Further, it is worth stressing that the codelists are by default exported to pandas after applying any content constraints to them.
-Content constraints are specific to a dataflow definition, DSD or, in theory, provision agreement.
-They serve to tell the user for which codes there is actually data available.
-The unconstrained codelists are, by contrast, not specific to a given data set.
-Rather, they are meant to be reusable for many data sets and hence tend to be complete to be as versatile as possible.
-If you want to export the unconstrained codelists, pass ``constraints=False`` to the .write method.
+    # Again, the same object can be accessed directly
+    cl is exr_msg.codelist.CL_FREQ
 
-The DataFrame representation of the code list for the CURRENCY dimension shows that 'USD' and 'JPY' are valid dimension values.
-We need this information to construct a filter for our dataset query which should be limited to the currencies we are interested in.
+    # Convert to a pandas.Series to see more information
+    sdmx.to_pandas(cl)
 
-Note that :meth:`pandasdmx.model.Scheme.aslist` sorts the dimension objects by their position attribute.
-The order matters when constructing filters for dataset queries (see below).
-But pandaSDMX sorts filter values behind the scenes, so we need not care.
+
+Understand constraints
+----------------------
+
+The 'CURRENCY' and 'CURRENCY_DENOM' dimensions of this DSD share the same 'CL_CURRENCY' code list.
+In order to be reusable for as many data sets as possible, this code list is extensive and complete:
+
+.. ipython:: python
+
+    len(exr_msg.codelist.CL_CURRENCY)
+
+However, the *European* Central Bank does not, in its 'EXR' data flow, commit to providing exchange rates between—for instance—the Congolose franc ('CDF') and Peruvian sol ('PEN').
+In other words, the values of ('CURRENCY', 'CURRENCY_DENOM') that we can expect to find in 'EXR' is much smaller than the 359 × 359 possible combinations of two values from 'CL_CURRENCY'.
+
+How much smaller?
+Let's return to explore the :class:`.ContentConstraint` that came with our metadata query:
+
+.. ipython:: python
+
+    exr_msg.constraint.EXR_CONSTRAINTS
+
+    # Get the content 'region' included in the constraint
+    cr = exr_msg.constraint.EXR_CONSTRAINTS.data_content_region
+
+    # Get the valid members for two dimensions
+    c1 = sdmx.to_pandas(cr.member['CURRENCY'].values)
+    len(c1)
+
+    c2 = sdmx.to_pandas(cr.member['CURRENCY_DENOM'].values)
+    len(c2)
+
+    # Explore the contents
+    # Currencies that are valid for CURRENCY_DENOM, but not CURRENCY
+    c2 - c1
+    # The opposite:
+    c1 - c2
+
+    # Check certain contents
+    {'CDF', 'PEN'} < c1 | c2
+    {'USD', 'JPY'} < c1 & c2
+
+We see that 'USD' and 'JPY' are valid values along both dimensions.
 
 Attribute names and allowed values can be obtained in a similar fashion.
 
-.. note::
-
-   Groups are not yet implemented in the DSD.
-   But this is not a problem as they are implemented for generic datasets.
-   Thus, datasets should be rendered properly including all attributes and their attachment levels.
-
-
-Work with data
---------------
 
 Select and request data from a dataflow
-:::::::::::::::::::::::::::::::::::::::
+=======================================
 
-Requesting a dataset is as easy as requesting a dataflow definition or any other SDMX artefact: just call the :meth:`pandasdmx.api.Request.get` method and pass it 'data' as the resource_type and the dataflow ID as resource_id.
+Next, we will obtain some data.
+
+.. todo:: Edit text below this point to:
+
+   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
+   - Reduce repetition, including of things described both here and in :doc:`implementation`.
+   - Eliminate descriptions/justifications of removed workarounds.
+   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
+
+Requesting a dataset is as easy as requesting a dataflow definition or any other SDMX artefact: just call :meth:`.Request.get` and pass it 'data' as the resource_type and the dataflow ID as resource_id.
 As a shortcut, you can use the ``data`` descriptor which calls the ``get`` method implicitly.
 
 Generic or structure-specific data format?
-::::::::::::::::::::::::::::::::::::::::::::
+------------------------------------------
 
 Data providers which support SDMX-ML offer data sets in two distinct formats:
 
@@ -274,7 +321,7 @@ Note that data providers supporting SDMXJSON only work with a single format for 
 Hence, there is merely one agency ID for OECD and ABS.
 
 Filtering
-:::::::::
+---------
 
 In most cases we want to filter the data by columns or rows in order to request only the data we are interested in.
 Not only does this increase performance.
@@ -340,7 +387,7 @@ Without passing the DSD, it would be downloaded automatically right after the da
     type(data)
 
 Data sets
-:::::::::
+---------
 
 This section explains the key elements and structure of datasets.
 You can skip it on first read when you just want to be able to download data and export it to pandas.
@@ -390,10 +437,10 @@ We could have chosen to request only daily data in the first place by providing 
 In the next section we will show how columns from a dataset can be selected through the information model when writing to a pandas DataFrame.
 
 Convert data to pandas
-::::::::::::::::::::::
+======================
 
 Select columns using the model API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 As we want to write data to a pandas DataFrame rather than an iterator of pandas Series, we avoid mixing up different frequencies as pandas may raise an error when passed data with incompatible frequencies.
 Therefore, we single out the series with daily data.
@@ -409,12 +456,12 @@ Thus we can now generate our pandas DataFrame from daily exchange rate data only
     cur_df.tail()
 
 Control the output
-~~~~~~~~~~~~~~~~~~
+------------------
 
 See :func:`.write_dataset`.
 
 Work with files
----------------
+===============
 
 The :meth:`pandasdmx.api.Request.get` method accepts two optional keyword arguments ``tofile``  and ``fromfile``.
 If a file path or, in case of ``fromfile``, a  file-like object is given, any SDMX message received from the server will be written to a file, or a file will be read instead of making a request to a remote server.
@@ -442,7 +489,7 @@ You can use :meth:`pandasdmx.api.Response.write_source` to save the serialized X
 .. versionadded:: 0.4
 
 Cache Response instances in memory
-----------------------------------
+==================================
 
 The ''get'' API provides a rudimentary cache for Response instances.
 It is a simple dict mapping user-provided names to the Response instances.
@@ -457,7 +504,7 @@ Pre-existing items under the same key will be overwritten.
 
 
 Handle errors
--------------
+=============
 
 The :class:`pandasdmx.api.Response` instance generated upon receipt of the response from the server has a ``status_code``  attribute.
 The SDMX web services guidelines explain the meaning of these codes.

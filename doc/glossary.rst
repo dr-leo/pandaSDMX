@@ -7,6 +7,9 @@ Glossary
       A data structure where the 'innermost' dimension is not a time dimension.
       Contrast with :term:`flat`, :term:`time series`.
 
+   data flow
+      A collection of one or more data sets sharing the same structure.
+
    flat
       A data set that is not grouped using SeriesKeys.
 

@@ -1,5 +1,5 @@
 Statistical Data and Metadata eXchange (SDMX) in Python
-=======================================================
+*******************************************************
 
 :mod:`pandaSDMX` is an Apache 2.0-licensed `Python <http://www.python.org>`_ library that implements `SDMX <http://www.sdmx.org>`_ 2.1
 (`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_), a format for
@@ -17,72 +17,60 @@ agencies, central banks, and international organisations.
 - convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data
   science ecosystem;
-- apply the :doc:`SDMX Information Model <im>` to your own data;
+- apply the :doc:`SDMX Information Model <implementation>` to your own data;
 
 …and much more.
 
-Documentation
--------------
+Get started
+===========
 
 SDMX was designed to be flexible enough to accommodate almost *any* data.
 This also means it is complex, with many abstract concepts for describing data,
 metadata, and their relationships.
 These are called the “SDMX Information Model” (IM).
 
-This documentation does not repeat the full description of the IM, but focuses on functionality provided by :mod:`pandaSDMX` itself.
+.. _not-the-standard:
+
+This documentation does not repeat full descriptions of SDMX, the IM, or SDMX web services; it focuses on functionality provided by :mod:`pandaSDMX` itself.
 Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
-:doc:`usage example in only 10 lines of code <example>`, and then the longer :doc:`walkthrough`.
+:doc:`usage example in only 10 lines of code <example>`, and then the longer, narrative :doc:`walkthrough <walkthrough>`.
 
-To learn about the IM and unlock the full power of SDMX, skim a :doc:`short introduction <intro>`, consult the linked reference materials, and/or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM.
-
-**Get started**
-
-* :doc:`example`
-* :doc:`install`
-* :doc:`walkthrough`
+To learn about SDMX in more detail, use the :doc:`list of resources and references <resources>`, or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM in Python.
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
 
-   10-line example <example>
+   example
    install
    walkthrough
 
-**Learn more**
+
+:mod:`pandaSDMX` user guide
+===========================
 
 .. toctree::
    :maxdepth: 2
 
-   Intro to SDMX <intro>
-   advanced
-
-**User guide**
-
-* :doc:`sources`
-* :doc:`im`
-* :doc:`api`
-* :doc:`howto`
-
-.. toctree::
-    :hidden:
-
-    sources
-    Information model <im>
-    api
-    howto
-
-**Help & development**
-
-* :doc:`whatsnew`
-* Report bugs, suggest features or view the source code on
-  `Github <https://github.com/dr-leo/pandaSDMX>`_; or use the `mailing list <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_ for other questions.
-* :doc:`roadmap`
-* :doc:`license`
-* :ref:`genindex`
-
-.. toctree::
-   :hidden:
-
+   sources
+   api
+   implementation
+   howto
    whatsnew
    roadmap
+
+
+Contributing to pandaSDMX and getting help
+==========================================
+
+- Report bugs, suggest features or view the source code on
+  `GitHub <https://github.com/dr-leo/pandaSDMX>`_.
+- The `sdmx-python <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_ Google Group and mailing list may have answers for some questions.
+
+
+.. toctree::
+
+   resources
+   glossary
    license
+
+- :ref:`genindex`

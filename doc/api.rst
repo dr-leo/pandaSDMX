@@ -1,6 +1,8 @@
 API reference
 =============
 
+See also the :doc:`implementation`.
+
 .. contents::
    :local:
    :backlinks: none
@@ -9,6 +11,22 @@ Top-level methods and classes
 -----------------------------
 .. automodule:: pandasdmx
    :members:
+   :exclude-members: logger
+
+.. autodata:: logger
+
+   By default, messages at the :ref:`log level <py:levels>` ``ERROR`` or
+   greater are printed to :obj:`sys.stderr`.
+   These include the web service query details (URL and headers) used by :class:`.Request`.
+
+   To debug requets to web services, set to a more permissive level::
+
+       import logging
+
+       sdmx.logger.setLevel(logging.DEBUG)
+
+   .. versionadded:: 0.4
+
 
 ``message``: SDMX messages
 --------------------------
@@ -19,7 +37,6 @@ Top-level methods and classes
 
 ``model``: SDMX Information Model
 ---------------------------------
-See :doc:`im`.
 
 .. automodule:: pandasdmx.model
    :members:
@@ -28,17 +45,23 @@ See :doc:`im`.
 
 ``reader``: Parsers for SDMX file formats
 -----------------------------------------
+
 SDMX-ML
 :::::::
+.. currentmodule:: pandasdmx.reader.sdmxml
 
-.. autoclass:: pandasdmx.reader.sdmxjson.Reader
+pandaSDMX supports the several types of SDMX-ML messages.
+
+.. autoclass:: pandasdmx.reader.sdmxml.Reader
     :members:
     :undoc-members:
 
 SDMX-JSON
 :::::::::
 
-.. autoclass:: pandasdmx.reader.sdmxml.Reader
+.. currentmodule:: pandasdmx.reader.sdmxjson
+
+.. autoclass:: pandasdmx.reader.sdmxjson.Reader
     :members:
     :undoc-members:
 
@@ -64,8 +87,8 @@ SDMX-JSON
          write_dimensiondescriptor
          write_itemscheme
          write_list
+         write_membervalue
          write_nameableartefact
-         write_response
          write_serieskeys
          write_structuremessage
 

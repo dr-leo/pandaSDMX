@@ -8,6 +8,7 @@ __pycache__
 .pytest_cache
 build
 dist
+doc/cache.sqlite
 doc/_build
 prof/
 tests/data/cache

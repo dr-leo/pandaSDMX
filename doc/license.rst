@@ -1,7 +1,7 @@
 License
 =======
 
-Copyright 2014–2019, pandaSDMX developers:
+Copyright 2014–2020, pandaSDMX developers:
 
 .. include:: ../AUTHORS
 

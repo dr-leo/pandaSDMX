@@ -21,6 +21,10 @@ class Session(MaybeCachedSession):
 
     If requests_cache is installed, this class caches responses.
     """
+
+    #: Timeout interval in seconds for queries.
+    timeout = 30
+
     def __init__(self, **kwargs):
         # pandaSDMX-specific defaults
         stream = kwargs.pop('stream', True)

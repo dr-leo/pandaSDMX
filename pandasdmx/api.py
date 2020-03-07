@@ -1,12 +1,9 @@
-"""Network requests API
+"""Network requests API.
 
-This module defines two classes: :class:`pandasdmx.api.Request` and
-:class:`pandasdmx.api.Response`. Together, these form the high-level API of
+This module defines :class:`.Request`, which forms the high-level API of
 :mod:`pandasdmx`. Requesting data and metadata from an SDMX server requires a
-good understanding of this API and a basic understanding of the SDMX web
-service guidelines (only the chapters on REST services are relevant as
-pandasdmx does not support the SOAP interface).
-
+understanding of this API and a basic understanding of the SDMX web service
+guidelines.
 """
 from functools import partial
 import logging
@@ -41,8 +38,11 @@ class Request:
     """
     cache = {}
 
-    #: :class:`pandasdmx.source.Source` for requests sent from the instance.
+    #: :class:`.source.Source` for requests sent from the instance.
     source = None
+
+    #: :class:`.Session` for queries sent from the instance.
+    session = None
 
     def __init__(self, source=None, log_level=None, **session_opts):
         """Constructor."""

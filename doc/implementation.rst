@@ -133,6 +133,8 @@ Data structures
 
    A component can be either a DataAttribute that appears as an AttributeValue in data sets; or a Dimension that appears in Keys.
 
+   
+
 :class:`.Representation`, :class:`.Facet`
    For example: the concept 'country' can be represented as:
 
@@ -165,20 +167,23 @@ Metadata
 Constraints
 ===========
 
+:class:`.Constraint`, :class:`.ContentConstraint`
+   Classes that specify a subset of data or metadata to, for example, limit the contents of a data flow.
+
+   A ContentConstraint may have:
+
+   1. Zero or more :class:`.CubeRegion` stored at :attr:`.data_content_region`.
+   2. Zero or one :class:`.DataKeySet` stored at :attr:`.Constraint.data_content_keys`.
+
+   Currently, :meth:`.ContentConstraint.to_query_string`, used by :meth:`.Request.get` to validate keys based on a data flow definition, only uses :attr:`.data_content_region`, if any.
+   :attr:`.data_content_keys` are ignored.
+   None of the data sources supported by :mod:`pandaSDMX` appears to use this latter form.
+
+
 .. todo:: Simplify this text.
 
-Constraints are a mechanism to specify a subset of keys from the set of possible combinations of keys available in the referenced code lists for which there is actually data.
-
-There are two types of constraints:
-
-A :index:`content-constraint` is a mechanism to express the fact that data sets of a given dataflow only comprise columns for a subset of values from the code-lists representing dimension values.
-For example, the datastructure definition for a dataflow on exchange rates references the code list of all country codes in the world, whereas the data sets provided under this dataflow only covers the ten largest currencies.
-These can be enumerated by a content-constraint attached to the dataflow definition or DSD.
 Content-constraints can be used to validate dimension names and values (a.k.a. keys) when requesting data sets selecting columns of interest.
 pandaSDMX supports content constraints and provides convenient methods to validate keys, compute the constrained code lists etc.
-
-An :index:`attachment-constraint` describes to which parts of a data set (column/series, group of series, observation, the entire data set) certain attributes may be attached.
-Attachment-constraints are not supported by pandaSDMX as this feature is needed only for data set generation.
 
 
 .. _formats:

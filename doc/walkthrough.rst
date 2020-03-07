@@ -107,9 +107,9 @@ Obtain and explore metadata
 This section illustrates how to download and explore metadata.
 Suppose we are looking for time-series on exchange rates, and we know that the European Central Bank provides a relevant :term:`data flow`.
 
-.. sidebar:: What is a data flow?
+.. sidebar:: What is a “data flow”?
 
-   SDMX allows that multiple data providers might publish, at different times, data points about the same measure, with the same dimensions, units, etc. For instance, two different countries might each publish their own exchange rates with a third country.
+   SDMX allows that multiple data providers can publish, at different times, data points about the same measure, with the same dimensions, attributes, etc. For example, two different countries might each publish their own exchange rates with a third country.
 
    These individual releases are called 'data sets'; the whole collection of similarly-structured data sets is a 'data flow'.
 
@@ -118,8 +118,8 @@ Suppose we are looking for time-series on exchange rates, and we know that the E
 We *could* search the Internet for the dataflow ID or browse the ECB's website.
 However, we can also use :mod:`pandaSDMX` to retrieve metadata and get a complete overview of the dataflows the ECB provides.
 
-Getting the dataflow and related metadata
------------------------------------------
+Get information about the source's data flows
+---------------------------------------------
 
 We use :mod:`pandaSDMX` to download the definitions for all data flows available from our chosen source.
 We could call :meth:`.Request.get` with ``[resource_type=]'dataflow'`` as the first argument, but can also use a shorter alias:
@@ -168,9 +168,9 @@ However, an easier way is to use :func:`.pandasdmx.to_pandas` to convert some of
     len(dataflows)
 
 :func:`.to_pandas` accepts most instances and Python collections of :mod:`pandasdmx.model` objects, and we can use keyword arguments to control how each of these is handled.
-See the method documentation for detailed.
+See the method documentation for details.
 
-As we are interested in exchange rate data, let's use built-in Pandas methods to choose an appropriate data flow:
+As we are interested in exchange rate data, let's use built-in Pandas methods to find an appropriate data flow:
 
 .. ipython:: python
 
@@ -192,7 +192,7 @@ The ECB SDMX service responds by returning all metadata related to the dataflow:
 .. ipython:: python
 
     # Here we could also use the object we have in hand:
-    # exr_msg = ecb.dataflow(resource=flow_msg.dataflow.EXR)
+    #        exr_msg = ecb.dataflow(resource=flow_msg.dataflow.EXR)
     exr_msg = ecb.dataflow('EXR')
     exr_msg.response.url
 
@@ -202,7 +202,7 @@ The ECB SDMX service responds by returning all metadata related to the dataflow:
     exr_flow = exr_msg.dataflow.EXR
 
 The :attr:`.DataflowDefinition.structure` attribute refers to the data structure definition (DSD, an instance of :class:`.DataStructureDefinition`).
-As the name implies, this object contains metadata that we can use to explore the structure of data from the 'EXR' flow:
+As the name implies, this object contains metadata that describes the structure of data in the 'EXR' flow:
 
 .. ipython:: python
 
@@ -226,7 +226,7 @@ Among other things, the DSD defines:
     dsd.attributes.components
     dsd.measures.components
 
-Chosing just the 'FREQ' dimension, we can explore the :class:`.CodeList` that contains valid values for this dimension in the data flow:
+Chosing just the ``FREQ`` dimension, we can explore the :class:`.Codelist` that contains valid values for this dimension in the data flow:
 
 .. ipython:: python
 
@@ -245,7 +245,7 @@ Chosing just the 'FREQ' dimension, we can explore the :class:`.CodeList` that co
 Understand constraints
 ----------------------
 
-The 'CURRENCY' and 'CURRENCY_DENOM' dimensions of this DSD share the same 'CL_CURRENCY' code list.
+The ``CURRENCY`` and ``CURRENCY_DENOM`` dimensions of this DSD are both represented using the same ``CL_CURRENCY`` code list.
 In order to be reusable for as many data sets as possible, this code list is extensive and complete:
 
 .. ipython:: python
@@ -253,7 +253,7 @@ In order to be reusable for as many data sets as possible, this code list is ext
     len(exr_msg.codelist.CL_CURRENCY)
 
 However, the *European* Central Bank does not, in its 'EXR' data flow, commit to providing exchange rates between—for instance—the Congolose franc ('CDF') and Peruvian sol ('PEN').
-In other words, the values of ('CURRENCY', 'CURRENCY_DENOM') that we can expect to find in 'EXR' is much smaller than the 359 × 359 possible combinations of two values from 'CL_CURRENCY'.
+In other words, the values of (``CURRENCY``, ``CURRENCY_DENOM``) that we can expect to find in 'EXR' is much smaller than the 359 × 359 possible combinations of two values from ``CL_CURRENCY``.
 
 How much smaller?
 Let's return to explore the :class:`.ContentConstraint` that came with our metadata query:
@@ -282,7 +282,7 @@ Let's return to explore the :class:`.ContentConstraint` that came with our metad
     {'CDF', 'PEN'} < c1 | c2
     {'USD', 'JPY'} < c1 & c2
 
-We see that 'USD' and 'JPY' are valid values along both dimensions.
+We also see that 'USD' and 'JPY' are valid values along both dimensions.
 
 Attribute names and allowed values can be obtained in a similar fashion.
 
@@ -336,16 +336,6 @@ This can be done by passing a ``key``  keyword argument to the ``get``  method o
 It may either be a string (low-level API) or a dict.
 The dict form introduced in v0.3.0 is more convenient and pythonic as it allows pandaSDMX to infer the string form from the dict.
 Its keys (= dimension names) and values (= dimension values) will be validated against the datastructure definition as well as the content-constraint if available.
-
-Content-constraints are implemented only in their CubeRegion flavor.
-KeyValueSets are not yet supported.
-In this case, the provided demension values will be validated only against the unconstrained codelist.
-It is thus not always guaranteed that the dataset actually contains the desired data, e.g., because the country of interest does not deliver the data to the SDMX data provider.
-Note that even constrained codelists do not guarantee that for a given key there will be data on the server.
-This is because the codelists may mislead the user to think that every element of their cartesian product is a valid key for a series, whereas there is actually data merely for a subset of that product.
-The KeyValue flavor of content constraints is thus a more accurate predictor.
-But this feature is not known to be used by any data provider.
-Thus pandaSDMX does not support it.
 
 Another way to validate a key against valid codes are series-key-only datasets, i.e. a dataset with all possible series keys where no series contains any observation.
 pandaSDMX supports this validation method as well.

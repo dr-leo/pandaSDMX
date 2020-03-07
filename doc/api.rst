@@ -1,6 +1,8 @@
 API reference
 =============
 
+See also the :doc:`implementation`.
+
 .. contents::
    :local:
    :backlinks: none
@@ -35,7 +37,6 @@ Top-level methods and classes
 
 ``model``: SDMX Information Model
 ---------------------------------
-See :ref:`im`.
 
 .. automodule:: pandasdmx.model
    :members:

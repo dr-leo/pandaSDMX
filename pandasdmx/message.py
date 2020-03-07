@@ -1,7 +1,8 @@
 """Classes for SDMX messages.
 
 :class:`Message` and related classes are not defined in the SDMX
-:ref:`information model <im>`, but in the :ref:`SDMX-ML standard <formats>`.
+:doc:`information model <implementation>`, but in the
+:ref:`SDMX-ML standard <formats>`.
 
 pandaSDMX also uses :class:`DataMessage` to encapsulate SDMX-JSON data returned
 by data sources.

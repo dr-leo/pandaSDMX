@@ -16,7 +16,6 @@ Glossary
    information model
       A description of how :term:`information` is organized, providing semantics: specific terms, their meanings, and their relationships.
       The SDMX IM is one information model.
-      See :ref:`im`.
 
    metadata
       Information *about* data.

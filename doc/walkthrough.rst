@@ -6,11 +6,11 @@ This page walks through the steps of a pandaSDMX workflow, providing in-depth ex
 .. todo:: Edit this text to:
 
    - Refer to the documentation of methods, parameters, etc., instead of repeating it.
-   - Reduce repetition, including of things described both here and in :doc:`overview`.
+   - Reduce repetition, including of things described both here and in :doc:`implementation`.
    - Eliminate descriptions/justifications of removed workarounds.
    - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
 
-.. todo:: Incorporate the following narrative sentences that were formerly in :doc:`overview`:
+.. todo:: Incorporate the following narrative sentences that were formerly in :doc:`implementation`:
 
    “[…] dimensions such as country, age, sex, and time period.”
 

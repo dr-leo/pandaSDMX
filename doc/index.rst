@@ -17,7 +17,7 @@ agencies, central banks, and international organisations.
 - convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data
   science ecosystem;
-- apply the :ref:`SDMX Information Model <im>` to your own data;
+- apply the :doc:`SDMX Information Model <implementation>` to your own data;
 
 …and much more.
 
@@ -35,7 +35,7 @@ This documentation does not repeat full descriptions of SDMX, the IM, or SDMX we
 Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
 :doc:`usage example in only 10 lines of code <example>`, and then the longer, narrative :doc:`walkthrough <walkthrough>`.
 
-To learn about SDMX in more detail, use the resources linked from the :doc:`overview <overview>`, or read the API documentation for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM.
+To learn about SDMX in more detail, use the :doc:`list of resources and references <resources>`, or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM in Python.
 
 .. toctree::
    :maxdepth: 1
@@ -53,6 +53,7 @@ To learn about SDMX in more detail, use the resources linked from the :doc:`over
 
    sources
    api
+   implementation
    howto
    whatsnew
    roadmap
@@ -63,18 +64,13 @@ Contributing to pandaSDMX and getting help
 
 - Report bugs, suggest features or view the source code on
   `GitHub <https://github.com/dr-leo/pandaSDMX>`_.
-- The :doc:`overview` contains references to other learning materials and miscellaneous notes.
 - The `sdmx-python <https://groups.google.com/forum/?hl=en#!forum/sdmx-python>`_ Google Group and mailing list may have answers for some questions.
 
-..
-
-- :doc:`glossary`
-- :doc:`license`
-- :ref:`genindex`
 
 .. toctree::
-   :hidden:
 
-   overview
+   resources
    glossary
    license
+
+- :ref:`genindex`

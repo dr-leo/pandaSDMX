@@ -1,57 +1,21 @@
-Overview of SDMX
-****************
+Implementation notes
+********************
 
-Extensive information on SDMX, including learning material, is available in multiple places on the Internet.
-:ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information.
+:mod:`pandasdmx.model` implements the SDMX version 2.1.
+(:term:`What is an 'information model'? <information model>`)
+This page gives brief explanations of **how pandaSDMX implements the standards**, focusing on additional features, conveniences, or interpretations/naming choices that are not strictly detemined by the standards.
 
-This overview page provides (1) references and (2) brief explanations of *how* :mod:`pandaSDMX` implements the standards.
+Although this page is organized to correspond to the standards, it **does not recapitulate them** (:ref:`as stated <not-the-standard>`)—nor does it set out to teach all their details.
+For those purposes, see :doc:`resources`; or the :doc:`walkthrough`, which includes some incidental explanations.
 
 .. contents::
    :backlinks: none
    :local:
 
-.. _resources:
-
-Resources
-=========
-
-The following references and learning materials explain SDMX *in general*:
-
-- `SDMX page <https://en.wikipedia.org/wiki/SDMX>`_ on Wikipedia, with a simple summary in 6 languages.
-- The **SDMX website** includes:
-
-  - `the authoritative standards <https://sdmx.org/?page_id=5008>`_, and
-  - `many detailed guidelines <https://sdmx.org/?page_id=4345>`_ for their use.
-
-  In particular, see `Section 2 — Information Model <http://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf>`_ (PDF link).
-
-- The GitHub organization of the `SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_ hosts other standards information, such as:
-
-  - `Section 7 — REST web service <https://github.com/sdmx-twg/sdmx-rest>`_.
-
-- Eurostat `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
-- European Central Bank `SDMX REST service help pages <https://sdw-wsrest.ecb.europa.eu/help/>`_ give many examples.
-- `SDMXSource <http://www.sdmxsource.org>`_ provides reference implementations of SDMX in Java, .NET, and ActionScript.
-
-
-.. _im:
-
-Information Model (IM)
-======================
-
-:mod:`pandasdmx.model` implements the SDMX Information Model` (SDMX-IM, or IM).
-(:term:`What is an 'information model'? <information model>`)
-The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF link); this page gives a brief overview of the IM classes as they appear in :mod:`pandaSDMX`.
-
-.. _sdmx-im: https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
-
-:mod:`pandaSDMX` supports only SDMX version 2.1, the latest.
-
-
 .. _im-base-classes:
 
 Abstract classes and data types
--------------------------------
+===============================
 
 Many classes inherit from one of the following.
 For example, every :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, a Code also has `id`, `URI`, and `URN` attributes.
@@ -96,7 +60,7 @@ the IM—for instance, the `name` of a Nameable object is an
 .. [1] Indirectly, through :class:`Item`.
 
 Items and schemes
-~~~~~~~~~~~~~~~~~
+=================
 
 :class:`.ItemScheme`, :class:`.Item`
    These abstract classes allow for the creation of flat or hierarchical taxonomies.
@@ -106,7 +70,7 @@ Items and schemes
 
 
 Data
-----
+====
 
 :class:`.Observation`
 
@@ -157,7 +121,7 @@ Data
   In the first three cases, the attachment means that the attribute applies to all Observations associated with the object.
 
 Data structures
----------------
+===============
 
 :class:`.Concept`, :class:`ConceptScheme`
    An abstract idea or general notion, such as 'age' or 'country'.
@@ -189,6 +153,8 @@ Data structures
    See the API documentation for details.
 
 :class:`.DataflowDefinition`
+   .. todo:: Simplify this text.
+
    A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
    The terminology is a bit confusing: You cannot actually obtain a dataflow from an SDMX web service.
    Rather, you can request one or more dataflow definitions describing how datasets under this dataflow are structured, which codes may be used to query for desired columns etc.
@@ -201,7 +167,7 @@ Data structures
    The dataflow also features a reference to the DSD which structures the data sets available under this dataflow ID.
 
 Metadata
---------
+========
 
 :class:`.Code`, :class:`.Codelist`
    ...
@@ -211,7 +177,9 @@ Metadata
    A :class:`.Categorisation` links the thing to be categorised, e.g., a DataFlowDefinition, to a particular Category.
 
 Constraints
------------
+===========
+
+.. todo:: Simplify this text.
 
 Constraints are a mechanism to specify a subset of keys from the set of possible combinations of keys available in the referenced code lists for which there is actually data.
 
@@ -232,7 +200,7 @@ Attachment-constraints are not supported by pandaSDMX as this feature is needed 
 Formats
 =======
 
-The :ref:`IM <im>` provides terms and concepts for data and metadata, but does not specify *how that (meta)data is stored or represented*.
+The IM provides terms and concepts for data and metadata, but does not specify *how that (meta)data is stored or represented*.
 The SDMX standards include multiple ways to store data, in the following formats:
 
 SDMX-ML
@@ -278,7 +246,7 @@ Web services
 ============
 
 The SDMX standards describe both `RESTful <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ and `SOAP <https://en.wikipedia.org/wiki/SOAP>`_ web service APIs.
-:ref:`See above <resources>` for the SDMG Technical Working Group's specification of the REST API.
+See :doc:`resources` for the SDMG Technical Working Group's specification of the REST API.
 The Eurostat and ECB help materials provide descriptions and examples of HTTP using URLs, parameters and headers to construct queries.
 
 :mod:`pandaSDMX` supports:
@@ -302,6 +270,8 @@ See :doc:`sources` and the source code for the details for each data source.
 
 Messages
 ========
+
+.. todo:: Simplify this text.
 
 There are several types of Message such as :index:`GenericDataMessage` to represent a :index:`data set` in generic form, i.e. containing all the information required to interpret it.
 Hence, data sets in generic representation may be used without knowing the related :index:`DataStructureDefinition`.

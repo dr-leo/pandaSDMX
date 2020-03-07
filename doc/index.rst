@@ -68,6 +68,7 @@ Contributing to pandaSDMX and getting help
 
 ..
 
+- :doc:`glossary`
 - :doc:`license`
 - :ref:`genindex`
 
@@ -75,4 +76,5 @@ Contributing to pandaSDMX and getting help
    :hidden:
 
    overview
+   glossary
    license

@@ -5,13 +5,6 @@ Extensive information on SDMX, including learning material, is available in mult
 :ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information.
 This overview page provides notes to help explain *how* :mod:`pandaSDMX` implements the standards, in order to help you make use of it.
 
-.. todo:: Edit this text to:
-
-   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
-   - Reduce repetition, including of things described both here and in :doc:`walkthrough`.
-   - Eliminate descriptions/justifications of removed workarounds.
-   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
-
 .. _resources:
 
 Other resources
@@ -42,19 +35,17 @@ Some agencies offer :ref:`web-service` that give users the option to retrieve da
 Others *only* provide SDMX 2.0-formatted data; these services cannot be used with :mod:`pandaSDMX`.
 
 
-.. _im:
-
 The SDMX Information Model (IM)
 ===============================
 
-At its core, SDMX defines an :index:`information model` consisting of a set of :index:`classes`, their logical relations, and semantics.
-There are classes defining things like data sets, metadata sets, data and metadata structures, processes, organisations and their specific roles to name but a few.
-The information model is agnostic as to its implementation.
-The SDMX standard provides an XML-based implementation (see below).
-And a more efficient JSON-variant called SDMXJSON is being standardised by the
-`SDMX Technical Standards Working Group <https://github.com/sdmx-twg>`_. PandaSDMX supports both formats.
+.. todo:: Edit this verbose text into following section.
 
-The following sections briefly introduces some key elements of the information model.
+   - Refer to the documentation of methods, parameters, etc., instead of repeating it.
+   - Reduce repetition, including of things described both here and in :doc:`walkthrough`.
+   - Eliminate descriptions/justifications of removed workarounds.
+   - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
+
+There are classes defining things like data sets, metadata sets, data and metadata structures, processes, organisations and their specific roles to name but a few.
 
 Data sets
 ---------
@@ -136,63 +127,57 @@ Multiple categories may belong to a container called :index:`CategorySchemes`.
 
 A :index:`Categorisation` links the thing to be categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
 
-Class hierarchy
----------------
 
-The SDMX information model defines a number of abstract base classes from which subclasses such as :index:`DataFlowDefinition` or :index:`DataStructureDefinition` are derived.
-E.g., DataFlowDefinition inherits from :index:`MaintainableArtefact` attributes indicating the maintaining agency.
-MaintainableArtefact inherits from :index:`VersionableArtefact`, which, in turn, inherits from :index:`IdentifiableArtefact` which inherits from :index:`AnnotableArtefact` and so forth.
-Hence, DataStructureDefinition may have a unique ID, a version, a natural language name in multiple languages, a description, and annotations.
-pandaSDMX takes full advantage from this class hierarchy.
+.. _im:
 
+The Information Model (IM)
+==========================
 
-The SDMX Information Model (IM) 2
-=================================
-
-:mod:`pandasdmx.model` implements the SDMX Information Model (SDMX-IM).
-The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF format); this page gives a
-brief overview of the SDMX-IM classes as they appear in :mod:`pandaSDMX`.
+:mod:`pandasdmx.model` implements an the SDMX :term:`Information Model <information model>` (SDMX-IM, or IM).
+The `SDMX website <https://sdmx.org/?page_id=5008>`_ hosts the `full specification of the IM <sdmx-im>`_ (PDF link); this page gives a brief overview of the IM classes as they appear in :mod:`pandaSDMX`.
 
 .. _sdmx-im: https://sdmx.org/wp-content/uploads/SDMX_2-1-1_SECTION_2_InformationModel_201108.pdf
+
+
+.. _im-base-classes:
 
 Abstract classes and data types
 -------------------------------
 
-.. currentmodule:: pandasdmx.model
+Many classes inherit from one of the following.
+For example, a :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
 
-Many classes inherit from one of the following classes.
-For example, a :class:`Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
-The API reference for :mod:`pandasdmx.model` shows the parent classes for each class.
-
-- An :class:`IdentifiableArtefact` has an :attr:`id <IdentifiableArtefact.id>`,
-  :attr:`URI <IdentifiableArtefact.uri>`, and
-  :attr:`URN <IdentifiableArtefact.urn>`.
+- An :class:`.IdentifiableArtefact` has an :attr:`id <.IdentifiableArtefact.id>`,
+  :attr:`URI <.IdentifiableArtefact.uri>`, and
+  :attr:`URN <.IdentifiableArtefact.urn>`.
 
   - The ``id`` uniquely identifies the object against others of the same type in
     a SDMX message.
   - The URI and URN are *globally* unique. See `Wikipedia <https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#URLs_and_URNs>`_ for a
     discussion of the differences between the two.
 
-- A :class:`NameableArtefact` has a :attr:`name <NameableArtefact.name>` and
-  :attr:`description <NameableArtefact.description>`. It is identifiable; this
+- A :class:`.NameableArtefact` has a :attr:`name <.NameableArtefact.name>` and
+  :attr:`description <.NameableArtefact.description>`. It is identifiable; this
   means that it *also* has the `id`, `uri`, and `urn` attributes of a
   ``NameableArtefact``.
-- A :class:`VersionableArtefact` has a
-  :attr:`version <VersionableArtefact.version>` number and may be valid between
-  certain times (:attr:`valid_from <VersionableArtefact.valid_from>`,
-  :attr:`valid_to <VersionableArtefact.valid_to>`). It is nameable *and*
+- A :class:`.VersionableArtefact` has a
+  :attr:`version <.VersionableArtefact.version>` number and may be valid between
+  certain times (:attr:`valid_from <.VersionableArtefact.valid_from>`,
+  :attr:`valid_to <.VersionableArtefact.valid_to>`). It is nameable *and*
   identifiable.
-- A :class:`MaintainableArtefact` is under the authority of a particular
-  :attr:`maintainer <MaintainableArtefact.maintainer>`. In an SDMX message,
+- A :class:`.MaintainableArtefact` is under the authority of a particular
+  :attr:`maintainer <.MaintainableArtefact.maintainer>`. In an SDMX message,
   a maintainable object might not be given in full; only as a reference (with
-  :attr:`is_external_reference <MaintainableArtefact.is_external_reference>`
+  :attr:`is_external_reference <.MaintainableArtefact.is_external_reference>`
   set to True). If so, it might have a :attr:`structure_url
-  <MaintainableArtefact.structure_url>`, where the maintainer provides more
+  <.MaintainableArtefact.structure_url>`, where the maintainer provides more
   information about the object. It is versionable, nameable, and identifiable.
 
-Because SDMX is used worldwide, an :class:`InternationalString` type is used in
+The API reference for :mod:`pandasdmx.model` shows the parent classes for each class, to describe whether they are versionable, nameable, identifiable, and/or maintainable.
+
+Because SDMX is used worldwide, an :class:`.InternationalString` type is used in
 the IM—for instance, the `name` of a Nameable object is an
-``InternationalString``, with zero or more :attr:`localizations <InternationalString.localizations>` in different locales.
+``InternationalString``, with zero or more :attr:`localizations <.InternationalString.localizations>` in different locales.
 
 .. [1] Indirectly, through :class:`Item`.
 

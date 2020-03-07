@@ -179,15 +179,27 @@ class InternationalString:
 
 
 class Annotation(BaseModel):
+    """SDMX-IM Annotation."""
+    #: Can be used to disambiguate multiple annotations for one
+    #: AnnotableArtefact.
     id: str = None
+    #: Title, used to identify an annotation.
     title: str = None
+    #: Specifies how the annotation is processed.
     type: str = None
+    #: A link to external descriptive text.
     url: str = None
 
+    #: Content of the annotation.
     text: InternationalString = InternationalString()
 
 
 class AnnotableArtefact(BaseModel):
+    """SDMX-IM AnnotableArtefact."""
+    #: :class:`Annotations <.Annotation>` of the object.
+    #:
+    #: :mod:`pandaSDMX` implementation: The IM does not specify the name of
+    #: this feature.
     annotations: List[Annotation] = []
 
 
@@ -907,7 +919,10 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     #: data structure.
     dimensions: DimensionDescriptor = DimensionDescriptor()
 
+    #: A :class:`.MeasureDescriptor`.
     measures: MeasureDescriptor = None
+
+    #: A :class:`.GroupDimensionDescriptor`.
     group_dimensions: GroupDimensionDescriptor = None
 
     # Convenience methods

@@ -3,12 +3,17 @@ Overview of SDMX
 
 Extensive information on SDMX, including learning material, is available in multiple places on the Internet.
 :ref:`As stated<not-the-standard>`, the documentation you are reading does not duplicate this information.
-This overview page provides (1) references and (2) brief explanation of *how* :mod:`pandaSDMX` implements the standards.
+
+This overview page provides (1) references and (2) brief explanations of *how* :mod:`pandaSDMX` implements the standards.
+
+.. contents::
+   :backlinks: none
+   :local:
 
 .. _resources:
 
-Other resources
-===============
+Resources
+=========
 
 The following references and learning materials explain SDMX *in general*:
 
@@ -27,84 +32,6 @@ The following references and learning materials explain SDMX *in general*:
 - Eurostat `SDMX ‘InfoSpace’ <https://ec.europa.eu/eurostat/web/sdmx-infospace/welcome>`_ contains many guides and tutorials, from beginner to advanced levels.
 - European Central Bank `SDMX REST service help pages <https://sdw-wsrest.ecb.europa.eu/help/>`_ give many examples.
 - `SDMXSource <http://www.sdmxsource.org>`_ provides reference implementations of SDMX in Java, .NET, and ActionScript.
-
-.. contents::
-   :backlinks: none
-
-
-The SDMX Information Model (IM)
-===============================
-
-.. todo:: Edit this verbose text into following section.
-
-   - Refer to the API documentation instead of repeating it as prose.
-   - Reduce repetition, including of things described both here and in :doc:`walkthrough`.
-   - Eliminate descriptions/justifications of removed workarounds.
-   - Avoid repeating descriptions of SDMX that are provided more clearly by other sources; link to them instead.
-
-.. todo:: Move the following narrative sentences to the :doc:`walkthrough`:
-
-   “[…] dimensions such as country, age, sex, and time period.”
-
-   “Typical uses for attributes are the level of confidentiality, or data quality.”
-
-Structural metadata: data structure definition, concept scheme, and code list
------------------------------------------------------------------------------
-
-In the above section on data sets, we have carelessly used structural terms such as dimension, dimension value and attachment of attributes.
-This is because it is almost impossible to talk about data sets without talking about their structure.
-The information model provides a number of classes to describe the structure of data sets without talking about data.
-The container class for this is called :index:`DataStructureDefinition` (in short: :abbr:`DSD`).
-It contains a list of dimensions and for each dimension a reference to exactly one :index:`concept` describing its meaning.
-A concept describes the set of permissible dimension values.
-This can be done in various ways depending on the intended data type.
-Finite value sets (such as country codes, currencies, a data quality classification etc.) are described by reference to :index:`code lists`.
-Infinite value sets are described by :index:`facets` which is simply a way to express that a dimension may have int, float or time-stamp values.
-A set of concepts referred to in the dimension descriptors of a data structure definition is called :index:`concept scheme`.
-
-The set of allowed observation values such as the unemployment rate measured in per cent is defined by a special dimension called :index:`MeasureDimension`.
-
-Dataflow definition
--------------------
-
-A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
-The terminology is a bit confusing: You cannot actually obtain a dataflow from an SDMX web service.
-Rather, you can request one or more dataflow definitions describing how datasets under this dataflow are structured, which codes may be used to query for desired columns etc.
-The dataflow definition and the artefacts to which it refers give you all the information you need to exploit the data sets you can request using the dataflow's ID.
-
-A :index:`DataFlowDefinition` is a class that describes a dataflow.
-A DataFlowDefinition has a unique identifier, a human-readable name and potentially a more detailed description.
-Both may be multi-lingual.
-The dataflow's ID is used to query the data set it describes.
-The dataflow also features a reference to the DSD which structures the data sets available under this dataflow ID.
-For instance, in the frontpage example we used the dataflow ID 'une_rt_a'.
-
-
-Constraints
------------
-
-Constraints are a mechanism to specify a subset of keys from the set of possible combinations of keys available in the referenced code lists for which there is actually data.
-For example, a constraint may reflect the fact that in a certain country there are no lakes or hospitals, and hence no data about water quality or hospitalization.
-
-There are two types of constraints:
-
-A :index:`content-constraint` is a mechanism to express the fact that data sets of a given dataflow only comprise columns for a subset of values from the code-lists representing dimension values.
-For example, the datastructure definition for a dataflow on exchange rates references the code list of all country codes in the world, whereas the data sets provided under this dataflow only covers the ten largest currencies.
-These can be enumerated by a content-constraint attached to the dataflow definition or DSD.
-Content-constraints can be used to validate dimension names and values (a.k.a. keys) when requesting data sets selecting columns of interest.
-pandaSDMX supports content constraints and provides convenient methods to validate keys, compute the constrained code lists etc.
-
-An :index:`attachment-constraint` describes to which parts of a data set (column/series, group of series, observation, the entire data set) certain attributes may be attached.
-Attachment-constraints are not supported by pandaSDMX as this feature is needed only for data set generation.
-However, pandaSDMX does support attributes in the information model and when exporting data sets to pandas.
-
-Category schemes and categorisations
-------------------------------------
-
-Categories serve to classify or categorise things like dataflows, e.g., by subject matter.
-Multiple categories may belong to a container called :index:`CategorySchemes`.
-
-A :index:`Categorisation` links the thing to be categorised, e.g., a DataFlowDefinition, to a :index:`Category`.
 
 
 .. _im:
@@ -127,11 +54,15 @@ Abstract classes and data types
 -------------------------------
 
 Many classes inherit from one of the following.
-For example, a :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, it also has `id`, `URI`, and `URN` attributes.
+For example, every :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has `name` and `description` attributes. Because every ``NameableArtefact`` is an ``IdentifiableArtefact``, a Code also has `id`, `URI`, and `URN` attributes.
+
+:class:`.AnnotableArtefact`
+   - has a list of :attr:`~.AnnotableArtefact.annotations`
 
 :class:`.IdentifiableArtefact`
 
    - has an :attr:`id <.IdentifiableArtefact.id>`, :attr:`URI <.IdentifiableArtefact.uri>`, and :attr:`URN <.IdentifiableArtefact.urn>`.
+   - is “annotable”; this means it *also* has the `annotations` attribute of an AnnotableArtefact.
 
    The ``id`` uniquely identifies the object against others of the same type in a SDMX message.
    The URI and URN are *globally* unique. See `Wikipedia <https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#URLs_and_URNs>`_ for a discussion of the differences between the two.
@@ -139,18 +70,18 @@ For example, a :class:`.Code` is a ``NameableArtefact``; [1]_ this means it has 
 :class:`.NameableArtefact`
 
   - has a :attr:`name <.NameableArtefact.name>` and :attr:`description <.NameableArtefact.description>`, and
-  - is “identifiable”; this means that it *also* has the `id`, `uri`, and `urn` attributes of a NameableArtefact.
+  - is identifiable, therefore *also* annotable.
 
 :class:`.VersionableArtefact`
 
   - has a :attr:`version <.VersionableArtefact.version>` number,
   - may be valid between certain times (:attr:`valid_from <.VersionableArtefact.valid_from>`, :attr:`valid_to <.VersionableArtefact.valid_to>`), and
-  - is nameable, therefore *also* identifiable.
+  - is nameable, identifiable, *and* annotable.
 
 :class:`.MaintainableArtefact`
 
   - is under the authority of a particular :attr:`maintainer <.MaintainableArtefact.maintainer>`, and
-  - is versionable, nameable, *and* identifiable.
+  - is versionable, nameable, identifiable, and annotable.
 
   In an SDMX message, a maintainable object might not be given in full; only as a reference (with :attr:`is_external_reference <.MaintainableArtefact.is_external_reference>` set to :obj:`True`).
   If so, it might have a :attr:`structure_url <.MaintainableArtefact.structure_url>`, where the maintainer provides more information about the object.
@@ -163,6 +94,16 @@ the IM—for instance, the `name` of a Nameable object is an
 ``InternationalString``, with zero or more :attr:`localizations <.InternationalString.localizations>` in different locales.
 
 .. [1] Indirectly, through :class:`Item`.
+
+Items and schemes
+~~~~~~~~~~~~~~~~~
+
+:class:`.ItemScheme`, :class:`.Item`
+   These abstract classes allow for the creation of flat or hierarchical taxonomies.
+
+   ItemSchemes are maintainable (see above); their  :attr:`~.ItemScheme.items` is a collection of Items.
+   See the class documentation for details.
+
 
 Data
 ----
@@ -218,28 +159,73 @@ Data
 Data structures
 ---------------
 
-:class:`.DataStructureDefinition`
-   ...
+:class:`.Concept`, :class:`ConceptScheme`
+   An abstract idea or general notion, such as 'age' or 'country'.
+
+   Concepts are one kind of Item, and are collected in an ItemScheme subclass called ConceptScheme.
+
+:class:`.Dimension`, :class:`.DataAttribute`
+   These are :class:`.Components` of a data structure, linking a Concept (:attr:`~.Component.concept_identity`) to its Representation (:attr:`~.Component.local_representation`); see below.
+
+   A component can be either a DataAttribute that appears as an AttributeValue in data sets; or a Dimension that appears in Keys.
+
+:class:`.Representation`, :class:`.Facet`
+   For example: the concept 'country' can be represented as:
+
+   - as a value of a certain type (e.g. 'Canada', a :class:`str`), called a Facet;
+   - using a Code from a specific CodeList (e.g. 'CA'); multiple lists of codes are possible (e.g. 'CAN'). See below.
+
+:class:`.DataStructureDefinition` (DSD)
+   Collects structures used in data sets and data flows.
+   These are stored as
+   :attr:`~.DataStructureDefinition.dimensions`,
+   :attr:`~.DataStructureDefinition.attributes`,
+   :attr:`~.DataStructureDefinition.group_dimensions`, and
+   :attr:`~.DataStructureDefinition.measures`.
+
+   For example, :attr:`~.DataStructureDefinition.dimensions` is a :class:`.DimensionDescriptor` object that collects a number of Dimensions in a particular order.
+   Data that is "structured by" this DSD must have all the described dimensions.
+
+   See the API documentation for details.
+
 :class:`.DataflowDefinition`
-   ...
-:class:`.Dimension`, :class:`.DimensionDescriptor`
-   ...
-:class:`.DataAttribute`, :class:`.AttributeDescriptor`
-   ...
+   A :index:`dataflow` describes how a particular data set is structured (by referring to a DSD), how often it is updated over time by its maintaining agency, under what conditions it will be provided etc.
+   The terminology is a bit confusing: You cannot actually obtain a dataflow from an SDMX web service.
+   Rather, you can request one or more dataflow definitions describing how datasets under this dataflow are structured, which codes may be used to query for desired columns etc.
+   The dataflow definition and the artefacts to which it refers give you all the information you need to exploit the data sets you can request using the dataflow's ID.
+
+   A :index:`DataFlowDefinition` is a class that describes a dataflow.
+   A DataFlowDefinition has a unique identifier, a human-readable name and potentially a more detailed description.
+   Both may be multi-lingual.
+   The dataflow's ID is used to query the data set it describes.
+   The dataflow also features a reference to the DSD which structures the data sets available under this dataflow ID.
 
 Metadata
 --------
 
-:class:`.Item`.
+:class:`.Code`, :class:`.Codelist`
    ...
-:class:`.ItemScheme`.
-   ...
-:class:`.Codelist`
-   ...
-:class:`.CategoryScheme`
-   ...
-:class:`.ConceptScheme`
-   ...
+:class:`.Category`, :class:`.CategoryScheme`, :class:`.Categorization`
+   Categories serve to classify or categorise things like dataflows, e.g. by subject matter.
+
+   A :class:`.Categorisation` links the thing to be categorised, e.g., a DataFlowDefinition, to a particular Category.
+
+Constraints
+-----------
+
+Constraints are a mechanism to specify a subset of keys from the set of possible combinations of keys available in the referenced code lists for which there is actually data.
+
+There are two types of constraints:
+
+A :index:`content-constraint` is a mechanism to express the fact that data sets of a given dataflow only comprise columns for a subset of values from the code-lists representing dimension values.
+For example, the datastructure definition for a dataflow on exchange rates references the code list of all country codes in the world, whereas the data sets provided under this dataflow only covers the ten largest currencies.
+These can be enumerated by a content-constraint attached to the dataflow definition or DSD.
+Content-constraints can be used to validate dimension names and values (a.k.a. keys) when requesting data sets selecting columns of interest.
+pandaSDMX supports content constraints and provides convenient methods to validate keys, compute the constrained code lists etc.
+
+An :index:`attachment-constraint` describes to which parts of a data set (column/series, group of series, observation, the entire data set) certain attributes may be attached.
+Attachment-constraints are not supported by pandaSDMX as this feature is needed only for data set generation.
+
 
 .. _formats:
 

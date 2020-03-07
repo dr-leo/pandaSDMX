@@ -10,6 +10,15 @@ This page walks through the steps of a pandaSDMX workflow, providing in-depth ex
    - Eliminate descriptions/justifications of removed workarounds.
    - Avoid repeating descriptions of SDMX, the IM, etc. that are provided more clearly by other sources; link to them instead.
 
+.. todo:: Incorporate the following narrative sentences that were formerly in :doc:`overview`:
+
+   “[…] dimensions such as country, age, sex, and time period.”
+
+   “Typical uses for attributes are the level of confidentiality, or data quality.”
+
+   “For example, a constraint may reflect the fact that in a certain country there are no lakes or hospitals, and hence no data about water quality or hospitalization.”
+
+
 .. contents::
    :local:
    :backlinks: none

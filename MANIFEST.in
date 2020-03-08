@@ -1,5 +1,2 @@
-include README.rst requirements.txt
-include doc/README.txt
-include tests
-prune tests/__pycache__
-prune tests/data/cache
+include README.rst
+include tests/data/**/*

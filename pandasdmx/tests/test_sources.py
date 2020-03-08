@@ -105,8 +105,8 @@ class DataSourceTest:
     @pytest.fixture
     def req(self):
         # Use a common cache file for all agency tests
-        (test_data_path / 'cache').mkdir(exist_ok=True)
-        self._cache_path = test_data_path / 'cache' / self.source_id
+        (test_data_path / '.cache').mkdir(exist_ok=True)
+        self._cache_path = test_data_path / '.cache' / self.source_id
         return Request(self.source_id, cache_name=str(self._cache_path),
                        backend='sqlite')
 

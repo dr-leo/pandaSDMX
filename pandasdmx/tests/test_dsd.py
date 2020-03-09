@@ -37,7 +37,7 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
         assert all(len(df) == count[id] for id, df in cls_as_dfs.items())
 
 
-class test_dsd_common(MessageTest):
+class TestDSDCommon(MessageTest):
     path = test_data_path / 'common'
     filename = 'common.xml'
 
@@ -52,7 +52,7 @@ class test_dsd_common(MessageTest):
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_annotations(self, msg):
-        code = self.resp.codelist.CL_FREQ.A
+        code = msg.codelist.CL_FREQ.A
         anno_list = list(code.annotations)
         assert len(anno_list) == 1
         a = anno_list[0]

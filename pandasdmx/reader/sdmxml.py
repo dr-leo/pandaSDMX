@@ -114,9 +114,9 @@ METHOD = {
     'Role': 'international_string',
     'Text': 'international_string',
 
-    'DimensionList': 'grouping',
-    'AttributeList': 'grouping',
-    'MeasureList': 'grouping',
+    'DimensionList': 'componentlist',
+    'AttributeList': 'componentlist',
+    'MeasureList': 'componentlist',
 
     'CoreRepresentation': 'representation',
     'LocalRepresentation': 'representation',
@@ -1060,7 +1060,7 @@ class Reader(BaseReader):
         assert len(values) == 0
         return dsd
 
-    def parse_grouping(self, elem):
+    def parse_componentlist(self, elem):
         attr = copy(elem.attrib)
 
         # Determine the class
@@ -1072,17 +1072,17 @@ class Reader(BaseReader):
             # fixed to 'DimensionDescriptor'."
             cls_name = QName(elem).localname.replace('List', 'Descriptor')
         finally:
-            Grouping = getattr(pandasdmx.model, cls_name)
+            ComponentListClass = getattr(pandasdmx.model, cls_name)
 
-        g = Grouping(
+        cl = ComponentListClass(
             components=list(chain(*self._parse(elem, unwrap=False).values())),
             **attr,
         )
         try:
-            g.assign_order()
+            cl.assign_order()
         except AttributeError:
             pass
-        return g
+        return cl
 
     def parse_dimension(self, elem):
         values = self._parse(elem)

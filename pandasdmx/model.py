@@ -977,6 +977,7 @@ AttributeRelationship.update_forward_refs()
 # GroupRelationship.update_forward_refs()
 
 
+@validate_dictlike('group_dimensions')
 class DataStructureDefinition(Structure, ConstrainableArtefact):
     """Defines a data structure. Referred to as “DSD”."""
     #: A :class:`AttributeDescriptor` that describes the attributes of the
@@ -988,7 +989,7 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     #: A :class:`.MeasureDescriptor`.
     measures: MeasureDescriptor = None
     #: A :class:`.GroupDimensionDescriptor`.
-    group_dimensions: GroupDimensionDescriptor = None
+    group_dimensions: DictLike[str, GroupDimensionDescriptor] = DictLike()
 
     # Convenience methods
     def attribute(self, id, **kwargs):
@@ -1179,10 +1180,10 @@ class Key(BaseModel):
     """
     #:
     attrib: DictLike[str, AttributeValue] = DictLike()
-    #: Individual KeyValues that describe the key.
-    values: DictLike[str, KeyValue] = DictLike()
     #:
     described_by: DimensionDescriptor = None
+    #: Individual KeyValues that describe the key.
+    values: DictLike[str, KeyValue] = DictLike()
 
     def __init__(self, arg=None, **kwargs):
         super().__init__()
@@ -1192,18 +1193,23 @@ class Key(BaseModel):
                                  "keyword arguments; not both.")
             kwargs.update(arg)
 
-        # DimensionDescriptor
-        self.described_by = kwargs.pop('described_by', None)
+        dd = self.described_by = kwargs.pop('described_by', None)
+        dsd = kwargs.pop('dsd', None)
 
-        # Convert keyword arguments to KeyValues
+        # Convert keyword arguments to KeyValues or AttributeValues
         for id, value in kwargs.items():
-            kv = KeyValue(id=id, value=value)
-            try:
+            args = dict(id=id, value=value)
+            if dsd and id in dsd.attributes:
+                # Reference a DataAttribute from the AttributeDescriptor
+                da = dsd.attributes.get(id)
+                self.attrib[da.id] = AttributeValue(**args, value_for=da)
+                continue
+
+            if dd:
                 # Reference a Dimension from the DimensionDescriptor
-                kv.value_for = self.described_by.get(id)
-            except AttributeError:
-                pass
-            self.values[id] = kv
+                args['value_for'] = dd.get(id)
+
+            self.values[id] = KeyValue(**args)
 
     def __len__(self):
         """The length of the Key is the number of KeyValues it contains."""

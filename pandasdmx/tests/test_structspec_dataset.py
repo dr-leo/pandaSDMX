@@ -4,14 +4,17 @@ import pandas as pd
 import pytest
 
 import pandasdmx as sdmx
-from pandasdmx import model
+from pandasdmx import message, model
+from pandasdmx.model import Key
 
 from . import MessageTest, test_data_path
 
 
 class StructuredMessageTest(MessageTest):
+    """Variant of MessageTest for structure-specific messages."""
     dsd = None
 
+    # Fixtures
     @pytest.fixture(scope='class')
     def dsd(self):
         yield sdmx.read_sdmx(self.path / self.dsd_filename).structure[0]
@@ -20,6 +23,15 @@ class StructuredMessageTest(MessageTest):
     def msg(self, dsd):
         yield sdmx.read_sdmx(self.path.joinpath(*self.filename), dsd=dsd)
 
+    # Tests for every class
+    def test_msg(self, dsd):
+        # The message can be parsed
+        sdmx.read_sdmx(self.path.joinpath(*self.filename), dsd=dsd)
+
+    def test_structured_by(self, dsd, msg):
+        # The DSD was used to parse the message
+        assert msg.data[0].structured_by is dsd
+
 
 class TestStructSpecFlatDataSet(StructuredMessageTest):
     path = test_data_path / 'exr' / 'ecb_exr_ng'
@@ -27,29 +39,28 @@ class TestStructSpecFlatDataSet(StructuredMessageTest):
     dsd_filename = 'ecb_exr_ng_full.xml'
 
     def test_msg_type(self, msg):
-        assert isinstance(msg.msg, model.DataMessage)
-
-    def test_header_attributes(self, msg):
-        assert msg.header.structured_by == 'STR1'
-        assert msg.header.dim_at_obs == 'AllDimensions'
+        assert isinstance(msg, message.DataMessage)
+        # assert msg.data[0].dim_at_obs == 'AllDimensions'
 
     def test_dataset_cls(self, msg):
         assert isinstance(msg.data[0], model.DataSet)
-        assert msg.msg.data[0].dim_at_obs == 'AllDimensions'
 
     def test_generic_obs(self, msg):
         data = msg.data[0]
         # empty series list
         assert len(list(data.series)) == 0
-        obs_list = list(data.obs())
+        obs_list = data.obs
         assert len(obs_list) == 12
         o0 = obs_list[0]
-        assert len(o0) == 3
-        assert isinstance(o0.key, tuple)  # obs_key
+
+        # Flat data set → all six dimensions are at the observation level
+        assert len(o0) == 6
         assert o0.key.FREQ == 'M'
         assert o0.key.CURRENCY == 'CHF'
         assert o0.value == '1.3413'
-        assert isinstance(o0.attrib, tuple)
+
+        # All attributes are at the observation level
+        assert len(o0.attrib) == 7
         assert o0.attrib.OBS_STATUS == 'A'
         assert o0.attrib.DECIMALS == '4'
 
@@ -63,66 +74,75 @@ class TestStructSpecSeriesDataSet(StructuredMessageTest):
     filename = ('structured', 'ecb_exr_ng_ts_gf.xml')
     dsd_filename = 'ecb_exr_ng_full.xml'
 
-    def test_header_attributes(self, msg):
-        assert msg.header.structured_by == 'STR1'
-        assert msg.header.dim_at_obs == 'TIME_PERIOD'
+    def test_msg_type(self, dsd, msg):
+        # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
+        pass
 
     def test_dataset_cls(self, msg):
         assert isinstance(msg.data[0], model.DataSet)
 
     def test_obs(self, msg):
         data = msg.data[0]
-        # empty obs iterator
-        assert len(list(data.obs())) == 0
+        assert len(data.obs) == 12
         series_list = list(data.series)
         assert len(series_list) == 4
         s3 = series_list[3]
         assert isinstance(s3, model.SeriesKey)
-        assert isinstance(s3.key, tuple)
-        assert len(s3.key) == 4
-        assert s3.key.CURRENCY == 'USD'
+
+        # Time series data set → five dimensions are at the SeriesKey level
+        assert len(s3) == 5
+        assert s3.CURRENCY == 'USD'
+
+        # 5 of 7 attributes are at the Observation level
+        assert len(s3.attrib) == 5
         assert s3.attrib.DECIMALS == '4'
-        obs_list = list(s3.obs)
+
+        obs_list = data.series[s3]
         assert len(obs_list) == 3
         o0 = obs_list[2]
-        assert len(o0) == 3
-        assert o0.dim == '2010-08'
-        assert o0.value == '1.2894'
-        assert isinstance(o0.attrib, tuple)
+
+        # One remaining dimension is at the Observation Level
+        assert len(o0.dimension) == 1
+        assert o0.dim == Key(TIME_PERIOD='2010-08')
+        assert o0.value == '1.3898'
+
+        # Two remaining attributes are at the Observation level
+        assert len(o0.attached_attribute)
         assert o0.attrib.OBS_STATUS == 'A'
 
     def test_pandas(self, msg):
         data = msg.data[0]
-        pd_series = [s for s in sdmx.to_pandas(data, attributes='')]
-        assert len(pd_series) == 4
-        s3 = pd_series[3]
+
+        # Expected number of observations and series
+        assert len(data.obs) == 12
+        assert len(data.series) == 4
+
+        # Single series can be converted to pandas
+        s3 = sdmx.to_pandas(data.series[3], attributes='')
         assert isinstance(s3, pd.Series)
-        assert s3[2] == 1.2894
-        assert isinstance(s3.name, tuple)
-        assert len(s3.name) == 4
-        # now with attributes
-        pd_series = [s for s in sdmx.to_pandas(data, attributes='osgd')]
-        assert len(pd_series) == 4
-        assert isinstance(pd_series[0], tuple)  # contains 2 series
-        assert len(pd_series[0]) == 2
-        s3, a3 = pd_series[3]
-        assert isinstance(s3, pd.Series)
-        assert isinstance(a3, pd.Series)
-        assert s3[2] == 1.2894
-        assert isinstance(s3.name, tuple)
-        assert len(s3.name) == 4
-        assert len(a3) == 3
-        # access an attribute of the first value
-        assert a3[0].OBS_STATUS == 'A'
+        # With expected values
+        assert s3[0] == 1.2894
+
+        # Single series can be converted with attributes
+        s3_attr = sdmx.to_pandas(data.series[3], attributes='osgd')
+
+        # yields a DataFrame
+        assert isinstance(s3_attr, pd.DataFrame)
+        assert s3_attr.shape == (3, 8)
+
+        assert s3_attr.iloc[0].value == 1.2894
+
+        # Attributes of observations can be accessed
+        assert s3_attr.iloc[0].OBS_STATUS == 'A'
 
     def test_write2pandas(self, msg):
         df = sdmx.to_pandas(msg, attributes='')
         assert isinstance(df, pd.Series)
-        assert df.shape == (3, 4)
+        assert df.shape == (12,)
         # with metadata
-        df, mdf = sdmx.to_pandas(msg, attributes='osgd')
-        assert mdf.shape == (3, 4)
-        assert mdf.iloc[1, 1].OBS_STATUS == 'A'
+        df = sdmx.to_pandas(msg, attributes='osgd')
+        assert df.shape == (12, 8)
+        assert df.iloc[1].OBS_STATUS == 'A'
 
 
 class TestStructSpecSeriesDataSet2(StructuredMessageTest):
@@ -130,31 +150,39 @@ class TestStructSpecSeriesDataSet2(StructuredMessageTest):
     filename = ('structured', 'ecb_exr_ng_ts.xml')
     dsd_filename = 'ecb_exr_ng_full.xml'
 
-    def test_header_attributes(self, msg):
-        assert msg.header.structured_by == 'STR1'
-        assert msg.header.dim_at_obs == 'TIME_PERIOD'
+    def test_msg_type(self, dsd, msg):
+        # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
+        pass
 
     def test_dataset_cls(self, msg):
         assert isinstance(msg.data[0], model.DataSet)
 
     def test_structured_obs(self, msg):
         data = msg.data[0]
+
+        # Expected number of observations and series
         assert len(data.obs) == 12
-        series_list = list(data.series)
-        assert len(series_list) == 4
-        s3 = series_list[3]
+        assert len(data.series) == 4
+
+        # SeriesKey is accessible by index using DictLike
+        s3 = list(data.series.keys())[3]
         assert isinstance(s3, model.SeriesKey)
-        assert isinstance(s3.key, tuple)
-        assert len(s3.key) == 4
-        assert s3.key.CURRENCY == 'USD'
+
+        # SeriesKey has expected number of dimensions and values
+        assert len(s3) == 5
+        assert s3.CURRENCY == 'USD'
+
+        # SeriesKey has expected number of attributes and values
+        assert len(s3.attrib) == 5
         assert s3.attrib.DECIMALS == '4'
-        obs_list = list(s3.obs)
+
+        # Series observations can be accessed
+        obs_list = data.series[s3]
         assert len(obs_list) == 3
         o0 = obs_list[2]
-        assert len(o0) == 3
-        assert o0.dim == '2010-08'
-        assert o0.value == '1.2894'
-        assert isinstance(o0.attrib, tuple)
+        assert len(o0.dimension) == 1
+        assert o0.dim == Key(TIME_PERIOD='2010-08')
+        assert o0.value == '1.3898'
         assert o0.attrib.OBS_STATUS == 'A'
 
     def test_dataframe(self, msg):
@@ -196,7 +224,6 @@ class TestStructSpecSeriesData_RateGroup_TS(StructuredMessageTest):
         assert len(data.series) == 4
         g2 = list(data.group.keys())[2]
         assert g2.CURRENCY == 'GBP'
-        print(list(data.group.keys()), g2, g2.attrib, sep='\n')
         assert g2.attrib.TITLE == \
             'ECB reference exchange rate, U.K. Pound sterling /Euro'
         # Check group attributes of a series

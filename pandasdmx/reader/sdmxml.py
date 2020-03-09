@@ -569,6 +569,7 @@ class Reader(BaseReader):
             'ConceptScheme': (Concept, ConceptScheme),
             'ContentConstraint': (ContentConstraint,),
             'Dataflow': (DataflowDefinition,),
+            'DataSet': (DataStructureDefinition,),
             'DataStructure': (DataStructureDefinition,),
             }.get(scope, [])
 
@@ -820,13 +821,11 @@ class Reader(BaseReader):
             'Key': DataKey,  # for DataKeySet
             }[QName(elem).localname]
         if cls is not DataKey:
-            dsd = self._get_current(DataStructureDefinition)
-
             # Most data: the value is specified as an XML attribute
             kv = {e.attrib['id']: e.attrib['value'] for e in
                   elem.iterchildren()}
 
-            return cls(**kv, described_by=dsd.dimensions, dsd=dsd)
+            return cls(**kv, dsd=self._get_current(DataStructureDefinition))
         else:
             # <str:DataKeySet> and <str:CubeRegion>: the value(s) are specified
             # with a <com:Value>...</com:Value> element.
@@ -841,7 +840,7 @@ class Reader(BaseReader):
     def parse_obs(self, elem):
         values = self._parse(elem)
 
-        dd = self._get_current(DimensionDescriptor)
+        dsd = self._get_current(DataStructureDefinition)
 
         # Attached attributes
         aa = values.pop('attributes', {})
@@ -854,7 +853,7 @@ class Reader(BaseReader):
             dim = self._obs_dim[0].id
             if len(od) == 2:
                 assert od['id'] == dim, (values, dim)
-            key = Key(**{dim: od['value']}, described_by=dd)
+            key = Key(**{dim: od['value']}, dsd=dsd)
 
         if len(values):
             value = values.pop('obsvalue')
@@ -866,20 +865,12 @@ class Reader(BaseReader):
             # Value of the observation
             value = attr.pop('OBS_VALUE')
 
-            # Dimensions for the key
-            if self._obs_dim is AllDimensions:
-                dims = list(attr.keys())
-            else:
-                # Use the 'dimension at observation' specified for the message
-                dims = map(lambda d: d.id, self._obs_dim)
+            # Use the DSD to separate dimensions and attributes
+            key = Key(**attr, dsd=dsd)
 
-            key = Key(**{d: attr.pop(d) for d in dims}, described_by=dd)
-
-            # Remaining attr members are SDMX DataAttributes
-            ad = self._get_current(AttributeDescriptor)
-            for a_id, a_value in attr.items():
-                aa[a_id] = AttributeValue(value=a_value,
-                                          value_for=ad.get(a_id))
+            # Remove attributes from the Key to be attached to the Observation
+            aa.update(key.attrib)
+            key.attrib = {}
 
         assert len(values) == 0, values
         return Observation(dimension=key, value=value, attached_attribute=aa)
@@ -898,9 +889,9 @@ class Reader(BaseReader):
             series_key = values.pop('serieskey')
             series_key.attrib.update(values.pop('attributes', {}))
         except KeyError:
-            # StructureSpecificData message; treat all attributes as dimensions
-            # TODO prefetch the structure or used a prefetched structure
-            series_key = SeriesKey(**elem.attrib)
+            # StructureSpecificData message
+            dsd = self._get_current(DataStructureDefinition)
+            series_key = SeriesKey(**elem.attrib, dsd=dsd)
         obs_list = wrap(values.pop('obs', []))
         for o in obs_list:
             o.series_key = series_key
@@ -1083,10 +1074,15 @@ class Reader(BaseReader):
         finally:
             Grouping = getattr(pandasdmx.model, cls_name)
 
-        return Grouping(
+        g = Grouping(
             components=list(chain(*self._parse(elem, unwrap=False).values())),
             **attr,
         )
+        try:
+            g.assign_order()
+        except AttributeError:
+            pass
+        return g
 
     def parse_dimension(self, elem):
         values = self._parse(elem)

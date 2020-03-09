@@ -930,6 +930,14 @@ class DimensionDescriptor(ComponentList):
     #: :class:`MeasureDimension`, and/or :class:`TimeDimension`.
     components: List[Union[Dimension, MeasureDimension, TimeDimension]] = []
 
+    def assign_order(self):
+        """Assign the :attr:`.DimensionComponent.order` attribute.
+
+        The Dimensions in :attr:`components` are numbered, starting from 1.
+        """
+        for i, component in enumerate(self.components):
+            component.order = i + 1
+
     def order_key(self, key):
         """Return a key ordered according to the DSD."""
         result = key.__class__()
@@ -971,6 +979,10 @@ class GroupDimensionDescriptor(DimensionDescriptor):
     attachment_constraint: bool = None
     #:
     constraint: AttachmentConstraint = None
+
+    def assign_order(self):
+        """:meth:`assign_order` has no effect for GroupDimensionDescriptor."""
+        pass
 
 
 AttributeRelationship.update_forward_refs()
@@ -1167,7 +1179,7 @@ class Key(BaseModel):
     """SDMX Key class.
 
     The constructor takes an optional list of keyword arguments; the keywords
-    are used as Dimension IDs, and the values as KeyValues.
+    are used as Dimension or Attribute IDs, and the values as KeyValues.
 
     For convience, the values of the key may be accessed directly:
 
@@ -1176,6 +1188,19 @@ class Key(BaseModel):
     1
     >>> k['foo']
     1
+
+    Parameters
+    ----------
+    dsd : DataStructureDefinition
+        If supplied, the :attr:`~.DataStructureDefinition.dimensions` and
+        :attr:`~.DataStructureDefinition.attributes` are used to separate the
+        *kwargs* into :class:`KeyValues <.KeyValue>` and
+        :class:`AttributeValues <.AttributeValue>`. The *kwarg* for
+        :attr:`described_by`, if any, must be
+        :attr:`~.DataStructureDefinition.dimensions` or appear in
+        :attr:`~.DataStructureDefinition.group_dimensions`.
+    kwargs
+        Dimension and Attribute IDs, and/or the class properties.
 
     """
     #:
@@ -1193,12 +1218,27 @@ class Key(BaseModel):
                                  "keyword arguments; not both.")
             kwargs.update(arg)
 
-        dd = self.described_by = kwargs.pop('described_by', None)
+        # DSD argument
         dsd = kwargs.pop('dsd', None)
 
-        # Convert keyword arguments to KeyValues or AttributeValues
+        # DimensionDescriptor
+        dd = self.described_by = kwargs.pop('described_by', None)
+
+        if dsd:
+            if dd:
+                # DD must appear in the DSD if both are supplied
+                if (dd is not dsd.dimensions and
+                        dd not in dsd.group_dimensions.values()):
+                    raise ValueError(f'described_by={dd} is not a [Group]'
+                                     f'DimensionDescriptor of dsd={dsd}')
+            else:
+                # Use the DD from the DSD
+                dd = self.described_by = dsd.dimensions
+
+        # Convert keyword arguments to either KeyValue or AttributeValue
         for id, value in kwargs.items():
             args = dict(id=id, value=value)
+
             if dsd and id in dsd.attributes:
                 # Reference a DataAttribute from the AttributeDescriptor
                 da = dsd.attributes.get(id)

@@ -12,12 +12,13 @@ from pandasdmx.model import (
     )
 import pytest
 
-pytestmark = pytest.mark.experimental
-
 
 # Run the tests on both the standard DataSet class, and the experimental,
 # PandasDataSet version
-@pytest.mark.parametrize('DataSetType', [DataSet, PandasDataSet])
+@pytest.mark.parametrize('DataSetType', [
+    DataSet,
+    pytest.param(PandasDataSet, marks=pytest.mark.experimental),
+])
 def test_add_obs(DataSetType):
     # Create a Key and Attributes
     key = Key(CURRENCY='NZD', CURRENCY_DENOM='EUR',

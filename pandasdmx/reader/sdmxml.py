@@ -125,6 +125,7 @@ METHOD = {
     'AnnotationTitle': 'text',
     'AnnotationURL': 'text',
     'Email': 'text',
+    'None': 'text',
     'Telephone': 'text',
     'URI': 'text',
     'URN': 'text',
@@ -1182,6 +1183,8 @@ class Reader(BaseReader):
         elif tag == 'Group':
             # Reference to a GroupDimensionDescriptor
             args['group_key'] = values.pop('group')[0]
+        elif tag == 'None':
+            values.pop('none')
         assert len(values) == 0, values
 
         return cls(**args)

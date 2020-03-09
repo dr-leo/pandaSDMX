@@ -5,9 +5,9 @@
 		<message:Test>false</message:Test>
 		<message:Prepared>2010-01-04T16:21:49+01:00</message:Prepared>
 		<message:Sender id="ECB"/>
-		<message:Structure structureID="STR1" dimensionAtObservation="TIME_PERIOD" namespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_RG(1.0):ObsLevelDim:TIME_PERIOD">
+		<message:Structure structureID="STR1" dimensionAtObservation="TIME_PERIOD" namespace="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ECB:ECB_EXR_CG(1.0):ObsLevelDim:TIME_PERIOD">
 			<common:Structure>
-				<Ref agencyID="ECB" id="ECB_EXR_RG" version="1.0"/>
+				<Ref agencyID="ECB" id="ECB_EXR_CG" version="1.0"/>
 			</common:Structure>
 		</message:Structure>
 	</message:Header>

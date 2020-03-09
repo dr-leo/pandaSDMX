@@ -369,7 +369,7 @@ class ItemScheme(MaintainableArtefact):
     #: :class:`.Codelist` contains :class:`Codes <.Code>`.
     items: Dict[str, _item_type] = {}
 
-    @validator('items', pre=True, whole=True)
+    @validator('items', pre=True)
     def convert_to_dict(cls, v):
         if isinstance(v, dict):
             return v

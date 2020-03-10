@@ -1,4 +1,4 @@
-from io import BufferedIOBase
+from io import BufferedIOBase, BytesIO
 import logging
 from warnings import warn
 
@@ -58,7 +58,8 @@ class Session(MaybeCachedSession):
 
 
 class ResponseIO(BufferedIOBase):
-    """Pipe data from a :class:`requests.Response` object, with echo to file.
+    """Read  data from a :class:`requests.Response` object, into an in-memory or on-disk file 
+    and expose it as a file-like object.
 
     :class:`ResponseIO` wraps a :class:`requests.Response` object's 'content'
     attribute, providing a file-like object from which bytes can be
@@ -68,62 +69,25 @@ class ResponseIO(BufferedIOBase):
     ----------
     response : :class:`requests.Response`
         HTTP response to wrap.
-    tee : :py:class:`os.PathLike` or :py:class:`io.BufferedIOBasè`, optional
-        If provided, the contents of the response are also written to this file
-        as they are received. The file is closed automatically when *response*
-        reaches EOF.
+    tee : binary, writable :py:class:`io.BufferedIOBasè`, defaults to io.BytesIO()
+        *tee* is exposed as *self.tee* and not closed explicitly.
     """
-    default_size = ITER_CHUNK_SIZE
 
     def __init__(self, response, tee=None):
         self.response = response
-        self.chunks = response.iter_content(ITER_CHUNK_SIZE)
-        self.pending = bytes()
-        # check for file-like or tempfile
-        if isinstance(tee, BufferedIOBase) or hasattr(tee, 'file'):
-            self.tee_filename = tee.name
-            self.tee = tee
-        else:
-            # so tee must be str or os.PathLike or None
-            self.tee_filename = tee
-            self.tee = open(tee, 'wb') if tee else None
+        self.tee = tee or BytesIO()
+        self.tee.write(response.content)
+        self.tee.seek(0)
 
     def readable(self):
         return True
 
-    def read(self, size=None):
-        """Read and return up to *size* bytes.
+    def read(self, size=-1):
+        """Read and return up to *size* bytes by calling *tee.write()*.
 
-        If the argument is omitted, :py:obj:`None`, or negative, reads and
-        returns all data until EOF. If *tee* was provided to the constructor,
-        data is echoed to file; *tee* is not closed.
-
-        If the argument is positive, and the underlying raw stream is not
-        ‘interactive’, multiple raw reads may be issued to satisfy the byte
-        count (unless EOF is reached first).
+        Defaults to -1. In this case,   reads and
+        returns all data until EOF. 
 
         Returns an empty bytes object on EOF.
         """
-        size = size or self.default_size
-
-        try:
-            # Accumulate chunks until the requested size is reached
-            while size < 0 or len(self.pending) < size:
-                self.pending += next(self.chunks)
-
-            # Return the requested amount
-            result = self.pending[:size]
-            self.pending = self.pending[size:]
-        except StopIteration:
-            # Out of chunks; return the remaining content
-            result = self.pending
-            # Will trigger TypeError on next read()
-            self.pending = None
-        except TypeError:
-            # Last call to read() must return empty bytes()
-            result = bytes()
-
-        if self.tee:
-            self.tee.write(result)
-
-        return result
+        return self.tee.read(size)

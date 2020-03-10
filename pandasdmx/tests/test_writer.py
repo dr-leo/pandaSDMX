@@ -8,7 +8,7 @@ import pytest
 from pytest import raises
 
 import pandasdmx as sdmx
-from pandasdmx.model import DataStructureDefinition
+from pandasdmx.model import TimeDimension
 
 from . import (
     assert_pd_equal,
@@ -199,15 +199,21 @@ def test_write_dataflow():
 
 def test_write_dataset_datetime():
     """Test datetime arguments to write_dataset()."""
-    # Load data and structure
-    with specimen('insee-IPI-2010-A21-data.xml') as f:
-        data_msg = sdmx.read_sdmx(f)
-        ds = data_msg.data[0]
+    # Load structure
     with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
-        structure_msg = sdmx.read_sdmx(f)
-        dsd = structure_msg.structure['IPI-2010-A21']
+        dsd = sdmx.read_sdmx(f).structure['IPI-2010-A21']
         TIME_PERIOD = dsd.dimensions.get('TIME_PERIOD')
         FREQ = dsd.dimensions.get('FREQ')
+
+    assert isinstance(TIME_PERIOD, TimeDimension)
+
+    # Load data, two ways
+    with specimen('insee-IPI-2010-A21-data.xml') as f:
+        msg = sdmx.read_sdmx(f, dsd=dsd)
+        ds = msg.data[0]
+        print(msg.data[0].structured_by, msg.data[0].structured_by.dimensions.components)
+    with specimen('insee-IPI-2010-A21-data.xml') as f:
+        msg_no_structure = sdmx.read_sdmx(f)
 
     other_dims = list(filter(lambda n: n != 'TIME_PERIOD',
                              [d.id for d in dsd.dimensions.components]))
@@ -228,21 +234,16 @@ def test_write_dataset_datetime():
     # Write with datetime=True fails because the data message contains no
     # actual structure information
     with pytest.raises(ValueError, match=r'no TimeDimension in \[.*\]'):
-        sdmx.to_pandas(ds, datetime=True)
+        sdmx.to_pandas(msg_no_structure, datetime=True)
     with pytest.raises(ValueError, match=r'no TimeDimension in \[.*\]'):
-        sdmx.to_pandas(data_msg, datetime=True)
+        sdmx.to_pandas(msg_no_structure.data[0], datetime=True)
 
-    # Attaching the DSD to the DataSet allows write_dataset to infer the
+    # DataMessage parsed with a DSD allows write_dataset to infer the
     # TimeDimension
-    ds.structured_by = dsd
-    df = sdmx.to_pandas(ds, datetime=True)
+    df = sdmx.to_pandas(msg, datetime=True)
     expected(df)
-
-    # Attaching the DSD to the DataMessage allows write_dataset to infer the
-    # TimeDimension
-    ds.structured_by = DataStructureDefinition()  # Empty
-    data_msg.dataflow.structure = dsd
-    df = sdmx.to_pandas(data_msg, datetime=True)
+    # Same for DataSet
+    df = sdmx.to_pandas(ds, datetime=True)
     expected(df)
 
     # As above, with axis=1
@@ -253,9 +254,7 @@ def test_write_dataset_datetime():
     ds.structured_by = dsd
     df = sdmx.to_pandas(ds, datetime=dict(axis=1))
     expected(df, axis=1)
-    ds.structured_by = DataStructureDefinition()
-    data_msg.dataflow.structure = dsd
-    df = sdmx.to_pandas(data_msg, datetime=dict(axis=1))
+    df = sdmx.to_pandas(msg, datetime=dict(axis=1))
     expected(df, axis=1)
 
     # Write with freq='M' works
@@ -269,7 +268,6 @@ def test_write_dataset_datetime():
     assert not df.index.is_unique
 
     # Write specifying the FREQ dimension by name fails
-    ds.structured_by = dsd
     with pytest.raises(ValueError, match='cannot convert to PeriodIndex with '
                        r"non-unique freq=\['A', 'M'\]"):
         sdmx.to_pandas(ds, datetime=dict(dim='TIME_PERIOD', freq='FREQ'))
@@ -290,13 +288,12 @@ def test_write_dataset_datetime():
     expected(df, cls=pd.PeriodIndex)
 
     # As above, using DSD attached to the DataMessage
-    ds.structured_by = DataStructureDefinition()
-    df = sdmx.to_pandas(data_msg, datetime=dict(dim=TIME_PERIOD, freq='FREQ'))
+    df = sdmx.to_pandas(msg, datetime=dict(dim=TIME_PERIOD, freq='FREQ'))
     expected(df, cls=pd.PeriodIndex)
 
     # Invalid arguments
     with pytest.raises(ValueError, match='X'):
-        sdmx.to_pandas(data_msg, datetime=dict(dim=TIME_PERIOD, freq='X'))
+        sdmx.to_pandas(msg, datetime=dict(dim=TIME_PERIOD, freq='X'))
     with pytest.raises(ValueError, match='foo'):
         sdmx.to_pandas(ds, datetime=dict(foo='bar'))
     with pytest.raises(ValueError, match='43'):

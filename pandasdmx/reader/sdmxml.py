@@ -277,8 +277,7 @@ class Reader(BaseReader):
         self._current = {}
 
         # With 'dsd' argument, the message should be structure-specific
-        self._structure_specific = dsd is not None
-        if self._structure_specific:
+        if dsd is not None:
             if 'StructureSpecific' not in root.tag:
                 log.warning('Ambiguous: dsd= argument for non-structure-'
                             'specific message')
@@ -536,18 +535,6 @@ class Reader(BaseReader):
         # Return the instance and any non-name values
         return obj, values
 
-    def _set_obs_dim(self, value):
-        """Store the observation dimension for the current DataSet."""
-        if value == 'AllDimensions':
-            self._obs_dim = AllDimensions
-        else:
-            try:
-                # Retrieve an already-defined Dimension (e.g. from the DSD)
-                obs_dim = self._index[('Dimension', value)]
-            except KeyError:
-                obs_dim = Dimension(id=value)
-            self._obs_dim = wrap(obs_dim)
-
     def _get_current(self, cls):
         """Return the sole instance of *cls* in the :attr:`_current` scope.
 
@@ -715,6 +702,8 @@ class Reader(BaseReader):
         if set(attrs.keys()) == {'urn'}:
             attrs['id'] = values['structure_id']
 
+        extra = []
+
         if 'id' in attrs:
             # Create or retrieve the DSD. NB if the dsd argument was provided
             # to read_message(), this should be the same DSD
@@ -729,12 +718,16 @@ class Reader(BaseReader):
             # Create a DataflowDefinition
             dfd = DataflowDefinition(id=values.pop('structure_id'),
                                      structure=dsd)
+            extra.append(dfd)
 
             # Also store the dimension at observation
-            self._set_obs_dim(values.pop('dim_at_obs'))
-            extra = [dfd]
-        else:
-            extra = []
+            """Store the observation dimension for the current DataSet."""
+            dim_at_obs = values.pop('dim_at_obs')
+            if dim_at_obs == 'AllDimensions':
+                self._obs_dim = AllDimensions
+            else:
+                # Retrieve or create the Dimension
+                self._obs_dim = dsd.dimensions.get(dim_at_obs, order=1e9)
 
         # Maybe return the DFD; see .initialize()
         return [Header(**values)] + extra
@@ -803,12 +796,17 @@ class Reader(BaseReader):
             dsd = self._get_current(DataStructureDefinition)
 
             # Pop the 'type' attribute
-            attr = copy(elem.attrib)
-            group_id = attr.pop(qname('xsi', 'type')).split(':')[-1]
-            gdd = self._current[(GroupDimensionDescriptor, group_id)]
-            # TODO nothing is done with this currently; validate
+            args = copy(elem.attrib)
+            group_id = args.pop(qname('xsi', 'type')).split(':')[-1]
+            try:
+                gdd = self._current[(GroupDimensionDescriptor, group_id)]
+            except KeyError:
+                # DSD not supplied when parsing a StructureSpecificMessage
+                pass
+            else:
+                args['described_by'] = gdd
 
-            result = GroupKey(**attr, described_by=gdd, dsd=dsd)
+            result = GroupKey(**args, dsd=dsd)
 
         assert len(values) == 0
         return result
@@ -850,8 +848,7 @@ class Reader(BaseReader):
             key = values.pop('obskey')
         elif 'obsdimension' in values:
             od = values.pop('obsdimension')
-            assert len(self._obs_dim) == 1
-            dim = self._obs_dim[0].id
+            dim = self._obs_dim.id
             if len(od) == 2:
                 assert od['id'] == dim, (values, dim)
             key = Key(**{dim: od['value']}, dsd=dsd)
@@ -1079,35 +1076,33 @@ class Reader(BaseReader):
             components=list(chain(*self._parse(elem, unwrap=False).values())),
             **attr,
         )
+
         try:
             cl.assign_order()
         except AttributeError:
             pass
+
         return cl
 
     def parse_dimension(self, elem):
         values = self._parse(elem)
 
         # Object class: Dimension, MeasureDimension, or TimeDimension
-        cls = getattr(pandasdmx.model, QName(elem).localname)
+        DimensionClass = getattr(pandasdmx.model, QName(elem).localname)
 
-        attr = copy(elem.attrib)
+        args = copy(elem.attrib)
         try:
-            attr['order'] = int(attr.pop('position'))
+            args['order'] = int(args.pop('position'))
         except KeyError:
             pass
 
-        d = cls(
+        args.update(dict(
             concept_identity=values.pop('conceptidentity'),
             local_representation=values.pop('localrepresentation', None),
-            **attr,
-            )
+        ))
+        assert len(values) == 0, values
 
-        # Add to scope
-        self._current[(cls, d.id)] = d
-
-        assert len(values) == 0
-        return d
+        return DimensionClass(**args)
 
     def parse_groupdimension(self, elem):
         values = self._parse(elem)

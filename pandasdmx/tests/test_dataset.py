@@ -61,7 +61,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
     def test_header_attributes(self, msg):
         assert msg.dataflow.id == 'STR1'
         assert msg.structure.id == 'ECB_EXR_NG'
-        assert msg.observation_dimension == ['TIME_PERIOD']
+        assert msg.observation_dimension == 'TIME_PERIOD'
 
     def test_generic_obs(self, msg):
         data = msg.data[0]
@@ -163,7 +163,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert msg.structure.id == 'ECB_EXR_NG'
 
         # Observation dimension is 1 or more Dimensions
-        assert msg.observation_dimension == ['TIME_PERIOD']
+        assert msg.observation_dimension == 'TIME_PERIOD'
 
     def test_generic_obs(self, msg):
         data = msg.data[0]

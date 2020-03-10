@@ -11,6 +11,7 @@ from pandasdmx.model import (
     DataStructureDefinition,
     DataSet,
     Dimension,
+    DimensionComponent,
     # DimensionDescriptor,
     CategoryScheme,
     Codelist,
@@ -300,7 +301,7 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
     param = dict(dim=None, axis=0, freq=False)
     if isinstance(arg, str):
         param['dim'] = arg
-    elif isinstance(arg, Dimension):
+    elif isinstance(arg, DimensionComponent):
         param['dim'] = arg.id
     elif isinstance(arg, dict):
         extra_keys = set(arg.keys()) - set(param.keys())

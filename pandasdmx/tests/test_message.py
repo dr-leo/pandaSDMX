@@ -34,7 +34,7 @@ EXPECTED = {
     sender: 'ECB'
   DataSet (1)
   dataflow: <DataflowDefinition: 'STR1'=''>
-  observation_dimension: [<Dimension: CURRENCY>]""",
+  observation_dimension: <Dimension: CURRENCY>""",
 
     # This message has two DataSets:
     'exr-action-delete.json': """<pandasdmx.DataMessage>

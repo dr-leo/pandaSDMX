@@ -567,32 +567,31 @@ class ComponentList(IdentifiableArtefact):
         # TODO use an index to speed up
         # TODO don't return missing items or add an option to avoid this
 
-        # Chose an appropriate class specified for the attribute in the
-        # ComponentList subclass.
-        klass = get_class_hint(self, 'components')
-
-        # Create the candidate
-        candidate = klass(id=id, **kwargs)
-
-        # Search for a match
+        # Search for an existing Component
         for c in self.components:
-            if c == candidate:
-                # Same Component, difference instance. Discard the candidate
+            if c.id == id:
                 return c
 
-        # No match; store and return the candidate
+        # No match. Chose an appropriate class specified for the attribute in
+        # the ComponentList subclass.
+        try:
+            klass = self._default_type
+        except AttributeError:
+            klass = get_class_hint(self, 'components')
+
+        component = klass(id=id, **kwargs)
 
         if 'order' not in kwargs:
             # For automatically created dimensions, give a serial value to the
             # order property
             try:
-                candidate.order = self.auto_order
+                component.order = self.auto_order
                 self.auto_order += 1
             except ValueError:
                 pass
 
-        self.components.append(candidate)
-        return candidate
+        self.components.append(component)
+        return component
 
     # Properties of components
     def __getitem__(self, key):
@@ -928,7 +927,8 @@ class DimensionDescriptor(ComponentList):
     """
     #: :class:`list` (ordered) of :class:`Dimension`,
     #: :class:`MeasureDimension`, and/or :class:`TimeDimension`.
-    components: List[Union[Dimension, MeasureDimension, TimeDimension]] = []
+    components: List[DimensionComponent] = []
+    _default_type = Dimension
 
     def assign_order(self):
         """Assign the :attr:`.DimensionComponent.order` attribute.
@@ -942,6 +942,7 @@ class DimensionDescriptor(ComponentList):
         """Return a key ordered according to the DSD."""
         result = key.__class__()
         for dim in sorted(self.components, key=attrgetter('order')):
+            print(dim, dim.order)
             try:
                 result[dim.id] = key[dim.id]
             except KeyError:
@@ -1222,18 +1223,22 @@ class Key(BaseModel):
         dsd = kwargs.pop('dsd', None)
 
         # DimensionDescriptor
-        dd = self.described_by = kwargs.pop('described_by', None)
+        dd = kwargs.pop('described_by', None)
 
         if dsd:
-            if dd:
-                # DD must appear in the DSD if both are supplied
-                if (dd is not dsd.dimensions and
-                        dd not in dsd.group_dimensions.values()):
-                    raise ValueError(f'described_by={dd} is not a [Group]'
-                                     f'DimensionDescriptor of dsd={dsd}')
-            else:
-                # Use the DD from the DSD
-                dd = self.described_by = dsd.dimensions
+            if not dd:
+                dd = dsd.dimensions
+
+            # DD must appear in the DSD if both are supplied
+            if (dd is not dsd.dimensions and
+                    dd not in dsd.group_dimensions.values()):
+                raise ValueError(f'described_by={dd} is not a [Group]'
+                                 f'DimensionDescriptor of dsd={dsd}')
+
+            try:
+                self.described_by = dd
+            except Exception:
+                dd = None
 
         # Convert keyword arguments to either KeyValue or AttributeValue
         for id, value in kwargs.items():

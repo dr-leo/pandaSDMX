@@ -75,7 +75,14 @@ class ResponseIO(BufferedIOBase):
 
     def __init__(self, response, tee=None):
         self.response = response
-        self.tee = tee or BytesIO()
+        if tee is None:
+            tee = BytesIO()
+        # If tee is a file-like object or tempfile, then use it as cache
+        if isinstance(tee, BufferedIOBase) or hasattr(tee, 'file'):
+            self.tee = tee
+        else:
+            # So tee must be str or os.FilePath
+            self.tee = open(tee, 'w+b')    
         self.tee.write(response.content)
         self.tee.seek(0)
 

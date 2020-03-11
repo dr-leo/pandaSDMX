@@ -7,11 +7,11 @@ from . import MessageTest, test_data_path
 
 
 class DataMessageTest(MessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_ng' / 'generic'
+    path = test_data_path / 'ECB_EXR'
 
 
 class TestGenericFlatDataSet(DataMessageTest):
-    filename = 'ecb_exr_ng_flat.xml'
+    filename = 'ng-flat.xml'
 
     def test_msg_type(self, msg):
         assert isinstance(msg, message.DataMessage)
@@ -56,7 +56,7 @@ class TestGenericFlatDataSet(DataMessageTest):
 
 
 class TestGenericSeriesDataSet(DataMessageTest):
-    filename = 'ecb_exr_ng_ts_gf.xml'
+    filename = 'ng-ts-gf.xml'
 
     def test_header_attributes(self, msg):
         assert msg.dataflow.id == 'STR1'
@@ -156,7 +156,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
 
 
 class TestGenericSeriesDataSet2(DataMessageTest):
-    filename = 'ecb_exr_ng_ts.xml'
+    filename = 'ng-ts.xml'
 
     def test_header_attributes(self, msg):
         assert msg.dataflow.id == 'STR1'
@@ -200,8 +200,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
 
 
 class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_sg' / 'generic'
-    filename = 'ecb_exr_sg_ts.xml'
+    filename = 'sg-ts.xml'
 
     def test_groups(self, msg):
         data = msg.data[0]
@@ -223,8 +222,7 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
 
 
 class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_rg' / 'generic'
-    filename = 'ecb_exr_rg_ts.xml'
+    filename = 'rg-ts.xml'
 
     def test_groups(self, msg):
         data = msg.data[0]
@@ -243,7 +241,7 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         assert len(g_attrib) == 5
 
     def test_footer(self):
-        f = sdmx.read_sdmx(test_data_path / 'estat' / 'footer.xml').footer
+        f = sdmx.read_sdmx(test_data_path / 'ESTAT' / 'footer.xml').footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

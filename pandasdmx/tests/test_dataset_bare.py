@@ -61,7 +61,6 @@ def test_flat():
 
 
 def test_bare_series():
-    sdmx.read_sdmx(test_data_path / 'exr' / 'ecb_exr_ng' /
-                   'generic' / 'ecb_exr_ng_ts.xml')
+    sdmx.read_sdmx(test_data_path / 'ECB_EXR' / 'ng-ts.xml')
 
     # TODO generate the series and observations

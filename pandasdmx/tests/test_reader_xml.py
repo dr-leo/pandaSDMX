@@ -24,8 +24,8 @@ def test_read_xml_structure(path):
 
 
 def test_read_xml_structure_insee():
-    msg = sdmx.read_sdmx(test_data_path / 'insee' /
-                         'insee-IPI-2010-A21-datastructure.xml')
+    msg = sdmx.read_sdmx(test_data_path / 'INSEE' /
+                         'IPI-2010-A21-structure.xml')
 
     # Same objects referenced
     assert (id(msg.dataflow['IPI-2010-A21'].structure) ==
@@ -38,7 +38,7 @@ def test_read_xml_structure_insee():
 
 # Read structure-specific messages
 def test_read_ss_xml():
-    base_path = test_data_path / 'exr' / '1'
+    base_path = test_data_path / 'ECB_EXR' / '1'
     dsd_path = base_path / 'structure.xml'
     msg_path = base_path / 'M.USD.EUR.SP00.A.xml'
 

@@ -12,6 +12,7 @@ from . import MessageTest, test_data_path
 
 class StructuredMessageTest(MessageTest):
     """Variant of MessageTest for structure-specific messages."""
+    path = test_data_path / 'ECB_EXR'
     dsd = None
 
     # Fixtures
@@ -21,12 +22,12 @@ class StructuredMessageTest(MessageTest):
 
     @pytest.fixture(scope='class')
     def msg(self, dsd):
-        yield sdmx.read_sdmx(self.path.joinpath(*self.filename), dsd=dsd)
+        yield sdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     # Tests for every class
     def test_msg(self, dsd):
         # The message can be parsed
-        sdmx.read_sdmx(self.path.joinpath(*self.filename), dsd=dsd)
+        sdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     def test_structured_by(self, dsd, msg):
         # The DSD was used to parse the message
@@ -34,9 +35,8 @@ class StructuredMessageTest(MessageTest):
 
 
 class TestStructSpecFlatDataSet(StructuredMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_ng'
-    filename = ('structured', 'ecb_exr_ng_flat.xml')
-    dsd_filename = 'ecb_exr_ng_full.xml'
+    filename = 'ng-flat-ss.xml'
+    dsd_filename = 'ng-structure-full.xml'
 
     def test_msg_type(self, msg):
         assert isinstance(msg, message.DataMessage)
@@ -70,9 +70,8 @@ class TestStructSpecFlatDataSet(StructuredMessageTest):
 
 
 class TestStructSpecSeriesDataSet(StructuredMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_ng'
-    filename = ('structured', 'ecb_exr_ng_ts_gf.xml')
-    dsd_filename = 'ecb_exr_ng_full.xml'
+    filename = 'ng-ts-gf-ss.xml'
+    dsd_filename = 'ng-structure-full.xml'
 
     def test_msg_type(self, dsd, msg):
         # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
@@ -146,9 +145,8 @@ class TestStructSpecSeriesDataSet(StructuredMessageTest):
 
 
 class TestStructSpecSeriesDataSet2(StructuredMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_ng'
-    filename = ('structured', 'ecb_exr_ng_ts.xml')
-    dsd_filename = 'ecb_exr_ng_full.xml'
+    filename = 'ng-ts-ss.xml'
+    dsd_filename = 'ng-structure-full.xml'
 
     def test_msg_type(self, dsd, msg):
         # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
@@ -193,9 +191,8 @@ class TestStructSpecSeriesDataSet2(StructuredMessageTest):
 
 
 class TestStructSpecSeriesData_SiblingGroup_TS(StructuredMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_sg'
-    filename = ('structured', 'ecb_exr_sg_ts.xml')
-    dsd_filename = 'ecb_exr_sg.xml'
+    filename = 'sg-ts-ss.xml'
+    dsd_filename = 'sg-structure.xml'
 
     def test_groups(self, msg):
         data = msg.data[0]
@@ -214,9 +211,8 @@ class TestStructSpecSeriesData_SiblingGroup_TS(StructuredMessageTest):
 
 
 class TestStructSpecSeriesData_RateGroup_TS(StructuredMessageTest):
-    path = test_data_path / 'exr' / 'ecb_exr_rg'
-    filename = ('structured', 'ecb_exr_rg_ts.xml')
-    dsd_filename = 'ecb_exr_rg.xml'
+    filename = 'rg-ts-ss.xml'
+    dsd_filename = 'rg-structure.xml'
 
     def test_groups(self, msg):
         data = msg.data[0]

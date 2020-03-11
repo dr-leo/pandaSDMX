@@ -12,30 +12,26 @@ test_data_path = Path(__file__).parent / 'data'
 
 # List of specimen files. Each is a tuple: (path, xml|json, data|structure)
 _test_files = [
-    (test_data_path.joinpath('insee', 'insee-IPI-2010-A21-data.xml'), 'xml',
-     'data'),
-    ]
+    (test_data_path / 'INSEE' / 'IPI-2010-A21.xml', 'xml', 'data'),
+]
 
 # XML data files
-for part in 'ng', 'rg', 'sg':
-    path = test_data_path / 'exr' / f'ecb_exr_{part}'
-    # commented: these files cannot be parsed, possibly because they contain
-    # non-standard markup
-    # _test_files.append((path / f'ecb_exr_{part}.xml', 'xml', 'structure'))
-    for struct in 'generic', 'structured':
-        struct_path = path / struct
-        _test_files.extend((p, 'xml', 'data') for p in struct_path.iterdir())
+for path in (test_data_path / 'ECB_EXR').rglob('*.xml'):
+    kind = 'data'
+    if 'structure' in path.name or 'common' in path.name:
+        kind = 'structure'
+    _test_files.append((path, 'xml', kind))
 
 # XML structure files
 _test_files.extend(
     (test_data_path.joinpath(*parts), 'xml', 'structure') for parts in [
         ('common', 'common.xml'),
-        ('common', 'ecb_orgscheme.xml'),
         ('common', 'unsd_codelist_partial.xml'),
-        ('estat', 'apro_dsd.xml'),
-        ('insee', 'insee-bug-data-namedtuple-datastructure.xml'),
-        ('insee', 'insee-dataflow.xml'),
-        ('insee', 'insee-IPI-2010-A21-datastructure.xml'),
+        ('ECB', 'orgscheme.xml'),
+        ('ESTAT', 'apro_dsd.xml'),
+        ('INSEE', 'bug-data-namedtuple-structure.xml'),
+        ('INSEE', 'dataflow.xml'),
+        ('INSEE', 'IPI-2010-A21-structure.xml'),
         ])
 
 # JSON data files
@@ -53,6 +49,7 @@ def test_files(format=None, kind=None):
     """
     result = dict(argvalues=[], ids=[])
     for path, f, k in _test_files:
+        print(k, kind)
         if (format and format != f) or (kind and kind != k):
             continue
         result['argvalues'].append(path)

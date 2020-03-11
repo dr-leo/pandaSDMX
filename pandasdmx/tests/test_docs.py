@@ -187,7 +187,7 @@ def test_doc_usage_data():
 
 
 def test_doc_howto_timeseries():
-    with specimen('ecb_exr_sg_ts.xml') as f:
+    with specimen('sg-ts.xml') as f:
         ds = sdmx.read_sdmx(f).data[0]
 
     # Convert to pd.Series and unstack the time dimension to columns

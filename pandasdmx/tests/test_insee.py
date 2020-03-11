@@ -7,28 +7,27 @@ import pytest
 from . import test_data_path
 
 
-test_data_path = test_data_path / 'insee'
+test_data_path = test_data_path / 'INSEE'
 
-DATAFLOW_FP = test_data_path / 'insee-dataflow.xml'
+DATAFLOW_FP = test_data_path / 'dataflow.xml'
 
 DATASETS = {
     'IPI-2010-A21': {
-        'data-fp': test_data_path / 'insee-IPI-2010-A21-data.xml',
-        'datastructure-fp': (test_data_path /
-                             'insee-IPI-2010-A21-datastructure.xml'),
+        'data-fp': test_data_path / 'IPI-2010-A21.xml',
+        'datastructure-fp': test_data_path / 'IPI-2010-A21-structure.xml',
         'series_count': 20,
     },
     'CNA-2010-CONSO-SI-A17': {
-        'data-fp': test_data_path / 'insee-bug-data-namedtuple.xml',
+        'data-fp': test_data_path / 'bug-data-namedtuple.xml',
         'datastructure-fp': (test_data_path /
-                             'insee-bug-data-namedtuple-datastructure.xml'),
+                             'bug-data-namedtuple-structure.xml'),
         'series_count': 1,
     },
 }
 
 SERIES = {
     'UNEMPLOYMENT_CAT_A_B_C': {
-        'data-fp': test_data_path / 'insee-bug-series-freq-data.xml',
+        'data-fp': test_data_path / 'bug-series-freq-data.xml',
     }
 }
 

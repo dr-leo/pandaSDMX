@@ -5,7 +5,7 @@ from . import specimen
 
 EXPECTED = {
     # Structure messages
-    'insee-IPI-2010-A21-datastructure.xml': """<pandasdmx.StructureMessage>
+    'IPI-2010-A21-structure.xml': """<pandasdmx.StructureMessage>
   <Header>
     id: 'categorisation_1450864290565'
     prepared: '2015-12-23T09:51:30.565Z'
@@ -18,7 +18,7 @@ EXPECTED = {
   DataStructureDefinition (1): IPI-2010-A21""",
 
     # This message shows the summarization feature: the DFD list is truncated
-    'insee-dataflow.xml': """<pandasdmx.StructureMessage>
+    'dataflow.xml': """<pandasdmx.StructureMessage>
   <Header>
     id: 'dataflow_ENQ-CONJ-TRES-IND-PERSP_1450865196042'
     prepared: '2015-12-23T10:06:36.042Z'
@@ -27,7 +27,7 @@ EXPECTED = {
   DataflowDefinition (663): ACT-TRIM-ANC BPM6-CCAPITAL BPM6-CFINANCIER ...""",
 
     # Data message
-    'ecb_exr_sg_xs.xml': """<pandasdmx.DataMessage>
+    'sg-xs.xml': """<pandasdmx.DataMessage>
   <Header>
     id: 'Generic'
     prepared: '2010-01-04T16:21:49+01:00'

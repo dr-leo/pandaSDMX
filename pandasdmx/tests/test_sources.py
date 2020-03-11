@@ -141,7 +141,7 @@ class TestECB(DataSourceTest):
 estat_mock = {
     ('http://ec.europa.eu/eurostat/SDMX/diss-web/rest/data/nama_10_gdp/'
      '..B1GQ+P3.'): {
-        'body': test_data_path / 'estat' / 'footer2.xml',
+        'body': test_data_path / 'ESTAT' / 'footer2.xml',
         'headers': {
             'Content-Type':
                 'application/vnd.sdmx.genericdata+xml; version=2.1',
@@ -150,7 +150,7 @@ estat_mock = {
     'http://ec.europa.eu/eurostat/SDMX/diss-web/file/7JUdWyAy4fmjBSWT': {
         # This file is a trimmed version of the actual response for the above
         # query
-        'body': test_data_path / 'estat' / 'footer2.zip',
+        'body': test_data_path / 'ESTAT' / 'footer2.zip',
         'headers': {
             'Content-Type': 'application/octet-stream',
             },
@@ -256,11 +256,6 @@ class TestINSEE(DataSourceTest):
     source_id = 'INSEE'
 
     tolerate_503 = True
-
-    xfail = {
-        # 400 Bad Request
-        'provisionagreement': HTTPError,
-        }
 
     @pytest.mark.remote_data
     def test_endpoints(self, req, endpoint):

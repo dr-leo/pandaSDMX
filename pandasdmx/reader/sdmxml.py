@@ -1222,7 +1222,7 @@ class Reader(BaseReader):
         elem.attrib['role'] = 'allowable' if role == 'allowed' else role
         cc, values = self._named(ContentConstraint, elem)
         cc.content.update(wrap(values.pop('constraintattachment')))
-        cc.data_content_region = values.pop('cuberegion', None)
+        cc.data_content_region.append(values.pop('cuberegion', None))
         cc.data_content_keys = values.pop('datakeyset', None)
         assert len(values) == 0, values
         return cc

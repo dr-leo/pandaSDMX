@@ -7,7 +7,7 @@ import pytest
 
 
 class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
-    path = test_data_path / 'estat'
+    path = test_data_path / 'ESTAT'
     filename = 'apro_dsd.xml'
 
     def test_codelists_keys(self, msg):
@@ -62,7 +62,7 @@ class TestDSDCommon(MessageTest):
 
 
 def test_exr_constraints():
-    m = sdmx.read_sdmx(test_data_path / 'exr_flow.xml')
+    m = sdmx.read_sdmx(test_data_path / 'ECB_EXR' / '1' / 'structure-full.xml')
     ECB_EXR1 = m.structure['ECB_EXR1']
 
     # Test DimensionDescriptor

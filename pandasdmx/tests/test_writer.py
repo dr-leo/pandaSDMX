@@ -30,13 +30,13 @@ file_marks = {
         " 'list'> instead",
         'Message contains two DataSets; test infrastructure currently handles '
         'only messages with a single DataSet.'),
-    'structured/ecb_exr_ng_ts.xml':
+    'ECB/EXR/ng-ts-ss.xml':
         (AssertionError, 'Series.index are different', ssds),
-    'structured/ecb_exr_ng_flat.xml':
+    'ECB/EXR/ng-flat-ss.xml':
         (AssertionError, 'Series.index are different', ssds),
-    'structured/ecb_exr_ng_xs.xml':
+    'ECB/EXR/ng-xs-ss.xml':
         (AssertionError, 'Series.index are different', ssds),
-    'structured/ecb_exr_ng_ts_gf.xml':
+    'ECB/EXR/ng-ts-gf-ss.xml':
         (AssertionError, 'Series.index are different', ssds),
     }
 
@@ -94,7 +94,7 @@ def test_write_data_attributes(path):
 
 def test_write_agencyscheme():
     # Convert an agency scheme
-    with specimen('ecb_orgscheme.xml') as f:
+    with specimen('ECB/orgscheme.xml') as f:
         msg = sdmx.read_sdmx(f)
         data = sdmx.to_pandas(msg)
 
@@ -116,7 +116,7 @@ def test_write_agencyscheme():
 
 
 def test_write_categoryscheme():
-    with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
+    with specimen('IPI-2010-A21-structure.xml') as f:
         msg = sdmx.read_sdmx(f)
         print(msg.category_scheme)
         data = sdmx.to_pandas(msg)
@@ -166,7 +166,7 @@ def test_write_codelist():
 
 
 def test_write_conceptscheme():
-    with specimen('common.xml') as f:
+    with specimen('common/common.xml') as f:
         msg = sdmx.read_sdmx(f)
         data = sdmx.to_pandas(msg)
 
@@ -176,7 +176,7 @@ def test_write_conceptscheme():
 
 def test_write_dataflow():
     # Read the INSEE dataflow definition
-    with specimen('insee-dataflow') as f:
+    with specimen('INSEE/dataflow') as f:
         msg = sdmx.read_sdmx(f)
 
     # Convert to pandas
@@ -200,7 +200,7 @@ def test_write_dataflow():
 def test_write_dataset_datetime():
     """Test datetime arguments to write_dataset()."""
     # Load structure
-    with specimen('insee-IPI-2010-A21-datastructure.xml') as f:
+    with specimen('IPI-2010-A21-structure.xml') as f:
         dsd = sdmx.read_sdmx(f).structure['IPI-2010-A21']
         TIME_PERIOD = dsd.dimensions.get('TIME_PERIOD')
         FREQ = dsd.dimensions.get('FREQ')
@@ -208,11 +208,10 @@ def test_write_dataset_datetime():
     assert isinstance(TIME_PERIOD, TimeDimension)
 
     # Load data, two ways
-    with specimen('insee-IPI-2010-A21-data.xml') as f:
+    with specimen('IPI-2010-A21.xml') as f:
         msg = sdmx.read_sdmx(f, dsd=dsd)
         ds = msg.data[0]
-        print(msg.data[0].structured_by, msg.data[0].structured_by.dimensions.components)
-    with specimen('insee-IPI-2010-A21-data.xml') as f:
+    with specimen('IPI-2010-A21.xml') as f:
         msg_no_structure = sdmx.read_sdmx(f)
 
     other_dims = list(filter(lambda n: n != 'TIME_PERIOD',
@@ -312,7 +311,7 @@ def test_writer_structure(path):
 @pytest.mark.remote_data
 def test_write_constraint():
     """'constraint' argument to writer.write_dataset."""
-    with specimen('generic/ecb_exr_ng_ts.xml') as f:
+    with specimen('ng-ts.xml') as f:
         msg = sdmx.read_sdmx(f)
 
     # Fetch the message's DSD

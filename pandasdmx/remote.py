@@ -3,7 +3,6 @@ import logging
 from warnings import warn
 
 import requests
-from requests.models import ITER_CHUNK_SIZE
 
 try:
     from requests_cache import CachedSession as MaybeCachedSession
@@ -22,14 +21,7 @@ class Session(MaybeCachedSession):
     If requests_cache is installed, this class caches responses.
     """
 
-    #: Timeout interval in seconds for queries.
-    timeout = 30
-
-    def __init__(self, **kwargs):
-        # pandaSDMX-specific defaults
-        stream = kwargs.pop('stream', True)
-        proxies = kwargs.pop('proxies', None)
-        self.timeout = kwargs.pop('timeout', 30.1)
+    def __init__(self, timeout=30.1, proxies=None, **kwargs):
 
         if MaybeCachedSession is not requests.Session:
             # Using requests_cache.CachedSession
@@ -53,7 +45,6 @@ class Session(MaybeCachedSession):
             super(Session, self).__init__()
 
         # Overwrite values from requests.Session.__init__()
-        self.stream = stream
         self.proxies = proxies
 
 

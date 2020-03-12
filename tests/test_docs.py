@@ -88,10 +88,10 @@ def test_doc_usage_structure():
     ecb = Request('ECB')
 
     ecb_via_proxy = Request('ECB', proxies={'http': 'http://1.2.3.4:5678'})
-
+    breakpoint()
     assert all(getattr(ecb_via_proxy.session, k) == v for k, v in (
         ('proxies', {'http': 'http://1.2.3.4:5678'}),
-        ('stream', True),
+        ('stream', False),
         ('timeout', 30.1),
         ))
 

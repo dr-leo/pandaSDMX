@@ -46,6 +46,7 @@ class Session(MaybeCachedSession):
 
         # Overwrite values from requests.Session.__init__()
         self.proxies = proxies
+        self.timeout = timeout
 
 
 class ResponseIO(BufferedIOBase):

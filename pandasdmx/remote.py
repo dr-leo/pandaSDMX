@@ -21,7 +21,7 @@ class Session(MaybeCachedSession):
     If requests_cache is installed, this class caches responses.
     """
 
-    def __init__(self, timeout=30.1, proxies=None, **kwargs):
+    def __init__(self, timeout=30.1, proxies=None, stream=False, **kwargs):
 
         if MaybeCachedSession is not requests.Session:
             # Using requests_cache.CachedSession
@@ -47,6 +47,7 @@ class Session(MaybeCachedSession):
         # Overwrite values from requests.Session.__init__()
         self.proxies = proxies
         self.timeout = timeout
+        self.stream = stream
 
 
 class ResponseIO(BufferedIOBase):
@@ -82,9 +83,9 @@ class ResponseIO(BufferedIOBase):
         return True
 
     def read(self, size=-1):
-        """Read and return up to *size* bytes by calling *tee.write()*.
+        """Read and return up to *size* bytes by calling *self.tee.read()*.
 
-        Defaults to -1. In this case,   reads and
+        *size* Defaults to -1. In this case,   reads and
         returns all data until EOF. 
 
         Returns an empty bytes object on EOF.

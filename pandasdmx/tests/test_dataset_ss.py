@@ -7,12 +7,12 @@ import pandasdmx as sdmx
 from pandasdmx import message, model
 from pandasdmx.model import Key
 
-from . import MessageTest, test_data_path
+from . import MessageTest
 
 
 class StructuredMessageTest(MessageTest):
     """Variant of MessageTest for structure-specific messages."""
-    path = test_data_path / 'ECB_EXR'
+    path = MessageTest.path / 'ECB_EXR'
     dsd = None
 
     # Fixtures

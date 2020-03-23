@@ -11,7 +11,8 @@ from pandasdmx.model import (
     Observation,
     )
 
-from . import assert_pd_equal, test_data_path
+from . import assert_pd_equal
+from .data import specimen
 
 
 def test_flat():
@@ -54,13 +55,15 @@ def test_flat():
     # Write to pd.Dataframe
     df1 = sdmx.to_pandas(msg)
 
-    ref = sdmx.read_sdmx(test_data_path / 'json' / 'exr-flat.json')
+    with specimen('flat.json') as f:
+        ref = sdmx.read_sdmx(f)
     df2 = sdmx.to_pandas(ref)
 
     assert_pd_equal(df1, df2)
 
 
 def test_bare_series():
-    sdmx.read_sdmx(test_data_path / 'ECB_EXR' / 'ng-ts.xml')
+    with specimen('ng-ts.xml') as f:
+        sdmx.read_sdmx(f)
 
     # TODO generate the series and observations

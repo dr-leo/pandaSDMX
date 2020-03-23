@@ -1,10 +1,11 @@
+# TODO tidy these tests to use fixtures/methods from pandasdmx.tests
 from collections import OrderedDict
 
 import pandasdmx as sdmx
 from pandasdmx import Request
 import pytest
 
-from . import test_data_path
+from .data import BASE_PATH as test_data_path
 
 
 test_data_path = test_data_path / 'INSEE'
@@ -18,9 +19,9 @@ DATASETS = {
         'series_count': 20,
     },
     'CNA-2010-CONSO-SI-A17': {
-        'data-fp': test_data_path / 'bug-data-namedtuple.xml',
+        'data-fp': test_data_path / 'CNA-2010-CONSO-SI-A17.xml',
         'datastructure-fp': (test_data_path /
-                             'bug-data-namedtuple-structure.xml'),
+                             'CNA-2010-CONSO-SI-A17-structure.xml'),
         'series_count': 1,
     },
 }

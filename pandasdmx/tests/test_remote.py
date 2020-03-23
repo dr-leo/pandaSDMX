@@ -1,7 +1,8 @@
-from . import has_requests_cache
 import pytest
 
 from pandasdmx.remote import Session
+
+from . import has_requests_cache
 
 
 @pytest.mark.skipif(has_requests_cache, reason='test without requests_cache')

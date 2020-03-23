@@ -1,14 +1,15 @@
 import pandasdmx as sdmx
 from pandasdmx import model
 
-from . import MessageTest, test_data_path
+from . import MessageTest
+from .data import specimen
 
 import pytest
 
 
 class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
-    path = test_data_path / 'ESTAT'
-    filename = 'apro_dsd.xml'
+    path = MessageTest.path / 'ESTAT'
+    filename = 'apro_mk_cola-structure.xml'
 
     def test_codelists_keys(self, msg):
         assert len(msg.codelist) == 6
@@ -38,8 +39,8 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
 
 
 class TestDSDCommon(MessageTest):
-    path = test_data_path / 'common'
-    filename = 'common.xml'
+    path = MessageTest.path / 'SGR'
+    filename = 'common-structure.xml'
 
     def test_codelists_keys(self, msg):
         assert len(msg.codelist) == 5
@@ -62,7 +63,8 @@ class TestDSDCommon(MessageTest):
 
 
 def test_exr_constraints():
-    m = sdmx.read_sdmx(test_data_path / 'ECB_EXR' / '1' / 'structure-full.xml')
+    with specimen('1/structure-full.xml') as f:
+        m = sdmx.read_sdmx(f)
     ECB_EXR1 = m.structure['ECB_EXR1']
 
     # Test DimensionDescriptor

@@ -10,13 +10,8 @@ from pytest import raises
 import pandasdmx as sdmx
 from pandasdmx.model import TimeDimension
 
-from . import (
-    assert_pd_equal,
-    expected_data,
-    test_data_path,
-    test_files,
-    specimen,
-    )
+from . import assert_pd_equal
+from .data import expected_data, specimen, test_files
 
 
 # file name → (exception raised, exception message, comment/reason)
@@ -132,7 +127,8 @@ def test_write_categoryscheme():
 
 def test_write_codelist():
     # Retrieve codelists from a test specimen and convert to pandas
-    dsd_common = sdmx.read_sdmx(test_data_path / 'common' / 'common.xml')
+    with specimen('common-structure.xml') as f:
+        dsd_common = sdmx.read_sdmx(f)
     codelists = sdmx.to_pandas(dsd_common)['codelist']
 
     # File contains 5 code lists
@@ -149,7 +145,7 @@ def test_write_codelist():
     assert freq.name == 'Code list for Frequency (FREQ)'
 
     # Hierarchical code list
-    with specimen('unsd_codelist_partial.xml') as f:
+    with specimen('codelist_partial.xml') as f:
         msg = sdmx.read_sdmx(f)
 
     # Convert single codelist
@@ -166,7 +162,7 @@ def test_write_codelist():
 
 
 def test_write_conceptscheme():
-    with specimen('common/common.xml') as f:
+    with specimen('common-structure.xml') as f:
         msg = sdmx.read_sdmx(f)
         data = sdmx.to_pandas(msg)
 

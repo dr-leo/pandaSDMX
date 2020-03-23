@@ -1,5 +1,3 @@
-import warnings
-
 from lxml.etree import Element
 import pandasdmx as sdmx
 from pandasdmx.model import (
@@ -8,7 +6,7 @@ from pandasdmx.model import (
 from pandasdmx.reader.sdmxml import XMLParseError, Reader
 import pytest
 
-from . import test_data_path, test_files
+from .data import specimen, test_files
 
 
 # Read example data files
@@ -24,8 +22,8 @@ def test_read_xml_structure(path):
 
 
 def test_read_xml_structure_insee():
-    msg = sdmx.read_sdmx(test_data_path / 'INSEE' /
-                         'IPI-2010-A21-structure.xml')
+    with specimen('IPI-2010-A21-structure.xml') as f:
+        msg = sdmx.read_sdmx(f)
 
     # Same objects referenced
     assert (id(msg.dataflow['IPI-2010-A21'].structure) ==
@@ -38,9 +36,9 @@ def test_read_xml_structure_insee():
 
 # Read structure-specific messages
 def test_read_ss_xml():
-    base_path = test_data_path / 'ECB_EXR' / '1'
-    dsd_path = base_path / 'structure.xml'
-    msg_path = base_path / 'M.USD.EUR.SP00.A.xml'
+    with specimen('M.USD.EUR.SP00.A.xml', opened=False) as f:
+        msg_path = f
+        dsd_path = f.parent / 'structure.xml'
 
     # Read the DSD
     dsd = sdmx.read_sdmx(dsd_path).structure['ECB_EXR1']

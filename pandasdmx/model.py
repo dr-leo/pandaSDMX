@@ -942,7 +942,6 @@ class DimensionDescriptor(ComponentList):
         """Return a key ordered according to the DSD."""
         result = key.__class__()
         for dim in sorted(self.components, key=attrgetter('order')):
-            print(dim, dim.order)
             try:
                 result[dim.id] = key[dim.id]
             except KeyError:

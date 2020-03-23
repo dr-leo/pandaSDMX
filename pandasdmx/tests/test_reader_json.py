@@ -1,7 +1,7 @@
 import pandasdmx as sdmx
 import pytest
 
-from . import test_data_path, test_files
+from .data import specimen, test_files
 
 
 @pytest.mark.parametrize('path', **test_files(format='json'))
@@ -11,5 +11,6 @@ def test_json_read(path):
 
 
 def test_header():
-    resp = sdmx.read_sdmx(test_data_path / 'json' / 'exr-flat.json')
+    with specimen('flat.json') as f:
+        resp = sdmx.read_sdmx(f)
     assert resp.header.id == '62b5f19d-f1c9-495d-8446-a3661ed24753'

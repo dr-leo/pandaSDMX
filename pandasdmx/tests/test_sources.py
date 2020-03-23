@@ -14,7 +14,7 @@ from pandasdmx.util import Resource
 import pytest
 import requests_mock
 
-from . import test_data_path
+from .data import BASE_PATH as TEST_DATA_PATH
 
 
 log = logging.getLogger(__name__)
@@ -105,8 +105,8 @@ class DataSourceTest:
     @pytest.fixture
     def req(self):
         # Use a common cache file for all agency tests
-        (test_data_path / '.cache').mkdir(exist_ok=True)
-        self._cache_path = test_data_path / '.cache' / self.source_id
+        (TEST_DATA_PATH / '.cache').mkdir(exist_ok=True)
+        self._cache_path = TEST_DATA_PATH / '.cache' / self.source_id
         return Request(self.source_id, cache_name=str(self._cache_path),
                        backend='sqlite')
 
@@ -141,7 +141,7 @@ class TestECB(DataSourceTest):
 estat_mock = {
     ('http://ec.europa.eu/eurostat/SDMX/diss-web/rest/data/nama_10_gdp/'
      '..B1GQ+P3.'): {
-        'body': test_data_path / 'ESTAT' / 'footer2.xml',
+        'body': TEST_DATA_PATH / 'ESTAT' / 'footer2.xml',
         'headers': {
             'Content-Type':
                 'application/vnd.sdmx.genericdata+xml; version=2.1',
@@ -150,7 +150,7 @@ estat_mock = {
     'http://ec.europa.eu/eurostat/SDMX/diss-web/file/7JUdWyAy4fmjBSWT': {
         # This file is a trimmed version of the actual response for the above
         # query
-        'body': test_data_path / 'ESTAT' / 'footer2.zip',
+        'body': TEST_DATA_PATH / 'ESTAT' / 'footer2.zip',
         'headers': {
             'Content-Type': 'application/octet-stream',
             },

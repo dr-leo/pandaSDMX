@@ -1,6 +1,6 @@
 import pandasdmx as sdmx
 
-from . import specimen
+from .data import specimen
 
 
 EXPECTED = {
@@ -37,7 +37,7 @@ EXPECTED = {
   observation_dimension: <Dimension: CURRENCY>""",
 
     # This message has two DataSets:
-    'exr-action-delete.json': """<pandasdmx.DataMessage>
+    'action-delete.json': """<pandasdmx.DataMessage>
   <Header>
     id: '62b5f19d-f1c9-495d-8446-a3661ed24753'
     prepared: '2012-11-29T08:40:26Z'

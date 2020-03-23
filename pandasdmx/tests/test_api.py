@@ -5,13 +5,13 @@ import pandas as pd
 import pandasdmx as sdmx
 import pytest
 
-from . import specimen
+from .data import specimen
 
 
 def test_read_sdmx(tmp_path):
     # Copy the file to a temporary file with an urecognizable suffix
     target = tmp_path / 'foo.badsuffix'
-    with specimen('exr-flat.json', opened=False) as original:
+    with specimen('flat.json', opened=False) as original:
         target.open('w').write(original.read_text())
 
     # Can't infer message type for unknown file extension
@@ -24,7 +24,7 @@ def test_read_sdmx(tmp_path):
     sdmx.read_sdmx(target, format='JSON')
 
     # Format can be inferred from an already-open file without extension
-    with specimen('exr-flat.json') as f:
+    with specimen('flat.json') as f:
         sdmx.read_sdmx(f)
 
     # Exception raised when the file contents don't allow to guess the format

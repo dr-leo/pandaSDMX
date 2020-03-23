@@ -7,16 +7,17 @@ command-line argument must be given:
 $ py.test --remote-data [...]
 
 """
-import pytest
-
 import numpy as np
 import pandas as pd
+import pytest
+
 import pandasdmx as sdmx
 from pandasdmx import Request
 from pandasdmx.model import DataSet
 from pandasdmx.util import DictLike
 
-from . import assert_pd_equal, specimen
+from . import assert_pd_equal
+from .data import specimen
 
 
 @pytest.mark.remote_data

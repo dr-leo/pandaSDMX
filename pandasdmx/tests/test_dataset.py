@@ -3,11 +3,12 @@ import pandas.testing as pdt
 import pandasdmx as sdmx
 from pandasdmx import message, model
 
-from . import MessageTest, test_data_path
+from . import MessageTest
+from .data import specimen
 
 
 class DataMessageTest(MessageTest):
-    path = test_data_path / 'ECB_EXR'
+    path = MessageTest.path / 'ECB_EXR'
 
 
 class TestGenericFlatDataSet(DataMessageTest):
@@ -241,7 +242,8 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         assert len(g_attrib) == 5
 
     def test_footer(self):
-        f = sdmx.read_sdmx(test_data_path / 'ESTAT' / 'footer.xml').footer
+        with specimen('footer.xml') as f:
+            f = sdmx.read_sdmx(f).footer
         assert f.code == 413
         assert f.severity == 'Infomation'
         assert str(f.text[1]).startswith('http')

@@ -110,7 +110,8 @@ def test_doc_usage_structure():
     # Removed: in pandaSDMX 0.x this was a convenience method that (for this
     # structure message) returned two DataStructureDefinitions. Contra the
     # spec, that assumes:
-    # - There is 1 Categorization using the CategoryScheme; there could be many.
+    # - There is 1 Categorization using the CategoryScheme; there could be
+    #   many.
     # - The Categorization maps DataStructureDefintions to Categories, when
     #   there could be many.
     # list(cat_response.category_scheme['MOBILE_NAVI']['07'])
@@ -126,7 +127,7 @@ def test_doc_usage_structure():
         })
     assert_pd_equal(dfs, expected)
 
-    flows = ecb.dataflow()
+    flows = ecb.dataflow()  # noqa: F841
     dsd_id = msg1.dataflow.EXR.structure.id
     assert dsd_id == 'ECB_EXR1'
 
@@ -134,8 +135,9 @@ def test_doc_usage_structure():
     msg2 = ecb.datastructure(resource_id=dsd_id, params=refs)
     dsd = msg2.structure[dsd_id]
 
-    assert sdmx.to_pandas(dsd.dimensions) == ['FREQ', 'CURRENCY',
-        'CURRENCY_DENOM', 'EXR_TYPE', 'EXR_SUFFIX', 'TIME_PERIOD']
+    assert sdmx.to_pandas(dsd.dimensions) == [
+        'FREQ', 'CURRENCY', 'CURRENCY_DENOM', 'EXR_TYPE', 'EXR_SUFFIX',
+        'TIME_PERIOD']
 
     cl = sdmx.to_pandas(msg2.codelist['CL_CURRENCY']).sort_index()
     expected = pd.Series({

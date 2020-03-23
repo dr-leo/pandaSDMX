@@ -369,7 +369,7 @@ class ItemScheme(MaintainableArtefact):
     #: :class:`.Codelist` contains :class:`Codes <.Code>`.
     items: Dict[str, _item_type] = {}
 
-    @validator('items', pre=True, whole=True)
+    @validator('items', pre=True)
     def convert_to_dict(cls, v):
         if isinstance(v, dict):
             return v
@@ -567,32 +567,31 @@ class ComponentList(IdentifiableArtefact):
         # TODO use an index to speed up
         # TODO don't return missing items or add an option to avoid this
 
-        # Chose an appropriate class specified for the attribute in the
-        # ComponentList subclass.
-        klass = get_class_hint(self, 'components')
-
-        # Create the candidate
-        candidate = klass(id=id, **kwargs)
-
-        # Search for a match
+        # Search for an existing Component
         for c in self.components:
-            if c == candidate:
-                # Same Component, difference instance. Discard the candidate
+            if c.id == id:
                 return c
 
-        # No match; store and return the candidate
+        # No match. Chose an appropriate class specified for the attribute in
+        # the ComponentList subclass.
+        try:
+            klass = self._default_type
+        except AttributeError:
+            klass = get_class_hint(self, 'components')
+
+        component = klass(id=id, **kwargs)
 
         if 'order' not in kwargs:
             # For automatically created dimensions, give a serial value to the
             # order property
             try:
-                candidate.order = self.auto_order
+                component.order = self.auto_order
                 self.auto_order += 1
             except ValueError:
                 pass
 
-        self.components.append(candidate)
-        return candidate
+        self.components.append(component)
+        return component
 
     # Properties of components
     def __getitem__(self, key):
@@ -928,7 +927,16 @@ class DimensionDescriptor(ComponentList):
     """
     #: :class:`list` (ordered) of :class:`Dimension`,
     #: :class:`MeasureDimension`, and/or :class:`TimeDimension`.
-    components: List[Union[Dimension, MeasureDimension, TimeDimension]] = []
+    components: List[DimensionComponent] = []
+    _default_type = Dimension
+
+    def assign_order(self):
+        """Assign the :attr:`.DimensionComponent.order` attribute.
+
+        The Dimensions in :attr:`components` are numbered, starting from 1.
+        """
+        for i, component in enumerate(self.components):
+            component.order = i + 1
 
     def order_key(self, key):
         """Return a key ordered according to the DSD."""
@@ -972,11 +980,16 @@ class GroupDimensionDescriptor(DimensionDescriptor):
     #:
     constraint: AttachmentConstraint = None
 
+    def assign_order(self):
+        """:meth:`assign_order` has no effect for GroupDimensionDescriptor."""
+        pass
+
 
 AttributeRelationship.update_forward_refs()
 # GroupRelationship.update_forward_refs()
 
 
+@validate_dictlike('group_dimensions')
 class DataStructureDefinition(Structure, ConstrainableArtefact):
     """Defines a data structure. Referred to as “DSD”."""
     #: A :class:`AttributeDescriptor` that describes the attributes of the
@@ -988,7 +1001,7 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
     #: A :class:`.MeasureDescriptor`.
     measures: MeasureDescriptor = None
     #: A :class:`.GroupDimensionDescriptor`.
-    group_dimensions: GroupDimensionDescriptor = None
+    group_dimensions: DictLike[str, GroupDimensionDescriptor] = DictLike()
 
     # Convenience methods
     def attribute(self, id, **kwargs):
@@ -1166,7 +1179,7 @@ class Key(BaseModel):
     """SDMX Key class.
 
     The constructor takes an optional list of keyword arguments; the keywords
-    are used as Dimension IDs, and the values as KeyValues.
+    are used as Dimension or Attribute IDs, and the values as KeyValues.
 
     For convience, the values of the key may be accessed directly:
 
@@ -1176,13 +1189,26 @@ class Key(BaseModel):
     >>> k['foo']
     1
 
+    Parameters
+    ----------
+    dsd : DataStructureDefinition
+        If supplied, the :attr:`~.DataStructureDefinition.dimensions` and
+        :attr:`~.DataStructureDefinition.attributes` are used to separate the
+        *kwargs* into :class:`KeyValues <.KeyValue>` and
+        :class:`AttributeValues <.AttributeValue>`. The *kwarg* for
+        :attr:`described_by`, if any, must be
+        :attr:`~.DataStructureDefinition.dimensions` or appear in
+        :attr:`~.DataStructureDefinition.group_dimensions`.
+    kwargs
+        Dimension and Attribute IDs, and/or the class properties.
+
     """
     #:
     attrib: DictLike[str, AttributeValue] = DictLike()
-    #: Individual KeyValues that describe the key.
-    values: DictLike[str, KeyValue] = DictLike()
     #:
     described_by: DimensionDescriptor = None
+    #: Individual KeyValues that describe the key.
+    values: DictLike[str, KeyValue] = DictLike()
 
     def __init__(self, arg=None, **kwargs):
         super().__init__()
@@ -1192,18 +1218,42 @@ class Key(BaseModel):
                                  "keyword arguments; not both.")
             kwargs.update(arg)
 
-        # DimensionDescriptor
-        self.described_by = kwargs.pop('described_by', None)
+        # DSD argument
+        dsd = kwargs.pop('dsd', None)
 
-        # Convert keyword arguments to KeyValues
-        for id, value in kwargs.items():
-            kv = KeyValue(id=id, value=value)
+        # DimensionDescriptor
+        dd = kwargs.pop('described_by', None)
+
+        if dsd:
+            if not dd:
+                dd = dsd.dimensions
+
+            # DD must appear in the DSD if both are supplied
+            if (dd is not dsd.dimensions and
+                    dd not in dsd.group_dimensions.values()):
+                raise ValueError(f'described_by={dd} is not a [Group]'
+                                 f'DimensionDescriptor of dsd={dsd}')
+
             try:
+                self.described_by = dd
+            except Exception:
+                dd = None
+
+        # Convert keyword arguments to either KeyValue or AttributeValue
+        for id, value in kwargs.items():
+            args = dict(id=id, value=value)
+
+            if dsd and id in dsd.attributes:
+                # Reference a DataAttribute from the AttributeDescriptor
+                da = dsd.attributes.get(id)
+                self.attrib[da.id] = AttributeValue(**args, value_for=da)
+                continue
+
+            if dd:
                 # Reference a Dimension from the DimensionDescriptor
-                kv.value_for = self.described_by.get(id)
-            except AttributeError:
-                pass
-            self.values[id] = kv
+                args['value_for'] = dd.get(id)
+
+            self.values[id] = KeyValue(**args)
 
     def __len__(self):
         """The length of the Key is the number of KeyValues it contains."""

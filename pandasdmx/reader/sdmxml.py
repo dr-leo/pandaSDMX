@@ -40,7 +40,8 @@ log = logging.getLogger(__name__)
 URN = re.compile(r'urn:sdmx:org\.sdmx\.infomodel'
                  r'\.(?P<package>[^\.]*)'
                  r'\.(?P<class>[^=]*)=((?P<agency>[^:]*):)?'
-                 r'(?P<id>[^\(]*)(\((?P<version>\d*)\))?')
+                 r'(?P<id>[^\(\.]*)(\((?P<version>[\d\.]*)\))?'
+                 r'(\.(?P<item_id>.*))?')
 
 
 # XML namespaces
@@ -113,9 +114,9 @@ METHOD = {
     'Role': 'international_string',
     'Text': 'international_string',
 
-    'DimensionList': 'grouping',
-    'AttributeList': 'grouping',
-    'MeasureList': 'grouping',
+    'DimensionList': 'componentlist',
+    'AttributeList': 'componentlist',
+    'MeasureList': 'componentlist',
 
     'CoreRepresentation': 'representation',
     'LocalRepresentation': 'representation',
@@ -124,6 +125,7 @@ METHOD = {
     'AnnotationTitle': 'text',
     'AnnotationURL': 'text',
     'Email': 'text',
+    'None': 'text',
     'Telephone': 'text',
     'URI': 'text',
     'URN': 'text',
@@ -160,12 +162,12 @@ METHOD = {
     'ProvisionAgreements': 'SKIP',
 
     # Tag names that only ever contain references
+    'AttachmentGroup': 'ref',
     'DimensionReference': 'ref',
     'Parent': 'ref',
     'Source': 'ref',
     'Structure': 'ref',  # str:Structure, not mes:Structure
     'Target': 'ref',
-    'ConceptIdentity': 'ref',
     # 'ConstraintAttachment': 'ref',
     'Enumeration': 'ref',
     }
@@ -275,8 +277,7 @@ class Reader(BaseReader):
         self._current = {}
 
         # With 'dsd' argument, the message should be structure-specific
-        self._structure_specific = dsd is not None
-        if self._structure_specific:
+        if dsd is not None:
             if 'StructureSpecific' not in root.tag:
                 log.warning('Ambiguous: dsd= argument for non-structure-'
                             'specific message')
@@ -534,18 +535,6 @@ class Reader(BaseReader):
         # Return the instance and any non-name values
         return obj, values
 
-    def _set_obs_dim(self, value):
-        """Store the observation dimension for the current DataSet."""
-        if value == 'AllDimensions':
-            self._obs_dim = AllDimensions
-        else:
-            try:
-                # Retrieve an already-defined Dimension (e.g. from the DSD)
-                obs_dim = self._index[('Dimension', value)]
-            except KeyError:
-                obs_dim = Dimension(id=value)
-            self._obs_dim = wrap(obs_dim)
-
     def _get_current(self, cls):
         """Return the sole instance of *cls* in the :attr:`_current` scope.
 
@@ -568,6 +557,7 @@ class Reader(BaseReader):
             'ConceptScheme': (Concept, ConceptScheme),
             'ContentConstraint': (ContentConstraint,),
             'Dataflow': (DataflowDefinition,),
+            'DataSet': (DataStructureDefinition,),
             'DataStructure': (DataStructureDefinition,),
             }.get(scope, [])
 
@@ -625,7 +615,7 @@ class Reader(BaseReader):
                 # Ref to parent of an Item in an ItemScheme; the ref'd object
                 # has the same class as the Item
                 cls = getattr(pandasdmx.model, self._stack[-1])
-            elif parent == 'Group':
+            elif parent in ('AttachmentGroup', 'Group'):
                 cls = GroupDimensionDescriptor
             elif parent in ('Dimension', 'DimensionReference'):
                 # References to Dimensions
@@ -712,20 +702,32 @@ class Reader(BaseReader):
         if set(attrs.keys()) == {'urn'}:
             attrs['id'] = values['structure_id']
 
+        extra = []
+
         if 'id' in attrs:
             # Create or retrieve the DSD. NB if the dsd argument was provided
             # to read_message(), this should be the same DSD
             dsd = self._maintained(DataStructureDefinition, **attrs)
 
+            if 'structure_id' in values:
+                # Add the DSD to the index a second time, using the message
+                # -specific structure ID (rather that the DSD's own ID).
+                key = ('DataStructureDefinition', values['structure_id'])
+                self._index[key] = dsd
+
             # Create a DataflowDefinition
             dfd = DataflowDefinition(id=values.pop('structure_id'),
                                      structure=dsd)
+            extra.append(dfd)
 
             # Also store the dimension at observation
-            self._set_obs_dim(values.pop('dim_at_obs'))
-            extra = [dfd]
-        else:
-            extra = []
+            """Store the observation dimension for the current DataSet."""
+            dim_at_obs = values.pop('dim_at_obs')
+            if dim_at_obs == 'AllDimensions':
+                self._obs_dim = AllDimensions
+            else:
+                # Retrieve or create the Dimension
+                self._obs_dim = dsd.dimensions.get(dim_at_obs, order=1e9)
 
         # Maybe return the DFD; see .initialize()
         return [Header(**values)] + extra
@@ -786,27 +788,25 @@ class Reader(BaseReader):
             # Early update of the DSD so that later definitions in the DSD can
             # reference gdd
             dsd = self._get_current(DataStructureDefinition)
-            dsd.group_dimensions = gdd
+            dsd.group_dimensions[gdd.id] = gdd
 
             result = gdd
         else:
             # no namespace → GroupKey in a StructureSpecificData message
+            dsd = self._get_current(DataStructureDefinition)
 
-            # commented: destructive
-            # # Discard XML Schema attribute
-            # elem.attrib.pop(qname('xsi', 'type'))
-
-            # the 'TITLE' XML attribute is an SDMX Attribute
-            attrib = {}
+            # Pop the 'type' attribute
+            args = copy(elem.attrib)
+            group_id = args.pop(qname('xsi', 'type')).split(':')[-1]
             try:
-                da = DataAttribute(id='TITLE')
-                av = AttributeValue(value=elem.attrib['TITLE'], value_for=da)
-                attrib[da.id] = av
+                gdd = self._current[(GroupDimensionDescriptor, group_id)]
             except KeyError:
+                # DSD not supplied when parsing a StructureSpecificMessage
                 pass
+            else:
+                args['described_by'] = gdd
 
-            # Remaining attributes are the KeyValues
-            result = GroupKey(**elem.attrib, attrib=attrib)
+            result = GroupKey(**args, dsd=dsd)
 
         assert len(values) == 0
         return result
@@ -820,13 +820,11 @@ class Reader(BaseReader):
             'Key': DataKey,  # for DataKeySet
             }[QName(elem).localname]
         if cls is not DataKey:
-            dd = self._get_current(DimensionDescriptor)
-
             # Most data: the value is specified as an XML attribute
             kv = {e.attrib['id']: e.attrib['value'] for e in
                   elem.iterchildren()}
 
-            return cls(**kv, described_by=dd)
+            return cls(**kv, dsd=self._get_current(DataStructureDefinition))
         else:
             # <str:DataKeySet> and <str:CubeRegion>: the value(s) are specified
             # with a <com:Value>...</com:Value> element.
@@ -841,7 +839,7 @@ class Reader(BaseReader):
     def parse_obs(self, elem):
         values = self._parse(elem)
 
-        dd = self._get_current(DimensionDescriptor)
+        dsd = self._get_current(DataStructureDefinition)
 
         # Attached attributes
         aa = values.pop('attributes', {})
@@ -850,11 +848,10 @@ class Reader(BaseReader):
             key = values.pop('obskey')
         elif 'obsdimension' in values:
             od = values.pop('obsdimension')
-            assert len(self._obs_dim) == 1
-            dim = self._obs_dim[0].id
+            dim = self._obs_dim.id
             if len(od) == 2:
                 assert od['id'] == dim, (values, dim)
-            key = Key(**{dim: od['value']}, described_by=dd)
+            key = Key(**{dim: od['value']}, dsd=dsd)
 
         if len(values):
             value = values.pop('obsvalue')
@@ -866,20 +863,12 @@ class Reader(BaseReader):
             # Value of the observation
             value = attr.pop('OBS_VALUE')
 
-            # Dimensions for the key
-            if self._obs_dim is AllDimensions:
-                dims = list(attr.keys())
-            else:
-                # Use the 'dimension at observation' specified for the message
-                dims = map(lambda d: d.id, self._obs_dim)
+            # Use the DSD to separate dimensions and attributes
+            key = Key(**attr, dsd=dsd)
 
-            key = Key(**{d: attr.pop(d) for d in dims}, described_by=dd)
-
-            # Remaining attr members are SDMX DataAttributes
-            ad = self._get_current(AttributeDescriptor)
-            for a_id, a_value in attr.items():
-                aa[a_id] = AttributeValue(value=a_value,
-                                          value_for=ad.get(a_id))
+            # Remove attributes from the Key to be attached to the Observation
+            aa.update(key.attrib)
+            key.attrib = {}
 
         assert len(values) == 0, values
         return Observation(dimension=key, value=value, attached_attribute=aa)
@@ -898,9 +887,9 @@ class Reader(BaseReader):
             series_key = values.pop('serieskey')
             series_key.attrib.update(values.pop('attributes', {}))
         except KeyError:
-            # StructureSpecificData message; treat all attributes as dimensions
-            # TODO prefetch the structure or used a prefetched structure
-            series_key = SeriesKey(**elem.attrib)
+            # StructureSpecificData message
+            dsd = self._get_current(DataStructureDefinition)
+            series_key = SeriesKey(**elem.attrib, dsd=dsd)
         obs_list = wrap(values.pop('obs', []))
         for o in obs_list:
             o.series_key = series_key
@@ -993,6 +982,28 @@ class Reader(BaseReader):
         assert len(values) == 0
         return c
 
+    def parse_conceptidentity(self, elem):
+        # <ConceptIdentity> element can contain a child <URN>. Unlike other
+        # URNs, this references a non-maintainable class (Concept), rather than
+        # its maintainable parent (ConceptScheme); so parse_ref fails.
+
+        # Parse children, which should only be a <URN>
+        values = self._parse(elem)
+        if set(values.keys()) != {'urn'}:
+            raise ValueError(values)
+
+        # URN should refer to a Concept
+        match = URN.match(values['urn']).groupdict()
+        if match['class'] != 'Concept':
+            raise ValueError(values['urn'])
+
+        # Look up the parent ConceptScheme
+        cls = get_class(match['package'], 'ConceptScheme')
+        cs = self._maintained(cls=cls, id=match['id'])
+
+        # Get or create the Concept within *cs*
+        return cs.setdefault(id=match['item_id'])
+
     def parse_constraintattachment(self, elem):
         constrainables = self._parse(elem)
         assert len(constrainables) == 1
@@ -1029,57 +1040,69 @@ class Reader(BaseReader):
 
     def parse_datastructure(self, elem):
         dsd, values = self._named(DataStructureDefinition, elem)
-        _target = {
+        target = {
             DimensionDescriptor: 'dimensions',
             AttributeDescriptor: 'attributes',
             MeasureDescriptor: 'measures',
             GroupDimensionDescriptor: 'group_dimensions',
             }
         for c in values.pop('datastructurecomponents'):
-            setattr(dsd, _target[type(c)], c)
+            attr = target[type(c)]
+
+            if attr == 'group_dimensions':
+                # These are already added 'eagerly', by parse_group
+                continue
+
+            setattr(dsd, attr, c)
 
         assert len(values) == 0
         return dsd
 
-    def parse_grouping(self, elem):
+    def parse_componentlist(self, elem):
         attr = copy(elem.attrib)
+
+        # Determine the class
         try:
-            cls = attr.pop('id')
+            cls_name = attr.pop('id')
         except KeyError:
-            # SDMX-ML spec: "The id attribute is provided in this case for
-            # completeness. However, its value is fixed to DimensionDescriptor"
-            if QName(elem).localname == 'DimensionList':
-                cls = 'DimensionDescriptor'
-            else:  # pragma: no cover
-                raise
-        Grouping = getattr(pandasdmx.model, cls)
-        g = Grouping(**attr)
-        g.components.extend(chain(*self._parse(elem, unwrap=False).values()))
-        return g
+            # SDMX-ML spec for, e.g. DimensionList: "The id attribute is
+            # provided in this case for completeness. However, its value is
+            # fixed to 'DimensionDescriptor'."
+            cls_name = QName(elem).localname.replace('List', 'Descriptor')
+        finally:
+            ComponentListClass = getattr(pandasdmx.model, cls_name)
+
+        cl = ComponentListClass(
+            components=list(chain(*self._parse(elem, unwrap=False).values())),
+            **attr,
+        )
+
+        try:
+            cl.assign_order()
+        except AttributeError:
+            pass
+
+        return cl
 
     def parse_dimension(self, elem):
         values = self._parse(elem)
 
         # Object class: Dimension, MeasureDimension, or TimeDimension
-        cls = getattr(pandasdmx.model, QName(elem).localname)
+        DimensionClass = getattr(pandasdmx.model, QName(elem).localname)
 
-        attr = copy(elem.attrib)
+        args = copy(elem.attrib)
         try:
-            attr['order'] = int(attr.pop('position'))
+            args['order'] = int(args.pop('position'))
         except KeyError:
             pass
 
-        d = cls(
+        args.update(dict(
             concept_identity=values.pop('conceptidentity'),
             local_representation=values.pop('localrepresentation', None),
-            **attr,
-            )
+        ))
+        assert len(values) == 0, values
 
-        # Add to scope
-        self._current[(cls, d.id)] = d
-
-        assert len(values) == 0
-        return d
+        return DimensionClass(**args)
 
     def parse_groupdimension(self, elem):
         values = self._parse(elem)
@@ -1088,23 +1111,28 @@ class Reader(BaseReader):
         return d
 
     def parse_attribute(self, elem):
-        attrs = {k: elem.attrib[k] for k in ('id', 'urn')}
+        args = dict(id=elem.attrib['id'])
         try:
-            attrs['usage_status'] = UsageStatus[
-                                    elem.attrib['assignmentStatus'].lower()]
+            args['urn'] = elem.attrib['urn']
         except KeyError:
             pass
 
+        try:
+            us = elem.attrib['assignmentStatus']
+        except KeyError:
+            pass
+        else:
+            args['usage_status'] = UsageStatus[us.lower()]
+
         values = self._parse(elem)
-        da = DataAttribute(
+        args.update(dict(
             concept_identity=values.pop('conceptidentity'),
             local_representation=values.pop('localrepresentation', None),
             related_to=values.pop('attributerelationship'),
-            **attrs,
-            )
-
+        ))
         assert len(values) == 0
-        return da
+
+        return DataAttribute(**args)
 
     def parse_primarymeasure(self, elem):
         values = self._parse(elem)
@@ -1117,29 +1145,44 @@ class Reader(BaseReader):
         return pm
 
     def parse_attributerelationship(self, elem):
-        tags = set([el.tag for el in elem.iterchildren()])
-        tag = tags.pop()
-        assert len(tags) == 0
+        # Child element names
+        tags = set([QName(e).localname for e in elem.iterchildren()])
 
-        if tag == qname('str', 'Dimension'):
-            values = self._parse(elem, unwrap=False)
-            ar = DimensionRelationship(dimensions=values.pop('dimension'))
-            assert len(values) == 0
-        elif tag == qname('str', 'PrimaryMeasure'):
+        if 'PrimaryMeasure' not in tags:
             # Avoid recurive _parse() here, because it may contain a Ref to
             # a PrimaryMeasure that is not yet defined
-            ar = PrimaryMeasureRelationship()
-        elif tag == qname('str', 'None'):
-            ar = NoSpecifiedRelationship()
-        elif tag == qname('str', 'Group'):
-            # Reference to a GroupDimensionDescriptor
-            values = self._parse(elem)
-            ar = DimensionRelationship(group_key=values.pop('group'))
-            assert len(values) == 0
+            values = self._parse(elem, unwrap=False)
         else:
-            raise NotImplementedError(f'cannot parse {etree.tostring(elem)}')
+            values = []
 
-        return ar
+        args = {}
+        try:
+            tags.remove('AttachmentGroup')
+        except KeyError:
+            pass
+        else:
+            args['group_key'] = values.pop('attachmentgroup')[0]
+
+        tag = tags.pop()
+        assert len(tags) == 0, tags
+
+        cls = {
+            'Dimension': DimensionRelationship,
+            'PrimaryMeasure': PrimaryMeasureRelationship,
+            'None': NoSpecifiedRelationship,
+            'Group': DimensionRelationship,
+        }[tag]
+
+        if tag == 'Dimension':
+            args['dimensions'] = values.pop('dimension')
+        elif tag == 'Group':
+            # Reference to a GroupDimensionDescriptor
+            args['group_key'] = values.pop('group')[0]
+        elif tag == 'None':
+            values.pop('none')
+        assert len(values) == 0, values
+
+        return cls(**args)
 
     def parse_representation(self, elem):
         r = Representation()
@@ -1179,7 +1222,7 @@ class Reader(BaseReader):
         elem.attrib['role'] = 'allowable' if role == 'allowed' else role
         cc, values = self._named(ContentConstraint, elem)
         cc.content.update(wrap(values.pop('constraintattachment')))
-        cc.data_content_region = values.pop('cuberegion', None)
+        cc.data_content_region.append(values.pop('cuberegion', None))
         cc.data_content_keys = values.pop('datakeyset', None)
         assert len(values) == 0, values
         return cc
@@ -1238,6 +1281,6 @@ def indexables_from_dsd(dsd):
         yield dsd.measures
         yield from dsd.measures.components
 
-    if dsd.group_dimensions:
-        yield dsd.group_dimensions
-        yield from dsd.group_dimensions.components
+    for gdd in dsd.group_dimensions.values():
+        yield gdd
+        yield from gdd.components

@@ -11,6 +11,7 @@ from pandasdmx.model import (
     DataStructureDefinition,
     DataSet,
     Dimension,
+    DimensionComponent,
     # DimensionDescriptor,
     CategoryScheme,
     Codelist,
@@ -100,7 +101,10 @@ def write_dict(obj, *args, **kwargs):
             return DictLike(result)
     elif result_type == {str}:
         return pd.Series(result)
+    elif result_type == {DictLike}:
+        return result
     elif result_type == set():
+        # No results
         return pd.Series()
     else:
         raise ValueError(result_type)
@@ -179,6 +183,23 @@ def write_component(obj):
     :attr:`~.Component.concept_identity` is returned.
     """
     return str(obj.concept_identity.id)
+
+
+def write_contentconstraint(obj, **kwargs):
+    """Convert :class:`.ContentConstraint`."""
+    if len(obj.data_content_region) != 1:
+        raise NotImplementedError
+
+    return write(obj.data_content_region[0], **kwargs)
+
+
+def write_cuberegion(obj, **kwargs):
+    """Convert :class:`.CubeRegion`."""
+    result = DictLike()
+    for dim, memberselection in obj.member.items():
+        result[dim] = pd.Series([mv.value for mv in memberselection.values],
+                                name=dim.id)
+    return result
 
 
 def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
@@ -300,7 +321,7 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
     param = dict(dim=None, axis=0, freq=False)
     if isinstance(arg, str):
         param['dim'] = arg
-    elif isinstance(arg, Dimension):
+    elif isinstance(arg, DimensionComponent):
         param['dim'] = arg.id
     elif isinstance(arg, dict):
         extra_keys = set(arg.keys()) - set(param.keys())
@@ -440,7 +461,7 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
     result = pd.DataFrame.from_dict(items, orient='index', dtype=object) \
                .rename_axis(obj.id, axis='index')
 
-    if not result['parent'].str.len().any():
+    if len(result) and not result['parent'].str.len().any():
         # 'parent' column is empty; convert to pd.Series and rename
         result = result['name'].rename(obj.name.localized_default(locale))
 

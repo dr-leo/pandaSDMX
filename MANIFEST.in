@@ -1,2 +1,2 @@
-include README.rst
-include tests/data/**/*
+exclude .*
+exclude requirements.txt

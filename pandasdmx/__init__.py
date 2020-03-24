@@ -1,3 +1,5 @@
+import pkg_resources
+
 from pandasdmx.api import Request, read_sdmx, read_url
 from pandasdmx.source import add_source, list_sources
 from pandasdmx.util import Resource
@@ -15,7 +17,12 @@ __all__ = [
     'to_pandas',
     ]
 
-__version__ = '1.0.0-dev'
+
+try:
+    __version__ = pkg_resources.get_distribution('pandasdmx').version
+except Exception:
+    # Local copy or not installed with setuptools
+    __version__ = '999'
 
 
 #: Top-level logger for pandaSDMX.

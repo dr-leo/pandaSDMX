@@ -250,7 +250,7 @@ Let's return to explore the :class:`.ContentConstraint` that came with our metad
     exr_msg.constraint.EXR_CONSTRAINTS
 
     # Get the content 'region' included in the constraint
-    cr = exr_msg.constraint.EXR_CONSTRAINTS.data_content_region
+    cr = exr_msg.constraint.EXR_CONSTRAINTS.data_content_region[0]
 
     # Get the valid members for two dimensions
     c1 = sdmx.to_pandas(cr.member['CURRENCY'].values)
@@ -490,7 +490,11 @@ If given, the response from the web service is written to the specified file, *a
 
 .. ipython:: python
 
-    sdmx.read_sdmx('saved_message.xml')
+    # Use an example ('specimen') file from the pandaSDMX test suite
+    from pandasdmx.tests.data import specimen
+    # …with time-series exchange rate data from the EU Central Bank
+    with specimen('ECB_EXR/ng-ts.xml') as f:
+        sdmx.read_sdmx(f)
 
 
 Handle errors

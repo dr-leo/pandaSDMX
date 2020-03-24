@@ -1,3 +1,5 @@
+from setuptools_scm import get_version
+
 from pandasdmx.api import Request, read_sdmx, read_url
 from pandasdmx.source import add_source, list_sources
 from pandasdmx.util import Resource
@@ -15,7 +17,7 @@ __all__ = [
     'to_pandas',
     ]
 
-__version__ = '1.0.0-dev'
+__version__ = get_version(root='..', relative_to=__file__)
 
 
 #: Top-level logger for pandaSDMX.

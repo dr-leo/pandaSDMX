@@ -12,8 +12,13 @@ jobs:
   # Non-linux jobs; Python configured below
   - os: osx
     language: objective-c  # Only language provided
+    # Homebrew installs Python to this location
+    env: PATH=/usr/local/opt/python@3.8/bin:$PATH
   - os: windows
     language: shell
+    # Chocolatey installs Python to this location
+    env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+
 
 install:
 # Install Python & pip on macOS and Windows
@@ -21,15 +26,11 @@ install:
   case $TRAVIS_OS_NAME in
     osx)
       brew update --quiet
-      brew install python@3.8
-      export PATH="/usr/local/opt/python@3.8/bin:$PATH" ;;
+      brew install python@3.8 ;;
     windows)
-      choco install python3
-      curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-      python get-pip.py
-      ;;
+      choco install --no-progress python3
+      python -m pip install --upgrade pip ;;
   esac
-- which -a pip3
 # All platforms
 - pip3 install --upgrade pip
 - pip3 install --requirement requirements.txt

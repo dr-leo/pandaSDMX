@@ -1,20 +1,39 @@
 language: python
+os: linux
+dist: bionic
 
-os:
-- linux
-- osx
-- windows
-
-python:
-- 3.7.0  # earliest
-- 3.7
-- 3.8
-- 3.8-dev
+jobs:
+  include:
+  # Linux jobs
+  - python: 3.7.0  # earliest
+  - python: 3.7
+  - python: 3.8
+  - python: 3.8-dev
+  # Non-linux jobs; Python configured below
+  - os: osx
+    language: objective-c  # Only language provided
+  - os: windows
+    language: shell
 
 install:
-- pip install --upgrade pip
-- pip install --requirement requirements.txt
-- pip install --editable .[cache,docs,tests]
+# Install Python & pip on macOS and Windows
+- |-
+  case $TRAVIS_OS_NAME in
+    osx)
+      brew update --quiet
+      brew install python@3.8
+      export PATH="/usr/local/opt/python@3.8/bin:$PATH" ;;
+    windows)
+      choco install python3
+      curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+      python get-pip.py
+      ;;
+  esac
+- which -a pip3
+# All platforms
+- pip3 install --upgrade pip
+- pip3 install --requirement requirements.txt
+- pip3 install --editable .[cache,docs,tests]
 
 script: >
   pytest

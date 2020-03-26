@@ -1,8 +1,8 @@
 pandaSDMX: Statistical Data and Metadata eXchange
 =================================================
 
-.. image:: https://travis-ci.org/dr-leo/pandaSDMX.svg?branch=master
-   :target: https://travis-ci.org/dr-leo/pandaSDMX
+.. image:: https://travis-ci.com/dr-leo/pandaSDMX.svg?branch=master
+   :target: https://travis-ci.com/dr-leo/pandaSDMX
 .. image:: https://codecov.io/gh/dr-leo/pandaSDMX/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/dr-leo/pandaSDMX
 .. image:: https://readthedocs.org/projects/pandasdmx/badge/?version=latest

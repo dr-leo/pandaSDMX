@@ -1,15 +1,20 @@
 language: python
 
+os:
+- linux
+- osx
+- windows
+
 python:
-  - 3.7.0  # earliest
-  - 3.7
-  - 3.8
-  - 3.8-dev
+- 3.7.0  # earliest
+- 3.7
+- 3.8
+- 3.8-dev
 
 install:
-  - pip install --upgrade pip
-  - pip install --requirement requirements.txt
-  - pip install --editable .[cache,docs,tests]
+- pip install --upgrade pip
+- pip install --requirement requirements.txt
+- pip install --editable .[cache,docs,tests]
 
 script: >
   pytest
@@ -19,8 +24,8 @@ script: >
   --cov pandasdmx --cov-report term-missing
 
 after_success:
-  - coverage combine
-  - codecov
+- coverage combine
+- codecov
 
 notifications:
   email: false

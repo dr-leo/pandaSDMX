@@ -9,6 +9,7 @@ __pycache__
 .coverage
 .pytest_cache
 build
+coverage.xml
 dist
 doc/cache.sqlite
 doc/_build

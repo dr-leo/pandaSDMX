@@ -90,6 +90,57 @@ To display the categorised items, in our case the dataflow definitions contained
 .. versionadded:: 0.5
 
 
+.. _howto-rtype:
+
+Select data frame layouts returned by :func:`.to_pandas`
+--------------------------------------------------------
+
+:func:`.to_pandas` provides multiple ways to customize the type and layout of pandas objects returned for :class:`.DataMessage` input.
+One is the `datetime` argument; see :ref:`datetime`.
+The other is the `rtype` argument.
+
+To select the same behaviour as pandaSDMX 0.9, give `rtype` = 'compat'.
+This value is the default in pandaSDMX 1.0, but may change in a future version.
+With 'compat', the returned layout varies with the concept of “dimension at the observation level,” as follows:
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Dimension At Observation Level
+     - Return Type
+   * - :data:`.AllDimensions`
+     - - :class:`~pandas.Series`, without attributes, or
+       - :class:`~pandas.DataFrame`, with any attributes.
+   * - :class:`.TimeDimension`
+     - Same as `datetime` = :obj:`True` —a :class:`~pandas.Dataframe` with:
+
+       - index: :class:`~pandas.DatetimeIndex` or :class:`~pandas.PeriodIndex`, and
+       - columns: :class:`~pandas.MultiIndex` with all other dimensions.
+   * - Other :class:`.Dimension`
+     - :class:`~pandas.DataFrame` with:
+
+       - index: the dimension at observation level, and
+       - columns: :class:`~pandas.MultiIndex` with all other dimensions.
+
+Limitations:
+
+- pandaSDMX can only obey `rtype` = 'compat' when reading or converting an entire :class:`.DataMessage`; not a :class:`.DataSet`.
+  While the concept of “dimension at observation level” is *mentioned* in the IM in relation to data sets, it is not formally included as an attribute of any class, or with any default value.
+  (For instance, it is not included in the :class:`.DimensionDescriptor` of a :class:`.DataStructureDefinition`.)
+  It can *only* be determined from the header of a SDMX-ML or -JSON data message.
+- Except for :data:`.AllDimensions`, each row and column of the returned data frame contains multiple observations, so attributes cannot be included without ambiguity about which observation(s) have the attribute.
+  In these cases, attributes are omitted; use `rtype` = 'rows' to retrieve them.
+
+With the argument `rtype` = 'rows', or by setting :data:`.DEFAULT_RTYPE` to 'rows':
+
+.. ipython:: python
+
+   sdmx.writer.DEFAULT_RYPE = 'rows'
+
+…data are *always* returned with one row per observation.
+
+
 .. _howto-convert:
 
 Convert SDMX data to other formats

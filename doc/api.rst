@@ -82,6 +82,7 @@ SDMX-JSON
 
       .. autosummary::
          write_component
+         write_datamessage
          write_dataset
          write_dict
          write_dimensiondescriptor
@@ -92,10 +93,11 @@ SDMX-JSON
          write_serieskeys
          write_structuremessage
 
+.. autodata:: DEFAULT_RTYPE
+
 .. todo::
    Support selection of language for conversion of
    :class:`InternationalString <pandasdmx.model.InternationalString>`.
-
 
 
 ``remote``: Access SDMX REST web services

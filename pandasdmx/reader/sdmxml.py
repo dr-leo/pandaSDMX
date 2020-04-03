@@ -721,14 +721,18 @@ class Reader(BaseReader):
                                      structure=dsd)
             extra.append(dfd)
 
-            # Also store the dimension at observation
-            """Store the observation dimension for the current DataSet."""
+            # Store the observation at dimension level
             dim_at_obs = values.pop('dim_at_obs')
             if dim_at_obs == 'AllDimensions':
                 self._obs_dim = AllDimensions
             else:
                 # Retrieve or create the Dimension
-                self._obs_dim = dsd.dimensions.get(dim_at_obs, order=1e9)
+                args = dict(id=dim_at_obs, order=1e9)
+                if 'TimeSeries' in self._stack[0]:
+                    # {,StructureSpecific}TimeSeriesData message → the
+                    # dimension at observation level is a TimeDimension
+                    args['cls'] = TimeDimension
+                self._obs_dim = dsd.dimensions.get(**args)
 
         # Maybe return the DFD; see .initialize()
         return [Header(**values)] + extra

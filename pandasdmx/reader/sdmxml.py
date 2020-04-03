@@ -752,7 +752,11 @@ class Reader(BaseReader):
         self._add_to_index(indexables_from_dsd(dsd))
         self._current[(DataStructureDefinition, None)] = dsd
 
-        ds = DataSet(structured_by=dsd)
+        # DataSet class, e.g. GenericDataSet for root XML tag 'GenericData'
+        DataSetClass = getattr(pandasdmx.model, f'{self._stack[0]}Set')
+
+        # Create the object
+        ds = DataSetClass(structured_by=dsd)
 
         values = self._parse(elem, unwrap=False)
 

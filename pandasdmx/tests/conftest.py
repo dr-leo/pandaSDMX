@@ -1,6 +1,8 @@
 import logging
 
-import pandasdmx
+import pandasdmx as sdmx
 
 
-pandasdmx.logger.setLevel(logging.INFO)
+sdmx.logger.setLevel(logging.INFO)
+
+sdmx.writer.DEFAULT_RTYPE = 'rows'

@@ -7,6 +7,7 @@ from pandasdmx import model
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AgencyScheme,
+    AllDimensions,
     DataAttribute,
     DataflowDefinition,
     DataStructureDefinition,
@@ -149,8 +150,11 @@ def write_datamessage(obj, *args, rtype=DEFAULT_RTYPE, **kwargs):
     # Pass the message's DSD to assist datetime handling
     kwargs.setdefault('dsd', obj.dataflow.structure)
 
-    # Pass the return type
+    # Pass the return type and associated information
     kwargs['_rtype'] = rtype
+    if rtype == 'compat':
+        kwargs['_message_class'] = obj.__class__
+        kwargs['_observation_dimension'] = obj.observation_dimension
 
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
@@ -295,17 +299,23 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     :class:`pandas.Series` with :class:`pandas.MultiIndex`
         Otherwise.
     """
+    # If called directly on a DataSet (rather than a parent DataMessage),
+    # cannot determine the "dimension at observation level"
+    rtype = kwargs.setdefault('_rtype', 'rows')
+
     # Validate attributes argument
-    if attributes is None or not attributes:
+    attributes = attributes or ''
+    try:
+        attributes = attributes.lower()
+    except AttributeError:
+        raise TypeError("'attributes' argument must be str")
+
+    if rtype == 'compat' and \
+            kwargs['_observation_dimension'] is not AllDimensions:
+        # Cannot return attributes in this case
         attributes = ''
-    else:
-        try:
-            attributes = attributes.lower()
-        except AttributeError:
-            raise TypeError("'attributes' argument must be of type str.")
-        if set(attributes) - {'o', 's', 'g', 'd'}:
-            raise ValueError(
-                "'attributes' must only contain 'o', 's', 'd' and/or 'g'.")
+    elif set(attributes) - {'o', 's', 'g', 'd'}:
+        raise ValueError(f"attributes must be in 'osgd'; got {attributes}")
 
     # Iterate on observations
     result = {}
@@ -333,7 +343,52 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
             if not attributes:
                 result = result['value']
 
+    # Reshape for compatibility with v0.9
+    result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)
+    # Handle the datetime argument, if any
     return _maybe_convert_datetime(result, datetime, obj=obj, **kwargs)
+
+
+def _dataset_compat(df, datetime, kwargs):
+    """Helper for :meth:`.write_dataset` 0.9 compatibility."""
+    rtype = kwargs.pop('_rtype')
+    if rtype != 'compat':
+        return df, datetime, kwargs  # Do nothing
+
+    # Remove compatibility arguments from kwargs
+    kwargs.pop('_message_class')
+    obs_dim = kwargs.pop('_observation_dimension')
+
+    if isinstance(obs_dim, list) and len(obs_dim) == 1:
+        # Unwrap a length-1 list
+        obs_dim = obs_dim[0]
+
+    if obs_dim in (AllDimensions, None):
+        pass  # Do nothing
+    elif isinstance(obs_dim, TimeDimension):
+        # Don't modify *df*; only change arguments so that
+        # _maybe_convert_datetime performs the desired changes
+        if datetime is False or datetime is True:
+            # Either datetime is not given, or True without specifying a
+            # dimension; overwrite
+            datetime = obs_dim
+        elif isinstance(datetime, dict):
+            # Dict argument; ensure the 'dim' key is the same as obs_dim
+            if datetime.setdefault('dim', obs_dim) != obs_dim:
+                msg = (f"datetime={datetime} conflicts with rtype='compat' and"
+                       f" {obs_dim} at observation level")
+                raise ValueError(msg)
+        else:
+            assert datetime == obs_dim, (datetime, obs_dim)
+    elif isinstance(obs_dim, DimensionComponent):
+        # Pivot all levels except the observation dimension
+        df = df.unstack([n for n in df.index.names if n != obs_dim.id])
+    else:
+        # E.g. some JSON messages have two dimensions at the observation level;
+        # behaviour is unspecified here, so do nothing.
+        pass
+
+    return df, datetime, kwargs
 
 
 def _maybe_convert_datetime(df, arg, obj, dsd=None):

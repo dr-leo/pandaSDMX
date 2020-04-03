@@ -26,6 +26,11 @@ from pandasdmx.model import (
 from pandasdmx.util import DictLike
 
 
+#: Default return type for :func:`write_dataset` and similar methods. Either
+#: 'compat' or 'rows'. See the ref:`HOWTO <howto-rtype>`.
+DEFAULT_RTYPE = 'compat'
+
+
 # Class → common write_*() methods
 _alias = {
     DictLike: dict,
@@ -117,10 +122,30 @@ def write_set(obj, *args, **kwargs):
 
 
 # Functions for message classes
-def write_datamessage(obj, *args, **kwargs):
-    """Convert :class:`.DataMessage`."""
+def write_datamessage(obj, *args, rtype=DEFAULT_RTYPE, **kwargs):
+    """Convert :class:`.DataMessage`.
+
+    The data set(s) within the message are converted to pandas objects.
+
+    Parameters
+    ----------
+    rtype : 'compat' or 'rows', optional
+        Data type to return. See the :ref:`HOWTO <howto-rtype>`.
+    kwargs :
+        Passed to :meth:`write_dataset` for each data set.
+
+    Returns
+    -------
+    :class:`pandas.Series` or :class:`pandas.DataFrame`
+        if `obj` has only one data set.
+    list of (:class:`pandas.Series` or :class:`pandas.DataFrame`)
+        if `obj` has more than one data set.
+    """
     # Pass the message's DSD to assist datetime handling
     kwargs.setdefault('dsd', obj.dataflow.structure)
+
+    # Pass the return type
+    kwargs['_rtype'] = rtype
 
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
@@ -228,9 +253,9 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
         Datatype for values. If None, do not return the values of a series.
         In this case, `attributes` must not be an empty string so that some
         attribute is returned.
-    constraint : :class:`~.ContentConstraint` , optional
+    constraint : .ContentConstraint, optional
         If given, only Observations included by the *constraint* are returned.
-    datetime : bool or str or or :class:`~.Dimension` or dict, optional
+    datetime : bool or str or or .Dimension or dict, optional
         If given, return a DataFrame with a :class:`~pandas.DatetimeIndex`
         or :class:`~pandas.PeriodIndex` as the index and all other dimensions
         as columns. Valid `datetime` values include:
@@ -255,10 +280,15 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
 
     Returns
     -------
-    :class:`pandas.Series` or :class:`pandas.DataFrame`
-        If `attributes` is not ``''``, a :class:`pandas.DataFrame` is
-        returned with ``value`` as the first column, and additional
-        columns for each attribute.
+    :class:`pandas.DataFrame`
+        - if `attributes` is not ``''``, a data frame with one row per
+          Observation, ``value`` as the first column, and additional columns
+          for each attribute;
+        - if `datetime` is given, various layouts as described above; or
+        - if `_rtype` (passed from :func:`write_datamessage`) is 'compat',
+          various layouts as described in the :ref:`HOWTO <howto-rtype>`.
+    :class:`pandas.Series` with :class:`pandas.MultiIndex`
+        Otherwise.
     """
     # Validate attributes argument
     if attributes is None or not attributes:

@@ -3,6 +3,7 @@ from itertools import chain
 import numpy as np
 import pandas as pd
 
+from pandasdmx import model
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AgencyScheme,
@@ -32,7 +33,7 @@ DEFAULT_RTYPE = 'compat'
 
 
 # Class → common write_*() methods
-_alias = {
+_ALIAS = {
     DictLike: dict,
     AgencyScheme: ItemScheme,
     CategoryScheme: ItemScheme,
@@ -42,6 +43,10 @@ _alias = {
     DataStructureDefinition: NameableArtefact,
     Dimension: Component,
     TimeDimension: Component,
+    model.GenericDataSet: DataSet,
+    model.GenericTimeSeriesDataSet: DataSet,
+    model.StructureSpecificDataSet: DataSet,
+    model.StructureSpecificTimeSeriesDataSet: DataSet,
 }
 
 
@@ -54,7 +59,7 @@ def write(obj, *args, **kwargs):
     behaviour, including accepted *args* and *kwargs*.
     """
     cls = obj.__class__
-    function = 'write_' + _alias.get(cls, cls).__name__.lower()
+    function = 'write_' + _ALIAS.get(cls, cls).__name__.lower()
     return globals()[function](obj, *args, **kwargs)
 
 

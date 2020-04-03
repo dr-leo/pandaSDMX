@@ -1485,6 +1485,22 @@ class DataSet(AnnotableArtefact):
             return ActionType[value]
 
 
+class StructureSpecificDataSet(DataSet):
+    """SDMX-IM StructureSpecificDataSet."""
+
+
+class GenericDataSet(DataSet):
+    """SDMX-IM GenericDataSet."""
+
+
+class GenericTimeSeriesDataSet(DataSet):
+    """SDMX-IM GenericTimeSeriesDataSet."""
+
+
+class StructureSpecificTimeSeriesDataSet(DataSet):
+    """SDMX-IM StructureSpecificTimeSeriesDataSet."""
+
+
 class _AllDimensions:
     pass
 

@@ -128,7 +128,7 @@ def write_set(obj, *args, **kwargs):
 
 
 # Functions for message classes
-def write_datamessage(obj, *args, rtype=DEFAULT_RTYPE, **kwargs):
+def write_datamessage(obj, *args, rtype=None, **kwargs):
     """Convert :class:`.DataMessage`.
 
     The data set(s) within the message are converted to pandas objects.
@@ -136,7 +136,8 @@ def write_datamessage(obj, *args, rtype=DEFAULT_RTYPE, **kwargs):
     Parameters
     ----------
     rtype : 'compat' or 'rows', optional
-        Data type to return. See the :ref:`HOWTO <howto-rtype>`.
+        Data type to return; default :data:`.DEFAULT_RTYPE`. See the
+        :ref:`HOWTO <howto-rtype>`.
     kwargs :
         Passed to :meth:`write_dataset` for each data set.
 
@@ -151,8 +152,8 @@ def write_datamessage(obj, *args, rtype=DEFAULT_RTYPE, **kwargs):
     kwargs.setdefault('dsd', obj.dataflow.structure)
 
     # Pass the return type and associated information
-    kwargs['_rtype'] = rtype
-    if rtype == 'compat':
+    kwargs['_rtype'] = rtype or DEFAULT_RTYPE
+    if kwargs['_rtype'] == 'compat':
         kwargs['_message_class'] = obj.__class__
         kwargs['_observation_dimension'] = obj.observation_dimension
 

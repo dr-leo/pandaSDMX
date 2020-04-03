@@ -1,25 +1,15 @@
 import pandas as pd
-import pytest
 
 import pandasdmx as sdmx
 
 from .data import specimen
 
 
-@pytest.fixture(autouse=True)
-def compat_rtype():
-    """Ensure DEFAULT_RTYPE is 'compat' for all tests in this file."""
-    tmp = sdmx.writer.DEFAULT_RTYPE
-    sdmx.writer.DEFAULT_RTYPE = 'compat'
-    yield
-    sdmx.writer.DEFAULT_TYPE = tmp
-
-
 def pd_obj(name):
     """Return the specimen at *name* read, then converted to pandas."""
     with specimen(name) as f:
         data_msg = sdmx.read_sdmx(f)
-    return sdmx.to_pandas(data_msg)
+    return sdmx.to_pandas(data_msg, rtype='compat')
 
 
 def test_xml():

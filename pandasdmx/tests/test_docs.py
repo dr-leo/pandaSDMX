@@ -13,7 +13,7 @@ import pytest
 
 import pandasdmx as sdmx
 from pandasdmx import Request
-from pandasdmx.model import DataSet
+from pandasdmx.model import GenericDataSet
 from pandasdmx.util import DictLike
 
 from . import assert_pd_equal
@@ -179,7 +179,7 @@ def test_doc_usage_data():
     #                                  'endPeriod': '2016-12-31'})
     data = data_response.data[0]
 
-    assert type(data) is DataSet
+    assert type(data) is GenericDataSet
 
     # This message doesn't explicitly specify the remaining dimensions; unless
     # they are inferred from the SeriesKeys, then the DimensionDescriptor is

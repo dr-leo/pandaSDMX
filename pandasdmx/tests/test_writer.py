@@ -1,8 +1,4 @@
 """Tests for pandasdmx/writer.py."""
-# TODO test all possible values of Writer.write() arguments
-# - attribute
-# …for each type of input argument.
-
 import pandas as pd
 import pytest
 from pytest import raises

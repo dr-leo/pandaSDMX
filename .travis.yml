@@ -38,7 +38,7 @@ install:
 
 script: >
   pytest
-  -rfE
+  -ra
   --verbose
   --remote-data
   --cov pandasdmx --cov-report term-missing

@@ -162,6 +162,7 @@ class BaseModel(pydantic.BaseModel):
 
 
 def get_class_hint(obj, attr):
+    """Return the type hint for attribute *attr* on *obj*."""
     klass = get_type_hints(obj.__class__)[attr].__args__[0]
     if getattr(klass, '__origin__', None) is Union:
         klass = klass.__args__[0]

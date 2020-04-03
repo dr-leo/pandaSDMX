@@ -558,11 +558,19 @@ class ComponentList(IdentifiableArtefact):
         """Append *value* to :attr:`components`."""
         self.components.append(value)
 
-    def get(self, id, **kwargs):
+    def get(self, id, cls=None, **kwargs):
         """Return or create the component with the given *id*.
 
-        The *kwargs* are passed to the constructor of Component(), or a
-        subclass if 'components' is overridden in a subclass of ComponentList.
+        Parameters
+        ----------
+        id : str
+            Component ID.
+        cls : type, optional
+            Hint for the class of a new object.
+        kwargs
+            Passed to the constructor of :class:`.Component`, or a Component
+            subclass if :attr:`.components` is overridden in a subclass of
+            ComponentList.
         """
         # TODO use an index to speed up
         # TODO don't return missing items or add an option to avoid this
@@ -572,14 +580,15 @@ class ComponentList(IdentifiableArtefact):
             if c.id == id:
                 return c
 
-        # No match. Chose an appropriate class specified for the attribute in
-        # the ComponentList subclass.
-        try:
-            klass = self._default_type
-        except AttributeError:
-            klass = get_class_hint(self, 'components')
+        # No match
 
-        component = klass(id=id, **kwargs)
+        # Create a new object of a class:
+        # 1. Given by the cls argument,
+        # 2. Specified by a subclass' _default_type attribute, or
+        # 3. Hinted for a subclass' components attribute.
+        cls = cls or getattr(self, '_default_type',
+                             get_class_hint(self, 'components'))
+        component = cls(id=id, **kwargs)
 
         if 'order' not in kwargs:
             # For automatically created dimensions, give a serial value to the

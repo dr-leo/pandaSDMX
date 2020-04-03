@@ -24,6 +24,7 @@ from pandasdmx.model import (
     DataflowDefinition,
     DataStructureDefinition,
     Dimension,
+    DimensionComponent,
     InternationalString,
     Item,
     ProvisionAgreement,
@@ -82,8 +83,6 @@ class Message(BaseModel):
     class Config:
         # for .response
         arbitrary_types_allowed = True
-        # NB this is required to prevent “unhashable type: 'dict'” in pydantic
-        validate_assignment = False
 
     #: :class:`Header` instance.
     header: Header = Header()
@@ -152,11 +151,9 @@ class DataMessage(Message):
     data: List[DataSet] = []
     #: :class:`.DataflowDefinition` that contains the data.
     dataflow: DataflowDefinition = DataflowDefinition()
-
-    # TODO infer the observation dimension from the DSD, e.g.
-    # - If a *TimeSeriesDataSet, it's the TimeDimension,
-    # - etc.
-    observation_dimension: Union[_AllDimensions, List[Dimension]] = None
+    #: The "dimension at observation level".
+    observation_dimension: Union[_AllDimensions, DimensionComponent,
+                                 List[DimensionComponent]] = None
 
     # Convenience access
     @property

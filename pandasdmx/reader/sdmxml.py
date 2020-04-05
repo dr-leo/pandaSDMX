@@ -854,14 +854,14 @@ class Reader(BaseReader):
             key = Key(**{dim: od['value']}, dsd=dsd)
 
         if len(values):
-            value = values.pop('obsvalue')
+            value = values.pop('obsvalue', None)
         else:
             # StructureSpecificData message—all information stored as XML
             # attributes of the <Observation>.
             attr = copy(elem.attrib)
 
             # Value of the observation
-            value = attr.pop('OBS_VALUE')
+            value = attr.pop('OBS_VALUE', None)
 
             # Use the DSD to separate dimensions and attributes
             key = Key(**attr, dsd=dsd)

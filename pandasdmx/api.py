@@ -59,7 +59,20 @@ class Request:
 
     def __getattr__(self, name):
         """Convenience methods."""
-        return partial(self.get, Resource[name])
+        try:
+            # Provide resource_type as a positional argument, so that the
+            # first positional argument to the convenience method is treated as
+            # resource_id
+            func = partial(self.get, Resource[name])
+        except KeyError:
+            raise AttributeError
+        else:
+            # Modify the docstring to explain the argument fixed by the
+            # convenience method
+            func.__doc__ = self.get.__doc__.replace(
+                '.\n',
+                f' with resource_type={repr(name)}.\n', 1)
+            return func
 
     def __dir__(self):
         """Include convenience methods in dir()."""

@@ -37,6 +37,14 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
 
         assert all(len(df) == count[id] for id, df in cls_as_dfs.items())
 
+    def test_dsd_urn(self, msg):
+        """https://github.com/dr-leo/pandaSDMX/issue/154."""
+        expected = ('urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure='
+                    'ESTAT:DSD_apro_mk_cola(1.0)')
+
+        # URN is parsed
+        assert msg.structure.DSD_apro_mk_cola.urn == expected
+
 
 class TestDSDCommon(MessageTest):
     path = MessageTest.path / 'SGR'

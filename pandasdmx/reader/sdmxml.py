@@ -466,6 +466,9 @@ class Reader(BaseReader):
             cls = get_class(match['package'], match['class'])
             id = match['id']
 
+            # Re-add the URN to the kwargs
+            kwargs['urn'] = urn
+
         key = (cls.__name__, id) if isclass(cls) else (cls, id)
 
         # Maybe create a new object

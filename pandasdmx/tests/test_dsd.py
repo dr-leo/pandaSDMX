@@ -37,7 +37,7 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
 
         assert all(len(df) == count[id] for id, df in cls_as_dfs.items())
 
-    def test_dsd_urn(self, msg):
+    def test_urn(self, msg):
         """https://github.com/dr-leo/pandaSDMX/issue/154."""
         expected = ('urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure='
                     'ESTAT:DSD_apro_mk_cola(1.0)')
@@ -68,6 +68,17 @@ class TestDSDCommon(MessageTest):
         assert isinstance(a, model.Annotation)
         assert a.text.en.startswith('It is')
         assert a.type == 'NOTE'
+
+
+class TestECB_EXR1(MessageTest):
+    path = MessageTest.path / 'ECB_EXR' / '1'
+    filename = 'structure.xml'
+
+    def test_uri(self, msg):
+        """https://github.com/dr-leo/pandaSDMX/issue/154."""
+        expected = 'https://www.ecb.europa.eu/vocabulary/stats/exr/1'
+        # URI is parsed
+        assert msg.structure['ECB_EXR1'].uri == expected
 
 
 def test_exr_constraints():

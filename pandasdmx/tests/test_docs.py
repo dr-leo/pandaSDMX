@@ -20,6 +20,41 @@ from . import assert_pd_equal
 from .data import specimen
 
 
+@pytest.mark.remotedata
+def test_doc_example():
+    """Code from example.rst."""
+    import pandasdmx as sdmx
+    estat = sdmx.Request('ESTAT')
+
+    metadata = estat.datastructure('DSD_une_rt_a')
+
+    resp = estat.data(
+        'une_rt_a',
+        key={'GEO': 'EL+ES+IE'},
+        params={'startPeriod': '2007'},
+        )
+
+    sdmx.to_pandas(resp) \
+        .xs('TOTAL', level='AGE', drop_level=False)
+
+    # Further checks per https://github.com/dr-leo/pandaSDMX/issues/157
+
+    # DimensionDescriptor for the structure message
+    dd1 = metadata.structure.DSD_une_rt_a.dimensions
+
+    # DimensionDescriptor retrieved whilst validating the data message
+    dd2 = resp.data[0].structured_by.dimensions
+
+    # DimensionDescriptors have same ID, components and order
+    assert dd1 == dd2
+
+    # One SeriesKey from the data message
+    sk = list(resp.data[0].series.keys())[0]
+
+    # Key values have same order as in the DSD
+    assert dd1.order_key(sk) == sk
+
+
 @pytest.mark.remote_data
 def test_doc_index1():
     """First code example in index.rst."""

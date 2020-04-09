@@ -478,12 +478,13 @@ class Reader(BaseReader):
             elif not issubclass(cls, MaintainableArtefact):
                 raise TypeError(f'{cls} is not maintainable')
 
-            # Create a new object. A reference to a MaintainableArtefact that
-            # is not (yet) defined in the current message is, necessarily,
-            # external
-            assert kwargs.pop('is_external_reference', True)
-            self._index[key] = cls(id=id, is_external_reference=True,
-                                   **kwargs)
+            # A reference to a MaintainableArtefact that is not (yet) defined
+            # in the current message is, necessarily, external, so finding
+            # is_external_reference=False in the kwargs is a fatal error here.
+            assert kwargs.setdefault('is_external_reference', True)
+
+            # Create a new object and add to index
+            self._index[key] = cls(id=id, **kwargs)
 
         # Existing or newly-created object
         return self._index[key]

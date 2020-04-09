@@ -1245,20 +1245,28 @@ class Key(BaseModel):
                 dd = None
 
         # Convert keyword arguments to either KeyValue or AttributeValue
-        for id, value in kwargs.items():
+        values = []
+        for order, (id, value) in enumerate(kwargs.items()):
             args = dict(id=id, value=value)
 
             if dsd and id in dsd.attributes:
                 # Reference a DataAttribute from the AttributeDescriptor
                 da = dsd.attributes.get(id)
+                # Store the attribute value
                 self.attrib[da.id] = AttributeValue(**args, value_for=da)
                 continue
 
             if dd:
                 # Reference a Dimension from the DimensionDescriptor
                 args['value_for'] = dd.get(id)
+                # Retrieve the order
+                order = args['value_for'].order
 
-            self.values[id] = KeyValue(**args)
+            # Store a KeyValue, to be sorted later
+            values.append((order, KeyValue(**args)))
+
+        # Sort the values according to *order*
+        self.values.update({kv.id: kv for _, kv in sorted(values)})
 
     def __len__(self):
         """The length of the Key is the number of KeyValues it contains."""

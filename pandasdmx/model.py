@@ -608,6 +608,11 @@ class ComponentList(IdentifiableArtefact):
         return '<{}: {}>'.format(self.__class__.__name__,
                                  '; '.join(map(repr, self.components)))
 
+    def __eq__(self, other):
+        """ID equal and same components occur in same order."""
+        return super().__eq__(other) and \
+            all(s == o for s, o in zip(self.components, other.components))
+
 
 # 4.3: Codelist
 

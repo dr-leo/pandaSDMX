@@ -103,7 +103,7 @@ class Request:
                    .series \
                    .keys()
 
-    def _make_key(self, resource_type, resource_id, key, dsd=None):
+    def _make_key(self, resource_type, resource_id, key, dsd):
         """Validate *key* if possible.
 
         If key is a dict, validate items against the DSD and construct the key
@@ -111,7 +111,7 @@ class Request:
         be a str confirming to the REST API spec.
         """
         if not (resource_type == Resource.data and isinstance(key, dict)):
-            return key
+            return key, dsd
 
         # Select validation method based on agency capabilities
         if dsd:
@@ -136,9 +136,9 @@ class Request:
         # Make a ContentConstraint from the key
         cc = dsd.make_constraint(key)
 
-        return cc.to_query_string(dsd)
+        return cc.to_query_string(dsd), dsd
 
-    def _request_from_args(self, **kwargs):
+    def _request_from_args(self, kwargs):
         """Validate arguments and prepare pieces for a request."""
         parameters = kwargs.pop('params', {})
         headers = kwargs.pop('headers', {})
@@ -200,9 +200,16 @@ class Request:
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
-        dsd = kwargs.pop('dsd', None)
-        if kwargs.pop('validate', True):
-            key = self._make_key(resource_type, resource_id, key, dsd)
+        dsd = kwargs.get('dsd', None)
+        validate = kwargs.pop('validate', True)
+
+        if len(kwargs):
+            raise ValueError(f'unrecognized arguments: {kwargs!r}')
+
+        if validate:
+            # Make the key, and retain the DSD (if any) for use in parsing
+            key, dsd = self._make_key(resource_type, resource_id, key, dsd)
+            kwargs['dsd'] = dsd
 
         url_parts.append(key)
 
@@ -221,13 +228,11 @@ class Request:
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
-        if len(kwargs):
-            raise ValueError(f'unrecognized arguments: {kwargs!r}')
-
         return requests.Request('get', url, params=parameters,
                                 headers=headers)
 
-    def _request_from_url(self, url, **kwargs):
+    def _request_from_url(self, kwargs):
+        url = kwargs.pop('url')
         parameters = kwargs.pop('params', {})
         headers = kwargs.pop('headers', {})
 
@@ -362,13 +367,15 @@ class Request:
         if self.source:
             self.source.modify_request_args(kwargs)
 
+        # Handle arguments
         if 'url' in kwargs:
-            req = self._request_from_url(**kwargs)
+            req = self._request_from_url(kwargs)
         else:
-            req = self._request_from_args(
+            kwargs.update(dict(
                 resource_type=resource_type,
                 resource_id=resource_id,
-                **kwargs)
+            ))
+            req = self._request_from_args(kwargs)
 
         req = self.session.prepare_request(req)
 
@@ -420,8 +427,9 @@ class Request:
         # Instantiate reader
         reader = Reader()
 
-        # Parse the message
-        msg = reader.read_message(response_content)
+        # Parse the message, using any provided or auto-queried DSD
+        msg = reader.read_message(response_content,
+                                  dsd=kwargs.get('dsd', None))
 
         # Store the HTTP response with the message
         msg.response = response

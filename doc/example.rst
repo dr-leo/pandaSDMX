@@ -68,4 +68,4 @@ Select some data of interest: show aggregate unemployment rates across ages ('TO
 
 .. ipython:: python
 
-    data.loc[('PC_ACT', 'TOTAL', 'T')]
+    data.loc[('A', 'TOTAL', 'PC_ACT', 'T')]

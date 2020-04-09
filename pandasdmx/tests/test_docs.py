@@ -28,14 +28,19 @@ def test_doc_example():
 
     metadata = estat.datastructure('DSD_une_rt_a')
 
+    for cl in 'CL_AGE', 'CL_UNIT':
+        print(sdmx.to_pandas(metadata.codelist[cl]))
+
     resp = estat.data(
         'une_rt_a',
         key={'GEO': 'EL+ES+IE'},
         params={'startPeriod': '2007'},
         )
 
-    sdmx.to_pandas(resp) \
-        .xs('TOTAL', level='AGE', drop_level=False)
+    data = sdmx.to_pandas(resp) \
+               .xs('TOTAL', level='AGE', drop_level=False)
+
+    data.loc[('A', 'TOTAL', 'PC_ACT', 'T')]
 
     # Further checks per https://github.com/dr-leo/pandaSDMX/issues/157
 
@@ -90,32 +95,6 @@ def test_doc_index1():
 
     # Same effect
     assert_pd_equal(s.codelist['CL_GEO'].sort_index().head(), expected)
-
-
-@pytest.mark.remote_data
-def test_doc_index2():
-    """Second code example in index.rst."""
-    estat = Request('ESTAT')
-
-    resp = estat.data('une_rt_a', key={'GEO': 'EL+ES+IE'},
-                      params={'startPeriod': '2007', 'endPeriod': '2018'})
-
-    # Convert to a pd.DataFrame and use stock pandas methods on the index to
-    # select a subset
-    data = sdmx.to_pandas(resp.data[0]) \
-               .xs('TOTAL', level='AGE', drop_level=False)
-
-    # Explore the data set. First, show dimension names
-    data.index.names
-
-    # and corresponding dimension values
-    data.index.levels
-
-    # Show aggregate unemployment rates across ages and sexes as
-    # percentage of active population
-    idx = pd.IndexSlice
-    subset = data[idx['PC_ACT', 'TOTAL', 'T']]
-    assert len(subset) == 3 * 12  # GEO, TIME_PERIOD
 
 
 @pytest.mark.remote_data

@@ -1,0 +1,1893 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mes:Structure xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mes="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message" xmlns:str="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure" xmlns:com="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common" xsi:schemaLocation="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message https://registry.sdmx.org/schemas/v2_1/SDMXMessage.xsd">
+  <mes:Header>
+    <mes:ID>IREF386404</mes:ID>
+    <mes:Test>false</mes:Test>
+    <mes:Prepared>2020-04-17T15:50:42Z</mes:Prepared>
+    <mes:Sender id="IMF"/>
+    <mes:Receiver id="not_supplied"/>
+  </mes:Header>
+  <mes:Structures>
+    <str:Dataflows>
+      <str:Dataflow urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=IMF:SPI(1.0)" isExternalReference="false" agencyID="IMF" id="SPI" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Stock Market: Share Price Index</com:Name>
+        <str:Structure>
+          <Ref package="datastructure" agencyID="IMF" id="ECOFIN_DSD" version="1.0" class="DataStructure"/>
+        </str:Structure>
+      </str:Dataflow>
+    </str:Dataflows>
+    <str:Codelists>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_DATADOMAIN(1.0)" isExternalReference="false" agencyID="IMF" id="CL_DATADOMAIN" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Data Domain</com:Name>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=IMF:CL_DATADOMAIN(1.0).SPI" id="SPI">
+          <com:Name xml:lang="en">Share price index</com:Name>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_INDICATOR(1.0)" isExternalReference="false" agencyID="IMF" id="CL_INDICATOR" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Economic Indicator</com:Name>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=IMF:CL_INDICATOR(1.0).FPE_IX" id="FPE_IX">
+          <com:Name xml:lang="en">Financial Market Prices, Equities, Index</com:Name>
+          <com:Description xml:lang="en">&lt;&lt;SDDSComponent:Share Price Index&gt;&gt;</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=IMF:CL_INDICATOR(1.0).FPE_EOP_IX" id="FPE_EOP_IX">
+          <com:Name xml:lang="en">Financial Market Prices, Equities, End of Period, Index</com:Name>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_OBS_STATUS(1.0)" isExternalReference="false" agencyID="IMF" id="CL_OBS_STATUS" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Observation Status</com:Name>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_REF_AREA(1.0)" isExternalReference="false" agencyID="IMF" id="CL_REF_AREA" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Reference Area</com:Name>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=IMF:CL_REF_AREA(1.0)._Z" id="_Z">
+          <com:Name xml:lang="en">Not applicable</com:Name>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=IMF:CL_UNIT_MULT(1.0)" isExternalReference="false" agencyID="IMF" id="CL_UNIT_MULT" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Unit Multiplier</com:Name>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_AGE(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_AGE/1.0" isExternalReference="false" agencyID="SDMX" id="CL_AGE" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Age</com:Name>
+        <com:Description xml:lang="en">This code list provides a set of building blocks to be used for creating simple or complex code identifiers relating to the concept of "age" as defined in the Cross-Domain Concepts and the Metadata Common Vocabulary, i.e. the length of time that a person has lived or a thing has existed. This code list was formally adopted on 7 February 2014. More information about and supporting material for this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_CONF_STATUS(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_CONF_STATUS/1.0" isExternalReference="false" agencyID="SDMX" id="CL_CONF_STATUS" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Confidentiality Status</com:Name>
+        <com:Description xml:lang="en">This code list provides coded information about the sensitivity and confidentiality status of the data. This code list was first released in 2009. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_DECIMALS(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_DECIMALS/1.0" isExternalReference="false" agencyID="SDMX" id="CL_DECIMALS" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Decimals</com:Name>
+        <com:Description xml:lang="en">This code list provides a list of values showing the number of decimal digits used in the data. This code list was released in 2009. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_FREQ(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_FREQ/1.0" isExternalReference="false" agencyID="SDMX" id="CL_FREQ" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Frequency</com:Name>
+        <com:Description xml:lang="en">This code list provides a list of values indicating the "frequency" of the data (e.g. monthly) and, thus, indirectly, also implying the type of "time reference" that could be used for identifying the data with respect time. It was first released in 2009. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_FREQ(1.0).A" id="A">
+          <com:Name xml:lang="en">Annual</com:Name>
+          <com:Description xml:lang="en">It is typically used for annual data. This can also serve cases of multi-annual data (data that appear once every two, three or, possibly, five years).  Descriptive information on the multiannual characteristics (e.g. frequency of the series in practice and other methodological information can be provided at the dataflow level, as long as these characteristics are applicable for the entire dataflow).</com:Description>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_OBS_STATUS(1.1)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_OBS_STATUS/1.1" isExternalReference="false" agencyID="SDMX" id="CL_OBS_STATUS" isFinal="true" version="1.1">
+        <com:Name xml:lang="en">Observation Status</com:Name>
+        <com:Description xml:lang="en">This code list provides coded information on 1) the quality of a value or 2) unusual or missing values. It was formally adopted on 20 September 2013. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_TIME_FORMAT(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_TIME_FORMAT/1.0" isExternalReference="false" agencyID="SDMX" id="CL_TIME_FORMAT" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Time Format</com:Name>
+        <com:Description xml:lang="en">This code list provides coded information (based on the ISO 8601 standard) indicating the type of time references used in the data. It was released in 2009. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P1D" id="P1D">
+          <com:Name xml:lang="en">Daily (or Business)</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P1M" id="P1M">
+          <com:Name xml:lang="en">Monthly</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P1Y" id="P1Y">
+          <com:Name xml:lang="en">Annual</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P3M" id="P3M">
+          <com:Name xml:lang="en">Quarterly</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P6M" id="P6M">
+          <com:Name xml:lang="en">Half-yearly, semester</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).P7D" id="P7D">
+          <com:Name xml:lang="en">Weekly</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+        <str:Code urn="urn:sdmx:org.sdmx.infomodel.codelist.Code=SDMX:CL_TIME_FORMAT(1.0).PT1M" id="PT1M">
+          <com:Name xml:lang="en">Minutely</com:Name>
+          <com:Description xml:lang="en">Used only in SDMX-ML messages</com:Description>
+        </str:Code>
+      </str:Codelist>
+      <str:Codelist urn="urn:sdmx:org.sdmx.infomodel.codelist.Codelist=SDMX:CL_UNIT_MULT(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/codelist/SDMX/CL_UNIT_MULT/1.0" isExternalReference="false" agencyID="SDMX" id="CL_UNIT_MULT" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">Unit Multiplier</com:Name>
+        <com:Description xml:lang="en">This code list provides code values for indicating the magnitude in the units of measurement. It was released in 2009. More information about this code list and SDMX code lists in general (e.g. list of generic codes for expressing general concepts like "Total", "Unknown", etc.; syntaxes for the creation of further codes; general guidelines for the creation of SDMX code lists) can be found at this address: https://sdmx.org/?page_id=4345.</com:Description>
+      </str:Codelist>
+    </str:Codelists>
+    <str:Concepts>
+      <str:ConceptScheme urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=IMF:ECOFIN_CONCEPTS(1.0)" isExternalReference="false" agencyID="IMF" id="ECOFIN_CONCEPTS" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">Concepts for EcoFin DSD</com:Name>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).DATA_DOMAIN" id="DATA_DOMAIN">
+          <com:Name xml:lang="en">Data Domain</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_DATADOMAIN" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).REF_AREA" id="REF_AREA">
+          <com:Name xml:lang="en">Reference Country or area</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_REF_AREA" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).INDICATOR" id="INDICATOR">
+          <com:Name xml:lang="en">Economic Indicator</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_INDICATOR" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).COUNTERPART_AREA" id="COUNTERPART_AREA">
+          <com:Name xml:lang="en">Counterpart Area</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_REF_AREA" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).COMMENT" id="COMMENT">
+          <com:Name xml:lang="en">Comment</com:Name>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).BASE_PER" id="BASE_PER">
+          <com:Name xml:lang="en">Base Period</com:Name>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).UNIT_MULT" id="UNIT_MULT">
+          <com:Name xml:lang="en">Unit Multiplier</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_UNIT_MULT" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:ECOFIN_CONCEPTS(1.0).OBS_STATUS" id="OBS_STATUS">
+          <com:Name xml:lang="en">Observation Status</com:Name>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="IMF" id="CL_OBS_STATUS" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+      </str:ConceptScheme>
+      <str:ConceptScheme urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=SDMX:CROSS_DOMAIN_CONCEPTS(1.0)" structureURL="https://registry.sdmx.org/ws/public/sdmxapi/rest/conceptscheme/SDMX/CROSS_DOMAIN_CONCEPTS/1.0" isExternalReference="false" agencyID="SDMX" id="CROSS_DOMAIN_CONCEPTS" isFinal="true" version="1.0">
+        <com:Name xml:lang="en">SDMX Cross Domain Concept Scheme</com:Name>
+        <com:Description xml:lang="en">Cross-domain concepts in the SDMX framework describe concepts relevant to many, if not all, statistical domains. SDMX recommends using these concepts whenever feasible in SDMX structures and messages to promote re-usability and exchange of statistical information and their related metadata between organizations. Whenever used, these concepts should conform to the specified names, roles, and representations defined in the SDMX Content-Oriented Guidelines.</com:Description>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ACCESSIBILITY" id="ACCESSIBILITY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Accessibility refers to the availability of statistical information to the user. It includes the ease with which the existence of information can be ascertained, as well as the suitability of the form or medium through which the information can be accessed. The cost of the information may also be an aspect of accessibility for some users.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Accessibility</com:Name>
+          <com:Description xml:lang="en">The ease and the conditions under which statistical information can be obtained.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ACCURACY" id="ACCURACY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The accuracy of statistical information is the degree to which the information correctly describes the phenomena. It is usually characterized in terms of error in statistical estimates and is often decomposed into bias (systematic error) and variance (random error) components. Accuracy can contain either measures of accuracy (numerical results of the methods for assessing the accuracy of data) or qualitative assessment indicators. It may also be described in terms of the major sources of error that potentially cause inaccuracy (e.g., coverage, sampling, non response, response error). Accuracy is associated with the "reliability" of the data, which is defined as the closeness of the initial estimated value to the subsequent estimated value.
+This concept can be broken down into: "Accuracy - overall" (summary assessment); "Accuracy - non-sampling error"; "Accuracy - sampling error".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Accuracy</com:Name>
+          <com:Description xml:lang="en">Closeness of computations or estimates to the exact or true values that the statistics were intended to measure.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ACCURACY_OVERALL" id="ACCURACY_OVERALL">
+          <com:Name xml:lang="en">Accuracy - overall</com:Name>
+          <com:Description xml:lang="en">Assessment of accuracy, linked to a certain data set or domain, which is summarising the various components into one single measure.</com:Description>
+          <str:Parent>
+            <Ref id="ACCURACY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).NONSAMPLING_ERR" id="NONSAMPLING_ERR">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Non-sampling errors may arise from many different sources such as defects in the sampling frame, faulty demarcation of sample units, defects in the selection of sample units, mistakes in the collection of data due to personal variations, misunderstanding, bias, negligence or dishonesty on the part of the investigator or of the interviewer, mistakes at the stage of the processing of the data, etc.
+Non- sampling errors may be categorised as:
+- Coverage errors (or frame errors) due to divergences between the target population and the frame population ;
+- Measurement errors occurring during data collection;
+- Non-response errors caused by no data collected for a population unit or for some survey variables;
+- Processing errors due to errors introduced during data entry, data editing, sometimes coding and imputation;
+- Model assumption errors.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Accuracy - non-sampling error</com:Name>
+          <com:Description xml:lang="en">Error in sample estimates which cannot be attributed to sampling fluctuations.</com:Description>
+          <str:Parent>
+            <Ref id="ACCURACY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).SAMPLING_ERR" id="SAMPLING_ERR">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Sampling errors are distinct from errors due to imperfect selection, bias in response or estimation, errors of observation and recording, etc.
+For probability sampling, the random variation due to sampling can be calculated. For non-probability sampling, random errors cannot be calculated without reference to some kind of model. The totality of sampling errors in all possible samples of the same size generates the sampling distribution of the statistic which is being used to estimate the parent value.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Accuracy - sampling error</com:Name>
+          <com:Description xml:lang="en">That part of the difference between a population value and an estimate thereof, derived from a random sample, which is due to the fact that only a subset of the population is enumerated.</com:Description>
+          <str:Parent>
+            <Ref id="ACCURACY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ADJUSTMENT" id="ADJUSTMENT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Adjustments may be associated with changes in definitions, exchange rates, prices, seasons and other factors. Adjustments are in particular applied to compile consistent time series, but the concept is also used for describing adjustments related to other types of data.
+Adjustment can be distinguished from editing and imputation, in that before adjustment, the data are already of sufficient quality to be considered usable.
+"Adjustment - coded" refers to the type of adjustment used, represented by a code, while "Adjustment - detail" refers to the textual description of the type of adjustment used.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Adjustment</com:Name>
+          <com:Description xml:lang="en">The set of procedures employed to modify statistical data to enable it to conform to national or international standards or to address data quality differences when compiling specific data sets.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ADJUST_CODED" id="ADJUST_CODED">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">In data messages, adjustments are identified by a code related to the type of adjustment used, e.g. trading day adjustment, working day adjustment, seasonal adjustment or trend-cycle adjustment.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Adjustment - coded</com:Name>
+          <com:Description xml:lang="en">Type of adjustment used, represented by a code.</com:Description>
+          <str:Parent>
+            <Ref id="ADJUSTMENT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ADJUST_DETAIL" id="ADJUST_DETAIL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Adjustment - detail" can be used for presenting a textual explanation of the type of adjustment (e.g. working day adjustment, trading day adjustment, seasonal adjustment or trend-cycle adjustment) as well as the method used.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Adjustment - detail</com:Name>
+          <com:Description xml:lang="en">Textual description of the type of adjustment used.</com:Description>
+          <str:Parent>
+            <Ref id="ADJUSTMENT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).AGE" id="AGE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Age" can be expressed as a number, e.g. 25 years old, or as a range, e.g. "between 25 and 29 years" or "6 to 11 months".
+It is in general a coded concept.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Age</com:Name>
+          <com:Description xml:lang="en">The length of time that a person has lived or a thing has existed.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_AGE" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).BASE_PER" id="BASE_PER">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The base period refers to the period when the published index is 100, or to which weights or base data refer to. It can be one single year (e.g. 1995=100) but it may be as short as one day or as long as the average of a number of years.
+"Base period" may include an indication of the value of the series in the base period (usually 1 or 100).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Base Period</com:Name>
+          <com:Description xml:lang="en">The period of time used as the base of an index number, or to which a constant price series refers.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CIVIL_STATUS" id="CIVIL_STATUS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The civil status is often referred to as marital status and represented through codes of the respective code list.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Civil status</com:Name>
+          <com:Description xml:lang="en">Legal, conjugal status of each individual in relation to the marriage laws or customs of the country.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CLARITY" id="CLARITY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Clarity is sometimes referred to as "interpretability". It refers to the data information environment: whether data are accompanied by appropriate metadata, including information on their quality, and the extent to which additional assistance is provided to users by data providers.
+In the European Statistics Code of Practice, clarity is strictly associated to accessibility to form one single quality criteria: "accessibility and clarity".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Clarity</com:Name>
+          <com:Description xml:lang="en">The extent to which easily comprehensible metadata are available, where these metadata are necessary to give a full understanding of statistical data.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CLASS_SYSTEM" id="CLASS_SYSTEM">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The definition entails the description of the classification being used and how this conforms to internationally agreed standards, guidelines, or good practices. It also refers to the description of deviations of the classification system compared to statistical standards, guidelines, or good practices, when relevant.
+Examples of frequently used international classifications are ISCO (International Standard Classification of Occupations, maintained by the International Labour Organization), ISIC (International Standard Industrial Classification of All Economic Activities, maintained by the United Nations), NACE (Statistical Classification of Economic Activities, maintained by the European Union) and NUTS (Nomenclature of Territorial Units for Statistics, maintained by the European Union).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Classification system</com:Name>
+          <com:Description xml:lang="en">Arrangement or division of objects into groups based on characteristics which the objects have in common.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COHERENCE" id="COHERENCE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">When originating from different sources, and in particular from statistical surveys using different methodology, statistics are often not completely identical, but show differences in results due to different approaches, classifications and methodological standards. There are several areas where the assessment of coherence is regularly conducted: between provisional and final statistics, between annual and short-term statistics, between statistics from the same socio-economic domain, and between survey statistics and national accounts.
+The concept of coherence is closely related to the concept of comparability between statistical domains. Both coherence and comparability refer to a data set with respect to another. The difference between the two is that comparability refers to comparisons between statistics based on usually unrelated statistical populations and coherence refers to comparisons between statistics for the same or largely similar populations.
+Coherence can be generally broken down into "Coherence - cross-domain" and "Coherence - internal".
+Users should be aware that, in the Data Quality Assessment Framework of the International Monetary Fund, the term "consistency" is used for indicating "logical and numerical coherence". In that framework, "internal consistency" and "intersectoral and cross-domain consistency" can be mapped to "internal coherence" and "cross-domain coherence" respectively.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coherence</com:Name>
+          <com:Description xml:lang="en">Adequacy of statistics to be combined in different ways and for various uses.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COHER_X_DOM" id="COHER_X_DOM">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Differences in the statistical results calculated on the basis of different statistical domains, or surveys based on different methodologies (e.g. between annual and short-term statistics or between social statistics and national accounts) should be described.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coherence - cross-domain</com:Name>
+          <com:Description xml:lang="en">Extent to which statistics are reconcilable with those obtained through other data sources or statistical domains.</com:Description>
+          <str:Parent>
+            <Ref id="COHERENCE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COHER_INTERNAL" id="COHER_INTERNAL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Differences in the statistical results calculated for the same statistical domain, based on stable or changing methodology (e.g. between provisional and final statistics or between different reference years showing break in series) should be described. Frequently, a group of statistics of a different type (in monetary value, in volume or constant price, price indicators, etc) measure the same phenomenon using different methodologies. For instance, statistics on employment, depending on whether they result from employers' declarations or household surveys do not lead exactly to the same results. However, there are often differences in the concepts used (de jure or de facto population, for instance), in the registration date, in the cif/fob registration for external trade, etc.  It is very important to check that these representations do not diverge too much in order to anticipate users' questions and for preparing corrective actions.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coherence - internal</com:Name>
+          <com:Description xml:lang="en">Extent to which statistics are consistent within a given data set.</com:Description>
+          <str:Parent>
+            <Ref id="COHERENCE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMMENT" id="COMMENT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">In SDMX messages, a comment may contain a descriptive text which can be attached to an agency, provision agreement, dataflow, data set, group, time series, or observation.
+A list of ID broken down by attachment level is therefore needed: COMMENT_AGENCY, COMMENT_AGR, COMMENT_DFL, COMMENT_DSET, COMMENT_GRP,  COMMENT_TS, COMMENT_OBS.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Comment</com:Name>
+          <com:Description xml:lang="en">Supplementary descriptive text which can be attached to data or metadata.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPARABILITY" id="COMPARABILITY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Comparability aims at measuring the impact of differences in applied statistical concepts and definitions on the comparison of statistics between geographical areas, non-geographical dimensions, or over time. Comparability of statistics, i.e. their usefulness in drawing comparisons and contrast among different populations, is a complex concept, difficult to assess in precise or absolute terms. In general terms, it means that statistics for different populations can be legitimately aggregated, compared and interpreted in relation to each other or against some common standard. Metadata must convey such information that will help any interested party in evaluating comparability of the data, which is the result of a multitude of factors.
+In some quality frameworks, e.g. the European Statistics Code of Practice, comparability is strictly associated with the coherence of statistics.
+The concept can be further broken down into:
+(a) Comparability - geographical, referring to the degree of comparability between statistics measuring the same phenomenon for different geographical areas.
+(b) Comparability over time, referring to the degree of comparability between two or more instances of data on the same phenomenon measured at different points in time.
+(c) Comparability between domains, referring to the comparability between different survey results which target similar characteristics in different statistical domains.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Comparability</com:Name>
+          <com:Description xml:lang="en">The extent to which differences between statistics can be attributed to differences between the true values of the statistical characteristics.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPAR_DOMAINS" id="COMPAR_DOMAINS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Comparability between domains refers to the comparability between different statistics which target similar characteristics in different statistical domains. Users frequently compare statistics from different domains, which are produced on the basis of different methodologies.
+The difference in methodologies used for the estimation of the statistics should be reported. This concerns mainly the definition of statistical characteristics, the reference period, the definition of the statistical unit and the statistical measure.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Comparability - between domains</com:Name>
+          <com:Description xml:lang="en">Extent to which statistics are comparable between different statistical domains.</com:Description>
+          <str:Parent>
+            <Ref id="COMPARABILITY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPAR_GEO" id="COMPAR_GEO">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Geographical comparability refers to the degree of comparability between similar survey results measuring the same phenomenon across geographical areas or regions. The surveys are in general conducted by different statistical agencies, referring to populations in different geographical areas, sometimes based on a harmonised methodology.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Comparability - geographical</com:Name>
+          <com:Description xml:lang="en">Extent to which statistics are comparable between geographical areas.</com:Description>
+          <str:Parent>
+            <Ref id="COMPARABILITY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPAR_TIME" id="COMPAR_TIME">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Comparability over time refers to the degree of comparability between the results of two or several surveys related to the same domain, carried out by the same statistical agency.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Comparability - over time</com:Name>
+          <com:Description xml:lang="en">Extent to which statistics are comparable or reconcilable over time.</com:Description>
+          <str:Parent>
+            <Ref id="COMPARABILITY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPILING_ORG" id="COMPILING_ORG">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The dimension is needed as two agencies might be compiling the exact same data but using different sources or concepts (the latter would be partially captured by the dimensions). The provider ID may be not sufficient, as one provider could disseminate the data compiled by different compiling agencies.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Compiling agency</com:Name>
+          <com:Description xml:lang="en">The organisation compiling the data being reported.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONF" id="CONF">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Confidentiality refers to a property of data with respect to whether, for example, they are public or their disclosure is subject to restrictions. For instance, data allowing the identification of a physical or legal person, either directly or indirectly, may be characterised as confidential according to the relevant national or international legislation. Unauthorised disclosure of data that are restricted or confidential is not permitted and even legislative measures or other formal provisions may be used to prevent disclosure. Often, there are procedures in place to prevent disclosure of restricted or confidential data, including rules applying to staff, aggregation rules when disseminating data, provision of unit records, etc.
+Sensitivity (of information) is sometimes used as a synonym to confidentiality.
+This concept can be broken down into: Confidentiality - policy; Confidentiality - status; Confidentiality - data treatment.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Confidentiality</com:Name>
+          <com:Description xml:lang="en">A property of data indicating the extent to which their unauthorised disclosure could be prejudicial or harmful to the interest of the source or other relevant parties.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONF_DATA_TR" id="CONF_DATA_TR">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The rules applied when treating the data with regard to statistical confidentiality should be explained (e.g. aggregation rules when disseminating data, provision of unit records, etc.).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Confidentiality - data treatment</com:Name>
+          <com:Description xml:lang="en">Rules applied for treating the data set to ensure statistical confidentiality and prevent unauthorised disclosure.</com:Description>
+          <str:Parent>
+            <Ref id="CONF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONF_POLICY" id="CONF_POLICY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Textual description and references to legislation or other rules related to statistical confidentiality.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Confidentiality - policy</com:Name>
+          <com:Description xml:lang="en">Legislative measures or other formal procedures which prevent unauthorised disclosure of data that identify a person or economic entity either directly or indirectly.</com:Description>
+          <str:Parent>
+            <Ref id="CONF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONF_STATUS" id="CONF_STATUS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This concept is related to data and determines the exact status of the value, i.e. if a specific value is confidential or not. This concept is always coded, i.e. it takes its value from the respective code list.
+A list of ID broken down by attachment level is recommended: CONF_STATUS_DFL (dataflow), CONF_STATUS_DSET (dataset), CONF_STATUS_GRP (group), CONF_STATUS_TS (series) or CONF_STATUS_OBS (observation).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Confidentiality - status</com:Name>
+          <com:Description xml:lang="en">Information about the confidentiality status of the object to which this attribute is attached.</com:Description>
+          <str:Parent>
+            <Ref id="CONF"/>
+          </str:Parent>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_CONF_STATUS" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT" id="CONTACT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Contact" describes contact points for the data or metadata, including how to reach the contact points. The main attributes of "contacts" are:
+Contact mail address: The mailing address of the contact.
+Contact name: The name of the contact.
+Contact title: The name of the position held by the contact.
+Contact email address: An e-mail address for correspondence with the contact.
+Contact phone number: A telephone number for spoken correspondence.
+Other detailed attributes (e.g. country code, city code, first name, family name, etc.) can be identified for the purpose of database storage.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Contact</com:Name>
+          <com:Description xml:lang="en">Individual or organisational contact points for the data or metadata, including information on how to reach the contact points.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_EMAIL" id="CONTACT_EMAIL">
+          <com:Name xml:lang="en">Contact email address</com:Name>
+          <com:Description xml:lang="en">E-mail address of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_FAX" id="CONTACT_FAX">
+          <com:Name xml:lang="en">Contact fax number</com:Name>
+          <com:Description xml:lang="en">Fax number of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_MAIL" id="CONTACT_MAIL">
+          <com:Name xml:lang="en">Contact mail address</com:Name>
+          <com:Description xml:lang="en">The postal address of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_NAME" id="CONTACT_NAME">
+          <com:Name xml:lang="en">Contact name</com:Name>
+          <com:Description xml:lang="en">The name of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_ORGANISATION" id="CONTACT_ORGANISATION">
+          <com:Name xml:lang="en">Contact organisation</com:Name>
+          <com:Description xml:lang="en">The name of the organisation of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ORGANISATION_UNIT" id="ORGANISATION_UNIT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This contact refers to the contact point for data and metadata</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Contact organisation unit</com:Name>
+          <com:Description xml:lang="en">An addressable subdivision of an organisation.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_FUNCT" id="CONTACT_FUNCT">
+          <com:Name xml:lang="en">Contact person function</com:Name>
+          <com:Description xml:lang="en">The area of technical responsibility of the contact, such as "methodology", "database management" or "dissemination".</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CONTACT_PHONE" id="CONTACT_PHONE">
+          <com:Name xml:lang="en">Contact phone number</com:Name>
+          <com:Description xml:lang="en">The telephone number of the contact points for the data or metadata.</com:Description>
+          <str:Parent>
+            <Ref id="CONTACT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COST_BURDEN" id="COST_BURDEN">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The cost is associated with a statistical product and can be financial, human or time-related. It may consist of staff costs, data collection costs and other costs related to reporting obligations.
+The burden is often measured by costs for the respondents (businesses, institutions, households, individuals) imposed by a statistical obligation. The overall burden of delivering the information depends on: a) the number of respondents; b) the average time required to provide the information, including time spent after receipt of the questionnaire ("recontact time"); and c) the hourly cost of a respondent's time.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Cost and burden</com:Name>
+          <com:Description xml:lang="en">Costs associated with the collection and production of a statistical product and burden on respondents.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COST_BURDEN_EFF" id="COST_BURDEN_EFF">
+          <com:Name xml:lang="en">Cost and burden - efficiency management</com:Name>
+          <com:Description xml:lang="en">Cost-benefit analysis, effectiveness of execution of medium term statistical programmes, and ensuring efficient use of resources.</com:Description>
+          <str:Parent>
+            <Ref id="COST_BURDEN"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COST_BURDEN_RES" id="COST_BURDEN_RES">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It may include the contribution of respondent time in supplying information (burden) as a distinct subject under this heading.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Cost and burden - resources</com:Name>
+          <com:Description xml:lang="en">Staff, facilities, computing resources, and financing to undertake statistical production.</com:Description>
+          <str:Parent>
+            <Ref id="COST_BURDEN"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).VIS_AREA" id="VIS_AREA">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The "counterpart area" (also known as "vis-a-vis area") is related to statistics on foreign trade, migration or other domains. It determines, from the point of view of the reporting country, the corresponding area to which the economic or other flows are related to (for instance, in statistics on imports, the counterpart reference area is the area of origin of the goods).
+A categorisation of ID's per attachment level (VIS_AREA_DSET for dataset, VIS_AREA_GRP for group) is recommended.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Counterpart reference area</com:Name>
+          <com:Description xml:lang="en">The secondary area, as opposed to reference area, to which the measured data is in relation.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COVERAGE" id="COVERAGE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The term "coverage" encompasses the descriptions of key dimensions delimiting the statistics produced, e.g. geographical, institutional, product, economic sector, industry, occupation, transaction, etc., as well as relevant exceptions and exclusions.
+The term "coverage" describes the scope of the data compiled, rather than the characteristics of the survey.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coverage</com:Name>
+          <com:Description xml:lang="en">The definition of the population that statistics aim to cover.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COVERAGE_SECTOR" id="COVERAGE_SECTOR">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The sector coverage delimits the statistical results with regard to the main sectors covered. These sectors can be institutional sectors, economic or other sectors (e.g. local government sector, agriculture, forestry, or business services).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coverage - sector</com:Name>
+          <com:Description xml:lang="en">Main economic or other sectors covered by the statistics.</com:Description>
+          <str:Parent>
+            <Ref id="COVERAGE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COVERAGE_TIME" id="COVERAGE_TIME">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The time period covered can be indicated as a time interval, e.g. "1985 to 2006" for annual time series data, or as several intervals or values of time.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Coverage - time</com:Name>
+          <com:Description xml:lang="en">The length of time for which data are available.</com:Description>
+          <str:Parent>
+            <Ref id="COVERAGE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).CURRENCY" id="CURRENCY">
+          <com:Name xml:lang="en">Currency</com:Name>
+          <com:Description xml:lang="en">Monetary denomination of the object being measured.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COLL_METHOD" id="COLL_METHOD">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">There are a number of data collection methods used for official statistics, including computer-aided personal or telephone interview CAPI/CATI, mailed questionnaires, electronic or internet questionnaires and direct observation. The data collection may be exclusively for statistical purposes, or primarily for non-statistical purposes.
+Descriptions of data collection methods should include the purpose for which the data were collected, the period the data refer to, the classifications and definitions used, and any constraints related to further use of these data.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data collection</com:Name>
+          <com:Description xml:lang="en">Systematic process of gathering data for official statistics.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_COMP" id="DATA_COMP">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Data compilation" refers to the description of statistical procedures used for producing intermediate data and final statistical outputs. Data compilation covers, among other things, the use of weighting schemes, methods for imputing missing values or source data, statistical adjustment, balancing/cross-checking techniques and relevant characteristics of the specific methods applied.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data compilation</com:Name>
+          <com:Description xml:lang="en">Operations performed on data to derive new information according to a given set of rules.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DISS_ORG" id="DISS_ORG">
+          <com:Name xml:lang="en">Data dissemination agency</com:Name>
+          <com:Description xml:lang="en">The organisation disseminating the data.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_EDITING" id="DATA_EDITING">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Editing techniques refer to a range of procedures and processes used for detecting and handling errors in data, also aiming at avoiding their future repetition. An "edit" is the correction of an error in data. An "editing rule" is the specification of the conditions under which edits are made.
+Examples of different techniques include the different approaches to editing such as micro-editing/ macro-editing, input/output editing, or to the various tools available for editing such as graphical editing, interactive editing, etc.
+Edit types refer to the actual nature of edits applied to data during input or output processing. These include:
+- validation edits, to check the validity of basic identification of classificatory items in unit data;
+- logical edits, to ensure that two or more data items do not have contradictory values;
+- consistency edits, to ensure that precise and correct arithmetic relationships exist between two or more data items;
+- range edits, identifying whether or not a data item value falls inside a determined acceptable range;
+- variance edits, looking for suspiciously high variances at the output edit stage.
+Micro-editing and macro-editing may be distinguished in order to calculate rate of edits. Edit types may also refer to whether these edits are fatal or query type, i.e. whether they detect errors with certainty or point to suspicious data items.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data editing</com:Name>
+          <com:Description xml:lang="en">Activity aimed at detecting and correcting errors, logical inconsistencies and suspicious data.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_PRES" id="DATA_PRES">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Data can be displayed to users as tables, graphs or maps. According to the United Nations Fundamental Principles of Official Statistics, the choice of appropriate presentation methods should be made in accordance with professional considerations. Data presentation includes the description of the dataset disseminated with the main variables covered, the classifications and breakdowns used, the reference area, a summary information on the time period covered and, if applicable, the base period used.
+This concept can be broken down into: "Data presentation - data description" and "Data presentation - disseminated detail".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data presentation</com:Name>
+          <com:Description xml:lang="en">Description of the disseminated data.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_DESCR" id="DATA_DESCR">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This summary description should provide an immediate understanding of the data to users (also to those which do not have a broader technical knowledge of the data set in question).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data presentation - data description</com:Name>
+          <com:Description xml:lang="en">Main characteristics of the data set described in an easily understandable manner, referring to the data and indicators disseminated.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_PRES"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DISS_DET" id="DISS_DET">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Description of data disseminated or available on request by, for example: time period covered, geographical coverage, coverage of breakdowns by geographical entities, target population and its breakdowns, and coverage of variables measured in the statistical target population. Also the standards (e.g. classification systems) employed in the breakdowns provided should be described, so that datasets in different domains can be related through an appropriate set of common concepts.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data presentation - disseminated detail</com:Name>
+          <com:Description xml:lang="en">Disseminated domain, measure, and time period breakdowns of statistics in the dataset.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_PRES"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_PROVIDER" id="DATA_PROVIDER">
+          <com:Name xml:lang="en">Data provider</com:Name>
+          <com:Description xml:lang="en">Organisation which produces data or metadata.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_REV" id="DATA_REV">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Preliminary data are revised when more and better source data become available, or due to a change in methodology. "Data revision" describes the policy and practice for identifying the revision status of the data, as well as the availability of revision studies and analyses.
+This concept can be broken down into:  "Data revision - policy"; "Data revision - practice"; "Data revision - studies".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data revision</com:Name>
+          <com:Description xml:lang="en">Any change in a value of a statistic released to the public.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REV_POLICY" id="REV_POLICY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The general guidelines for handling data revisions applied by a data providing agency should be described.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data revision - policy</com:Name>
+          <com:Description xml:lang="en">Policy aimed at ensuring the transparency of disseminated data, whereby preliminary data are compiled that are later revised.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_REV"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REV_PRACTICE" id="REV_PRACTICE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Documentation regarding the source data used and the way they are adjusted, in order to give compilers the possibility of incorporating new and more accurate information into estimates, thus improving their accuracy without introducing breaks in the time series. It also describes the revision status of available data.
+Data may also be subject to regular or ad hoc revisions as a result of the introduction of new classifications, compilation frameworks and methodologies which result in the compilation of historical data that replaces previously released data. Whether or not such changes constitute an actual "revision" or the compilation of a "new" series is a matter of judgment to be done by the statistical agency.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data revision - practice</com:Name>
+          <com:Description xml:lang="en">Information on the data revision practice.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_REV"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REV_STUDY" id="REV_STUDY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Description of periodic studies related to data revisions. These studies can contain quantitative measures of the effects of revisions, such as mean revision and revision variance in estimates.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data revision - studies</com:Name>
+          <com:Description xml:lang="en">Information about data revision studies and analyses.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_REV"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DSI" id="DSI">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The data set identifier is specified and agreed between data exchange partners in the context of a data exchange agreement.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data set identifier</com:Name>
+          <com:Description xml:lang="en">Sequence of characters identifying the data set with which it is associated.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_UPDATE" id="DATA_UPDATE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The data update relates to the date which is registered in the production or the dissemination database of a data compiling organisation. The modification can imply several actions: data can be updated, verified and validated without change, or deleted. The data update does not necessarily imply that data are released.
+The date of the data update may refer to the last update of the content, or to the latest verification without update of the content, or to the date of dissemination on the web. Correspondingly, this concept can be broken down into: Data update - last update; Data update - last verification; Data update - last posted.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data update</com:Name>
+          <com:Description xml:lang="en">The date on which the data element was inserted or modified in the database.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_VALIDATION" id="DATA_VALIDATION">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Data validation describes methods and processes for assessing statistical data, and how the results of the assessments are monitored and made available to improve statistical processes.
+All the controls made in terms of quality of the data to be published or already published are included in the validation process. Validation also takes into account the results of studies and analysis of revisions and how they are used to improve statistical processes. In this process, two dimensions can be distinguished: (i) validation before publication of the figures and (ii) validation after publication.
+This concept can be further broken down into "Data validation - intermediate", "Data validation - output" and "Data validation - source".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data validation</com:Name>
+          <com:Description xml:lang="en">Process of monitoring the results of data compilation and ensuring the quality of the statistical results.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_VAL_INTER" id="DATA_VAL_INTER">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It contains the description of how intermediate results are checked or compared with other information where applicable, and how discrepancies and other problems in intermediate data are assessed and investigated.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data validation - intermediate</com:Name>
+          <com:Description xml:lang="en">Validation that intermediate calculations leading to statistical outputs have been correctly done.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_VALIDATION"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_VAL_OUTPUT" id="DATA_VAL_OUTPUT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Data validation output" describes how statistical discrepancies in the final data are assessed and investigated and how other potential indicators or problems in statistical output are investigated. The assessment can be done before or after publication of the data.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data validation - output</com:Name>
+          <com:Description xml:lang="en">Assessment of discrepancies and other problems in statistical outputs.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_VALIDATION"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DATA_VAL_SOURCE" id="DATA_VAL_SOURCE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Data validation - source" describes the assessment of source data, including censuses, sample surveys, and administrative records, and how the results of the assessments are monitored and made available to improve statistical processes.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Data validation - source</com:Name>
+          <com:Description xml:lang="en">Assessment of discrepancies and other problems related to source data.</com:Description>
+          <str:Parent>
+            <Ref id="DATA_VALIDATION"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DECIMALS" id="DECIMALS">
+          <com:Name xml:lang="en">Decimals</com:Name>
+          <com:Description xml:lang="en">The number of digits of an observation to the right of a decimal point.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_DECIMALS" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DISS_FORMAT" id="DISS_FORMAT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Dissemination format" refers to the various means of dissemination used for making the data available to the public. It includes a description of the various formats available, including where and how to get the information (e.g. paper, electronic publications, on-line databases).
+This concept can be further broken down into: "Dissemination format - microdata access", "Dissemination format - news release", "Dissemination format - online database", "Dissemination format - publications" and "Dissemination format - other formats".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format</com:Name>
+          <com:Description xml:lang="en">Media by which statistical data and metadata are disseminated.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).MICRO_DAT_ACC" id="MICRO_DAT_ACC">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It should be stated if micro-data are also disseminated, e.g. to researchers. Access conditions should be described in short.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format - microdata access</com:Name>
+          <com:Description xml:lang="en">Information on whether micro-data are also disseminated.</com:Description>
+          <str:Parent>
+            <Ref id="DISS_FORMAT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).NEWS_REL" id="NEWS_REL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This concept covers press releases or other kind of similar releases linked to data or metadata.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format - news release</com:Name>
+          <com:Description xml:lang="en">Regular or ad hoc press releases linked to the data.</com:Description>
+          <str:Parent>
+            <Ref id="DISS_FORMAT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ONLINE_DB" id="ONLINE_DB">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Link to the online database where the data are available, with a summary identification of domain names as released on the website, as well as the related access conditions.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format - online database</com:Name>
+          <com:Description xml:lang="en">Information about online databases in which the disseminated data can be accessed.</com:Description>
+          <str:Parent>
+            <Ref id="DISS_FORMAT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PUBLICATIONS" id="PUBLICATIONS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">References to the most important data dissemination done through paper or online publications, including a summary identification and information on availability of the publication means.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format - publications</com:Name>
+          <com:Description xml:lang="en">Regular or ad hoc publications in which the data are made available to the public.</com:Description>
+          <str:Parent>
+            <Ref id="DISS_FORMAT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DISS_OTHER" id="DISS_OTHER">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Examples of other dissemination formats are analytical publications edited by policy users.
+This concept includes, as a sub-element, "Supplementary data", i.e. any customised tabulation that can be provided to meet specific requests (including information on procedures for obtaining access to these data).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Dissemination format - other formats</com:Name>
+          <com:Description xml:lang="en">References to the most important other data dissemination done.</com:Description>
+          <str:Parent>
+            <Ref id="DISS_FORMAT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).DOC_METHOD" id="DOC_METHOD">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Documentation on methodology" refers to the availability of documentation related to various aspects of the data, such as methodological documents, summary notes or papers covering concepts, scope, classifications and statistical techniques.
+This concept also includes the "Advance notice of changes in methodology", indicating whether the public is notified before a methodological change affects disseminated data and, if so, how long before.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Documentation on methodology</com:Name>
+          <com:Description xml:lang="en">Descriptive text and references to methodological documents available.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ADV_NOTICE" id="ADV_NOTICE">
+          <com:Name xml:lang="en">Documentation on methodology - advance notice</com:Name>
+          <com:Description xml:lang="en">Policy on notifying the public of changes in methodology, indicating whether the public is notified before a methodological change affects disseminated data and, if so, how long before.</com:Description>
+          <str:Parent>
+            <Ref id="DOC_METHOD"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).EDUCATION_LEV" id="EDUCATION_LEV">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The highest level of an educational programme the person has successfully completed is also called "educational attainment of a person". At international level, the ISCED is the standard classification of educational attainment.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Education level</com:Name>
+          <com:Description xml:lang="en">The highest level of an educational programme the person has successfully completed.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).EMBARGO_TIME" id="EMBARGO_TIME">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Usually, there is a time span between the finalisation of the production process of statistical data and the moment when the data produced is released and made available to the users. This time span is called "embargo time".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Embargo time</com:Name>
+          <com:Description xml:lang="en">The exact time at which the data could be made available to the public.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).FREQ" id="FREQ">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">If a data series has a constant time interval between its observations, this interval determines the frequency of the  series (e.g. monthly, quarterly, yearly).  "Frequency" - also called "periodicity" - may refer to several stages in the production process, e.g. in data collection or in data dissemination (e.g. a time series could be available at annual frequency but the underlying data are compiled monthly). Therefore, "Frequency" can be broken down into "Frequency - data collection" and "Frequency - data dissemination".
+For data messages, the frequency is represented through codes. Any additional detail needed (e.g. "weekly on Thursday") must be inserted as free text within "Frequency detail".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Frequency</com:Name>
+          <com:Description xml:lang="en">The time interval at which observations occur over a given time period.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_FREQ" version="2.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).FREQ_DETAIL" id="FREQ_DETAIL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">For data messages, the concept of "frequency" is represented through codes. Any additional detail needed must be inserted as free text within "frequency detail", e.g. weekly on Thursday.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Frequency - detail</com:Name>
+          <com:Description xml:lang="en">A further specification of the frequency to include more detailed information about the type of frequency and frequencies not commonly used.</com:Description>
+          <str:Parent>
+            <Ref id="FREQ"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).FREQ_COLL" id="FREQ_COLL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The frequencies with which the source data are collected and produced could be different: a time series could be collected from the respondents at quarterly frequency but the data production may have a monthly frequency. The frequency of data collection should therefore be described.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Frequency - data collection</com:Name>
+          <com:Description xml:lang="en">Frequency with which the source data are collected.</com:Description>
+          <str:Parent>
+            <Ref id="FREQ"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).FREQ_DISS" id="FREQ_DISS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The frequencies with which data are released, which could be different from the frequency of data collection.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Frequency - data dissemination</com:Name>
+          <com:Description xml:lang="en">The time interval at which the statistics are disseminated over a given time period.</com:Description>
+          <str:Parent>
+            <Ref id="FREQ"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).GROSS_NET" id="GROSS_NET">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Combinations in which all statistical items are shown for their full values are called "gross" recordings. Combinations whereby the values of some elementary items are offset against items on the other side of the account or which have an opposite sign are called "net" or "consolidated" recordings.
+Individual units or sectors may have the same kind of transactions both as a use and as a resource (e.g. they both pay and receive interest) and the same kind of financial instrument as an asset and as a liability.
+Examples of the application of this concept include gross versus net domestic product (GDP less consumption of fixed capital), and various consolidations across units in presentations of statements of operations and balance sheets for general government and for financial corporations, among others.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Grossing / Netting</com:Name>
+          <com:Description xml:lang="en">Form of consolidation used in presenting the data.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).IND_TYPE" id="IND_TYPE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Index type refers to the various indices used in the statistical production process (Laspeyres, modified Laspeyres, Paasche,  Value-Added, Fisher, Tornqvist or other indexes). Important features in the construction of an index number are its coverage, base period, weighting system and method of averaging statistical results.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Index type</com:Name>
+          <com:Description xml:lang="en">The type of index number used in the statistical production process.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).INST_MANDATE" id="INST_MANDATE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It also includes arrangements or procedures to facilitate data sharing and coordination between data producing agencies.
+This concept can be further broken down into: "Institutional mandate - data sharing"; "Institutional mandate - legal acts and other agreements"; "Institutional mandate - respondent relations".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Institutional mandate</com:Name>
+          <com:Description xml:lang="en">Set of rules or other formal set of instructions assigning responsibility as well as the authority to an organisation for the collection, processing, and dissemination of statistics.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).INST_MAN_SHAR" id="INST_MAN_SHAR">
+          <com:Name xml:lang="en">Institutional mandate - data sharing</com:Name>
+          <com:Description xml:lang="en">Arrangements or procedures for data sharing and coordination between data producing agencies.</com:Description>
+          <str:Parent>
+            <Ref id="INST_MANDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).INST_MAN_LA_OA" id="INST_MAN_LA_OA">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The concept covers provision in law assigning responsibility to specific organisations for collection, processing, and dissemination of statistics in one or several statistical domains. In addition, non-legal measures such as formal or informal administrative arrangements employed to specific organisations for collection, processing, and dissemination of statistics in one or several statistical domains should also be described.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Institutional mandate - legal acts and other agreements</com:Name>
+          <com:Description xml:lang="en">Legal acts or other formal or informal agreements that assign responsibility as well as the authority to an agency for the collection, processing, and dissemination of statistics.</com:Description>
+          <str:Parent>
+            <Ref id="INST_MANDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).I_M_RES_REL" id="I_M_RES_REL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Provision in law for compulsory reporting of information to the designated agency for statistical purposes. In addition, non-legal measures employed to encourage reporting statistical information to designated agencies should be described.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Institutional mandate - respondent relations</com:Name>
+          <com:Description xml:lang="en">Measures to encourage statistical reporting and/or to sanction non-reporting.</com:Description>
+          <str:Parent>
+            <Ref id="INST_MANDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).M_AGENCY" id="M_AGENCY">
+          <com:Name xml:lang="en">Maintenance agency</com:Name>
+          <com:Description xml:lang="en">The organisation or other expert body that maintains a domain-specific data or metadata structure definition.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).META_UPDATE" id="META_UPDATE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The date of the metadata update may refer to the update of a whole metadata set or to the update of any single metadata item. The update can refer to the file update (with or without change in the content) or to the date on which the metadata have been posted on the web.
+Correspondingly, this concept can be broken down into: "Metadata update -  last certified"; "Metadata update -  last posted"; "Metadata update - last update".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Metadata update</com:Name>
+          <com:Description xml:lang="en">The date on which the metadata element was inserted or modified in the database.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).META_CERTIFIED" id="META_CERTIFIED">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">In statistical agencies, the domain manager is often asked to certify that the metadata are checked and updated at regular time intervals. The date of the latest certification is to be retained. The concept is relevant for metadata reporting from countries to international organisations within metadata standards initiatives.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Metadata update - last certified</com:Name>
+          <com:Description xml:lang="en">Date of the latest certification provided by the domain manager to confirm that the metadata posted are still up-to-date, even if the content has not been amended.</com:Description>
+          <str:Parent>
+            <Ref id="META_UPDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).META_POSTED" id="META_POSTED">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The date of the last posting (dissemination) of the metadata on the web site should be retained.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Metadata update - last posted</com:Name>
+          <com:Description xml:lang="en">Date of the latest dissemination of the metadata.</com:Description>
+          <str:Parent>
+            <Ref id="META_UPDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).META_LAST_UPDATE" id="META_LAST_UPDATE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The last update of the content of metadata should be retained. The update can concern one single concept, but also the metadata file as a whole. The concept is also relevant for metadata reporting from countries to international organisations within metadata standards initiatives.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Metadata update - last update</com:Name>
+          <com:Description xml:lang="en">Date of last update of the content of the metadata.</com:Description>
+          <str:Parent>
+            <Ref id="META_UPDATE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).OBS_VALUE" id="OBS_VALUE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The "observation value" is the field which holds the data.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Observation</com:Name>
+          <com:Description xml:lang="en">The value of a particular variable at a particular period.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).OBS_PRE_BREAK" id="OBS_PRE_BREAK">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">At a time series break period, two observations may be recorded: the pre-break value produced on the basis of the old methodology and the post-break value, as measured by the new methodology. SDMX allows for a pre-break value in the case of a series break, where one would use the observation value to show the post-break value.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Observation pre-break value</com:Name>
+          <com:Description xml:lang="en">The observation, at a time series break period, that was calculated using the old methodology.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).OBS_STATUS" id="OBS_STATUS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This item is normally coded and uses codes providing information about the status of a value, with respect to events such as "break", "estimated value", "forecast", "missing value", or "provisional value".  In some cases, there is more than one event that may have influenced the value (e.g. a break in methodology may be accompanied with the fact that an observation is an estimate).
+A textual comment providing more detailed information on important events related to an observation can be added via the attribute "Comment".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Observation status</com:Name>
+          <com:Description xml:lang="en">Information on the quality of a value or an unusual or missing value.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_OBS_STATUS" version="1.1" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).ORIG_DATA_ID" id="ORIG_DATA_ID">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">A unique identifier should enable data producers to recognise the database where the data were stored.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Originator data identifier</com:Name>
+          <com:Description xml:lang="en">The data identifier as found in the originating database.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PROF" id="PROF">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">To retain trust in official statistics, the statistical agencies need to decide according to strictly professional considerations, including scientific principles and professional ethics, on the methods and procedures for the collection, processing, storage and presentation of statistical data (United Nations Fundamental Principles of Official Statistics, principle 2).
+"Professionalism" describes the elements providing assurances that: statistics are produced on an impartial basis; elements providing assurances that the choices of sources and statistical techniques as well as decisions about dissemination are informed solely by statistical considerations; elements providing assurances that the recruitment and promotion of staff are based on relevant aptitude; elements providing assurances that the statistical entity is entitled to comment on erroneous interpretation and misuse of statistics, guidelines for staff behaviour and procedures used to make these guidelines known to staff; other practices that provide assurances of the independence, integrity, and accountability of the statistical agency.
+This concept can be further broken down into: "Professionalism - code of conduct"; "Professionalism  - impartiality"; "Professionalism - methodology"; "Professionalism - statistical commentary".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Professionalism</com:Name>
+          <com:Description xml:lang="en">The standard, skill and ability suitable for producing statistics of good quality.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PROF_COND" id="PROF_COND">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Description of policies promoting the recruitment and promotion of staff based based on relevant aptitude; providing guidelines for staff behaviour and procedures to make these guidelines known to staff; and prescribing other practices that provide assurances of the independence, integrity, and accountability of the statistical agency.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Professionalism - code of conduct</com:Name>
+          <com:Description xml:lang="en">Provision for assuring the qualifications of staff and allowing staff to perform their functions without intervention motivated by non-statistical objectives.</com:Description>
+          <str:Parent>
+            <Ref id="PROF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PROF_IMP" id="PROF_IMP">
+          <com:Name xml:lang="en">Professionalism - impartiality</com:Name>
+          <com:Description xml:lang="en">Description of the elements providing assurances that statistics are produced on an impartial basis.</com:Description>
+          <str:Parent>
+            <Ref id="PROF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PROF_METH" id="PROF_METH">
+          <com:Name xml:lang="en">Professionalism - methodology</com:Name>
+          <com:Description xml:lang="en">Describes the elements providing assurances that the choices of sources and statistical techniques as well as decisions about dissemination are informed solely by statistical considerations.</com:Description>
+          <str:Parent>
+            <Ref id="PROF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PROF_STAT_COM" id="PROF_STAT_COM">
+          <com:Name xml:lang="en">Professionalism - statistical commentary</com:Name>
+          <com:Description xml:lang="en">Describes the elements providing assurances that the statistical entity is entitled to comment on erroneous interpretation and misuse of statistics.</com:Description>
+          <str:Parent>
+            <Ref id="PROF"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).PUNCTUALITY" id="PUNCTUALITY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Punctuality may be calculated, for instance, with reference to target dates announced in an official release calendar, laid down by regulations or previously agreed among partners.
+In quality assessment, punctuality is often associated with timeliness, which refers to the time lag between the end of the reference period and the release of data.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Punctuality</com:Name>
+          <com:Description xml:lang="en">Time lag between the actual delivery of the data and the target date when it should have been delivered.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).QUALITY_MGMNT" id="QUALITY_MGMNT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Quality management" refers to the application of a formalised system that documents the structure, responsibilities and procedures put in place for satisfying users, while continuing to improve the data production and dissemination process. It also includes how well the resources meet the requirement.
+This concept can be broken down into: "Quality management - quality assurance"; "Quality management - assessment"; "Quality management - documentation".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Quality management</com:Name>
+          <com:Description xml:lang="en">Systems and frameworks in place within an organisation to manage the quality of statistical products and processes.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).QUALITY_ASSMNT" id="QUALITY_ASSMNT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The overall assessment of data quality may include the result of a scoring or grading process for quality. Scoring may be quantitative or qualitative.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Quality management - quality assessment</com:Name>
+          <com:Description xml:lang="en">Overall assessment of data quality, based on standard quality criteria.</com:Description>
+          <str:Parent>
+            <Ref id="QUALITY_MGMNT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).QUALITY_ASSURE" id="QUALITY_ASSURE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Quality assurance" refers to all the planned and systematic activities implemented that can be demonstrated to provide confidence that the data production processes will fulfil the requirements for the statistical output. This includes the design of programmes for quality management, the description of planning process, scheduling of work, frequency of plan updates, and other organisational arrangements to support and maintain planning function.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Quality management - quality assurance</com:Name>
+          <com:Description xml:lang="en">Guidelines focusing on quality in general and dealing with quality of statistical programmes, including measures for ensuring the efficient use of resources.</com:Description>
+          <str:Parent>
+            <Ref id="QUALITY_MGMNT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).QUALITY_DOC" id="QUALITY_DOC">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It contains a documentation of methods and standards for assessing data quality, based on standard quality criteria such as relevance, accuracy and reliability, timeliness and punctuality, accessibility and clarity, comparability, and coherence.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Quality management - documentation</com:Name>
+          <com:Description xml:lang="en">Documentation on procedures applied for quality management and quality assessment.</com:Description>
+          <str:Parent>
+            <Ref id="QUALITY_MGMNT"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).RECORDING" id="RECORDING">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The recording of transactions covers a broad range of processes and accounting conventions, including types of valuation, prices, conversion rates, the accounting basis, units of measurement used in data collection, etc. It also refers to descriptions of the time of recording (e.g. cash or accrual basis) employed. The description may also include how consistent the practices used are with internationally accepted standards, guidelines, or good practices.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Recording basis</com:Name>
+          <com:Description xml:lang="en">Processes and standards employed in calculating statistical aggregates.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REF_AREA" id="REF_AREA">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The concept refers to the country, geographical or political group of countries or regions within a country.
+The concept is subject to a variety of hierarchies, as countries comprise territorial entities that are States (as understood by international law and practice), regions and other territorial entities that are not States (such as Hong Kong) but for which statistical data are produced internationally on a separate and independent basis.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Reference area</com:Name>
+          <com:Description xml:lang="en">The country or geographic area to which the measured statistical phenomenon relates.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REF_PERIOD" id="REF_PERIOD">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">In many cases, the reference period and time period will be identical, but there are also cases where they are different. This can happen if data are not available for the target reference period, but are available for a time period which is judged to be sufficiently close. For example, the reference period may be a calendar year, whereas data may only be available for a fiscal year. In such cases, "reference period" should refer to the target reference period rather than the actual time period of the data. The difference between target and actual reference period can be highlighted in a free text note.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Reference period</com:Name>
+          <com:Description xml:lang="en">The period of time or point in time to which the measured observation is intended to refer.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REF_PER_WGTS" id="REF_PER_WGTS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Concept relevant for index numbers and transformations such as "GDP at constant prices".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Reference period - weights</com:Name>
+          <com:Description xml:lang="en">Dates or periods to which the observations used to compile the weights refer.</com:Description>
+          <str:Parent>
+            <Ref id="REF_PERIOD"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_POLICY" id="REL_POLICY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Describes the policy for release of the data to the public, how the public is informed that the data are being released, and whether the data are disseminated to all interested parties at the same time.
+This concept can be broken down into: "Release policy - legal acts and other agreements"; "Release policy - policy commentary"; "Release policy - release calendar"; "Release policy - release calendar access"; "Release policy - transparency"; "Release policy - user access".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy</com:Name>
+          <com:Description xml:lang="en">Rules for disseminating statistical data to interested parties.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_POL_LEG_ACTS" id="REL_POL_LEG_ACTS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Description of the legal and institutional framework defining which users have access to what data, on what conditions, and on what time schedule.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy - legal acts and other agreements</com:Name>
+          <com:Description xml:lang="en">Legal acts and other agreements pertaining to data access.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_COMMENT" id="REL_COMMENT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This concept relates to policy commentary that other authorities might add to the data released to the public.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy - policy commentary</com:Name>
+          <com:Description xml:lang="en">Description of whether or not a ministerial commentary is provided on the occasion of statistical release.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_CAL_POLICY" id="REL_CAL_POLICY">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">An advance release calendar is the schedule for release of data, which is publicly disseminated so as to provide prior notice of the precise release dates on which a national statistical agency, other national agency, or international organisation undertakes to release a specified statistical information to the public. Such information may be provided for statistical releases in the coming week, month, quarter or year.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy - release calendar</com:Name>
+          <com:Description xml:lang="en">The schedule of statistical release dates.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_CAL_ACCESS" id="REL_CAL_ACCESS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">This describes how the release calendar can be accessed. A hyperlink should be provided if available.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy - release calendar access</com:Name>
+          <com:Description xml:lang="en">Access to the release calendar information.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_POL_TRA" id="REL_POL_TRA">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">It concerns whether the description of the release policy is disseminated to the public and by what modality, but not the description of the release policy itself.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Release policy - transparency</com:Name>
+          <com:Description xml:lang="en">Dissemination of the release policy to the public.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REL_POL_US_AC" id="REL_POL_US_AC">
+          <com:Name xml:lang="en">Release policy - user access</com:Name>
+          <com:Description xml:lang="en">The policy for release of the data to users, the scope of dissemination (e.g. to the public, to selected users), how users are informed that the data are being released, and whether the policy provides for the dissemination of statistical data to all users at the same time. It also describes the policy for briefing the press in advance of the release of the data.</com:Description>
+          <str:Parent>
+            <Ref id="REL_POLICY"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).RELEVANCE" id="RELEVANCE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Relevance is concerned with whether the available information sheds light on the issues that are important to users. Assessing relevance is subjective and depends upon the varying needs of users. The agency's challenge is to weigh and balance the conflicting needs of current and potential users to produce statistics that satisfy the most important needs within given resource constraints. In assessing relevance, one approach is to gauge relevance directly, by polling users about the data. Indirect evidence of relevance may be found by ascertaining where there are processes in place to determine the uses of data and the views of their users or to use the data in-house for research and other analysis. Relevance refers to the processes for monitoring the relevance and practical usefulness of existing statistics in meeting users' needs and how these processes impact the development of statistical programmes.
+This concept can be broken down into: "Relevance - completeness"; "Relevance - user needs"; "Relevance - user satisfaction".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Relevance</com:Name>
+          <com:Description xml:lang="en">The degree to which statistical information meets the real or perceived needs of clients.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).COMPLETENESS" id="COMPLETENESS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The measurement of the availability of statistics normally refers to data sets and compares the required data set to the available one.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Relevance - completeness</com:Name>
+          <com:Description xml:lang="en">The extent to which all statistics that are needed are available.</com:Description>
+          <str:Parent>
+            <Ref id="RELEVANCE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).USER_NEEDS" id="USER_NEEDS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">With respect to the statistical data to be provided, the main users (e.g. official authorities, the public or others) and user needs should be stated, e.g. official authorities with the needs for policy indicators, national users, etc.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Relevance - user needs</com:Name>
+          <com:Description xml:lang="en">Description of users and their respective needs with respect to the statistical data.</com:Description>
+          <str:Parent>
+            <Ref id="RELEVANCE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).USER_SAT" id="USER_SAT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">User satisfaction concerns how well the disseminated statistics meet the expressed user needs. If user satisfaction surveys have been conducted, the domain manager should mention them. Otherwise, any other indication or measure to determine user satisfaction might be used.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Relevance - user satisifaction</com:Name>
+          <com:Description xml:lang="en">Measure to determine user satisfaction.</com:Description>
+          <str:Parent>
+            <Ref id="RELEVANCE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).REP_AGENCY" id="REP_AGENCY">
+          <com:Name xml:lang="en">Reporting agency</com:Name>
+          <com:Description xml:lang="en">The organisation that supplies the data for a given instance of the statistics.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).SAMPLING" id="SAMPLING">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Refers to information on sample design, sample size, sample frame, sample updating, etc.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Sampling</com:Name>
+          <com:Description xml:lang="en">The process of selecting a number of cases from all the cases in a particular group or universe.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).SOURCE_TYPE" id="SOURCE_TYPE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The type of source, including whether it is a statistical or non-statistical source, and any relevant characteristics (e.g. sample size for survey data, or characteristics of administrative data) should be mentioned.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Source data</com:Name>
+          <com:Description xml:lang="en">Characteristics and components of the raw statistical data used for compiling statistical aggregates.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).STAT_CONC_DEF" id="STAT_CONC_DEF">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Statistical concepts and definitions" refers to the definition of the statistical concept under measure (i.e. the statistical domain) and the main variables provided.
+The type of variable provided (raw figures, annual growth rates, index, flow or stock data, etc.) should be defined and described referring to internationally accepted statistical standards, guidelines, or good practices on which the concepts and definitions that are used for compiling the statistics are based.
+A "coded" statistical concept takes values from a code list of valid values. An "uncoded" statistical concept takes its values as free form text (e.g. time series title).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Statistical concepts and definitions</com:Name>
+          <com:Description xml:lang="en">Statistical characteristics of statistical observations.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).STAT_POP" id="STAT_POP">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">There are two types of population: target population and survey population. A "target population" is the population outlined in the survey objects about which information is to be sought and a "survey population" is the population from which information is obtained in a survey. The target population is also known as the scope of the survey and the survey population as the coverage of the survey. For administrative data sources, the corresponding populations are the "target population", as defined by the relevant legislation and regulations, and the actual "client population" ("United Nations Glossary of Classification Terms" prepared by the Expert Group on International Economic and Social Classifications).</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Statistical population</com:Name>
+          <com:Description xml:lang="en">The total membership or population or "universe" of a defined class of people, objects or events.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).STAT_UNIT" id="STAT_UNIT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The statistical unit is the object of a statistical survey and the bearer of statistical characteristics. These units can, in turn, be divided into observation units and analytical units.
+Statistical units for economic statistics are defined on the basis of three criteria: 1) Legal, accounting or organisational criteria; 2) Geographical criteria; 3) Activity criteria.
+Statistical units comprise the enterprise, enterprise group, kind-of-activity unit (KAU), local unit, establishment, homogeneous unit of production, persons, households, geographical areas, events, etc.
+Statistical units can be categorised into basic statistical units, i.e. those for which data is collected, and derived statistical units, i.e. those which are constructed during the statistical production process. A basic statistical unit is the most detailed level to which the obtained characteristics can be attached.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Statistical unit</com:Name>
+          <com:Description xml:lang="en">Entity for which information is sought and for which statistics are ultimately compiled.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_FORMAT" id="TIME_FORMAT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The technical time format and its related code list are part of the technical standards for SDMX-EDI and SDMX-XML.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Time format</com:Name>
+          <com:Description xml:lang="en">Technical format in which time is represented for the measured phenomenon.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_TIME_FORMAT" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_PERIOD" id="TIME_PERIOD">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The measurement represented by each observation corresponds to a specific point in time (e.g. a single day) or a period (e.g. a month, a fiscal year, or a calendar year). This is used as a time stamp and is of particular importance for time series data. In cases where the actual time period of the data differs from the target reference period, “time period” refers to the actual period.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Time period</com:Name>
+          <com:Description xml:lang="en">The period of time or point in time to which the measured observation refers.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_PER_COLLECT" id="TIME_PER_COLLECT">
+          <com:Name xml:lang="en">Time period - collection</com:Name>
+          <com:Description xml:lang="en">Dates or periods during which the observations have been collected (such as middle, average or end of period) to compile the indicator for the target reference period.</com:Description>
+          <str:Parent>
+            <Ref id="TIME_PERIOD"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIMELINESS" id="TIMELINESS">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Timeliness refers to the speed of data availability, whether for dissemination or for further processing, and it is measured with respect to the time lag between the end of the reference period and the release of data. Timeliness is a crucial element of data quality: adequate timeliness corresponds to a situation where policy-makers can take informed decisions in time for achieving the targeted results. In quality assessment, timeliness is often associated with punctuality, which refers to the time lag between the release date of data and the target date announced in some official release calendar.
+Timeliness can be further broken down into "Timeliness - output" and "Timeliness - source data".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Timeliness</com:Name>
+          <com:Description xml:lang="en">Length of time between data availability and the event or phenomenon they describe.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_OUTPUT" id="TIME_OUTPUT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Timeliness of statistical outputs is the time lag between the end of the reference period and the release of a certain version of the data: provisional, preliminary, or final results. "Timeliness - output" reflects many factors, including some that are related to institutional arrangements, such as the preparation of accompanying commentary and printing. Usually, data are not released immediately at the end of the period they refer to, since data collection, data processing and data dissemination work needs to be performed</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Timeliness - output</com:Name>
+          <com:Description xml:lang="en">The lapse of time between the end of a reference period and dissemination of the data.</com:Description>
+          <str:Parent>
+            <Ref id="TIMELINESS"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TIME_SOURCE" id="TIME_SOURCE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Compared to the parent concept - timeliness - this concept only covers the time period between the end of the reference period and the receipt of the data by the data compiling agency. This time period is determined by factors such as delays reflecting the institutional arrangements for data transmission.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Timeliness - source data</com:Name>
+          <com:Description xml:lang="en">The time between the end of a reference period and actual receipt of the data by the compiling agency.</com:Description>
+          <str:Parent>
+            <Ref id="TIMELINESS"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).TITLE" id="TITLE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">"Title" is a short name describing and identifying a statistical object it is attached to.
+IN SDMX, a title can be referred, for example, to a time series as a "time series title", or to a group as a "group title". A list of ID broken down by attachment level is therefore needed: TITLE_TS, or TITLE_GRP.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Title</com:Name>
+          <com:Description xml:lang="en">Textual label used as identification of a statistical object.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).UNIT_MULT" id="UNIT_MULT">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">In some databases, it is referred to as SCALE, MAGNITUDE or POWER., e.g. "UM=6" means that observations are in millions.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Unit multiplier</com:Name>
+          <com:Description xml:lang="en">Exponent in base 10 specified so that multiplying the observation numeric values by 10^UNIT_MULT gives a value expressed in the unit of measure.</com:Description>
+          <str:CoreRepresentation>
+            <str:Enumeration>
+              <Ref package="codelist" agencyID="SDMX" id="CL_UNIT_MULT" version="1.0" class="Codelist"/>
+            </str:Enumeration>
+          </str:CoreRepresentation>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).UNIT_MEASURE" id="UNIT_MEASURE">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">The unit of measure is a quantity or increment by which something is counted or described, such as kg, mm, °C, °F, monetary units such as Euro or US dollar, simple number counts or index numbers. The unit of measure has a type (e.g. currency) and, in connection with the unit multiplier, provides the level of detail for the value of the variable (e.g. Euro, 1000 Euro).
+For data messages, the concept is always represented by codes. Any additional detail needed must be inserted as free text within "unit of measure detail".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Unit of measure</com:Name>
+          <com:Description xml:lang="en">The unit in which the data values are measured.</com:Description>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).UNIT_MEAS_DETAIL" id="UNIT_MEAS_DETAIL">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">For data messages, as the concept of "unit of measure" is represented through codes, additional detail needed must be inserted as free text within "unit of measure detail".</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Unit of measure detail</com:Name>
+          <com:Description xml:lang="en">Additional textual information on the unit of measure.</com:Description>
+          <str:Parent>
+            <Ref id="UNIT_MEASURE"/>
+          </str:Parent>
+        </str:Concept>
+        <str:Concept urn="urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=SDMX:CROSS_DOMAIN_CONCEPTS(1.0).VALUATION" id="VALUATION">
+          <com:Annotations>
+            <com:Annotation>
+              <com:AnnotationType>CONTEXT</com:AnnotationType>
+              <com:AnnotationText xml:lang="en">Standard national accounts valuations include the basic price (what the seller receives) and the purchaser's price (what the purchaser pays). The purchaser's price is the basic price, plus taxes less subsidies on products, plus invoiced transportation and insurance services, plus distribution margin. Other valuation bases may be used in other contexts. International trade in goods considers the free on board (fob) price and cost-insurance-freight price, among others.
+The concept refers to valuation rules used for recording flows and stocks, including how consistent the practices used are with internationally accepted standards, guidelines, or good practices.</com:AnnotationText>
+            </com:Annotation>
+          </com:Annotations>
+          <com:Name xml:lang="en">Valuation</com:Name>
+          <com:Description xml:lang="en">The definition of the price per unit, for goods and services, flows and asset stocks.</com:Description>
+        </str:Concept>
+      </str:ConceptScheme>
+    </str:Concepts>
+    <str:DataStructures>
+      <str:DataStructure urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=IMF:ECOFIN_DSD(1.0)" isExternalReference="false" agencyID="IMF" id="ECOFIN_DSD" isFinal="false" version="1.0">
+        <com:Name xml:lang="en">ECOFIN Data Structure Definition</com:Name>
+        <str:DataStructureComponents>
+          <str:DimensionList urn="urn:sdmx:org.sdmx.infomodel.datastructure.DimensionDescriptor=IMF:ECOFIN_DSD(1.0).DimensionDescriptor" id="DimensionDescriptor">
+            <str:Dimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=IMF:ECOFIN_DSD(1.0).DATA_DOMAIN" id="DATA_DOMAIN" position="1">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="DATA_DOMAIN" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_DATADOMAIN" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=IMF:ECOFIN_DSD(1.0).REF_AREA" id="REF_AREA" position="2">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="REF_AREA" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_REF_AREA" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=IMF:ECOFIN_DSD(1.0).INDICATOR" id="INDICATOR" position="3">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="INDICATOR" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_INDICATOR" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=IMF:ECOFIN_DSD(1.0).COUNTERPART_AREA" id="COUNTERPART_AREA" position="4">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="COUNTERPART_AREA" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_REF_AREA" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:Dimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.Dimension=IMF:ECOFIN_DSD(1.0).FREQ" id="FREQ" position="5">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="CROSS_DOMAIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="SDMX" id="FREQ" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="SDMX" id="CL_FREQ" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+            </str:Dimension>
+            <str:TimeDimension urn="urn:sdmx:org.sdmx.infomodel.datastructure.TimeDimension=IMF:ECOFIN_DSD(1.0).TIME_PERIOD" id="TIME_PERIOD" position="6">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="CROSS_DOMAIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="SDMX" id="TIME_PERIOD" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:TextFormat textType="ObservationalTimePeriod"/>
+              </str:LocalRepresentation>
+            </str:TimeDimension>
+          </str:DimensionList>
+          <str:AttributeList urn="urn:sdmx:org.sdmx.infomodel.datastructure.AttributeDescriptor=IMF:ECOFIN_DSD(1.0).AttributeDescriptor" id="AttributeDescriptor">
+            <str:Attribute urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=IMF:ECOFIN_DSD(1.0).COMMENT" assignmentStatus="Conditional" id="COMMENT">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="COMMENT" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:AttributeRelationship>
+                <str:None/>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=IMF:ECOFIN_DSD(1.0).BASE_PER" assignmentStatus="Conditional" id="BASE_PER">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="BASE_PER" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="DATA_DOMAIN"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="REF_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="INDICATOR"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="COUNTERPART_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=IMF:ECOFIN_DSD(1.0).UNIT_MULT" assignmentStatus="Mandatory" id="UNIT_MULT">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="UNIT_MULT" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_UNIT_MULT" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="DATA_DOMAIN"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="REF_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="INDICATOR"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="COUNTERPART_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=IMF:ECOFIN_DSD(1.0).OBS_STATUS" assignmentStatus="Conditional" id="OBS_STATUS">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="ECOFIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="IMF" id="OBS_STATUS" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="IMF" id="CL_OBS_STATUS" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:PrimaryMeasure>
+                  <Ref id="OBS_VALUE"/>
+                </str:PrimaryMeasure>
+              </str:AttributeRelationship>
+            </str:Attribute>
+            <str:Attribute urn="urn:sdmx:org.sdmx.infomodel.datastructure.DataAttribute=IMF:ECOFIN_DSD(1.0).TIME_FORMAT" assignmentStatus="Conditional" id="TIME_FORMAT">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="CROSS_DOMAIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="SDMX" id="TIME_FORMAT" class="Concept"/>
+              </str:ConceptIdentity>
+              <str:LocalRepresentation>
+                <str:Enumeration>
+                  <Ref package="codelist" agencyID="SDMX" id="CL_TIME_FORMAT" version="1.0" class="Codelist"/>
+                </str:Enumeration>
+              </str:LocalRepresentation>
+              <str:AttributeRelationship>
+                <str:Dimension>
+                  <Ref id="DATA_DOMAIN"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="REF_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="INDICATOR"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="COUNTERPART_AREA"/>
+                </str:Dimension>
+                <str:Dimension>
+                  <Ref id="FREQ"/>
+                </str:Dimension>
+              </str:AttributeRelationship>
+            </str:Attribute>
+          </str:AttributeList>
+          <str:MeasureList urn="urn:sdmx:org.sdmx.infomodel.datastructure.MeasureDescriptor=IMF:ECOFIN_DSD(1.0).MeasureDescriptor" id="MeasureDescriptor">
+            <str:PrimaryMeasure urn="urn:sdmx:org.sdmx.infomodel.datastructure.PrimaryMeasure=IMF:ECOFIN_DSD(1.0).OBS_VALUE" id="OBS_VALUE">
+              <str:ConceptIdentity>
+                <Ref maintainableParentID="CROSS_DOMAIN_CONCEPTS" package="conceptscheme" maintainableParentVersion="1.0" agencyID="SDMX" id="OBS_VALUE" class="Concept"/>
+              </str:ConceptIdentity>
+            </str:PrimaryMeasure>
+          </str:MeasureList>
+        </str:DataStructureComponents>
+      </str:DataStructure>
+    </str:DataStructures>
+    <str:Constraints>
+      <str:ContentConstraint urn="urn:sdmx:org.sdmx.infomodel.registry.ContentConstraint=IMF:SPI_CONSTRAINT(1.0)" isExternalReference="false" agencyID="IMF" id="SPI_CONSTRAINT" isFinal="false" type="Allowed" version="1.0">
+        <com:Name xml:lang="en">SPI_CONSTRAINT</com:Name>
+        <str:ConstraintAttachment>
+          <str:Dataflow>
+            <Ref package="datastructure" agencyID="IMF" id="SPI" version="1.0" class="Dataflow"/>
+          </str:Dataflow>
+        </str:ConstraintAttachment>
+        <str:CubeRegion include="true">
+          <com:KeyValue id="COUNTERPART_AREA">
+            <com:Value>_Z</com:Value>
+          </com:KeyValue>
+          <com:KeyValue id="DATA_DOMAIN">
+            <com:Value>SPI</com:Value>
+          </com:KeyValue>
+          <com:KeyValue id="INDICATOR">
+            <com:Value>FPE_IX</com:Value>
+            <com:Value>FPE_EOP_IX</com:Value>
+          </com:KeyValue>
+          <com:Attribute id="TIME_FORMAT">
+            <com:Value>P1Y</com:Value>
+            <com:Value>P6M</com:Value>
+            <com:Value>P3M</com:Value>
+            <com:Value>P1M</com:Value>
+            <com:Value>P1D</com:Value>
+          </com:Attribute>
+        </str:CubeRegion>
+      </str:ContentConstraint>
+    </str:Constraints>
+  </mes:Structures>
+</mes:Structure>

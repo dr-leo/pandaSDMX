@@ -141,6 +141,8 @@ METHOD = {
     'Agency': 'organisation',
     'DataProvider': 'organisation',
 
+    'KeyValue': 'memberselection',
+
     'TextFormat': 'facet',
     'EnumerationFormat': 'facet',
 
@@ -572,14 +574,9 @@ class Reader(BaseReader):
             if k[0] in classes:
                 self._current.pop(k)
 
-    def _get_cc_dimension(self, id):
-        """Return a Dimension for *id* in the current scope.
-
-        Navigates from a ContentConstraint in self._current, to its Dataflow,
-        DataStructureDefinition, and DimensionDescriptor.
-        """
-        return list(self._get_current(ContentConstraint).content)[0] \
-            .structure.dimensions.get(id)
+    def _get_cc_dsd(self):
+        """Return the DSD for the ContentConstraint in the current scope."""
+        return list(self._get_current(ContentConstraint).content)[0].structure
 
     # Parsers for common elements
 
@@ -834,7 +831,7 @@ class Reader(BaseReader):
             # with a <com:Value>...</com:Value> element.
             kvs = {}
             for e in elem.iterchildren():
-                c = self._get_cc_dimension(e.attrib['id'])
+                c = self._get_cc_dsd().dimensions.get(e.attrib['id'])
                 kvs[c] = ComponentValue(value_for=c,
                                         value=self._parse(e)['value'])
             return cls(included=elem.attrib.get('isIncluded', True),
@@ -1115,6 +1112,10 @@ class Reader(BaseReader):
         return d
 
     def parse_attribute(self, elem):
+        if self._stack[-1] == 'CubeRegion':
+            # <com:Attribute> inside a CubeRegion is a MemberSelection
+            return self.parse_memberselection(elem)
+
         args = dict(id=elem.attrib['id'])
         try:
             args['urn'] = elem.attrib['urn']
@@ -1232,21 +1233,32 @@ class Reader(BaseReader):
         return cc
 
     def parse_cuberegion(self, elem):
-        values = self._parse(elem)
-        cr = CubeRegion(
-            included=elem.attrib.pop('include'),
-            member={ms.values_for: ms for ms in values.pop('keyvalue')})
+        values = self._parse(elem, unwrap=False)
+        cr = CubeRegion(included=elem.attrib['include'])
+
+        # Combine member selections for Dimensions and Attributes
+        for ms in values.pop('keyvalue', []) + values.pop('attribute', []):
+            cr.member[ms.values_for] = ms
+
         assert len(values) == 0
         return cr
 
-    def parse_keyvalue(self, elem):
-        """<com:KeyValue> NOT inside <com:Key> specifies a MemberSelection."""
+    def parse_memberselection(self, elem):
+        """<com:KeyValue> (not inside <com:Key>); or <com:Attribute>."""
         values = self._parse(elem)
         values = list(map(lambda v: MemberValue(value=v), values['value']))
 
-        return MemberSelection(
-            values=values,
-            values_for=self._get_cc_dimension(elem.attrib['id']))
+        # Values are for either a Dimension or Attribute, based on tag name
+        cl = {
+            'KeyValue': 'dimensions',
+            'Attribute': 'attributes',
+        }.get(QName(elem).localname)
+
+        # Navigate from the current ContentConstraint → DSD → ComponentList
+        # → Dimension or Attribute
+        component = getattr(self._get_cc_dsd(), cl).get(elem.attrib['id'])
+
+        return MemberSelection(values=values, values_for=component)
 
     def parse_datakeyset(self, elem):
         values = self._parse(elem)

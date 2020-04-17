@@ -66,6 +66,11 @@ TEST_FILES.extend(
     (BASE_PATH.joinpath(*parts), 'xml', 'structure') for parts in [
         ('ECB', 'orgscheme.xml'),
         ('ESTAT', 'apro_mk_cola-structure.xml'),
+
+        # Manually reduced subset of the response for this DSD. Test for
+        # <str:CubeRegion> containing both <com:KeyValue> and <com:Attribute>
+        ('IMF', 'ECOFIN_DSD-structure.xml'),
+
         ('INSEE', 'CNA-2010-CONSO-SI-A17-structure.xml'),
         ('INSEE', 'dataflow.xml'),
         ('INSEE', 'IPI-2010-A21-structure.xml'),

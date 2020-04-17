@@ -65,7 +65,7 @@ def test_write_data_arguments():
 
 
 def test_write_data(data_path):
-    msg = sdmx.read_sdmx(data_path)
+    msg = sdmx.read_sdmx(data_path, encoding='utf-8')
 
     result = sdmx.to_pandas(msg)
 
@@ -297,7 +297,7 @@ def test_write_dataset_datetime():
 
 @pytest.mark.parametrize('path', **test_files(kind='structure'))
 def test_writer_structure(path):
-    msg = sdmx.read_sdmx(path)
+    msg = sdmx.read_sdmx(path, encoding='utf-8')
 
     sdmx.to_pandas(msg)
 

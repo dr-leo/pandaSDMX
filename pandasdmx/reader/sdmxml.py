@@ -541,18 +541,27 @@ class Reader(BaseReader):
         # Return the instance and any non-name values
         return obj, values
 
-    def _get_current(self, cls):
-        """Return the sole instance of *cls* in the :attr:`_current` scope.
+    def _get_current(self, cls, id=None):
+        """Return an instance of *cls* in the :attr:`_current` scope.
 
-        Raises AssertionError if there are 0, or 2 or more instances.
+        *cls* may be a single class or tuple of classes valid as the
+        `classinfo` argument of :func:`issubclass`. If `id` is given, the
+        object must also have a matching ID.
+
+        Raises RuntimeError if there are 0, or 2 or more instances.
         """
         results = []
         for k, obj in self._current.items():
-            if k[0] is cls:
+            if issubclass(k[0], cls) and (id is None or id == k[1]):
                 results.append(obj)
 
-        assert len(results) == 1, results
-        return results[0]
+        if len(results) == 1:
+            return results[0]
+        elif len(results) > 1:  # pragma: no cover
+            raise RuntimeError(f'cannot disambiguate multiple {cls.__name__} '
+                               f'in the current scope: {results}')
+        else:  # pragma: no cover
+            raise RuntimeError(f'no {cls.__name__} in the current scope')
 
     def _clear_current(self, scope):
         """Clear references from self._current at the end of *scope*."""

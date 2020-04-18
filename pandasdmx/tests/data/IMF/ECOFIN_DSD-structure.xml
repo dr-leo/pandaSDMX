@@ -1888,6 +1888,19 @@ The concept refers to valuation rules used for recording flows and stocks, inclu
           </com:Attribute>
         </str:CubeRegion>
       </str:ContentConstraint>
+      <str:ContentConstraint urn="urn:sdmx:org.sdmx.infomodel.registry.ContentConstraint=IMF:US_Constraint(1.0)" isExternalReference="false" agencyID="IMF" id="US_Constraint" isFinal="false" type="Allowed" version="1.0">
+        <com:Name xml:lang="en">US Agencies constraint</com:Name>
+        <str:ConstraintAttachment>
+          <str:DataProvider>
+            <Ref maintainableParentID="DATA_PROVIDERS" package="base" maintainableParentVersion="1.0" agencyID="IMF" id="US3" class="DataProvider"/>
+          </str:DataProvider>
+        </str:ConstraintAttachment>
+        <str:CubeRegion include="true">
+          <com:KeyValue id="REF_AREA">
+            <com:Value>US</com:Value>
+          </com:KeyValue>
+        </str:CubeRegion>
+      </str:ContentConstraint>
     </str:Constraints>
   </mes:Structures>
 </mes:Structure>

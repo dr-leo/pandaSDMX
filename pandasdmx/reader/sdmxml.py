@@ -1266,14 +1266,23 @@ class Reader(BaseReader):
         values = list(map(lambda v: MemberValue(value=v), values['value']))
 
         # Values are for either a Dimension or Attribute, based on tag name
-        cl = {
-            'KeyValue': 'dimensions',
-            'Attribute': 'attributes',
+        kind = {
+            'KeyValue': ('dimensions', Dimension),
+            'Attribute': ('attributes', DataAttribute),
         }.get(QName(elem).localname)
 
-        # Navigate from the current ContentConstraint → DSD → ComponentList
-        # → Dimension or Attribute
-        component = getattr(self._get_cc_dsd(), cl).get(elem.attrib['id'])
+        try:
+            # Navigate from the current ContentConstraint to a
+            # ConstrainableArtefact. If this is a DataFlow, it has a DSD.
+            dsd = self._get_cc_dsd()
+        except AttributeError:
+            # Failed because the ContentConstraint is attached to something,
+            # e.g. DataProvider, that does not provide an association to a DSD.
+            # Try to get a Component from the current scope with matching ID.
+            component = self._get_current(cls=kind[1], id=elem.attrib['id'])
+        else:
+            # Get the Component from the correct list according to the kind
+            component = getattr(dsd, kind[0]).get(elem.attrib['id'])
 
         return MemberSelection(values=values, values_for=component)
 

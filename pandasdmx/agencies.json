@@ -145,9 +145,10 @@
      } 
      } 
      },
-              "ISTAT_S": { 
+    "ISTAT_S": { 
         "name": "Italian Statistics Office - structure-specific data",
         "url": "http://sdmx.istat.it/SDMXWS/rest", 
+        "supports_series_keys_only": true,
         "resources": { 
             "data": {  
             "headers": {
@@ -156,9 +157,10 @@
      } 
 }
 },
-              "ISTAT": { 
+    "ISTAT": { 
         "name": "Italian Statistics Office - generic data",
         "url": "http://sdmx.istat.it/SDMXWS/rest", 
+        "supports_series_keys_only": true,
         "resources": { 
             "data": {  
             "headers": {} 

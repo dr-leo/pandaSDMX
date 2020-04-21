@@ -362,9 +362,9 @@ class Reader(BaseReader):
                     '{http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic}Obs',
                     reversed=reverse_obs):
                 obs_dim = self._paths['generic_series_dim_path'](obs)[0]
-                if with_value:
-                    obs_value = self._paths['obs_value_path'](obs)[0]
-                else:
+                try:
+                    obs_value = self._paths['obs_value_path'](obs)[0] if with_value else None
+                except IndexError:
                     obs_value = None
                 if with_attributes:
                     obs_attr_values = self._paths['attr_values_path'](obs)

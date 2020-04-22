@@ -38,9 +38,9 @@ def test_doc_example():
         )
 
     data = sdmx.to_pandas(resp) \
-               .xs('TOTAL', level='AGE', drop_level=False)
+               .xs('Y15-74', level='AGE', drop_level=False)
 
-    data.loc[('A', 'TOTAL', 'PC_ACT', 'T')]
+    data.loc[('A', 'Y15-74', 'PC_ACT', 'T')]
 
     # Further checks per https://github.com/dr-leo/pandaSDMX/issues/157
 
@@ -85,8 +85,8 @@ def test_doc_index1():
         'AT': 'Austria',
         'BE': 'Belgium',
         'BG': 'Bulgaria',
+        'CH': 'Switzerland',
         'CY': 'Cyprus',
-        'CZ': 'Czechia',
         }, name='GEO') \
         .rename_axis('CL_GEO')
 

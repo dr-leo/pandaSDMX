@@ -48,7 +48,7 @@ We use the built-in :func:`.to_pandas` function to convert it to a :class:`panda
 .. ipython:: python
 
     data = (sdmx.to_pandas(resp)
-                .xs('TOTAL', level='AGE', drop_level=False))
+                .xs('Y15-74', level='AGE', drop_level=False))
 
 We can now explore the data set as expressed in a familiar pandas object.
 First, show dimension names:
@@ -64,8 +64,8 @@ First, show dimension names:
 
     data.index.levels
 
-Select some data of interest: show aggregate unemployment rates across ages ('TOTAL' on the ``AGE`` dimension) and sexes ('T' on the ``SEX`` dimension), expressed as a percentage of active population ('PC_ACT' on the ``UNIT`` dimension):
+Select some data of interest: show aggregate unemployment rates across ages ('Y15-74' on the ``AGE`` dimension) and sexes ('T' on the ``SEX`` dimension), expressed as a percentage of active population ('PC_ACT' on the ``UNIT`` dimension):
 
 .. ipython:: python
 
-    data.loc[('A', 'TOTAL', 'PC_ACT', 'T')]
+    data.loc[('A', 'Y15-74', 'PC_ACT', 'T')]

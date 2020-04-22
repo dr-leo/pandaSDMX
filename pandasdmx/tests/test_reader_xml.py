@@ -12,13 +12,13 @@ from .data import specimen, test_files
 # Read example data files
 @pytest.mark.parametrize('path', **test_files(format='xml', kind='data'))
 def test_read_xml(path):
-    sdmx.read_sdmx(path, encoding='utf-8')
+    sdmx.read_sdmx(path)
 
 
 # Read example structure files
 @pytest.mark.parametrize('path', **test_files(format='xml', kind='structure'))
 def test_read_xml_structure(path):
-    sdmx.read_sdmx(path, encoding='utf-8')
+    sdmx.read_sdmx(path)
 
 
 def test_read_xml_structure_insee():

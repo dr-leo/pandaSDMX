@@ -520,12 +520,11 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         reader = readers[filename_or_obj.suffix.lstrip('.').upper()]
 
         # Open the file
-        # str() here is for Python 3.5 compatibility
-        obj = open(str(filename_or_obj), encoding=kwargs.pop('encoding', None))
+        obj = open(filename_or_obj, 'br')
     except KeyError:
         if format:
             reader = readers[format]
-            obj = open(str(filename_or_obj))
+            obj = open(filename_or_obj, 'br')
         else:
             msg = ("cannot identify SDMX message format from file name "
                    f"'{filename_or_obj.name}'; use  format='...'")

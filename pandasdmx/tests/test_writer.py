@@ -54,21 +54,28 @@ def test_write_data_arguments():
     # Attributes must be a string
     with raises(TypeError):
         sdmx.to_pandas(msg, attributes=2)
+        msg.to_pandas(attributes=2)
+        
 
     # Attributes must contain only 'dgso'
     with raises(ValueError):
         sdmx.to_pandas(msg, attributes='foobarbaz')
+        msg.to_pandas(attributes='foobarbaz')
 
 
 def test_write_data(data_path):
     msg = sdmx.read_sdmx(data_path)
 
     result = sdmx.to_pandas(msg)
+    # Check if wrapper method does the same.
+    # This involves a lot of duplication. Maybe test only for one case.
+    result2 = msg.write()
 
     expected = expected_data(data_path)
     if expected is not None:
         print(expected, result, sep='\n')
     assert_pd_equal(expected, result)
+    assert_pd_equal(expected, result2)
 
     # TODO incomplete
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)

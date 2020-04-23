@@ -31,6 +31,7 @@ from pandasdmx.model import (
     )
 from pandasdmx.util import BaseModel, DictLike, summarize_dictlike
 from requests import Response
+from warnings import warn
 
 
 def _summarize(obj, fields):
@@ -92,6 +93,26 @@ class Message(BaseModel):
     #: that returned the Message. This is not part of the SDMX standard.
     response: Response = None
 
+    def to_pandas(self, *args, **kwargs):
+        '''
+        Convert a :inst:`Message` to :mod:`pandas` object(s) by
+        calling :func:`pandasdmx.writer.write`. 
+        The :inst:`Message` is passed implicitly.  
+        Otherwise  see the docs for :func:`pandasdmx.writer.write`.
+        
+        For  backwards compat with previous releases :class:`Message` has an identical  alias
+        :meth:`Message.write`. 
+        It is deprecated and may be removed in future versions.
+        '''
+        from pandasdmx.writer import write
+        return write(self, *args, **kwargs)
+    
+    def write(self, *args, **kwargs):
+        'Deprecated alias for :meth:`Message.to_pandas`'
+        warn('Message.write() is deprecated. Use Message.to_pandas() instead.',
+            DeprecationWarning)
+        return self.to_pandas(*args, **kwargs)
+    
     def __str__(self):
         return repr(self)
 
@@ -103,7 +124,7 @@ class Message(BaseModel):
         ]
         lines.extend(_summarize(self, ['footer', 'response']))
         return '\n  '.join(lines)
-
+    
 
 class ErrorMessage(Message):
     pass

@@ -138,18 +138,15 @@ class Request:
 
         return cc.to_query_string(dsd), dsd
 
-    def _request_from_args(self, kwargs):
+    def _request_from_args(self, params={}, headers={}, resource=None,
+        resource_type=None, resource_id=None, force=False, provider=None,
+        version=None, key=None,  dsd=None, validate=True, **kwargs):
         """Validate arguments and prepare pieces for a request."""
-        parameters = kwargs.pop('params', {})
-        headers = kwargs.pop('headers', {})
 
         # Base URL
         url_parts = [self.source.url]
 
         # Resource arguments
-        resource = kwargs.pop('resource', None)
-        resource_type = kwargs.pop('resource_type', None)
-        resource_id = kwargs.pop('resource_id', None)
 
         try:
             if resource_type:
@@ -174,7 +171,6 @@ class Request:
             else:
                 resource_id = resource.id
 
-        force = kwargs.pop('force', False)
         if not (force or self.source.supports[resource_type]):
             raise NotImplementedError(f'{self.source.id} does not support the'
                                       f'{resource_type!r} API endpoint; '
@@ -183,7 +179,6 @@ class Request:
         url_parts.append(resource_type.name)
 
         # Data provider ID to use in the URL
-        provider = kwargs.pop('provider', None)
         if resource_type == Resource.data:
             # Requests for data do not specific an agency in the URL
             if provider is not None:
@@ -195,21 +190,14 @@ class Request:
 
         url_parts.extend([provider_id, resource_id])
 
-        version = kwargs.pop('version', None)
         if not version and resource_type != Resource.data:
             url_parts.append('latest')
-
-        key = kwargs.pop('key', None)
-        dsd = kwargs.pop('dsd', None)
-        validate = kwargs.pop('validate', True)
-
-        if len(kwargs):
-            raise ValueError(f'unrecognized arguments: {kwargs!r}')
+        if kwargs:
+            raise ValueError(f'unrecognized arguments: {kwargs!r}') 
 
         if validate:
             # Make the key, and retain the DSD (if any) for use in parsing
             key, dsd = self._make_key(resource_type, resource_id, key, dsd)
-            kwargs['dsd'] = dsd
 
         url_parts.append(key)
 
@@ -217,6 +205,7 @@ class Request:
         url = '/'.join(filter(None, url_parts))
 
         # Parameters: set 'references' to sensible defaults
+        parameters = params.copy() # avoid side effects
         if 'references' not in parameters:
             if resource_type in [Resource.dataflow, Resource.datastructure] \
                     and resource_id:
@@ -375,7 +364,7 @@ class Request:
                 resource_type=resource_type,
                 resource_id=resource_id,
             ))
-            req = self._request_from_args(kwargs)
+            req = self._request_from_args(**kwargs)
 
         req = self.session.prepare_request(req)
 

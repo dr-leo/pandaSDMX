@@ -40,7 +40,7 @@ def test_doc_example():
     data = sdmx.to_pandas(resp) \
                .xs('Y15-74', level='AGE', drop_level=False)
 
-    data.loc[('A', 'Y15-74', 'PC_ACT', 'T')]
+    data.loc[('PC_ACT', 'Y15-74', 'T')]
 
     # Further checks per https://github.com/dr-leo/pandaSDMX/issues/157
 

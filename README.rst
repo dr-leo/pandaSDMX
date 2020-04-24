@@ -63,16 +63,3 @@ under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 
-
-History
--------
-
-pandaSDMX originally started as a fork of pysdmx_. Even if pandaSDMX would not
-have been possible without the inspiring work done for that project, the author
-decided to rewrite it from scratch, so pandaSDMX became an independent project.
-Many people from all over the world have generously contributed code and
-feedback.
-
-pandaSDMX also contains sample data and metadata from the SDMX user guide.
-
-.. _pysdmx: https://github.com/widukind/pysdmx

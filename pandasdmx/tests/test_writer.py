@@ -67,15 +67,11 @@ def test_write_data(data_path):
     msg = sdmx.read_sdmx(data_path)
 
     result = sdmx.to_pandas(msg)
-    # Check if wrapper method does the same.
-    # This involves a lot of duplication. Maybe test only for one case.
-    result2 = msg.write()
 
     expected = expected_data(data_path)
     if expected is not None:
         print(expected, result, sep='\n')
     assert_pd_equal(expected, result)
-    assert_pd_equal(expected, result2)
 
     # TODO incomplete
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
@@ -112,12 +108,14 @@ def test_write_agencyscheme():
     with pytest.raises(AttributeError):
         data.structure
 
-
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_write_categoryscheme():
     with specimen('IPI-2010-A21-structure.xml') as f:
         msg = sdmx.read_sdmx(f)
         print(msg.category_scheme)
         data = sdmx.to_pandas(msg)
+        same_data = msg.write()
+        assert type(data) is type(same_data)
 
     cs = data['category_scheme']['CLASSEMENT_DATAFLOWS']
 

@@ -15,6 +15,7 @@ doc/cache.sqlite
 doc/_build
 prof/
 htmlcov
+.eggs/
 
 # Editors
 .vscode/settings.json

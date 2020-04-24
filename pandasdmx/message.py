@@ -94,21 +94,22 @@ class Message(BaseModel):
     response: Response = None
 
     def to_pandas(self, *args, **kwargs):
-        '''
-        Convert a :inst:`Message` to :mod:`pandas` object(s) by
-        calling :func:`pandasdmx.writer.write`. 
-        The :inst:`Message` is passed implicitly.  
-        Otherwise  see the docs for :func:`pandasdmx.writer.write`.
+        """Convert a Message instance to :mod:`pandas` object(s). 
         
-        For  backwards compat with previous releases :class:`Message` has an identical  alias
-        :meth:`Message.write`. 
-        It is deprecated and may be removed in future versions.
-        '''
+        :func:`pandasdmx.writer.write` is called and passed 
+        the `Message` instance  as first argument, followed  by any `args` and `kwargs`.  
+        
+        .. seealso:: :meth:`write` 
+        """
         from pandasdmx.writer import write
         return write(self, *args, **kwargs)
     
     def write(self, *args, **kwargs):
-        'Deprecated alias for :meth:`Message.to_pandas`'
+        """Alias for `to_pandas` improving backwards compatibility.
+        
+        .. deprecated:: 1.0
+            Use :meth:`to_pandas` instead.
+        """
         warn('Message.write() is deprecated. Use Message.to_pandas() instead.',
             DeprecationWarning)
         return self.to_pandas(*args, **kwargs)

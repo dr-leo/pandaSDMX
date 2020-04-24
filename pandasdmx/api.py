@@ -200,7 +200,7 @@ class Request:
             url_parts.append('latest')
 
         key = kwargs.pop('key', None)
-        dsd = kwargs.get('dsd', None)
+        dsd = kwargs.pop('dsd', None)
         validate = kwargs.pop('validate', True)
 
         if len(kwargs):

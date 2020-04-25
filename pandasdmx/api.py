@@ -140,7 +140,7 @@ class Request:
 
     def _request_from_args(self, params={}, headers={}, resource=None,
         resource_type=None, resource_id=None, force=False, provider=None,
-        version=None, key=None,  dsd=None, validate=True, **kwargs):
+        version=None, key=None,  dsd=None, validate=True):
         """Validate arguments and prepare pieces for a request."""
 
         # Base URL
@@ -192,8 +192,6 @@ class Request:
 
         if not version and resource_type != Resource.data:
             url_parts.append('latest')
-        if kwargs:
-            raise ValueError(f'unrecognized arguments: {kwargs!r}') 
 
         if validate:
             # Make the key, and retain the DSD (if any) for use in parsing
@@ -220,15 +218,8 @@ class Request:
         return requests.Request('get', url, params=parameters,
                                 headers=headers)
 
-    def _request_from_url(self, kwargs):
-        url = kwargs.pop('url')
-        parameters = kwargs.pop('params', {})
-        headers = kwargs.pop('headers', {})
-
-        if len(kwargs):
-            raise ValueError(f'unrecognized arguments: {kwargs!r}')
-
-        return requests.Request('get', url, params=parameters,
+    def _request_from_url(self, url, params={}, headers={}):
+        return requests.Request('get', url, params=params,
                                 headers=headers)
 
     def get(self, resource_type=None, resource_id=None, tofile=None,
@@ -358,7 +349,7 @@ class Request:
 
         # Handle arguments
         if 'url' in kwargs:
-            req = self._request_from_url(kwargs)
+            req = self._request_from_url(**kwargs)
         else:
             kwargs.update(dict(
                 resource_type=resource_type,

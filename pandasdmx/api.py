@@ -215,7 +215,7 @@ class Request:
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
-        return requests.Request('get', url, params=parameters,
+        return dsd, requests.Request('get', url, params=parameters,
                                 headers=headers)
 
     def _request_from_url(self, url, params={}, headers={}):
@@ -223,7 +223,7 @@ class Request:
                                 headers=headers)
 
     def get(self, resource_type=None, resource_id=None, tofile=None,
-            use_cache=False, dry_run=False, **kwargs):
+            use_cache=False, dry_run=False, dsd=None, **kwargs):
         """Retrieve SDMX data or metadata.
 
         (Meta)data is retrieved from the :attr:`source` of the current Request.
@@ -285,15 +285,15 @@ class Request:
             If :obj:`True`, prepare and return a :class:`requests.Request`
             object, but do not execute the query. The prepared URL and headers
             can be examined by inspecting the returned object.
+        dsd : :class:`~.DataStructureDefinition`
+            Existing object used to validate the `key` argument. If not
+            provided, an additional query executed to retrieve a DSD in order
+            to validate the `key`.
         **kwargs
             Other, optional parameters (below).
 
         Other Parameters
         ----------------
-        dsd : :class:`~.DataStructureDefinition`
-            Existing object used to validate the `key` argument. If not
-            provided, an additional query executed to retrieve a DSD in order
-            to validate the `key`.
         force : bool
             If :obj:`True`, execute the query even if the :attr:`source` does
             not support queries for the given `resource_type`. Default:
@@ -355,7 +355,7 @@ class Request:
                 resource_type=resource_type,
                 resource_id=resource_id,
             ))
-            req = self._request_from_args(**kwargs)
+            dsd, req = self._request_from_args(**kwargs)
 
         req = self.session.prepare_request(req)
 
@@ -409,7 +409,7 @@ class Request:
 
         # Parse the message, using any provided or auto-queried DSD
         msg = reader.read_message(response_content,
-                                  dsd=kwargs.get('dsd', None))
+                                  dsd=dsd)
 
         # Store the HTTP response with the message
         msg.response = response

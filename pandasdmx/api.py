@@ -355,7 +355,7 @@ class Request:
                 resource_type=resource_type,
                 resource_id=resource_id,
             ))
-            dsd, req = self._request_from_args(**kwargs)
+            dsd, req = self._request_from_args(dsd=dsd, **kwargs)
 
         req = self.session.prepare_request(req)
 
@@ -369,7 +369,6 @@ class Request:
                 return self.cache[req.url]
             except KeyError:
                 logger.info('Not found in cache')
-                pass
 
         if dry_run:
             return req

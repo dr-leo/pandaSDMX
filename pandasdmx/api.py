@@ -218,7 +218,7 @@ class Request:
         return dsd, requests.Request('get', url, params=parameters,
                                 headers=headers)
 
-    def _request_from_url(self, url, params={}, headers={}):
+    def _request_from_url(self, url, params={}, headers={}, dsd=None):
         return requests.Request('get', url, params=params,
                                 headers=headers)
 
@@ -341,6 +341,11 @@ class Request:
             and `force` is not :obj:`True`.
 
         """
+        # add dsd to the kwarts as it is needed by some adapters for 
+        # structure-specific requests.
+        # TODO: do not use **kwargs in the above function signature. Rather make kwargs explicit.
+        kwargs.update(dsd=dsd)
+
         # Allow sources to modify request args
         # TODO this should occur after most processing, defaults, checking etc.
         #      are performed, so that core code does most of the work.
@@ -355,7 +360,7 @@ class Request:
                 resource_type=resource_type,
                 resource_id=resource_id,
             ))
-            dsd, req = self._request_from_args(dsd=dsd, **kwargs)
+            dsd, req = self._request_from_args(**kwargs)
 
         req = self.session.prepare_request(req)
 

@@ -32,7 +32,8 @@ install:
       python -m pip install --upgrade pip ;;
   esac
 # All platforms
-- pip3 install --upgrade pip
+# Next line commented out to try fixing  OSX build
+#- pip3 install --upgrade pip
 - pip3 install --requirement requirements.txt
 - pip3 install --editable .[cache,docs,tests]
 

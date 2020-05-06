@@ -16,7 +16,7 @@ The DSD, in turn, contains or references all the metadata describing data sets a
     import pandasdmx as sdmx
     estat = sdmx.Request('ESTAT')
 
-Download the metadata and expose:
+Download the metadata:
 
 .. ipython:: python
 
@@ -42,30 +42,29 @@ We also use a query *parameter*, 'startPeriod', to limit the scope of the data r
         params={'startPeriod': '2007'},
         )
 
-``resp`` is now a :class:`.DataMessage` object.
-We use the built-in :func:`.to_pandas` function to convert it to a :class:`pandas.Series`, then select on the ``AGE`` dimension:
+``resp`` is  a :class:`.DataMessage` object.
+We use the :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.Dataframe`, then select on the ``AGE`` dimension we saw   in the ``metadata`` above:
 
 .. ipython:: python
 
-    data = (sdmx.to_pandas(resp)
-                .xs('Y15-74', level='AGE', drop_level=False))
+    data = resp.to_pandas().xs('Y15-74', level='AGE', 
+              axis=1, drop_level=False)
 
 We can now explore the data set as expressed in a familiar pandas object.
 First, show dimension names:
 
 .. ipython:: python
 
-    data.index.names
-
+    data.columns.names
 
 …and corresponding key values along these dimensions:
 
 .. ipython:: python
 
-    data.index.levels
+    data.columns.levels
 
 Select some data of interest: show aggregate unemployment rates across ages ('Y15-74' on the ``AGE`` dimension) and sexes ('T' on the ``SEX`` dimension), expressed as a percentage of active population ('PC_ACT' on the ``UNIT`` dimension):
 
 .. ipython:: python
 
-    data.loc[('A', 'Y15-74', 'PC_ACT', 'T')]
+    data.loc[:, ('A', 'Y15-74', 'PC_ACT', 'T')]

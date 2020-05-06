@@ -138,18 +138,15 @@ class Request:
 
         return cc.to_query_string(dsd), dsd
 
-    def _request_from_args(self, kwargs):
+    def _request_from_args(self, params={}, headers={}, resource=None,
+        resource_type=None, resource_id=None, force=False, provider=None,
+        version=None, key=None,  dsd=None, validate=True):
         """Validate arguments and prepare pieces for a request."""
-        parameters = kwargs.pop('params', {})
-        headers = kwargs.pop('headers', {})
 
         # Base URL
         url_parts = [self.source.url]
 
         # Resource arguments
-        resource = kwargs.pop('resource', None)
-        resource_type = kwargs.pop('resource_type', None)
-        resource_id = kwargs.pop('resource_id', None)
 
         try:
             if resource_type:
@@ -174,7 +171,6 @@ class Request:
             else:
                 resource_id = resource.id
 
-        force = kwargs.pop('force', False)
         if not (force or self.source.supports[resource_type]):
             raise NotImplementedError(f'{self.source.id} does not support the'
                                       f'{resource_type!r} API endpoint; '
@@ -183,7 +179,6 @@ class Request:
         url_parts.append(resource_type.name)
 
         # Data provider ID to use in the URL
-        provider = kwargs.pop('provider', None)
         if resource_type == Resource.data:
             # Requests for data do not specific an agency in the URL
             if provider is not None:
@@ -195,21 +190,12 @@ class Request:
 
         url_parts.extend([provider_id, resource_id])
 
-        version = kwargs.pop('version', None)
         if not version and resource_type != Resource.data:
             url_parts.append('latest')
-
-        key = kwargs.pop('key', None)
-        dsd = kwargs.get('dsd', None)
-        validate = kwargs.pop('validate', True)
-
-        if len(kwargs):
-            raise ValueError(f'unrecognized arguments: {kwargs!r}')
 
         if validate:
             # Make the key, and retain the DSD (if any) for use in parsing
             key, dsd = self._make_key(resource_type, resource_id, key, dsd)
-            kwargs['dsd'] = dsd
 
         url_parts.append(key)
 
@@ -217,6 +203,7 @@ class Request:
         url = '/'.join(filter(None, url_parts))
 
         # Parameters: set 'references' to sensible defaults
+        parameters = params.copy() # avoid side effects
         if 'references' not in parameters:
             if resource_type in [Resource.dataflow, Resource.datastructure] \
                     and resource_id:
@@ -228,22 +215,15 @@ class Request:
         if not headers and self.source and resource_type:
             headers = self.source.headers.get(resource_type.name, {})
 
-        return requests.Request('get', url, params=parameters,
+        return dsd, requests.Request('get', url, params=parameters,
                                 headers=headers)
 
-    def _request_from_url(self, kwargs):
-        url = kwargs.pop('url')
-        parameters = kwargs.pop('params', {})
-        headers = kwargs.pop('headers', {})
-
-        if len(kwargs):
-            raise ValueError(f'unrecognized arguments: {kwargs!r}')
-
-        return requests.Request('get', url, params=parameters,
+    def _request_from_url(self, url, params={}, headers={}, dsd=None):
+        return requests.Request('get', url, params=params,
                                 headers=headers)
 
     def get(self, resource_type=None, resource_id=None, tofile=None,
-            use_cache=False, dry_run=False, **kwargs):
+            use_cache=False, dry_run=False, dsd=None, **kwargs):
         """Retrieve SDMX data or metadata.
 
         (Meta)data is retrieved from the :attr:`source` of the current Request.
@@ -305,15 +285,15 @@ class Request:
             If :obj:`True`, prepare and return a :class:`requests.Request`
             object, but do not execute the query. The prepared URL and headers
             can be examined by inspecting the returned object.
+        dsd : :class:`~.DataStructureDefinition`
+            Existing object used to validate the `key` argument. If not
+            provided, an additional query executed to retrieve a DSD in order
+            to validate the `key`.
         **kwargs
             Other, optional parameters (below).
 
         Other Parameters
         ----------------
-        dsd : :class:`~.DataStructureDefinition`
-            Existing object used to validate the `key` argument. If not
-            provided, an additional query executed to retrieve a DSD in order
-            to validate the `key`.
         force : bool
             If :obj:`True`, execute the query even if the :attr:`source` does
             not support queries for the given `resource_type`. Default:
@@ -361,6 +341,11 @@ class Request:
             and `force` is not :obj:`True`.
 
         """
+        # add dsd to the kwarts as it is needed by some adapters for 
+        # structure-specific requests.
+        # TODO: do not use **kwargs in the above function signature. Rather make kwargs explicit.
+        kwargs.update(dsd=dsd)
+
         # Allow sources to modify request args
         # TODO this should occur after most processing, defaults, checking etc.
         #      are performed, so that core code does most of the work.
@@ -369,13 +354,13 @@ class Request:
 
         # Handle arguments
         if 'url' in kwargs:
-            req = self._request_from_url(kwargs)
+            req = self._request_from_url(**kwargs)
         else:
             kwargs.update(dict(
                 resource_type=resource_type,
                 resource_id=resource_id,
             ))
-            req = self._request_from_args(kwargs)
+            dsd, req = self._request_from_args(**kwargs)
 
         req = self.session.prepare_request(req)
 
@@ -389,7 +374,6 @@ class Request:
                 return self.cache[req.url]
             except KeyError:
                 logger.info('Not found in cache')
-                pass
 
         if dry_run:
             return req
@@ -429,7 +413,7 @@ class Request:
 
         # Parse the message, using any provided or auto-queried DSD
         msg = reader.read_message(response_content,
-                                  dsd=kwargs.get('dsd', None))
+                                  dsd=dsd)
 
         # Store the HTTP response with the message
         msg.response = response

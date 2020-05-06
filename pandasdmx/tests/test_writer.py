@@ -54,10 +54,13 @@ def test_write_data_arguments():
     # Attributes must be a string
     with raises(TypeError):
         sdmx.to_pandas(msg, attributes=2)
+        msg.to_pandas(attributes=2)
+        
 
     # Attributes must contain only 'dgso'
     with raises(ValueError):
         sdmx.to_pandas(msg, attributes='foobarbaz')
+        msg.to_pandas(attributes='foobarbaz')
 
 
 def test_write_data(data_path):
@@ -105,12 +108,14 @@ def test_write_agencyscheme():
     with pytest.raises(AttributeError):
         data.structure
 
-
+@pytest.mark.filterwarnings('ignore::DeprecationWarning')
 def test_write_categoryscheme():
     with specimen('IPI-2010-A21-structure.xml') as f:
         msg = sdmx.read_sdmx(f)
         print(msg.category_scheme)
         data = sdmx.to_pandas(msg)
+        same_data = msg.write()
+        assert type(data) is type(same_data)
 
     cs = data['category_scheme']['CLASSEMENT_DATAFLOWS']
 

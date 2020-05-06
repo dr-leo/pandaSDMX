@@ -60,11 +60,10 @@ def test_request_get_exceptions():
     req = sdmx.Request('ESTAT')
 
     # Exception is raised on unrecognized arguments
-    exc = "unrecognized arguments: {'foo': 'bar'}"
-    with pytest.raises(ValueError, match=exc):
+    with pytest.raises(TypeError):
         req.get('datastructure', foo='bar')
 
-    with pytest.raises(ValueError, match=exc):
+    with pytest.raises(TypeError):
         sdmx.read_url('https://example.com', foo='bar')
 
 

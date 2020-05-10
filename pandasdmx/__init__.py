@@ -1,4 +1,4 @@
-'''Statistical Data and Metadata eXchange (SDMX) for Python & pandas'''
+'''Statistical Data and Metadata eXchange (SDMX) in Python'''
 
 from pandasdmx.api import Request, read_sdmx, read_url
 from pandasdmx.source import add_source, list_sources

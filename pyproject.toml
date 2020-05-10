@@ -1,0 +1,45 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "pandasdmx"
+author = "dr-leo"
+author-email = "fhaxbox66@gmail.com"
+home-page = "https://github.com/dr-leo/pandasdmx"
+dist-name = "pandaSDMX"
+description-file = "README.rst"
+requires = [
+    "requests >=2.7",
+    "lxml >= 3.6",
+    "pandas >= 1.0",
+    "pydantic >= 1.1"]
+requires-python = "~=3.7"
+keywords = "statistics, SDMX, pandas, data, economics, science"
+classifiers = [
+"Intended Audience :: Developers",
+"Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+"Development Status :: 4 - Beta",
+"Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+"License :: OSI Approved :: Apache Software License"]
+
+[tool.flit.metadata.requires-extra]  
+cache = ["requests_cache"]
+doc = ["sphinx >= 2.3", 
+"IPython"]
+test = ["pytest >= 5", 
+"pytest-remotedata >= 0.3.1", 
+"requests-mock >= 1.4"]
+
+[tool.flit.metadata.urls]
+Documentation = "https://pandasdmx.readthedocs.io/en/latest/"
+
+[tool.flit.sdist]
+include = ["LICENSE", 'pytest.ini']

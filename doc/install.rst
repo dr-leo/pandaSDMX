@@ -61,8 +61,9 @@ From source
 
     $ pip install  .
 
-.. note:: 
-    The bild process adheres to `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
+.. note::
+ 
+    The build process adheres to `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
     using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend. The traditional 
     `python     setup.py     install` command will thus not work.
     

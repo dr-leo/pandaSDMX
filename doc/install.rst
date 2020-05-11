@@ -26,9 +26,9 @@ Optional dependencies for extra features
 
 - for ``cache``, allowing the caching of SDMX messages in memory, MongoDB,
   Redis, and more: `requests-cache <https://requests-cache.readthedocs.io>`_.
-- for ``docs``, to build the documentation: `sphinx <https://sphinx-doc.org>`_
+- for ``doc``, to build the documentation: `sphinx <https://sphinx-doc.org>`_
   and `IPython <https://ipython.org>`_.
-- for ``tests``, to run the test suite: `pytest <https://pytest.org>`_,
+- for ``test``, to run the test suite: `pytest <https://pytest.org>`_,
   `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_, and
   `requests-mock <https://requests-mock.readthedocs.io>`_.
 
@@ -44,7 +44,7 @@ Instructions
    To also install optional dependencies, use commands like::
 
     $ pip install pandasdmx[cache]             # just requests-cache
-    $ pip install pandasdmx[cache,docs,tests]  # all extras
+    $ pip install pandasdmx[cache,doc,test]  # all extras
 
 From source
 ~~~~~~~~~~~
@@ -53,25 +53,24 @@ From source
 
    - `from PyPI <https://pypi.org/project/pandaSDMX/#files>`_,
    - `from Github <https://github.com/dr-leo/pandaSDMX>`_ as a zip archive, or
-   - by cloning the Github respository::
+   - by cloning the Github repository::
 
      $ git clone git@github.com:dr-leo/pandaSDMX.git
 
 2. In the package directory, issue::
 
-    $ pip install --editable .
+    $ pip install  .
 
-   or::
-
-    $ python setup.py install
-
+.. note::
+ 
+    The build process adheres to `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
+    using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend. The traditional 
+    `python     setup.py     install` command will thus not work.
+    
    To also install optional dependencies, use commands like::
 
-    $ pip install --editable .[cache]             # just requests-cache
-    $ pip install --editable .[cache,docs,tests]  # all extras
-
-
-.. note:: The pip ``--editable`` flag is recommended for development, so that changes to your code are reflected the next time :mod:`pandaSDMX` is imported.
+    $ pip install .[cache]             # just requests-cache
+    $ pip install .[cache,doc,test]  # all extras
 
 Running tests
 -------------

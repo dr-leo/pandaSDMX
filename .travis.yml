@@ -5,7 +5,7 @@ dist: bionic
 jobs:
   include:
   # Linux jobs
-  - python: 3.7.0  # earliest
+  - python: 3.7.3  # earliest
   - python: 3.7
   - python: 3.8
   - python: 3.8-dev
@@ -35,7 +35,7 @@ install:
 # Next line commented out to try fixing  OSX build
 #- pip3 install --upgrade pip
 - pip3 install --requirement requirements.txt
-- pip3 install --editable .[cache,docs,tests]
+- pip3 install .[cache,doc,test]
 
 script: >
   pytest

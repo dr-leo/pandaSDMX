@@ -1,14 +1,11 @@
 from enum import Enum
-from importlib import import_module
-from io import TextIOWrapper
+from importlib import import_module, resources
 import json
 from typing import (
     Any,
     Dict,
     Union,
     )
-
-from pkg_resources import resource_stream
 
 from pandasdmx.model import DataStructureDefinition
 from pandasdmx.util import BaseModel, Resource
@@ -208,9 +205,8 @@ def list_sources():
 
 def load_package_sources():
     """Discover all sources listed in ``sources.json``."""
-    with resource_stream('pandasdmx', 'sources.json') as f:
-        # TextIOWrapper is for Python 3.5 compatibility
-        for info in json.load(TextIOWrapper(f)):
+    with resources.open_binary('pandasdmx', 'sources.json') as f:
+        for info in json.load(f):
             add_source(info)
 
 

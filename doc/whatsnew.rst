@@ -39,7 +39,10 @@ v1.0.0rc1 (2020-05-13)
 Breaking changes
 ::::::::::::::::
 - Python 3.6 and earlier (including Python 2) are not supported.
-
+- various API changes. E.g., :meth:`pandasdmx.message.Message.write` is deprecated. 
+  Use :func:`to_pandas` or :meth:`pandasdmx.message.Message.to_pandas` instead.
+  - The layout of generated pandas objects may differ from that in v0.9.
+  
 Migrating
 :::::::::
 - ``Writer.write(…, reverse_obs=True)``: use the standard pandas indexing approach to reverse a pd.Series: ``s.iloc[::-1]``

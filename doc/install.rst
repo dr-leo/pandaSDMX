@@ -64,7 +64,6 @@ From source
 .. note:: The build process adheres to 
    `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
    using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend.  
-   The source distribution contains no `setup.py` script to run from the command line.
 
    To also install optional dependencies, use commands like::
 

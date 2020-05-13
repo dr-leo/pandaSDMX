@@ -19,7 +19,7 @@ Top-level methods and classes
    greater are printed to :obj:`sys.stderr`.
    These include the web service query details (URL and headers) used by :class:`.Request`.
 
-   To debug requets to web services, set to a more permissive level::
+   To debug requests to web services, set to a more permissive level::
 
        import logging
 

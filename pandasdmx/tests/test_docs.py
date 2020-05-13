@@ -20,7 +20,7 @@ from . import assert_pd_equal
 from .data import specimen
 
 
-@pytest.mark.remotedata
+@pytest.mark.remote_data
 def test_doc_example():
     """Code from example.rst."""
     import pandasdmx as sdmx

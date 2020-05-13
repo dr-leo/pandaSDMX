@@ -1,5 +1,5 @@
-Statistical Data and Metadata eXchange (SDMX) in Python
-*******************************************************
+Statistical Data and Metadata eXchange (SDMX) for the  Python data  ecosystem
+********************************************************************************
 
 :mod:`pandaSDMX` is an Apache 2.0-licensed `Python <http://www.python.org>`_ library that implements `SDMX <http://www.sdmx.org>`_ 2.1
 (`ISO 17369:2013 <https://www.iso.org/standard/52500.html>`_), a format for
@@ -35,7 +35,7 @@ This documentation does not repeat full descriptions of SDMX, the IM, or SDMX we
 Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
 :doc:`usage example in only 10 lines of code <example>`, and then the longer, narrative :doc:`walkthrough <walkthrough>`.
 
-To learn about SDMX in more detail, use the :doc:`list of resources and references <resources>`, or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that fully implement the IM in Python.
+To learn about SDMX in more detail, use the :doc:`list of resources and references <resources>`, or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that  implement the IM.
 
 .. toctree::
    :maxdepth: 1

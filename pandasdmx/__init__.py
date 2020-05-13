@@ -1,4 +1,4 @@
-'''Statistical Data and Metadata eXchange (SDMX) in Python'''
+'''Statistical Data and Metadata eXchange (SDMX) for the Python data ecosystem'''
 
 from pandasdmx.api import Request, read_sdmx, read_url
 from pandasdmx.source import add_source, list_sources
@@ -11,12 +11,11 @@ __all__ = [
     'Resource',
     'list_sources',
     'read_sdmx',
-    'read_url',
-    'to_pandas',
+    'read_url'
     ]
 
 
-__version__ = '1.0.0b4'
+__version__ = '1.0.0rc1'
 
 
 #: Top-level logger for pandaSDMX.

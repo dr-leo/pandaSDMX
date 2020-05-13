@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 import pandasdmx as sdmx
 import pytest
-
+import requests
 from .data import specimen
 
 
@@ -124,3 +124,16 @@ def test_request_preview_data():
     keys_pd = sdmx.to_pandas(keys)
     assert isinstance(keys_pd, pd.DataFrame)
     assert len(keys_pd) == 24
+
+
+def test_custom_session():
+    # provided session is stored in Request instance
+    sess = requests.Session()
+    req = sdmx.Request('ECB', session=sess)
+    assert req.session is sess
+    
+    # session_opts are not allowed when session is given
+    with pytest.raises(TypeError):
+        req = sdmx.Request('ECB', session=sess, foo='bar')
+    
+    

@@ -32,6 +32,7 @@ from pandasdmx.model import (
 from pandasdmx.util import BaseModel, DictLike, summarize_dictlike
 from requests import Response
 from warnings import warn
+from .writer import write
 
 
 def _summarize(obj, fields):
@@ -101,7 +102,6 @@ class Message(BaseModel):
 
         .. seealso:: :meth:`write`
         """
-        from pandasdmx.writer import write
         return write(self, *args, **kwargs)
 
     def write(self, *args, **kwargs):

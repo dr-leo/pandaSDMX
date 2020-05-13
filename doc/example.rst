@@ -43,7 +43,7 @@ We also use a query *parameter*, 'startPeriod', to limit the scope of the data r
         )
 
 ``resp`` is  a :class:`.DataMessage` object.
-We use the :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.Dataframe`, then select on the ``AGE`` dimension we saw   in the ``metadata`` above:
+We use its :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.Dataframe`, then select on the ``AGE`` dimension we saw   in the ``metadata`` above:
 
 .. ipython:: python
 

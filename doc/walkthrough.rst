@@ -27,13 +27,14 @@ Working with statistical data often includes some or all of the following steps.
       Using :mod:`pandaSDMX`, specify the needed portions of the data from the data flow by constructing a selection ('key') of series and a period/time range.
       Then, retrieve the data using :meth:`Request.get`.
 6. Analyze or manipulate the data.
-      Convert to :mod:`pandas` types using :func:`pandasmdx.to_pandas` and use the result in further Python code and scripts.
+      Convert to :mod:`pandas` types using :meth:`pandasmdx.message.Message.to_pandas` or, equivalently, :func:`pandasdmx.api.to_pandas` 
+      and use the result in further Python code.
 
 
 Choose and connect to an SDMX web service
 =========================================
 
-First, we instantiate a :class:`.pandasdmx.Request` object, using the string ID of a :doc:`data source <sources>` recognized by :mod:`pandaSDMX`:
+First, we instantiate a :class:`.pandasdmx.Request` object, using the string ID of a :doc:`data source <sources>` supported by :mod:`pandaSDMX`:
 
 .. ipython:: python
 
@@ -57,7 +58,7 @@ For example, a proxy server can be specified:
         proxies={'http': 'http://1.2.3.4:5678'}
     )
 
-The :attr:`~.Request.session` attribute is a :class:`.Session` object that can be used to inspect and modify configuration between queries:
+The :attr:`~.Request.session` attribute is a familiar :class:`requests.Session` object that can be used to inspect and modify configuration between queries:
 
 .. ipython:: python
 
@@ -84,8 +85,19 @@ For example, to force :mod:`requests_cache <requests_cache.core>` to use SQLite 
     )
 
 
-:class:`.Request` provides an optional, simple cache for retrieved and parsed :class:`.Message` instances, where the cache key is the constructed query URL.
+In addition, :class:`.Request` provides an optional, simple dict-based cache for retrieved and parsed :class:`.Message` instances, where the cache key is the constructed query URL.
 This cache is disabled by default; to activate it, supply `use_cache=True` to the constructor.
+
+Using custom sessions
+--------------------------
+
+.. versionadded:: 1.0.0
+
+When a  standard :class:`requests.Session`, if patched by :mod:`requests_cache <requests_cache.core>`, 
+is not enough, any pre-configured
+object exposing the :class:`requests.Session` API can be passed to the :class:`Request` constructor. This makes it easy, e.g., to use  an alternative caching library such as `CacheControl <https://pypi.org/project/CacheControl/>`_:
+
+>>> awesome_ecb_req = Request('ECB', session=my_awesome_session)  
 
 
 Obtain and explore metadata
@@ -146,7 +158,7 @@ We could inspect these each individually using :attr:`.StructureMessage.dataflow
 Convert metadata to :class:`pandas.Series`
 ------------------------------------------
 
-However, an easier way is to use :func:`.pandasdmx.to_pandas` to convert some of the information to a :class:`pandas.Series`:
+However, an easier way is to use pandasdmx to convert some of the information to a :class:`pandas.Series`:
 
 .. ipython:: python
 
@@ -155,8 +167,12 @@ However, an easier way is to use :func:`.pandasdmx.to_pandas` to convert some of
     len(dataflows)
 
 :func:`.to_pandas` accepts most instances and Python collections of :mod:`pandasdmx.model` objects, and we can use keyword arguments to control how each of these is handled.
-See the method documentation for details.
+Under the hood, it calls :func:`pandasdmx.writer.write`. See the function documentation for details. 
 
+If we want to export the entire message content to pandas rather than 
+selecting some resource such as dataflows as in the above example, the :meth:`pandasdmx.message.Message.to_pandas` 
+comes in handy.
+  
 As we are interested in exchange rate data, let's use built-in Pandas methods to find an appropriate data flow:
 
 .. ipython:: python

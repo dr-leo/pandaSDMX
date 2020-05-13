@@ -31,6 +31,9 @@ class Request:
     log_level : int
         Override the package-wide logger with one of the
         :ref:`standard logging levels <py:levels>`.
+    session : optional instance of :class:`requests.Session`, typically  a subclass. If given,
+        it is  used for HTTP requests, and any   *session_opts* passed  will raise TypeError. 
+        One  use case is the injection of alternative caching libraries such as Cache Control.     
     **session_opts
         Additional keyword arguments are passed to
         :class:`pandasdmx.remote.Session`.
@@ -44,7 +47,8 @@ class Request:
     #: :class:`.Session` for queries sent from the instance.
     session = None
 
-    def __init__(self, source=None, log_level=None, **session_opts):
+    def __init__(self, source=None, log_level=None, 
+            session=None, **session_opts):
         """Constructor."""
         try:
             self.source = sources[source.upper()] if source else NoSource
@@ -52,7 +56,10 @@ class Request:
             raise ValueError('source must be None or one of: %s' %
                              ' '.join(list_sources()))
 
-        self.session = remote.Session(**session_opts)
+        if session and session_opts:
+            raise TypeError('When `session` is given, `session_opts` must be  empty.')
+        self.session = (session or 
+            remote.Session(**session_opts))
 
         if log_level:
             logging.getLogger('pandasdmx').setLevel(log_level)

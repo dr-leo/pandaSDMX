@@ -61,12 +61,10 @@ From source
 
     $ pip install  .
 
-.. note::
- 
-    The build process adheres to `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
-    using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend. The traditional 
-    `python     setup.py     install` command will thus not work.
-    
+.. note:: The build process adheres to 
+   `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
+   using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend.  
+
    To also install optional dependencies, use commands like::
 
     $ pip install .[cache]             # just requests-cache

@@ -43,3 +43,4 @@ Documentation = "https://pandasdmx.readthedocs.io/en/latest/"
 
 [tool.flit.sdist]
 include = ["LICENSE", 'pytest.ini']
+exclude = ['pandasdmx/tests/data/.cache']

@@ -93,11 +93,13 @@ Using custom sessions
 
 .. versionadded:: 1.0.0
 
-When a  standard :class:`requests.Session`, if patched by :mod:`requests_cache <requests_cache.core>`, 
-is not enough, any pre-configured
-object exposing the :class:`requests.Session` API can be passed to the :class:`Request` constructor. This makes it easy, e.g., to use  an alternative caching library such as `CacheControl <https://pypi.org/project/CacheControl/>`_:
+The :class:`Request` constructor takes an optional keyword argument `session`.
+For instance, a :class:`requests.Session` with pre-mounted adapters 
+or patched by  an alternative caching library such as `CacheControl 
+<https://pypi.org/project/CacheControl/>`_ 
+can  be passed:
 
->>> awesome_ecb_req = Request('ECB', session=my_awesome_session)  
+    >>> awesome_ecb_req = Request('ECB', session=my_awesome_session)  
 
 
 Obtain and explore metadata

@@ -42,8 +42,9 @@ central banks, and international organisations.
 Documentation
 -------------
 
-See https://pandasdmx.readthedocs.io/en/latest for the latest docs, or
-https://pandasdmx.readthedocs.io/en/v0.9 for the 0.9 release.
+* stable: https://pandasdmx.readthedocs.io/ 
+* latest: https://pandasdmx.readthedocs.io/en/latest  or
+* v0.9: https://pandasdmx.readthedocs.io/en/v0.9 for the 0.9 release.
 
 
 License

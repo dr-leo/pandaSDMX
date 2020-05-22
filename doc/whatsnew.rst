@@ -6,9 +6,10 @@ What's new?
 v1.0.0 (2020-05-15)
 -------------------------------
 
-- :mod:`pandasdmx.model` is reimplemented.
+- :mod:`pandasdmx.model` has been reimplemented from the ground up. 
+  Fundamental concepts have not changed though.
 
-  - Python typing_ and pydantic_ are used to force tight compliance with the
+  - Python typing_ and pydantic_ are used to enforce compliance with the
     SDMX Information Model (IM). Users familiar with the IM can use
     :mod:`pandaSDMX` without the need to understand implementation-specific
     details.
@@ -23,10 +24,8 @@ v1.0.0 (2020-05-15)
     requests) are handled by source-specific subclasses. As a result,
     :mod:`pandasdmx.api` is leaner.
 
-- Testing coverage is significantly expanded.
+- Test coverage has been significantly expanded.
 
-  - Promised, but untested, features of the 0.x series now have tests, to
-    ensure feature parity.
   - There are tests for each data source (:file:`tests/test_sources.py``) to ensure the package can handle idiosyncratic behaviour.
   - The pytest-remotedata_ pytest plugin allows developers and users to run or
     skip network tests with `--remote-data`.

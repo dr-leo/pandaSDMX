@@ -36,7 +36,7 @@ Instructions
 ------------
 
 0. (optional) If using a `conda environment
-   <https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html`_, 
+   <https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html>`_, 
    use ``source activate [ENV]`` to
    activate the
    environment in which to install pandaSDMX.

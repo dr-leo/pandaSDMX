@@ -3,7 +3,7 @@
 What's new?
 ===========
 
-v1.0.0rc1 (2020-05-13)
+v1.0.0 (2020-05-15)
 -------------------------------
 
 - :mod:`pandasdmx.model` is reimplemented.

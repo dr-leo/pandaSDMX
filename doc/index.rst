@@ -24,18 +24,34 @@ agencies, central banks, and international organisations.
 Get started
 ===========
 
-SDMX was designed to be flexible enough to accommodate almost *any* data.
+Assuming  a working copy of `Python 3.7 or higher <https://www.python.org/downloads/>`_ 
+is installed on your system,
+you can get :mod:`pandaSDMX` either   by typing from the  command prompt::
+
+    $ pip install pandasdmx
+
+or from a `conda environment <https://www.anaconda.com/>`_::
+
+    $ conda install pandasdmx -c conda-forge     
+
+Next, look at a
+:doc:`usage example in only 10 lines of code <example>`. Then dive into the longer, narrative :doc:`walkthrough <walkthrough>` and finally peruse   the more advanced chapters as needed.
+
+Bear in mind  that SDMX was designed to 
+be flexible enough to accommodate almost *any* data.
 This also means it is complex, with many abstract concepts for describing data,
 metadata, and their relationships.
 These are called the “SDMX Information Model” (IM).
 
 .. _not-the-standard:
 
-This documentation does not repeat full descriptions of SDMX, the IM, or SDMX web services; it focuses on functionality provided by :mod:`pandaSDMX` itself.
-Detailed knowledge of the IM is not needed to use :mod:`pandaSDMX`; see a
-:doc:`usage example in only 10 lines of code <example>`, and then the longer, narrative :doc:`walkthrough <walkthrough>`.
-
-To learn about SDMX in more detail, use the :doc:`list of resources and references <resources>`, or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that  implement the IM.
+But fear not: This documentation  gently explains the
+functionality provided by :mod:`pandaSDMX` itself enabling you to make the 
+best use of  all supported data sources. 
+A decent understanding  of the IM is  conveyed in passing. 
+However, if you got hooked,  follow the :doc:`list of resources and references <resources>`, 
+or read the :doc:`API documentation <api>` and :doc:`implementation notes <implementation>` 
+for the :mod:`pandasdmx.model` and :mod:`pandasdmx.message` modules that  implement the IM.
 
 .. toctree::
    :maxdepth: 1

@@ -35,17 +35,28 @@ Optional dependencies for extra features
 Instructions
 ------------
 
-0. (optional) If using Anaconda, use ``source activate [ENV]`` to activate the
+0. (optional) If using a `conda environment
+   <https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html`_, 
+   use ``source activate [ENV]`` to
+   activate the
    environment in which to install pandaSDMX.
 1. From the command line, issue::
 
-    $ pip install pandasdmx
+     $ pip install pandasdmx
+   
+   or optionally from a conda environment::
 
-   To also install optional dependencies, use commands like::
+     $ conda install pandasdmx -c conda-forge     
 
-    $ pip install pandasdmx[cache]             # just requests-cache
-    $ pip install pandasdmx[cache,doc,test]  # all extras
 
+2. To also install optional dependencies, use commands like::
+
+     $ pip install pandasdmx[cache]             # just requests-cache
+     $ pip install pandasdmx[cache,doc,test]  # all extras
+
+.. note:: A *conda* install does not include any of these extras so you would have
+   to get them separately.
+   
 From source
 ~~~~~~~~~~~
 
@@ -59,16 +70,16 @@ From source
 
 2. In the package directory, issue::
 
-    $ pip install  .
+     $ pip install  .
 
+   or::
+
+      $ flit install
+    
 .. note:: The build process adheres to 
    `PEP 517 <https://www.python.org/dev/peps/pep-0517/>`_
    using `flit <https://flit.readthedocs.io/en/latest/>`_ as build backend.  
 
-   To also install optional dependencies, use commands like::
-
-    $ pip install .[cache]             # just requests-cache
-    $ pip install .[cache,doc,test]  # all extras
 
 Running tests
 -------------

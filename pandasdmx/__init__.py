@@ -15,7 +15,7 @@ __all__ = [
     ]
 
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 
 #: Top-level logger for pandaSDMX.

@@ -139,8 +139,9 @@ SDMX-ML —
 SDMX-ML —
 `Website <https://sdmxcentral.imf.org/>`__
 
-- Subset of the data available on http://data.imf.org.
-- Supports series-key-only and hence dataset-based key validation and construction.
+- The SDMX REST API no longer accepts data queries. But queries for metadata still work.
+  Datasets must be retrieved manually from 
+  https://data.imf.org.  
 
 
 ``INEGI``: National Institute of Statistics and Geography (Mexico)

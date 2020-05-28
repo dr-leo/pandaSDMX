@@ -3,6 +3,15 @@
 What's new?
 ===========
 
+
+
+v1.0.1 (2020-05-28)
+-------------------------------
+
+- IMF no longer accepts data queries. Update source and docs to reflect this.
+- Fix crash when making data requests to JSON-based data sources
+
+
 v1.0.0 (2020-05-15)
 -------------------------------
 

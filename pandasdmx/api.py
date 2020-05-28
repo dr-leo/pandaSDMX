@@ -418,8 +418,12 @@ class Request:
         # Instantiate reader
         reader = Reader()
 
-        # Parse the message, using any provided or auto-queried DSD
-        msg = reader.read_message(response_content,
+        # Parse the message 
+        # Only if   SDMXML content is given, use any provided or auto-queried DSD.
+        if 'json' in content_type:
+            msg = reader.read_message(response_content)
+        else:
+            msg = reader.read_message(response_content,
                                   dsd=dsd)
 
         # Store the HTTP response with the message

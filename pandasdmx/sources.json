@@ -45,6 +45,7 @@
     "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
     "name": "International Monetary Fund",
     "supports": {
+      "data": false,
       "provisionagreement": false
     }
   },
@@ -113,7 +114,10 @@
     "id": "UNSD",
     "name": "United Nations Statistics Division",
     "url": "http://data.un.org/WS/rest",
-    "supports": {"preview": true, "provisionagreement": false}
+    "supports": {
+      "preview": true, 
+      "provisionagreement": false
+    }
   },
   {
     "id": "WB",

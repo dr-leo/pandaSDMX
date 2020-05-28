@@ -30,7 +30,7 @@ central banks, and international organisations.
 
 - explore the data available from `data providers
   <https://pandasdmx.readthedocs.io/en/latest/sources.html>`_
-  such as the World Bank, International Monetary Fund, Eurostat, OECD, and United Nations;
+  such as the World Bank, ILO, ECB, Eurostat, OECD, and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
   - from local files, or

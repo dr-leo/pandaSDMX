@@ -1,20 +1,18 @@
 from enum import Enum
-from importlib import import_module, resources
+from importlib import import_module
+from io import TextIOWrapper
 import json
-from typing import (
-    Any,
-    Dict,
-    Union,
-    )
+from typing import Any, Dict, Union
+
+from pkg_resources import resource_stream
 
 from pandasdmx.model import DataStructureDefinition
-from pandasdmx.util import BaseModel, Resource
-from pydantic import validator
+from pandasdmx.util import BaseModel, Resource, validator
 
 
-sources = {}
+sources: Dict[str, "Source"] = {}
 
-DataContentType = Enum('DataContentType', 'XML JSON')
+DataContentType = Enum("DataContentType", "XML JSON")
 
 
 class Source(BaseModel):
@@ -30,6 +28,7 @@ class Source(BaseModel):
        modify_request_args
 
     """
+
     #: ID of the data source
     id: str
 
@@ -41,16 +40,15 @@ class Source(BaseModel):
 
     headers: Dict[str, Any] = {}
 
-    #: :class:`pandasdmx.util.DataContentType` indicating the type of data
-    #: returned by the source.
+    #: :class:`.DataContentType` indicating the type of data returned by the
+    #: source.
     data_content_type: DataContentType = DataContentType.XML
 
-    #: Mapping from :class:`Resource <pandasdmx.util.Resource>` to
-    #: :class:`bool` indicating support for SDMX REST API features. Two
-    #: additional keys are valid:
+    #: Mapping from :class:`~sdmx.Resource` to :class:`bool` indicating support
+    #: for SDMX REST API features. Two additional keys are valid:
     #:
     #: - ``'preview'=True`` if the source supports ``?detail=serieskeysonly``.
-    #:   See :meth:`preview_data <pandasdmx.Request.preview_data>`.
+    #:   See :meth:`.preview_data`.
     #: - ``'structure-specific data'=True`` if the source can return structure-
     #:   specific data messages.
     supports: Dict[Union[str, Resource], bool] = {Resource.data: True}
@@ -63,67 +61,64 @@ class Source(BaseModel):
         super().__init__(**kwargs)
 
         # Set default supported features
-        for feature in list(Resource) + ['preview', 'structure-specific data']:
+        for feature in list(Resource) + ["preview", "structure-specific data"]:
             self.supports.setdefault(
-                feature, self.data_content_type == DataContentType.XML)
+                feature, self.data_content_type == DataContentType.XML
+            )
 
     # Hooks
     def handle_response(self, response, content):
         """Handle response content of unknown type.
 
-        This hook is called by :meth:`pandasdmx.Request.get` *only* when
+        This hook is called by :meth:`.Request.get` *only* when
         the `content` cannot be parsed as XML or JSON.
 
-        See :meth:`ESTAT <pandasdmx.source.estat.Source.handle_response>` and
-        :meth:`SGR <pandasdmx.source.sgr.Source.handle_response>` for example
-        implementations.
+        See :meth:`.estat.Source.handle_response` and
+        :meth:`.sgr.Source.handle_response` for example implementations.
         """
         return response, content
 
     def finish_message(self, message, request, **kwargs):
         """Postprocess retrieved message.
 
-        This hook is called by :meth:`pandasdmx.Request.get` after a
-        :class:`pandasdmx.message.Message` object has been successfully
-        parsed from the query response.
+        This hook is called by :meth:`.Request.get` after a :class:`.Message`
+        object has been successfully parsed from the query response.
 
-        See :meth:`ESTAT <pandasdmx.source.estat.Source.finish_message>` for an
-        example implementation.
+        See :meth:`.estat.Source.finish_message` for an example implementation.
         """
         return message
 
     def modify_request_args(self, kwargs):
         """Modify arguments used to build query URL.
 
-        This hook is called by :meth:`pandasdmx.Request.get` to modify the
-        keyword arguments before the query URL is built.
+        This hook is called by :meth:`.Request.get` to modify the keyword
+        arguments before the query URL is built.
 
         The default implementation handles requests for 'structure-specific
         data' by adding an HTTP 'Accepts:' header when a 'dsd' is supplied as
         one of the `kwargs`.
 
-        See :meth:`SGR <pandasdmx.source.sgr.Source.modify_request_args>` for
-        an example override.
+        See :meth:`.sgr.Source.modify_request_args` for an example override.
 
         Returns
         -------
         None
         """
         if self.data_content_type is DataContentType.XML:
-            dsd = kwargs.get('dsd', None)
+            dsd = kwargs.get("dsd", None)
             if isinstance(dsd, DataStructureDefinition):
-                kwargs.setdefault('headers', {})
-                kwargs['headers'].setdefault(
-                    'Accept',
-                    'application/vnd.sdmx.structurespecificdata+xml;'
-                    'version=2.1')
+                kwargs.setdefault("headers", {})
+                kwargs["headers"].setdefault(
+                    "Accept",
+                    "application/vnd.sdmx.structurespecificdata+xml;" "version=2.1",
+                )
 
-    @validator('id')
+    @validator("id")
     def _validate_id(cls, value):
-        assert getattr(cls, '_id', value) == value
+        assert getattr(cls, "_id", value) == value
         return value
 
-    @validator('data_content_type', pre=True)
+    @validator("data_content_type", pre=True)
     def _validate_dct(cls, value):
         if isinstance(value, DataContentType):
             return value
@@ -132,9 +127,9 @@ class Source(BaseModel):
 
 
 class _NoSource(Source):
-    id = ''
-    url = ''
-    name = ''
+    id = ""
+    url = ""
+    name = ""
 
 
 NoSource = _NoSource()
@@ -175,18 +170,17 @@ def add_source(info, id=None, override=False, **kwargs):
     if isinstance(info, str):
         info = json.loads(info)
 
-    id = info['id'] if id is None else id
+    id = info["id"] if id is None else id
 
     info.update(kwargs)
 
     if id in sources:
-        raise ValueError("Data source '%s' already defined; use override=True",
-                         id)
+        raise ValueError("Data source '%s' already defined; use override=True", id)
 
     # Maybe import a subclass that defines a hook
     SourceClass = Source
     try:
-        mod = import_module('.' + id.lower(), 'pandasdmx.source')
+        mod = import_module("." + id.lower(), "sdmx.source")
     except ImportError:
         pass
     else:
@@ -205,8 +199,9 @@ def list_sources():
 
 def load_package_sources():
     """Discover all sources listed in ``sources.json``."""
-    with resources.open_binary('pandasdmx', 'sources.json') as f:
-        for info in json.load(f):
+    with resource_stream("pandasdmx", "sources.json") as f:
+        # TextIOWrapper is for Python 3.5 compatibility
+        for info in json.load(TextIOWrapper(f)):
             add_source(info)
 
 

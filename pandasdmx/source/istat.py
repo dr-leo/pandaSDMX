@@ -2,7 +2,7 @@ from . import Source as BaseSource
 
 
 class Source(BaseSource):
-    _id = 'ISTAT'
+    _id = "ISTAT"
 
     def modify_request_args(self, kwargs):
         """Supply explicit provider agency ID for ISTAT.
@@ -17,5 +17,5 @@ class Source(BaseSource):
         # NB this is an indirect test for resource_type != 'data'; because of
         #    the way the hook is called, resource_type is not available
         #    directly.
-        if 'key' not in kwargs:
-            kwargs.setdefault('provider', 'all')
+        if "key" not in kwargs:
+            kwargs.setdefault("provider", "all")

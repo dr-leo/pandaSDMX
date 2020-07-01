@@ -1,9 +1,9 @@
-from time import sleep
 from tempfile import NamedTemporaryFile
+from time import sleep
+from urllib.parse import urlparse
 from zipfile import ZipFile
 
 import requests
-from requests.compat import urlparse
 
 from . import Source as BaseSource
 
@@ -16,20 +16,20 @@ class Source(BaseSource):
     made available as a ZIP file.
 
     To configure :meth:`finish_message`, pass its `get_footer_url` argument to
-    :meth:`pandasdmx.api.Request.get`.
+    :meth:`.Request.get`.
 
     .. versionadded:: 0.2.1
 
     """
-    _id = 'ESTAT'
+
+    _id = "ESTAT"
 
     def modify_request_args(self, kwargs):
         super().modify_request_args(kwargs)
 
-        kwargs.pop('get_footer_url', None)
+        kwargs.pop("get_footer_url", None)
 
-    def finish_message(self, message, request, get_footer_url=(30, 3),
-                       **kwargs):
+    def finish_message(self, message, request, get_footer_url=(30, 3), **kwargs):
         """Handle the initial response.
 
         This hook identifies the URL in the footer of the initial response,
@@ -45,7 +45,7 @@ class Source(BaseSource):
         """
         # Check the message footer for a text element that is a valid URL
         url = None
-        for text in getattr(message.footer, 'text', []):
+        for text in getattr(message.footer, "text", []):
             if urlparse(str(text)).scheme:
                 url = str(text)
                 break
@@ -57,7 +57,7 @@ class Source(BaseSource):
         wait_seconds, attempts = get_footer_url
 
         # Create a temporary file to store the ZIP response
-        ntf = NamedTemporaryFile(prefix='pandasdmx-')
+        ntf = NamedTemporaryFile(prefix="pandasdmx-")
         # Make a limited number of attempts to retrieve the file
         for a in range(attempts):
             sleep(wait_seconds)
@@ -69,7 +69,7 @@ class Source(BaseSource):
             except requests.HTTPError:
                 raise
         ntf.close()
-        raise RuntimeError('Maximum attempts exceeded')
+        raise RuntimeError("Maximum attempts exceeded")
 
     def handle_response(self, response, content):
         """Handle the polled response.
@@ -79,8 +79,8 @@ class Source(BaseSource):
         contained XML file.
 
         """
-        
-        if response.headers['content-type'] != 'application/octet-stream':
+
+        if response.headers["content-type"] != "application/octet-stream":
             return response, content
 
         # Read all the input, forcing it to be copied to
@@ -90,13 +90,13 @@ class Source(BaseSource):
                 break
 
         # Open the zip archive
-        with ZipFile(content.tee, mode='r') as zf:
+        with ZipFile(content.tee, mode="r") as zf:
             # The archive should contain only one file
             infolist = zf.infolist()
             assert len(infolist) == 1
 
             # Set the new content type
-            response.headers['content-type'] = 'application/xml'
+            response.headers["content-type"] = "application/xml"
 
             # Use the unzipped archive member as the response content
             return response, zf.open(infolist[0])

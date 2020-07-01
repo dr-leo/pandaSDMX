@@ -313,22 +313,6 @@ class TestSGR(DataSourceTest):
     source_id = 'SGR'
 
 
-class TestUNESCO(DataSourceTest):
-    source_id = 'UNESCO'
-    xfail = {
-        # Requires registration
-        'categoryscheme': HTTPError,
-        'codelist': HTTPError,
-        'conceptscheme': HTTPError,
-        'dataflow': HTTPError,
-        'provisionagreement': HTTPError,
-
-        # Because 'supports_series_keys_only' was set
-        # TODO check
-        # 'datastructure': NotImplementedError,
-        }
-
-
 class TestUNSD(DataSourceTest):
     source_id = 'UNSD'
 

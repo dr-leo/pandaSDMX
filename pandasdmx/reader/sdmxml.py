@@ -151,7 +151,7 @@ class Reference:
             # Attributes of the element itself, if any
             args = (elem.attrib.get("class", None), elem.attrib.get("package", None))
         elif elem.tag == "URN":
-            match = sdmx.urn.match(elem.text)
+            match = pandasdmx.urn.match(elem.text)
 
             # If the URN doesn't specify an item ID, it is probably a reference to a
             # MaintainableArtefact, so target_id and id are the same
@@ -233,11 +233,12 @@ class Reader(BaseReader):
                     func = PARSE[element.tag, event]
                 except KeyError:  # pragma: no cover
                     # Don't know what to do for this (element, event)
-                    raise NotImplementedError(element.tag, event) from None
+                    log.warning(f"Parsing of  {element.tag, event} not implemented.")
+                    continue
 
                 try:
                     # Parse the element
-                    result = func(self, element)
+                    result =    func(self, element)
                 except TypeError:
                     if func is None:  # Explicitly no parser for this (element, event)
                         continue  # Skip
@@ -254,7 +255,7 @@ class Reader(BaseReader):
             # Parsing failed; display some diagnostic information
             self._dump()
             print(etree.tostring(element, pretty_print=True).decode())
-            raise XMLParseError from exc
+            raise  XMLParseError from exc
 
         # Parsing complete
 
@@ -475,7 +476,7 @@ class Reader(BaseReader):
         existing = self.get_single(cls, obj.id, strict=True)
 
         if existing and (
-            existing.compare(obj, strict=True) or existing.urn == sdmx.urn.make(obj)
+            existing.compare(obj, strict=True) or existing.urn == pandasdmx.urn.make(obj)
         ):
             if elem is not None:
                 # Previously an external reference, now concrete
@@ -541,9 +542,12 @@ def _message(reader, elem):
 def _header(reader, elem):
     # Attach to the Message
     header = message.Header(
+        extracted=reader.pop_single("Extracted") or None,
         id=reader.pop_single("ID") or None,
         prepared=reader.pop_single("Prepared") or None,
         receiver=reader.pop_single("Receiver") or None,
+        reporting_begin=reader.pop_single("ReportingBegin") or None,
+        reporting_end=reader.pop_single("ReportingEnd") or None,
         sender=reader.pop_single("Sender") or None,
         test=str(reader.pop_single("Test")).lower() == "true",
     )
@@ -680,7 +684,8 @@ def _structures(reader, elem):
 
 
 @end(
-    "mes:DataSetAction mes:DataSetID mes:ID mes:Prepared mes:Test mes:Timezone "
+    "mes:DataSetAction mes:DataSetID mes:Extracted mes:ID mes:Prepared " 
+    "mes:ReportingBegin mes:ReportingEnd mes:Test mes:Timezone "
     "com:AnnotationType com:AnnotationTitle com:AnnotationURL com:None com:URN "
     "com:Value str:Email str:Telephone str:URI"
 )

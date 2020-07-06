@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Mapping, Type
 
-from . import pandasdmxjson, sdmxml
+from . import sdmxjson, sdmxml
 
 
 #: Reader classes
@@ -118,7 +118,7 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
     if path:
         try:
             # Use the file extension to guess the reader
-            reader = get_reader_for_path(filename_or_obj)
+            reader = get_reader_for_path(path)
         except ValueError:
             pass
 

@@ -35,6 +35,7 @@ class Header(BaseModel):
 
     #: (optional) Error code for the message.
     error: Optional[Text] = None
+    extracted: Optional[Text] = None
     #: Identifier for the message.
     id: Optional[Text] = None
     #: Date and time at which the message was generated.
@@ -42,6 +43,8 @@ class Header(BaseModel):
     #: Intended recipient of the message, e.g. the user's name for an
     #: authenticated service.
     receiver: Optional[model.Agency] = None
+    reporting_begin: Optional[Text] = None
+    reporting_end: Optional[Text] = None
     #: The :class:`.Agency` associated with the data :class:`~.source.Source`.
     sender: Optional[model.Agency] = None
     #:
@@ -89,7 +92,7 @@ class Message(BaseModel):
     def __repr__(self):
         """String representation."""
         lines = [
-            f"<sdmx.{self.__class__.__name__}>",
+            f"<pandasdmx.{self.__class__.__name__}>",
             repr(self.header).replace("\n", "\n  "),
         ]
         lines.extend(_summarize(self, ["footer", "response"]))

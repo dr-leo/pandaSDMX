@@ -1,28 +1,32 @@
 import pandas as pd
 import pandas.testing as pdt
-import pandasdmx as sdmx
-from pandasdmx import message, model
+
+import sdmx
+from sdmx import message, model
 
 from . import MessageTest
 from .data import specimen
 
 
 class DataMessageTest(MessageTest):
-    path = MessageTest.path / 'ECB_EXR'
+    path = MessageTest.path / "ECB_EXR"
 
 
 class TestGenericFlatDataSet(DataMessageTest):
-    filename = 'ng-flat.xml'
+    filename = "ng-flat.xml"
 
     def test_msg_type(self, msg):
         assert isinstance(msg, message.DataMessage)
 
     def test_header_attributes(self, msg):
-        # Internal reference of the StructureUsage is available
-        assert msg.dataflow.id == 'STR1'
+        # NB removed 2020-05-15. This is the <mes:Structure structureID="…"> attrib.
+        #    SDMXCommon.xsd states: "The structureID attribute uniquely identifies the
+        #    structure for the purpose of referencing it from the payload. This is only
+        #    used in structure specific formats." It is not related to any DFD.
+        # assert msg.dataflow.id == "STR1"
 
         # Maintained ID of the DataStructureDefinition is available
-        assert msg.structure.id == 'ECB_EXR_NG'
+        assert msg.structure.id == "ECB_EXR_NG"
         assert msg.observation_dimension == model.AllDimensions
 
     def test_generic_obs(self, msg):
@@ -37,12 +41,12 @@ class TestGenericFlatDataSet(DataMessageTest):
         o0 = data.obs[0]
 
         assert isinstance(o0.key, model.Key)
-        assert o0.key.FREQ == 'M'
-        assert o0.key.CURRENCY == 'CHF'
-        assert o0.value == '1.3413'
+        assert o0.key.FREQ == "M"
+        assert o0.key.CURRENCY == "CHF"
+        assert o0.value == "1.3413"
 
-        assert o0.attrib.OBS_STATUS == 'A'
-        assert o0.attrib.DECIMALS == '4'
+        assert o0.attrib.OBS_STATUS == "A"
+        assert o0.attrib.DECIMALS == "4"
 
     def test_to_pandas(self, msg):
         # Single data series is converted to pd.Series
@@ -57,12 +61,13 @@ class TestGenericFlatDataSet(DataMessageTest):
 
 
 class TestGenericSeriesDataSet(DataMessageTest):
-    filename = 'ng-ts-gf.xml'
+    filename = "ng-ts-gf.xml"
 
     def test_header_attributes(self, msg):
-        assert msg.dataflow.id == 'STR1'
-        assert msg.structure.id == 'ECB_EXR_NG'
-        assert msg.observation_dimension == 'TIME_PERIOD'
+        # NB remove 2020-05-15; see above.
+        # assert msg.dataflow.id == "STR1"
+        assert msg.structure.id == "ECB_EXR_NG"
+        assert msg.observation_dimension == "TIME_PERIOD"
 
     def test_generic_obs(self, msg):
         data = msg.data[0]
@@ -79,10 +84,10 @@ class TestGenericSeriesDataSet(DataMessageTest):
         # Observations in series have .series_key with correct length & values
         assert isinstance(s3[0].series_key, model.Key)
         assert len(s3[0].series_key) == 5
-        assert s3[0].series_key.CURRENCY == 'USD'
+        assert s3[0].series_key.CURRENCY == "USD"
 
         # Observations in series have attributes
-        assert s3[0].attrib.DECIMALS == '4'
+        assert s3[0].attrib.DECIMALS == "4"
 
         # Number of observations in the series
         assert len(s3) == 3
@@ -91,10 +96,10 @@ class TestGenericSeriesDataSet(DataMessageTest):
         o0 = list(reversed(s3))[2]
 
         # Series observations have expected value
-        assert o0.dim == '2010-08'
-        assert o0.value == '1.2894'
+        assert o0.dim == "2010-08"
+        assert o0.value == "1.2894"
 
-        assert o0.attrib.OBS_STATUS == 'A'
+        assert o0.attrib.OBS_STATUS == "A"
 
     def test_pandas(self, msg):
         data = msg.data[0]
@@ -116,7 +121,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert len(s3.index.names) == 6
 
         # Convert again, with attributes
-        pd_data = sdmx.to_pandas(data, attributes='osgd')
+        pd_data = sdmx.to_pandas(data, attributes="osgd")
 
         # Select one SeriesKey's data out of the DataFrame
         keys, levels = zip(*[(kv.value, kv.id) for kv in s3_key])
@@ -129,7 +134,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert len(s3.index.names) == 6
 
         # Number of attributes available
-        assert len(set(s3.columns) - {'value'}) == 7
+        assert len(set(s3.columns) - {"value"}) == 7
 
         # Access an attribute of the first value.
         # NB that this uses…
@@ -139,32 +144,33 @@ class TestGenericSeriesDataSet(DataMessageTest):
         #    key in the index
         # 2. the AttributeValue.__eq__() comparison operator;
         #    s3.iloc[0].OBS_STATUS is a full AttributeValue, rather than a str.
-        assert s3.iloc[0].OBS_STATUS == 'A'
-        assert s3.iloc[0].OBS_STATUS.value_for == 'OBS_STATUS'  # consistency!
+        assert s3.iloc[0].OBS_STATUS == "A"
+        assert s3.iloc[0].OBS_STATUS.value_for == "OBS_STATUS"  # consistency!
 
     def test_write2pandas(self, msg):
-        df = sdmx.to_pandas(msg, attributes='')
+        df = sdmx.to_pandas(msg, attributes="")
 
         assert isinstance(df, pd.Series)
 
         assert df.shape == (12,)
 
         # with metadata
-        df = sdmx.to_pandas(msg, attributes='osgd')
+        df = sdmx.to_pandas(msg, attributes="osgd")
         df, mdf = df.iloc[:, 0], df.iloc[:, 1:]
         assert mdf.shape == (12, 7)
-        assert mdf.iloc[1].OBS_STATUS == 'A'
+        assert mdf.iloc[1].OBS_STATUS == "A"
 
 
 class TestGenericSeriesDataSet2(DataMessageTest):
-    filename = 'ng-ts.xml'
+    filename = "ng-ts.xml"
 
     def test_header_attributes(self, msg):
-        assert msg.dataflow.id == 'STR1'
-        assert msg.structure.id == 'ECB_EXR_NG'
+        # NB removed 2020-05-15; see above.
+        # assert msg.dataflow.id == "STR1"
+        assert msg.structure.id == "ECB_EXR_NG"
 
         # Observation dimension is 1 or more Dimensions
-        assert msg.observation_dimension == 'TIME_PERIOD'
+        assert msg.observation_dimension == "TIME_PERIOD"
 
     def test_generic_obs(self, msg):
         data = msg.data[0]
@@ -181,16 +187,16 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert isinstance(s3[0].series_key, model.Key)
 
         assert len(s3[0].series_key) == 5
-        assert s3[0].key.CURRENCY == 'USD'
-        assert s3[0].attrib.DECIMALS == '4'
+        assert s3[0].key.CURRENCY == "USD"
+        assert s3[0].attrib.DECIMALS == "4"
         obs_list = list(reversed(s3))
         assert len(obs_list) == 3
         o0 = obs_list[2]
 
-        assert o0.dim == '2010-08'
-        assert o0.value == '1.2894'
+        assert o0.dim == "2010-08"
+        assert o0.value == "1.2894"
 
-        assert o0.attrib.OBS_STATUS == 'A'
+        assert o0.attrib.OBS_STATUS == "A"
 
     def test_dataframe(self, msg):
         df = sdmx.to_pandas(msg.data[0]).iloc[::-1]
@@ -201,7 +207,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
 
 
 class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
-    filename = 'sg-ts.xml'
+    filename = "sg-ts.xml"
 
     def test_groups(self, msg):
         data = msg.data[0]
@@ -212,9 +218,10 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
 
         # GroupKeys can be retrieved from keys of DataSet.group
         g2_key, g2 = list(data.group.items())[2]
-        assert g2_key.CURRENCY == 'JPY'
-        assert g2[0].attrib.TITLE == ('ECB reference exchange rate, Japanese '
-                                      'yen/Euro')
+        assert g2_key.CURRENCY == "JPY"
+        assert g2[0].attrib.TITLE == (
+            "ECB reference exchange rate, Japanese " "yen/Euro"
+        )
 
         # Check group attributes of a series
         s = list(data.series)[0]
@@ -223,7 +230,7 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
 
 
 class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
-    filename = 'rg-ts.xml'
+    filename = "rg-ts.xml"
 
     def test_groups(self, msg):
         data = msg.data[0]
@@ -233,17 +240,18 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
 
         # .group is DictLike; retrieve the key and obs separately
         g2_key, g2 = list(data.group.items())[2]
-        assert g2_key.CURRENCY == 'GBP'
-        assert g2_key.attrib.TITLE == ('ECB reference exchange rate, U.K. '
-                                       'Pound sterling /Euro')
+        assert g2_key.CURRENCY == "GBP"
+        assert g2_key.attrib.TITLE == (
+            "ECB reference exchange rate, U.K. " "Pound sterling /Euro"
+        )
         # Check group attributes of a series
         s = list(data.series)[0]
         g_attrib = s.group_attrib
         assert len(g_attrib) == 5
 
     def test_footer(self):
-        with specimen('footer.xml') as f:
+        with specimen("footer.xml") as f:
             f = sdmx.read_sdmx(f).footer
         assert f.code == 413
-        assert f.severity == 'Infomation'
-        assert str(f.text[1]).startswith('http')
+        assert f.severity == "Infomation"
+        assert str(f.text[1]).startswith("http")

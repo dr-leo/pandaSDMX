@@ -1,4 +1,6 @@
-import pkg_resources
+'''Statistical Data and Metadata eXchange (SDMX) for the Python data ecosystem'''
+
+
 
 from pandasdmx.api import Request, read_url
 from pandasdmx.reader import read_sdmx
@@ -19,12 +21,7 @@ __all__ = [
     "to_xml",
 ]
 
-
-try:
-    __version__ = pkg_resources.get_distribution("sdmx").version
-except Exception:
-    # Local copy or not installed with setuptools
-    __version__ = "999"
+__version__ = "1.1.0dev"
 
 
 #: Top-level logger.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--NSI Web Service v6.8.0-->
-<!-- Note: this file was retrieved from http://data.un.org/WS/rest/codelist/UNSD/latest?references=parentsandsiblings, but has been abbreviated to only include elements relevant to pandaSDMX test cases. -->
+<!-- Note: this file was retrieved from http://data.un.org/WS/rest/codelist/UNSD/latest?references=parentsandsiblings, but has been abbreviated to only include elements relevant to :mod:`sdmx` test cases. -->
 <Structure xmlns="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message">
   <Header>
     <ID>IDREF5</ID>

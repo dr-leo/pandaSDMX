@@ -236,7 +236,7 @@ class IdentifiableArtefact(AnnotableArtefact):
         if self.urn:
             import pandasdmx.urn
 
-            self.urn_group = sdmx.urn.match(self.urn)
+            self.urn_group = pandasdmx.urn.match(self.urn)
 
         try:
             if self.id not in (self.urn_group["item_id"] or self.urn_group["id"]):

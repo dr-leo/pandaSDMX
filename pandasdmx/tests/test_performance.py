@@ -1,5 +1,5 @@
 """Speed and memory usage tests."""
-from sdmx.model import AttributeValue, DataAttribute, DataStructureDefinition
+from pandasdmx.model import AttributeValue, DataAttribute, DataStructureDefinition
 
 
 def test_refcount():

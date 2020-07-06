@@ -1,6 +1,6 @@
 import pandas as pd
 
-import sdmx
+import pandasdmx
 
 from .data import specimen
 
@@ -8,8 +8,8 @@ from .data import specimen
 def pd_obj(name):
     """Return the specimen at *name* read, then converted to pandas."""
     with specimen(name) as f:
-        data_msg = sdmx.read_sdmx(f)
-    return sdmx.to_pandas(data_msg, rtype="compat")
+        data_msg = pandasdmx.read_sdmx(f)
+    return pandasdmx.to_pandas(data_msg, rtype="compat")
 
 
 def test_xml():

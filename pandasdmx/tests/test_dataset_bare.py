@@ -1,7 +1,7 @@
-import sdmx
-from sdmx import model
-from sdmx.message import DataMessage, Header
-from sdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observation
+import pandasdmx
+from pandasdmx import  model
+from pandasdmx.message import DataMessage, Header
+from pandasdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observation
 
 from . import assert_pd_equal
 from .data import specimen
@@ -47,17 +47,17 @@ def test_flat():
     msg.data.append(ds)
 
     # Write to pd.Dataframe
-    df1 = sdmx.to_pandas(msg)
+    df1 = pandasdmx.to_pandas(msg)
 
     with specimen("flat.json") as f:
-        ref = sdmx.read_sdmx(f)
-    df2 = sdmx.to_pandas(ref)
+        ref = pandasdmx.read_sdmx(f)
+    df2 = pandasdmx.to_pandas(ref)
 
     assert_pd_equal(df1, df2)
 
 
 def test_bare_series():
     with specimen("ng-ts.xml") as f:
-        sdmx.read_sdmx(f)
+        pandasdmx.read_sdmx(f)
 
     # TODO generate the series and observations

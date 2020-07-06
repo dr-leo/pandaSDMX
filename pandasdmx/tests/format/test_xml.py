@@ -1,5 +1,5 @@
-from sdmx import model
-from sdmx.format import xml
+from pandasdmx import  model
+from pandasdmx.format import xml
 
 
 def test_tag_for_class():

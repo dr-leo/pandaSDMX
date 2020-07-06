@@ -1,11 +1,11 @@
 """Tests for experimental code using pandas objects for internal storage.
 
-See sdmx.experimental for more information.
+See pandasdmx.experimental for more information.
 """
 import pytest
 
-from sdmx.experimental import DataSet as PandasDataSet
-from sdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observation
+from pandasdmx.experimental import DataSet as PandasDataSet
+from pandasdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observation
 
 
 # Run the tests on both the standard DataSet class, and the experimental,

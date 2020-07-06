@@ -2,8 +2,8 @@ import logging
 
 import pytest
 
-from sdmx.message import StructureMessage
-from sdmx.writer.protobuf import write as to_protobuf
+from pandasdmx.message import StructureMessage
+from pandasdmx.writer.protobuf import write as to_protobuf
 
 
 @pytest.mark.xfail(raises=RuntimeError, match="sdmx.format.protobuf_pb2 missing")

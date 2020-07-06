@@ -1,5 +1,5 @@
 import logging
 
-import sdmx
+import pandasdmx
 
-sdmx.logger.setLevel(logging.INFO)
+pandasdmx.logger.setLevel(logging.INFO)

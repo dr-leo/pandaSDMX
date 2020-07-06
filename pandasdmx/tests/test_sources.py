@@ -11,11 +11,11 @@ from typing import Any, Dict, Type
 import pytest
 import requests_mock
 
-import sdmx
-from sdmx import Resource
-from sdmx.api import Request
-from sdmx.exceptions import HTTPError
-from sdmx.source import DataContentType, sources
+import pandasdmx
+from pandasdmx import  Resource
+from pandasdmx.api import Request
+from pandasdmx.exceptions import HTTPError
+from pandasdmx.source import DataContentType, sources
 
 from .data import BASE_PATH as TEST_DATA_PATH
 from .data import specimen
@@ -59,7 +59,7 @@ def pytest_generate_tests(metafunc):
         # Check if the associated source supports the endpoint
         supported = source.supports[ep]
         if source.data_content_type == DataContentType.JSON and ep is not Resource.data:
-            # SDMX-JSON sources only support data queries
+            # pandasdmx.JSON sources only support data queries
             continue
         elif not supported:
             marks.append(mark_unsupported)
@@ -135,7 +135,7 @@ class DataSourceTest:
         # print(cache, cache.read_text(), result, sep='\n\n')
         # assert False
 
-        sdmx.to_pandas(result)
+        pandasdmx.to_pandas(result)
 
         del result
 
@@ -302,7 +302,7 @@ class TestISTAT(DataSourceTest):
         # df = req.dataflow(df_id).dataflow[df_id]
 
         with specimen("47_850-structure") as f:
-            df = sdmx.read_sdmx(f).dataflow[df_id]
+            df = pandasdmx.read_sdmx(f).dataflow[df_id]
 
         # dict() key for the query
         data_key = dict(
@@ -328,7 +328,7 @@ class TestISTAT(DataSourceTest):
 
 class TestNB(DataSourceTest):
     source_id = "NB"
-    # This source returns a valid SDMX Error message (100 No Results Found)
+    # This source returns a valid pandasdmx.Error message (100 No Results Found)
     # for the 'categoryscheme' endpoint.
 
 
@@ -346,19 +346,6 @@ class TestSGR(DataSourceTest):
     source_id = "SGR"
 
 
-class TestUNESCO(DataSourceTest):
-    source_id = "UNESCO"
-    xfail = {
-        # Requires registration
-        "categoryscheme": HTTPError,
-        "codelist": HTTPError,
-        "conceptscheme": HTTPError,
-        "dataflow": HTTPError,
-        "provisionagreement": HTTPError,
-        # Because 'supports_series_keys_only' was set
-        # TODO check
-        # 'datastructure': NotImplementedError,
-    }
 
 
 class TestUNSD(DataSourceTest):

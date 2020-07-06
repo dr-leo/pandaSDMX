@@ -1,8 +1,8 @@
 import pandas as pd
 import pandas.testing as pdt
 
-import sdmx
-from sdmx import message, model
+import pandasdmx
+from pandasdmx import  message, model
 
 from . import MessageTest
 from .data import specimen
@@ -20,7 +20,7 @@ class TestGenericFlatDataSet(DataMessageTest):
 
     def test_header_attributes(self, msg):
         # NB removed 2020-05-15. This is the <mes:Structure structureID="…"> attrib.
-        #    SDMXCommon.xsd states: "The structureID attribute uniquely identifies the
+        #    pandasdmx.ommon.xsd states: "The structureID attribute uniquely identifies the
         #    structure for the purpose of referencing it from the payload. This is only
         #    used in structure specific formats." It is not related to any DFD.
         # assert msg.dataflow.id == "STR1"
@@ -50,13 +50,13 @@ class TestGenericFlatDataSet(DataMessageTest):
 
     def test_to_pandas(self, msg):
         # Single data series is converted to pd.Series
-        data_series = sdmx.to_pandas(msg.data[0])
+        data_series = pandasdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
 
         # When len(msg.data) is 1, the data series in a single Dataset are
         # unwrapped automatically
         assert len(msg.data) == 1
-        data_series2 = sdmx.to_pandas(msg.data)  # NB no '[0]' index
+        data_series2 = pandasdmx.to_pandas(msg.data)  # NB no '[0]' index
         pdt.assert_series_equal(data_series, data_series2)
 
 
@@ -111,7 +111,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
 
         # Convert the observations for one SeriesKey to a pd.Series
         s3_key = series_keys[3]
-        s3 = sdmx.to_pandas(data.series[s3_key])
+        s3 = pandasdmx.to_pandas(data.series[s3_key])
         assert isinstance(s3, pd.Series)
 
         # Test a particular value
@@ -121,7 +121,7 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert len(s3.index.names) == 6
 
         # Convert again, with attributes
-        pd_data = sdmx.to_pandas(data, attributes="osgd")
+        pd_data = pandasdmx.to_pandas(data, attributes="osgd")
 
         # Select one SeriesKey's data out of the DataFrame
         keys, levels = zip(*[(kv.value, kv.id) for kv in s3_key])
@@ -148,14 +148,14 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0].OBS_STATUS.value_for == "OBS_STATUS"  # consistency!
 
     def test_write2pandas(self, msg):
-        df = sdmx.to_pandas(msg, attributes="")
+        df = pandasdmx.to_pandas(msg, attributes="")
 
         assert isinstance(df, pd.Series)
 
         assert df.shape == (12,)
 
         # with metadata
-        df = sdmx.to_pandas(msg, attributes="osgd")
+        df = pandasdmx.to_pandas(msg, attributes="osgd")
         df, mdf = df.iloc[:, 0], df.iloc[:, 1:]
         assert mdf.shape == (12, 7)
         assert mdf.iloc[1].OBS_STATUS == "A"
@@ -199,7 +199,7 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert o0.attrib.OBS_STATUS == "A"
 
     def test_dataframe(self, msg):
-        df = sdmx.to_pandas(msg.data[0]).iloc[::-1]
+        df = pandasdmx.to_pandas(msg.data[0]).iloc[::-1]
 
         assert isinstance(df, pd.Series)
 
@@ -251,7 +251,7 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
 
     def test_footer(self):
         with specimen("footer.xml") as f:
-            f = sdmx.read_sdmx(f).footer
+            f = pandasdmx.read_sdmx(f).footer
         assert f.code == 413
         assert f.severity == "Infomation"
         assert str(f.text[1]).startswith("http")

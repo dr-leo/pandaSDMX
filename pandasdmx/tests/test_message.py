@@ -3,7 +3,7 @@ from operator import itemgetter
 
 import pytest
 
-import sdmx
+import pandasdmx
 
 from .data import specimen
 
@@ -78,7 +78,7 @@ EXPECTED = [
 )
 def test_message_repr(pattern, expected):
     with specimen(pattern) as f:
-        msg = sdmx.read_sdmx(f)
+        msg = pandasdmx.read_sdmx(f)
     if isinstance(expected, re.Pattern):
         assert expected.fullmatch(repr(msg))
     else:

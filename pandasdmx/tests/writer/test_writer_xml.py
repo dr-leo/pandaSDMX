@@ -2,26 +2,26 @@ import logging
 
 import pytest
 
-import sdmx
-from sdmx.message import DataMessage
-from sdmx.tests.data import specimen
+import pandasdmx
+from pandasdmx.message import DataMessage
+from pandasdmx.tests.data import specimen
 
 log = logging.getLogger(__name__)
 
 
 def test_codelist(tmp_path, codelist):
-    result = sdmx.to_xml(codelist, pretty_print=True)
+    result = pandasdmx.to_xml(codelist, pretty_print=True)
     print(result.decode())
 
 
 def test_structuremessage(tmp_path, structuremessage):
-    result = sdmx.to_xml(structuremessage, pretty_print=True)
+    result = pandasdmx.to_xml(structuremessage, pretty_print=True)
     print(result.decode())
 
     # Message can be round-tripped to/from file
     path = tmp_path / "output.xml"
     path.write_bytes(result)
-    msg = sdmx.read_sdmx(path)
+    msg = pandasdmx.read_sdmx(path)
 
     # Contents match the original object
     assert (
@@ -60,18 +60,18 @@ _xf_not_equal = pytest.mark.xfail(raises=AssertionError)
     ],
 )
 def test_structure_roundtrip(pytestconfig, specimen_id, strict, tmp_path):
-    """Test that SDMX-ML StructureMessages can be 'round-tripped'."""
+    """Test that pandasdmx.ML StructureMessages can be 'round-tripped'."""
 
     # Read a specimen file
     with specimen(specimen_id) as f:
-        msg0 = sdmx.read_sdmx(f)
+        msg0 = pandasdmx.read_sdmx(f)
 
     # Write to file
     path = tmp_path / "output.xml"
-    path.write_bytes(sdmx.to_xml(msg0, pretty_print=True))
+    path.write_bytes(pandasdmx.to_xml(msg0, pretty_print=True))
 
     # Read again
-    msg1 = sdmx.read_sdmx(path)
+    msg1 = pandasdmx.read_sdmx(path)
 
     # Contents are identical
     assert msg0.compare(msg1, strict), (
@@ -83,4 +83,4 @@ def test_not_implemented():
     msg = DataMessage()
 
     with pytest.raises(NotImplementedError, match="write DataMessage to XML"):
-        sdmx.to_xml(msg)
+        pandasdmx.to_xml(msg)

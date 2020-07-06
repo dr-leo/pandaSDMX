@@ -1,4 +1,4 @@
-from sdmx.source import add_source, list_sources, sources
+from pandasdmx.source import add_source, list_sources, sources
 
 
 def test_list_sources():

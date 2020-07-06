@@ -5,7 +5,7 @@ from io import BytesIO
 import pandas as pd
 import pytest
 
-import sdmx
+import pandasdmx
 
 from .data import specimen
 
@@ -17,33 +17,33 @@ def test_read_sdmx(tmp_path):
         target.open("w").write(original.read_text())
 
     # With unknown file extension, read_sdmx() peeks at the file content
-    sdmx.read_sdmx(target)
+    pandasdmx.read_sdmx(target)
 
     # Format can be inferred from an already-open file without extension
     with specimen("flat.json") as f:
-        sdmx.read_sdmx(f)
+        pandasdmx.read_sdmx(f)
 
     # Exception raised when the file contents don't allow to guess the format
     bad_file = BytesIO(b"#! neither XML nor JSON")
     exc = (
-        "cannot infer SDMX message format from path None, format={}, or content "
+        "cannot infer pandasdmx.message format from path None, format={}, or content "
         "'#! ne..'"
     )
     with pytest.raises(RuntimeError, match=exc.format("None")):
-        sdmx.read_sdmx(bad_file)
+        pandasdmx.read_sdmx(bad_file)
 
     # Using the format= argument forces a certain reader to be used
     with pytest.raises(json.JSONDecodeError):
-        sdmx.read_sdmx(bad_file, format="JSON")
+        pandasdmx.read_sdmx(bad_file, format="JSON")
 
 
 def test_request():
     # Constructor
-    r = sdmx.Request(log_level=logging.ERROR)
+    r = pandasdmx.Request(log_level=logging.ERROR)
 
     # Invalid source name raise an exception
     with pytest.raises(ValueError):
-        sdmx.Request("noagency")
+        pandasdmx.Request("noagency")
 
     # Regular methods
     r.clear_cache()
@@ -62,13 +62,13 @@ def test_request():
         "source",
         "timeout",
     }
-    expected |= set(ep.name for ep in sdmx.Resource)
+    expected |= set(ep.name for ep in pandasdmx.Resource)
     assert set(filter(lambda s: not s.startswith("_"), dir(r))) == expected
 
 
 def test_request_get_exceptions():
     """Tests of Request.get() that don't require remote data."""
-    req = sdmx.Request("ESTAT")
+    req = pandasdmx.Request("ESTAT")
 
     # Exception is raised on unrecognized arguments
     exc = "unrecognized arguments: {'foo': 'bar'}"
@@ -76,12 +76,12 @@ def test_request_get_exceptions():
         req.get("datastructure", foo="bar")
 
     with pytest.raises(ValueError, match=exc):
-        sdmx.read_url("https://example.com", foo="bar")
+        pandasdmx.read_url("https://example.com", foo="bar")
 
 
 @pytest.mark.network
 def test_request_get_args():
-    req = sdmx.Request("ESTAT")
+    req = pandasdmx.Request("ESTAT")
 
     # Request._make_key accepts '+'-separated values
     args = dict(
@@ -121,7 +121,7 @@ def test_request_get_args():
 @pytest.mark.network
 def test_read_url():
     # URL can be queried without instantiating Request
-    sdmx.read_url(
+    pandasdmx.read_url(
         "http://sdw-wsrest.ecb.int/service/datastructure/ECB/"
         "ECB_EXR1/latest?references=all"
     )
@@ -129,7 +129,7 @@ def test_read_url():
 
 @pytest.mark.network
 def test_request_preview_data():
-    req = sdmx.Request("ECB")
+    req = pandasdmx.Request("ECB")
 
     # List of keys can be retrieved
     keys = req.preview_data("EXR")
@@ -143,6 +143,6 @@ def test_request_preview_data():
     assert len(keys) == 24
 
     # Result can be converted to pandas object
-    keys_pd = sdmx.to_pandas(keys)
+    keys_pd = pandasdmx.to_pandas(keys)
     assert isinstance(keys_pd, pd.DataFrame)
     assert len(keys_pd) == 24

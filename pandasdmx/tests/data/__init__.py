@@ -1,6 +1,6 @@
 """Specimens and other data for tests.
 
-This directory contains files with SDMX data and structure messages, in both
+This directory contains files with pandasdmx.data and structure messages, in both
 SDMX-ML ('.xml') and JSON ('.json') formats.
 
 These files can be:

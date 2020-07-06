@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import sdmx
-from sdmx import Request
-from sdmx.model import GenericDataSet
-from sdmx.util import DictLike
+import pandasdmx
+from pandasdmx import  Request
+from pandasdmx.model import GenericDataSet
+from pandasdmx.util import DictLike
 
 from . import assert_pd_equal
 from .data import specimen
@@ -21,9 +21,9 @@ from .data import specimen
 @pytest.mark.network
 def test_doc_example():
     """Code from example.rst."""
-    import sdmx
+    import pandasdmx
 
-    estat = sdmx.Request("ESTAT")
+    estat = pandasdmx.Request("ESTAT")
 
     metadata = estat.datastructure("DSD_une_rt_a")
 
@@ -34,7 +34,7 @@ def test_doc_example():
         "une_rt_a", key={"GEO": "EL+ES+IE"}, params={"startPeriod": "2007"}
     )
 
-    data = sdmx.to_pandas(resp).xs("Y15-74", level="AGE", drop_level=False)
+    data = pandasdmx.to_pandas(resp).xs("Y15-74", level="AGE", drop_level=False)
 
     data.loc[("A", "Y15-74", "PC_ACT", "T")]
 
@@ -78,7 +78,7 @@ def test_doc_index1():
     # structure = estat.get(flow_response.dataflow.une_rt_a.structure)
 
     # Show some codelists
-    s = sdmx.to_pandas(structure_response)
+    s = pandasdmx.to_pandas(structure_response)
     expected = pd.Series(
         {
             "AT": "Austria",
@@ -135,7 +135,7 @@ def test_doc_usage_structure():
     #   there could be many.
     # list(cat_response.category_scheme['MOBILE_NAVI']['07'])
 
-    dfs = sdmx.to_pandas(msg1.dataflow).head()
+    dfs = pandasdmx.to_pandas(msg1.dataflow).head()
     expected = pd.Series(
         {
             "AME": "AMECO",
@@ -158,7 +158,7 @@ def test_doc_usage_structure():
     msg2 = ecb.datastructure(resource_id=dsd_id, params=refs)
     dsd = msg2.structure[dsd_id]
 
-    assert sdmx.to_pandas(dsd.dimensions) == [
+    assert pandasdmx.to_pandas(dsd.dimensions) == [
         "FREQ",
         "CURRENCY",
         "CURRENCY_DENOM",
@@ -167,7 +167,7 @@ def test_doc_usage_structure():
         "TIME_PERIOD",
     ]
 
-    cl = sdmx.to_pandas(msg2.codelist["CL_CURRENCY"]).sort_index()
+    cl = pandasdmx.to_pandas(msg2.codelist["CL_CURRENCY"]).sort_index()
     expected = pd.Series(
         {
             "ADF": "Andorran Franc (1-1 peg to the French franc)",
@@ -213,7 +213,7 @@ def test_doc_usage_data():
 
     assert sorted(set(sk.FREQ.value for sk in data.series)) == "A D H M Q".split()
 
-    daily = sdmx.to_pandas(data).xs("D", level="FREQ")
+    daily = pandasdmx.to_pandas(data).xs("D", level="FREQ")
     assert len(daily) == 514
 
     assert_pd_equal(
@@ -223,10 +223,10 @@ def test_doc_usage_data():
 
 def test_doc_howto_timeseries():
     with specimen("sg-ts.xml") as f:
-        ds = sdmx.read_sdmx(f).data[0]
+        ds = pandasdmx.read_sdmx(f).data[0]
 
     # Convert to pd.Series and unstack the time dimension to columns
-    base = sdmx.to_pandas(ds)
+    base = pandasdmx.to_pandas(ds)
     s1 = base.unstack("TIME_PERIOD")
 
     # DatetimeIndex on columns

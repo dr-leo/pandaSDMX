@@ -1,10 +1,10 @@
-# TODO tidy these tests to use fixtures/methods from sdmx.tests
+# TODO tidy these tests to use fixtures/methods from pandasdmx.tests
 from collections import OrderedDict
 
 import pytest
 
-import sdmx
-from sdmx import Request
+import pandasdmx
+from pandasdmx import  Request
 
 from .data import BASE_PATH as test_data_path
 
@@ -39,7 +39,7 @@ class TestINSEE:
         dataset_code = "IPI-2010-A21"
 
         # Load all dataflows
-        dataflows_response = sdmx.read_sdmx(DATAFLOW_FP)
+        dataflows_response = pandasdmx.read_sdmx(DATAFLOW_FP)
         dataflows = dataflows_response.dataflow
 
         assert len(dataflows) == 663
@@ -47,7 +47,7 @@ class TestINSEE:
 
         # Load datastructure for current dataset_code
         fp_datastructure = DATASETS[dataset_code]["datastructure-fp"]
-        datastructure_response = sdmx.read_sdmx(fp_datastructure)
+        datastructure_response = pandasdmx.read_sdmx(fp_datastructure)
         assert dataset_code in datastructure_response.dataflow
         dsd = datastructure_response.dataflow[dataset_code].structure
 
@@ -62,7 +62,7 @@ class TestINSEE:
 
         # Load datas for the current dataset
         fp_data = DATASETS[dataset_code]["data-fp"]
-        data = sdmx.read_sdmx(fp_data)
+        data = pandasdmx.read_sdmx(fp_data)
 
         # Verify series count and values
         series = data.data[0].series
@@ -86,7 +86,7 @@ class TestINSEE:
         dataset_code = "CNA-2010-CONSO-SI-A17"
 
         fp_datastructure = DATASETS[dataset_code]["datastructure-fp"]
-        datastructure_response = sdmx.read_sdmx(fp_datastructure)
+        datastructure_response = pandasdmx.read_sdmx(fp_datastructure)
         assert dataset_code in datastructure_response.dataflow
         dsd = datastructure_response.dataflow[dataset_code].structure
 
@@ -99,7 +99,7 @@ class TestINSEE:
         assert dim_keys == ["SECT-INST", "OPERATION", "PRODUIT", "PRIX"]
 
         fp_data = DATASETS[dataset_code]["data-fp"]
-        data = sdmx.read_sdmx(fp_data)
+        data = pandasdmx.read_sdmx(fp_data)
         series = data.data[0].series
         series_key = list(series.keys())[0]
 
@@ -128,5 +128,5 @@ class TestINSEE:
         # INSEE time series provide the FREQ value as attribute on the series
         # instead of a dimension. This caused a runtime error when writing as
         # pandas dataframe.
-        data_response = sdmx.read_sdmx(SERIES["UNEMPLOYMENT_CAT_A_B_C"]["data-fp"])
-        sdmx.to_pandas(data_response)
+        data_response = pandasdmx.read_sdmx(SERIES["UNEMPLOYMENT_CAT_A_B_C"]["data-fp"])
+        pandasdmx.to_pandas(data_response)

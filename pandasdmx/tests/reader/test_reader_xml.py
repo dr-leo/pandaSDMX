@@ -5,28 +5,28 @@ from itertools import chain
 import pytest
 from lxml import etree
 
-import sdmx
-from sdmx.format.xml import qname
-from sdmx.model import Facet, FacetType, FacetValueType
-from sdmx.reader.sdmxml import Reader, XMLParseError
-from sdmx.tests.data import specimen, test_files
+import pandasdmx
+from pandasdmx.format.xml import qname
+from pandasdmx.model import Facet, FacetType, FacetValueType
+from pandasdmx.reader.sdmxml import Reader, XMLParseError
+from pandasdmx.tests.data import specimen, test_files
 
 
 # Read example data files
 @pytest.mark.parametrize("path", **test_files(format="xml", kind="data"))
 def test_read_xml(path):
-    sdmx.read_sdmx(path)
+    pandasdmx.read_sdmx(path)
 
 
 # Read example structure files
 @pytest.mark.parametrize("path", **test_files(format="xml", kind="structure"))
 def test_read_xml_structure(path):
-    sdmx.read_sdmx(path)
+    pandasdmx.read_sdmx(path)
 
 
 def test_read_xml_structure_insee():
     with specimen("IPI-2010-A21-structure.xml") as f:
-        msg = sdmx.read_sdmx(f)
+        msg = pandasdmx.read_sdmx(f)
 
     # Same objects referenced
     assert id(msg.dataflow["IPI-2010-A21"].structure) == id(
@@ -45,10 +45,10 @@ def test_read_ss_xml():
         dsd_path = f.parent / "structure.xml"
 
     # Read the DSD
-    dsd = sdmx.read_sdmx(dsd_path).structure["ECB_EXR1"]
+    dsd = pandasdmx.read_sdmx(dsd_path).structure["ECB_EXR1"]
 
     # Read a data message
-    msg = sdmx.read_sdmx(msg_path, dsd=dsd)
+    msg = pandasdmx.read_sdmx(msg_path, dsd=dsd)
     ds = msg.data[0]
 
     # The dataset in the message is structured by the DSD
@@ -81,7 +81,7 @@ E = etree.Element
 # Each entry is a tuple with 2 elements:
 # 1. an instance of lxml.etree.Element to be parsed.
 # 2. Either:
-#   - A sdmx.model object, in which case the parsed element must match the
+#   - A pandasdmx.model object, in which case the parsed element must match the
 #     object.
 #   - A string, in which case parsing the element is expected to fail, raising
 #     an exception matching the string.
@@ -114,7 +114,7 @@ def test_parse_elem(elem, expected):
     """Test individual XML elements.
 
     This method allows unit-level testing of specific XML elements appearing in
-    SDMX-ML messages. Add elements by extending the list passed to the
+    pandasdmx.ML messages. Add elements by extending the list passed to the
     parametrize() decorator.
     """
     # Convert to a file-like object compatible with read_message()

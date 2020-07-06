@@ -3,9 +3,9 @@ from collections.abc import Mapping
 import pandas as pd
 import pytest
 
-import sdmx
-from sdmx import message, model
-from sdmx.model import Key
+import pandasdmx
+from pandasdmx import  message, model
+from pandasdmx.model import Key
 
 from . import MessageTest
 
@@ -19,16 +19,16 @@ class StructuredMessageTest(MessageTest):
     # Fixtures
     @pytest.fixture(scope="class")
     def dsd(self):
-        yield sdmx.read_sdmx(self.path / self.dsd_filename).structure[0]
+        yield pandasdmx.read_sdmx(self.path / self.dsd_filename).structure[0]
 
     @pytest.fixture(scope="class")
     def msg(self, dsd):
-        yield sdmx.read_sdmx(self.path / self.filename, dsd=dsd)
+        yield pandasdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     # Tests for every class
     def test_msg(self, dsd):
         # The message can be parsed
-        sdmx.read_sdmx(self.path / self.filename, dsd=dsd)
+        pandasdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     def test_structured_by(self, dsd, msg):
         # The DSD was used to parse the message
@@ -66,7 +66,7 @@ class TestFlatDataSet(StructuredMessageTest):
         assert o0.attrib.DECIMALS == "4"
 
     def test_write2pandas(self, msg):
-        data_series = sdmx.to_pandas(msg, attributes="")
+        data_series = pandasdmx.to_pandas(msg, attributes="")
         assert isinstance(data_series, pd.Series)
 
 
@@ -118,13 +118,13 @@ class TestSeriesDataSet(StructuredMessageTest):
         assert len(data.series) == 4
 
         # Single series can be converted to pandas
-        s3 = sdmx.to_pandas(data.series[3], attributes="")
+        s3 = pandasdmx.to_pandas(data.series[3], attributes="")
         assert isinstance(s3, pd.Series)
         # With expected values
         assert s3[0] == 1.2894
 
         # Single series can be converted with attributes
-        s3_attr = sdmx.to_pandas(data.series[3], attributes="osgd")
+        s3_attr = pandasdmx.to_pandas(data.series[3], attributes="osgd")
 
         # yields a DataFrame
         assert isinstance(s3_attr, pd.DataFrame)
@@ -136,11 +136,11 @@ class TestSeriesDataSet(StructuredMessageTest):
         assert s3_attr.iloc[0].OBS_STATUS == "A"
 
     def test_write2pandas(self, msg):
-        df = sdmx.to_pandas(msg, attributes="")
+        df = pandasdmx.to_pandas(msg, attributes="")
         assert isinstance(df, pd.Series)
         assert df.shape == (12,)
         # with metadata
-        df = sdmx.to_pandas(msg, attributes="osgd")
+        df = pandasdmx.to_pandas(msg, attributes="osgd")
         assert df.shape == (12, 8)
         assert df.iloc[1].OBS_STATUS == "A"
 
@@ -186,7 +186,7 @@ class TestSeriesDataSet2(StructuredMessageTest):
 
     def test_dataframe(self, msg):
         data = msg.data[0]
-        s = sdmx.to_pandas(data, attributes="")
+        s = pandasdmx.to_pandas(data, attributes="")
         assert isinstance(s, pd.Series)
         assert len(s) == 12
 

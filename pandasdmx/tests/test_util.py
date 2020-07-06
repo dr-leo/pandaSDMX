@@ -2,7 +2,7 @@ import pydantic
 import pytest
 from pydantic import StrictStr
 
-from sdmx.util import BaseModel, DictLike, validate_dictlike
+from pandasdmx.util import BaseModel, DictLike, validate_dictlike
 
 
 def test_dictlike():

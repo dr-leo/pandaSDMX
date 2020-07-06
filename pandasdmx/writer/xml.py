@@ -196,7 +196,7 @@ def identifiable(obj, **kwargs):
     kwargs.setdefault("id", obj.id)
     try:
         kwargs.setdefault(
-            "urn", obj.urn or sdmx.urn.make(obj, kwargs.pop("parent", None))
+            "urn", obj.urn or pandasdmx.urn.make(obj, kwargs.pop("parent", None))
         )
     except (AttributeError, ValueError):
         pass

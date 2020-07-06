@@ -1,7 +1,7 @@
 import pytest
 
-import sdmx
-from sdmx import model
+import pandasdmx
+from pandasdmx import  model
 
 from . import MessageTest
 from .data import specimen
@@ -23,7 +23,7 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_writer(self, msg):
-        cls_as_dfs = sdmx.to_pandas(msg.codelist)
+        cls_as_dfs = pandasdmx.to_pandas(msg.codelist)
 
         # Number of codes expected in each Codelist
         count = {
@@ -85,7 +85,7 @@ class TestECB_EXR1(MessageTest):
 
 def test_exr_constraints():
     with specimen("1/structure-full.xml") as f:
-        m = sdmx.read_sdmx(f)
+        m = pandasdmx.read_sdmx(f)
     ECB_EXR1 = m.structure["ECB_EXR1"]
 
     # Test DimensionDescriptor
@@ -127,11 +127,11 @@ def test_exr_constraints():
         m._in_constraints({"FREQ": "A"})
 
     # structure writer with constraints
-    out = sdmx.to_pandas(m)
+    out = pandasdmx.to_pandas(m)
     cl = out.codelist
     assert cl.shape == (3555, 2)
 
     # unconstrained codelists
-    out = sdmx.to_pandas(m, constraint=False)
+    out = pandasdmx.to_pandas(m, constraint=False)
     cl = out.codelist
     assert cl.shape, (4177, 2)

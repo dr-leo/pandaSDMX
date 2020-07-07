@@ -26,7 +26,7 @@ def test_read_sdmx(tmp_path):
     # Exception raised when the file contents don't allow to guess the format
     bad_file = BytesIO(b"#! neither XML nor JSON")
     exc = (
-        "cannot infer pandasdmx.message format from path None, format={}, or content "
+        "cannot infer SDMX message format from path None, format={}, or content "
         "'#! ne..'"
     )
     with pytest.raises(RuntimeError, match=exc.format("None")):

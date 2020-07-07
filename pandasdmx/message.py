@@ -15,6 +15,8 @@ from requests import Response
 from pandasdmx import model
 from pandasdmx.util import BaseModel, DictLike, summarize_dictlike
 
+
+
 log = logging.getLogger(__name__)
 
 
@@ -85,6 +87,27 @@ class Message(BaseModel):
     #: :class:`requests.Response` instance for the response to the HTTP request
     #: that returned the Message. This is not part of the SDMX standard.
     response: Optional[Response] = None
+
+    def to_pandas(self, *args, **kwargs):
+        """Convert a Message instance to :mod:`pandas` object(s).
+
+        :func:`pandasdmx.writer.write` is called and passed
+        the `Message` instance  as first argument, followed  by any `args` and `kwargs`.
+
+        .. seealso:: :meth:`write`
+        """
+        from . import writer
+        return writer.to_pandas(self, *args, **kwargs)
+
+    def write(self, *args, **kwargs):
+        """Alias for `to_pandas` improving backwards compatibility.
+
+        .. deprecated:: 1.0
+            Use :meth:`to_pandas` instead.
+        """
+        warn('Message.write() is deprecated. Use Message.to_pandas() instead.',
+            DeprecationWarning)
+        return self.to_pandas(*args, **kwargs)
 
     def __str__(self):
         return repr(self)

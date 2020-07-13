@@ -28,7 +28,7 @@ class Resource(str, Enum):
     """Enumeration of SDMX REST API endpoints.
 
     ====================== ================================================
-    :class:`Enum` member   :mod:`sdmx.model` class
+    :class:`Enum` member   :mod:`pandasdmx.model` class
     ====================== ================================================
     ``categoryscheme``     :class:`.CategoryScheme`
     ``codelist``           :class:`.Codelist`

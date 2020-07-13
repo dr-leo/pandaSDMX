@@ -31,7 +31,7 @@ writer = BaseWriter("pandas")
 def to_pandas(obj, *args, **kwargs):
     """Convert an SDMX *obj* to :mod:`pandas` object(s).
 
-    See :ref:`sdmx.writer.pandas <writer-pandas>`.
+    See :ref:`pandasdmx.writer.pandas <writer-pandas>`.
     """
     return writer.recurse(obj, *args, **kwargs)
 
@@ -234,7 +234,7 @@ def write_dataset(
         attribute is returned.
     constraint : .ContentConstraint, optional
         If given, only Observations included by the *constraint* are returned.
-    datetime : bool or str or or .Dimension or dict, optional
+    datetime : bool or str  or .Dimension or dict, optional
         If given, return a DataFrame with a :class:`~pandas.DatetimeIndex`
         or :class:`~pandas.PeriodIndex` as the index and all other dimensions
         as columns. Valid `datetime` values include:
@@ -254,7 +254,7 @@ def write_dataset(
             Dimension containing a frequency specification. If a Dimension, the
             specified dimension is used for the frequency specification.
 
-            Any Dimension used for the frequency specification is does not
+            Any Dimension used for the frequency specification  does not
             appear in the returned DataFrame.
 
     Returns

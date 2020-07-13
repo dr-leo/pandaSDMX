@@ -4,7 +4,7 @@
 :doc:`information model <implementation>`, but in the
 :ref:`SDMX-ML standard <formats>`.
 
-:mod:`sdmx` also uses :class:`DataMessage` to encapsulate SDMX-JSON data
+:mod:`pandasdmx` also uses :class:`DataMessage` to encapsulate SDMX-JSON data
 returned by data sources.
 """
 import logging

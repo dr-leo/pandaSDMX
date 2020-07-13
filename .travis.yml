@@ -8,7 +8,7 @@ jobs:
   - python: 3.7.3  # earliest
   - python: 3.7
   - python: 3.8
-  - python: 3.8-dev
+  - python: 3.9-dev
   # Non-linux jobs; Python configured below
   - os: osx
     language: objective-c  # Only language provided
@@ -29,11 +29,8 @@ install:
       brew install python@3.8 ;;
     windows)
       choco install --no-progress python3
-      python -m pip install --upgrade pip ;;
   esac
 # All platforms
-# Next line commented out to try fixing  OSX build
-#- pip3 install --upgrade pip
 - pip3 install --requirement requirements.txt
 - pip3 install .[cache,doc,test]
 
@@ -41,7 +38,7 @@ script: >
   pytest
   -ra
   --verbose
-  --remote-data
+  -m "not experimental"
   --cov pandasdmx --cov-report term-missing
 
 after_success:

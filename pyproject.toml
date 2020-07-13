@@ -34,7 +34,6 @@ cache = ["requests_cache"]
 doc = ["sphinx >= 2.3", 
 "IPython"]
 test = ["pytest >= 5", 
-"pytest-remotedata >= 0.3.1", 
 "requests-mock >= 1.4"]
 
 [tool.flit.metadata.urls]

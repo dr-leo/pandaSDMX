@@ -9,7 +9,7 @@ class BaseWriter:
     - Create an instance of this class.
     - Use :meth:`register` in the same manner as Python's built-in
       :func:`functools.singledispatch` to decorate functions that certain types
-      of :mod:`sdmx.model` or :mod:`sdmx.message` objects.
+      of :mod:`pandasdmx.model` or :mod:`pandasdmx.message` objects.
     - Call :meth:`recurse` to kick off recursive writing of objects, including
       from inside other functions.
 

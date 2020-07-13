@@ -1,7 +1,7 @@
 """Network requests API.
 
 This module defines :class:`.Request`, which forms the high-level API of
-:mod:`sdmx`. Requesting data and metadata from an SDMX server requires a
+:mod:`pandasdmx`. Requesting data and metadata from an SDMX server requires a
 understanding of this API and a basic understanding of the SDMX web service
 guidelines.
 """

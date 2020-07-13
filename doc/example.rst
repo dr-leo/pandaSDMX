@@ -43,12 +43,13 @@ We also use a query *parameter*, 'startPeriod', to limit the scope of the data r
         )
 
 ``resp`` is  a :class:`.DataMessage` object.
-We use its :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.Dataframe`, then select on the ``AGE`` dimension we saw   in the ``metadata`` above:
+We use its :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.DataFrame`, and select on the ``AGE`` dimension we saw   in the ``metadata`` above:
 
 .. ipython:: python
 
-    data = resp.to_pandas().xs('Y15-74', level='AGE', 
-              axis=1, drop_level=False)
+    data = resp.to_pandas(
+        datetime={'dim': 'TIME_PERIOD', 'freq': 'FREQ'}).xs('Y15-74', level='AGE', 
+            axis=1, drop_level=False)
 
 We can now explore the data set as expressed in a familiar pandas object.
 First, show dimension names:
@@ -67,4 +68,4 @@ Select some data of interest: show aggregate unemployment rates across ages ('Y1
 
 .. ipython:: python
 
-    data.loc[:, ('A', 'Y15-74', 'PC_ACT', 'T')]
+    data.loc[:, ('Y15-74', 'PC_ACT', 'T')]

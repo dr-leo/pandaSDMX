@@ -23,17 +23,19 @@ Top-level methods and classes
 
        import logging
 
-       sdmx.logger.setLevel(logging.DEBUG)
+       pandasdmx.logger.setLevel(logging.DEBUG)
 
    .. versionadded:: 0.4
 
 
-``message``: SDMX messages
---------------------------
+``message``: pandasdmx.messages
+-------------------------------
 .. automodule:: pandasdmx.message
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _api-model:
 
 ``model``: SDMX Information Model
 ---------------------------------
@@ -48,9 +50,10 @@ Top-level methods and classes
 
 SDMX-ML
 :::::::
+
 .. currentmodule:: pandasdmx.reader.sdmxml
 
-pandaSDMX supports the several types of SDMX-ML messages.
+:mod:`pandasdmx` supports the several types of SDMXML messages.
 
 .. autoclass:: pandasdmx.reader.sdmxml.Reader
     :members:
@@ -66,51 +69,100 @@ SDMX-JSON
     :undoc-members:
 
 
-``writer``: Convert SDMX to pandas objects
-------------------------------------------
+Reader API
+::::::::::
+
+.. currentmodule:: pandasdmx.reader
+
+.. automodule:: pandasdmx.reader
+   :members:
+
+.. autoclass:: pandasdmx.reader.base.BaseReader
+   :members:
+
+
+``writer``: Convert ``sdmx`` objects to other formats
+-----------------------------------------------------
+
+.. _writer-pandas:
+
+``writer.pandas``: Convert to ``pandas`` objects
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+.. currentmodule:: pandasdmx.writer.pandas
+
 .. versionchanged:: 1.0
 
-   :meth:`pandasdmx.to_pandas` (via :meth:`write <pandasdmx.writer.write>`)
-   handles all types of objects, replacing the earlier, separate
-   ``data2pandas`` and ``structure2pd`` writers.
+   :meth:`sdmx.to_pandas` handles all types of objects, replacing the earlier, separate ``data2pandas`` and ``structure2pd`` writers.
 
-.. automodule:: pandasdmx.writer
-   :members:
-   :exclude-members: write
+:func:`.to_pandas` implements a dispatch pattern according to the type of *obj*.
+Some of the internal methods take specific arguments and return varying values.
+These arguments can be passed to :func:`.to_pandas` when `obj` is of the appropriate type:
 
-   .. automethod:: pandasdmx.writer.write
+.. autosummary::
+   pandasdmx.writer.pandas.write_dataset
+   pandasdmx.writer.pandas.write_datamessage
+   pandasdmx.writer.pandas.write_itemscheme
+   pandasdmx.writer.pandas.write_structuremessage
+   pandasdmx.writer.pandas.DEFAULT_RTYPE
 
-      .. autosummary::
-         write_component
-         write_datamessage
-         write_dataset
-         write_dict
-         write_dimensiondescriptor
-         write_itemscheme
-         write_list
-         write_membervalue
-         write_nameableartefact
-         write_serieskeys
-         write_structuremessage
+Other objects are converted as follows:
 
-.. autodata:: DEFAULT_RTYPE
+:class:`.Component`
+   The :attr:`~.Concept.id` attribute of the :attr:`~.Component.concept_identity` is returned.
+
+:class:`.DataMessage`
+   The :class:`.DataSet` or data sets within the Message are converted to pandas objects.
+   Returns:
+
+   - :class:`pandas.Series` or :class:`pandas.DataFrame`, if `obj` has only one data set.
+   - list of (Series or DataFrame), if `obj` has more than one data set.
+
+:class:`.dict`
+   The values of the mapping are converted individually.
+   If the resulting values are :class:`str` or Series *with indexes that share the same name*, then they are converted to a Series, possibly with a :class:`pandas.MultiIndex`.
+   Otherwise, a :class:`.DictLike` is returned.
+
+:class:`.DimensionDescriptor`
+   The :attr:`~.DimensionDescriptor.components` of the DimensionDescriptor are written.
+
+:class:`list`
+   For the following *obj*, returns Series instead of a :class:`list`:
+
+   - a list of :class:`.Observation`: the Observations are written using :meth:`write_dataset`.
+   - a list with only 1 :class:`.DataSet` (e.g. the :attr:`~.DataMessage.data` attribute of :class:`.DataMessage`): the Series for the single element is returned.
+   - a list of :class:`.SeriesKey`: the key values (but no data) are returned.
+
+:class:`.NameableArtefact`
+   The :attr:`~.NameableArtefact.name` attribute of `obj` is returned.
+
+.. automodule:: pandasdmx.writer.pandas
+   :members: DEFAULT_RTYPE, write_dataset, write_datamessage, write_itemscheme, write_structuremessage
 
 .. todo::
    Support selection of language for conversion of
-   :class:`InternationalString <pandasdmx.model.InternationalString>`.
+   :class:`InternationalString <sdmx.model.InternationalString>`.
 
 
-``remote``: Access SDMX REST web services
------------------------------------------
+``writer.xml``: Write to pandasdmx.ML
+:::::::::::::::::::::::::::::::::::::
+
+.. versionadded:: 1.1
+
+See :func:`.to_xml`.
+
+
+``remote``: Access pandasdmx.REST web services
+----------------------------------------------
 .. autoclass:: pandasdmx.remote.Session
 .. autoclass:: pandasdmx.remote.ResponseIO
 
 
-``source``: Features of SDMX data sources
------------------------------------------
+``source``: Features of pandasdmx.data sources
+----------------------------------------------
 
-This module defines :class:`Source <pandasdmx.source.Source>` and some utility functions.
-For built-in subclasses of Source used to provide pandaSDMX's built-in support
+This module defines :class:`Source <sdmx.source.Source>` and some utility functions.
+For built-in subclasses of Source used to provide :mod:`sdmx`'s built-in support
 for certain data sources, see :doc:`sources`.
 
 .. autoclass:: pandasdmx.source.Source

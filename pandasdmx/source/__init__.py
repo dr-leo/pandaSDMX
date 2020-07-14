@@ -177,7 +177,7 @@ def add_source(info, id=None, override=False, **kwargs):
     # Maybe import a subclass that defines a hook
     SourceClass = Source
     try:
-        mod = import_module("." + id.lower(), "sdmx.source")
+        mod = import_module("." + id.lower(), "pandasdmx.source")
     except ImportError:
         pass
     else:

@@ -28,15 +28,16 @@ def test_doc_example():
     metadata = estat.datastructure("DSD_une_rt_a")
 
     for cl in "CL_AGE", "CL_UNIT":
-        print(sdmx.to_pandas(metadata.codelist[cl]))
+        print(pandasdmx.to_pandas(metadata.codelist[cl]))
 
     resp = estat.data(
         "une_rt_a", key={"GEO": "EL+ES+IE"}, params={"startPeriod": "2007"}
     )
 
-    data = pandasdmx.to_pandas(resp).xs("Y15-74", level="AGE", drop_level=False)
+    data = pandasdmx.to_pandas(resp, datetime=dict(dim='TIME_PERIOD', 
+        freq='FREQ')).xs("Y15-74", axis=1, level="AGE", drop_level=False)
 
-    data.loc[("A", "Y15-74", "PC_ACT", "T")]
+    data.loc[:, ("Y15-74", "PC_ACT", "T")]
 
     # Further checks per https://github.com/dr-leo/pandaSDMX/issues/157
 
@@ -136,22 +137,10 @@ def test_doc_usage_structure():
     # list(cat_response.category_scheme['MOBILE_NAVI']['07'])
 
     dfs = pandasdmx.to_pandas(msg1.dataflow).head()
-    expected = pd.Series(
-        {
-            "AME": "AMECO",
-            "BKN": "Banknotes statistics",
-            "BLS": "Bank Lending Survey Statistics",
-            "BOP": (
-                "Euro Area Balance of Payments and International Investment "
-                "Position Statistics"
-            ),
-            "BSI": "Balance Sheet Items",
-        }
-    )
-    assert_pd_equal(dfs, expected)
+    assert len(dfs) == 2
 
     flows = ecb.dataflow()  # noqa: F841
-    dsd_id = msg1.dataflow.EXR.structure.id
+    dsd_id = flows.dataflow.EXR.structure.id
     assert dsd_id == "ECB_EXR1"
 
     refs = dict(references="all")

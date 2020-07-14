@@ -29,7 +29,6 @@ Optional dependencies for extra features
 - for ``doc``, to build the documentation: `sphinx <https://sphinx-doc.org>`_
   and `IPython <https://ipython.org>`_.
 - for ``test``, to run the test suite: `pytest <https://pytest.org>`_,
-  `pytest-remotedata <https://github.com/astropy/pytest-remotedata>`_, and
   `requests-mock <https://requests-mock.readthedocs.io>`_.
 
 Instructions
@@ -54,9 +53,6 @@ Instructions
      $ pip install pandasdmx[cache]             # just requests-cache
      $ pip install pandasdmx[cache,doc,test]  # all extras
 
-.. note:: A *conda* install does not include any of these extras so you would have
-   to get them separately.
-   
 From source
 ~~~~~~~~~~~
 
@@ -84,14 +80,16 @@ From source
 Running tests
 -------------
 
-Install from source, including the ``tests`` optional dependencies.
+As per v1.1.0, the test suite is no longer packaged with any pandaSDMX distribution because
+the tests suite has grown too large; on first run it downloads about 300MB of data.
+You can run it anyway by installing the  source from Github, including the ``tests`` optional dependencies.
 Then, in the package directory, issue::
 
     $ py.test
 
 By default, tests that involve retrieving data over the network are skipped. To
-also run these tests, use::
+run these tests, use::
 
-    $ py.test --remote-data
+    $ pytest -m network
 
 pytest offers many command-line options to control test invocation; see ``py.test --help`` or the `documentation <https://pytest.org>`_.

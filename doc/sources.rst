@@ -219,19 +219,11 @@ SDMX-ML —
   include dataflows which UNSD does not actually provide.
 
 
-``UNESCO``: UN Educational, Scientific and Cultural Organization
+``UNICEF``: UN International Children's Emergency Fund``
 ----------------------------------------------------------------
 
 SDMX-ML —
-`Website <https://apiportal.uis.unesco.org/getting-started>`__
-
-- Free registration required; user credentials must be provided either as
-  parameter or HTTP header with each request.
-
-.. warning:: An issue with structure-specific datasets has been reported.
-  It seems that Series are not recognized due to some oddity
-  in the XML format.
-
+`Website <https://data.unicef.org/>`_
 
 ``WB``: World Bank Group's “World Integrated Trade Solution”
 ------------------------------------------------------------

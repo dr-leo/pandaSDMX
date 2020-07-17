@@ -255,7 +255,7 @@ class Reader(BaseReader):
             # Parsing failed; display some diagnostic information
             self._dump()
             print(etree.tostring(element, pretty_print=True).decode())
-            raise  XMLParseError from exc
+            raise XMLParseError from exc
 
         # Parsing complete
 

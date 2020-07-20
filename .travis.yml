@@ -1,4 +1,5 @@
 language: python
+dist: bionic
 jobs:
   include:
   # Linux jobs
@@ -17,7 +18,6 @@ jobs:
     env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 install: 
-  - pip3 install --upgrade pip  # all three OSes agree about 'pip3'
   - pip3 install --requirement requirements.txt
   - pip3 install .[cache,doc,test]
 

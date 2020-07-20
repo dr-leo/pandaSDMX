@@ -1,5 +1,4 @@
 language: python
-
 jobs:
   include:
   # Linux jobs
@@ -13,14 +12,14 @@ jobs:
   - os: windows
     language: shell
     before_install:
-      - choco install python --version 3.8.0
-      #- python -m pip install --upgrade pip
+      - choco install python --version 3.8
+      #- python -m pip install --upgrade pip # from the travis docs. Need this??
     env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 install: 
   - pip3 install --upgrade pip  # all three OSes agree about 'pip3'
   - pip3 install --requirement requirements.txt
-- pip3 install .[cache,doc,test]
+  - pip3 install .[cache,doc,test]
 
 script: >
   pytest

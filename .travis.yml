@@ -10,9 +10,9 @@ jobs:
   - python: 3.8
   # Non-linux jobs; Python configured below
   - os: osx
-    language: objective-c  # Only language provided
+    - : python: 3.8
     # Homebrew installs Python to this location
-    env: PATH=/usr/local/opt/python@3.8/bin:$PATH
+    # env: PATH=/usr/local/opt/python@3.8/bin:$PATH
   - os: windows
     language: shell
     # Chocolatey installs Python to this location
@@ -23,9 +23,9 @@ install:
 # Install Python & pip on macOS and Windows
 - |-
   case $TRAVIS_OS_NAME in
-    osx)
-      brew update --quiet
-      brew install python@3.8 ;;
+    # osx)
+    #  brew update --quiet
+    #  brew install python@3.8 ;;
     windows)
       choco install --no-progress python3
   esac

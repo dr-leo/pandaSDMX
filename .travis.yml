@@ -1,47 +1,31 @@
 language: python
-os: linux
 dist: bionic
-
 jobs:
   include:
   # Linux jobs
   - python: 3.7.3  # earliest
   - python: 3.7
   - python: 3.8
-  - python: 3.8-dev
   # Non-linux jobs; Python configured below
   - os: osx
-    language: objective-c  # Only language provided
-    # Homebrew installs Python to this location
-    env: PATH=/usr/local/opt/python@3.8/bin:$PATH
+    osx_image: xcode11.2
+    language: shell
   - os: windows
     language: shell
-    # Chocolatey installs Python to this location
+    before_install:
+      - choco install python --version 3.8
+      #- python -m pip install --upgrade pip # from the travis docs. Need this??
     env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
-
-install:
-# Install Python & pip on macOS and Windows
-- |-
-  case $TRAVIS_OS_NAME in
-    osx)
-      brew update --quiet
-      brew install python@3.8 ;;
-    windows)
-      choco install --no-progress python3
-      python -m pip install --upgrade pip ;;
-  esac
-# All platforms
-# Next line commented out to try fixing  OSX build
-#- pip3 install --upgrade pip
-- pip3 install --requirement requirements.txt
-- pip3 install .[cache,doc,test]
+install: 
+  - pip3 install --requirement requirements.txt
+  - pip3 install .[cache,doc,test]
 
 script: >
   pytest
   -ra
   --verbose
-  --remote-data
+  -m "not experimental"
   --cov pandasdmx --cov-report term-missing
 
 after_success:

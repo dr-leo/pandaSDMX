@@ -45,7 +45,6 @@
     "url": "https://sdmxcentral.imf.org/ws/public/sdmxapi/rest",
     "name": "International Monetary Fund",
     "supports": {
-      "data": false,
       "provisionagreement": false
     }
   },
@@ -102,22 +101,18 @@
     "name": "SDMX Global Registry"
   },
   {
-    "id": "UNESCO",
-    "name": "UN Educational, Scientific and Cultural Organization",
-    "url": "http://api.uis.unesco.org/sdmx",
+    "id": "UNICEF",
+    "name": "UN International Children's Emergency Fund",
+    "url": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest",
     "headers": {
         "accept": "application/vnd.sdmx.structure+xml;version=2.1"
-    },
-    "supports": {"datastructure": false}
+    }
   },
   {
     "id": "UNSD",
     "name": "United Nations Statistics Division",
     "url": "http://data.un.org/WS/rest",
-    "supports": {
-      "preview": true, 
-      "provisionagreement": false
-    }
+    "supports": {"preview": true, "provisionagreement": false}
   },
   {
     "id": "WB",

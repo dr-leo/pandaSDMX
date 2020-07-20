@@ -6,19 +6,19 @@ def test_list_sources():
     assert len(source_ids) == 14
 
     # Listed alphabetically
-    assert source_ids[0] == 'ABS'
-    assert source_ids[-1] == 'WB'
+    assert source_ids[0] == "ABS"
+    assert source_ids[-1] == "WB"
 
 
 def test_source_support():
     # Implicitly supported endpoint
-    assert sources['ILO'].supports['categoryscheme']
+    assert sources["ILO"].supports["categoryscheme"]
 
     # Specifically unsupported endpoint
-    assert not sources['ESTAT'].supports['categoryscheme']
+    assert not sources["ESTAT"].supports["categoryscheme"]
 
     # Explicitly supported structure-specific data
-    assert sources['INEGI'].supports['structure-specific data']
+    assert sources["INEGI"].supports["structure-specific data"]
 
 
 def test_add_source():
@@ -37,4 +37,4 @@ def test_add_source():
         "url": "https://example.org/sdmx"
         }"""
     add_source(profile2)
-    assert not sources['BAR'].supports['datastructure']
+    assert not sources["BAR"].supports["datastructure"]

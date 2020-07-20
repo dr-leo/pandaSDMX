@@ -9,11 +9,11 @@ agencies, central banks, and international organisations.
 :mod:`pandaSDMX` can be used to:
 
 - explore the data available from :doc:`data providers <sources>` such as the World Bank, ILO, ECB,  
-  Eurostat, OECD, and United Nations;
+  Eurostat, OECD, UNICEF and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
   - from local files, or
-  - retrieved from SDMX web services, with query validation and caching;
+  - retrieved from pandasdmx web services, with query validation and caching;
 
 - convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data
@@ -46,7 +46,7 @@ These are called the “SDMX Information Model” (IM).
 
 .. _not-the-standard:
 
-But fear not: This documentation  gently explains the
+This documentation  gently explains the
 functionality provided by :mod:`pandaSDMX` itself enabling you to make the 
 best use of  all supported data sources. 
 A decent understanding  of the IM is  conveyed in passing. 

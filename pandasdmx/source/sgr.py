@@ -2,12 +2,12 @@ from . import Source as BaseSource
 
 
 class Source(BaseSource):
-    _id = 'SGR'
+    _id = "SGR"
 
     def handle_response(self, response, content):
         """SGR responses do not specify content-type; set it directly."""
-        if response.headers.get('content-type', None) is None:
-            response.headers['content-type'] = 'application/xml'
+        if response.headers.get("content-type", None) is None:
+            response.headers["content-type"] = "application/xml"
         return response, content
 
     def modify_request_args(self, kwargs):
@@ -18,4 +18,4 @@ class Source(BaseSource):
         """
         super().modify_request_args(kwargs)
 
-        kwargs.setdefault('provider', 'all')
+        kwargs.setdefault("provider", "all")

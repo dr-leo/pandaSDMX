@@ -454,7 +454,7 @@ Convert dimensions to :class:`pandas.DatetimeIndex` or :class:`~pandas.PeriodInd
 -----------------------------------------------------------------------------------
 
 SDMX datasets often have a :class:`~.Dimension` with a name like ``TIME_PERIOD``.
-To ease further processing of time-series data read from SDMX messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
+To ease further processing of time-series data read from pandasdmx messages, :func:`.write_dataset` provides a `datetime` argument to convert these into :class:`pandas.DatetimeIndex` and :class:`~pandas.PeriodIndex` classes.
 
 For multi-dimensional datasets, :func:`~.write_dataset` usually returns a :class:`pandas.Series` with a :class:`~pandas.MultiIndex` that has one level for each dimension.
 However, MultiIndex and DatetimeIndex/PeriodIndex are incompatible; it is not possible to use pandas' date/time features for *just one level* of a MultiIndex (e.g. ``TIME_PERIOD``) while using other types for the other levels/dimensions (e.g. strings for ``CURRENCY``).

@@ -4,6 +4,27 @@ What's new?
 ===========
 
 
+v1.1.0 (2020-07-20)
+-------------------------------
+
+- add support for new data source 
+  `UNICEF <https://data.unicef.org/sdmx-api-documentation/>`_
+- Remove data source UNESCO  as their SDMX web API has been   discontinued.
+  Bulk downloads should still be available though.
+- Ported code-base   from v1.2.0 of recent 
+  `fork <http://sdmx1.readthedocs.io/>`_. New features:
+  
+  * event-driven SDMXML reader
+  * new sdmxml writer
+  
+- Fix crash when passing `str` typed filepath to :func:`pandasdmx.reader.read_sdmx`
+- Added support for :class:`pandasdmx.message.DataMessage` attributes 
+  *reporting_begin*, *reporting_en* and *extracted*.  when
+- remove test suite from source distribution and wheel as it has become rather unwieldy
+  (On first run, 300MB of data are downloaded.)
+- Do not raise `XMLParseError` and terminate when an unsupported tag is found in SDMXML 
+  message. A gentle warning is logged instead.
+
 
 v1.0.1 (2020-05-28)
 -------------------------------

@@ -34,7 +34,7 @@ central banks, and international organisations.
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
   - from local files, or
-  - retrieved from SDMX web services, with query validation and caching;
+  - retrieved from pandasdmx web services, with query validation and caching;
 
 - convert data and metadata into `pandas <https://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data

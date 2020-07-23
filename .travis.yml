@@ -6,7 +6,7 @@ jobs:
   - python: 3.7.3  # earliest
   - python: 3.7
   - python: 3.8
-  # Non-linux jobs; Python configured below
+  # Non-linux jobs
   - os: osx
     osx_image: xcode11.2
     language: shell
@@ -14,9 +14,8 @@ jobs:
     language: shell
     before_install:
       - choco install python --version 3.8
-      #- python -m pip install --upgrade pip # from the travis docs. Need this??
     env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
-
+# All platforms:
 install: 
   - pip3 install --requirement requirements.txt
   - pip3 install .[cache,doc,test]

@@ -10,6 +10,7 @@ import logging
 import re
 from collections import defaultdict
 from copy import copy
+from inspect import isclass
 from itertools import chain, product
 from operator import itemgetter
 from sys import maxsize
@@ -54,22 +55,23 @@ def add_localizations(target: model.InternationalString, values: list) -> None:
 
 
 def matching_class(cls):
-    return lambda item: isinstance(item, type) and issubclass(item, cls)
-
+    def func(item):
+        return isclass(item) and issubclass(item, cls)
+    return func
 
 def matching_class0(cls):
-    return lambda item: isinstance(item[0], type) and issubclass(item[0], cls)
+    def func(item):
+        return isclass(item[0]) and issubclass(item[0], cls)
+    return func
 
 
 def setdefault_attrib(target, elem, *names):
-    try:
+    # for performance:
+    if hasattr(elem, 'attrib'):
+        a = elem.attrib
         for name in names:
-            try:
-                target.setdefault(to_snake(name), elem.attrib[name])
-            except KeyError:
-                pass
-    except AttributeError:
-        pass
+            if name in a:
+                target.setdefault(to_snake(name), a[name])
 
 
 def to_snake(value):
@@ -228,26 +230,20 @@ class Reader(BaseReader):
         try:
             # Use the etree event-driven parser
             for event, element in etree.iterparse(source, events=("start", "end")):
-                try:
+                t = (element.tag, event)
+                if t in PARSE:
                     # Retrieve the parsing function for this element & event
-                    func = PARSE[element.tag, event]
-                except KeyError:  # pragma: no cover
+                    func = PARSE[t]
+                else:  # pragma: no cover
                     # Don't know what to do for this (element, event)
-                    log.warning(f"Parsing of  {element.tag, event} not implemented.")
+                    log.warning(f"Parsing of  {t} not implemented.")
                     continue
 
-                try:
+                if func: # else: do nothing
                     # Parse the element
                     result =    func(self, element)
-                except TypeError:
-                    if func is None:  # Explicitly no parser for this (element, event)
-                        continue  # Skip
-                    else:  # pragma: no cover
-                        raise
-                else:
-                    # Store the result
                     self.push(result)
-
+                    
                     if event == "end":
                         element.clear()  # Free memory
 
@@ -360,7 +356,7 @@ class Reader(BaseReader):
                 chain(
                     *[
                         self.stack.pop(k) if cond(k) else []
-                        for k in list(self.stack.keys())
+                        for k in list(self.stack) 
                     ]
                 )
             )
@@ -368,15 +364,15 @@ class Reader(BaseReader):
     def pop_single(self, cls_or_name):
         """Pop a single object from the stack for `cls_or_name` and return."""
         try:
-            return self.stack[cls_or_name].pop(-1)
-        except (IndexError, KeyError):
+            return self.stack[cls_or_name].pop()
+        except (KeyError, IndexError): 
             return None
 
     def peek(self, cls_or_name):
         """Get the object at the top of stack `cls_or_name` without removing it."""
         try:
             return self.stack[cls_or_name][-1]
-        except IndexError:  # pragma: no cover
+        except IndexError:
             return None
 
     def pop_resolved_ref(self, cls_or_name):

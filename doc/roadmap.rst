@@ -1,28 +1,28 @@
 Development roadmap
 ===================
 
-This page describes some possible future enhancements to pandaSDMX.
-For current development priorities, see the list of `GitHub milestones <https://github.com/dr-leo/pandaSDMX/milestones>`_ and issues/PRs targeted to each.
-Contributions are welcome!
+This page describes some possible future enhancements to pandaSDMX. Contributions are welcome!
 
-Using pd.DataFrame for internal storage
-----------------------------------------
 
-pandaSDMX handles :class:`Observations <pandasdmx.model.Observation>` as individual object instances.
-An alternative is to use :mod:`pandas` or other data structures internally.
-See:
+Make the pandas writer more user-friendly
+-----------------------------------------
 
-- pandasdmx/experimental.py for a partial mock-up of such code, and
-- tests/test_experimental.py for tests.
+The writer returns pd.Series objects by default. While this is a sensible approach as it works in most situations,
+users may find dataframes with datetime or period indices more useful. To this end,
+the writer (or the :func:`~pandasdmx.to_pandas` function wrapping it)
+accept a `datetime`kwarg. See the Howto section for details. 
+Having pandaSDMX apply heuristics to retrieve the `TIME` and `FREQ` dimensions
+could make it  easier to have the writer return a period-indexed dataframe.
 
-Choosing either the current or experimental DataSet as a default should be based on detailed performance (memory and time) evaluation under a variety of use-cases.
-To that end, note that the experimental DataSet involves three conversions:
+In addition, the writer could extract data-types from a provided DSD and map them to numpy types. Currently, `NP.float64` is used for data values by default.
+This is fit for purpose in most cases. But data providers may specify other data types such as int, decimal or categorical. These could be translated to pandas types automatically.
 
-1. a reader parses the XML or JSON source, creates Observation instances, and adds them using DataSet.add_obs()
-2. experimental.DataSet.add_obs() populates a pd.DataFrame from these Observations, but discards them.
-3. experimental.DataSet.obs() creates new Observation instances.
+SDMX-JSON
+-------------
 
-For a fair comparison, the API between the readers and DataSet could be changed to eliminate the round trip in #1/#2, but *without* sacrificing the data model consistency provided by pydantic on Observation instances.
+The SDMX-JSON reader could be extended to support the new
+JSON-based structure message representation. Currently, only data messagesare supported.
+
 
 Optimize parsing
 ----------------
@@ -32,7 +32,7 @@ This ensures the returned objects confirm rigorously to the SDMX Information Mod
 
 There are some ways this performance could be improved:
 
-- Create-on-access: don't immediately parse an entire document, but only as requested to construct other objects.
+- Create-on-access (as in v0.9): don't immediately parse an entire document, but only as requested to construct other objects.
   This would make some internals more complex:
 
   - Observation association with GroupKeys is determined by comparing the Observation key with the GroupKey.
@@ -48,13 +48,9 @@ SDMX features & miscellaneous
 
 - pandasdmx.api.Request._resources only contains a small subset of: https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT SUPPORTED OPERATIONS"); provide the rest.
 
-- Get a set of API keys for testing UNESCO and encrypt them for use in CI: https://docs.travis-ci.com/user/encryption-keys/
-
 - Serialize :class:`Message` objects SDMX-CSV (simplest), -JSON, or -ML (most complex).
 
 - Use the `XML Schema <https://en.wikipedia.org/wiki/XML_Schema_(W3C)>`_ definitions of SDMX-ML to validate messages and snippets.
-
-- Check for functionality of pysdmx_ (direct ancestor of pandaSDMX) and sdmx.py_ (distinct); ensure pandaSDMX offers a superset of these features.
 
 - SOAP APIs. Currently only REST APIs are supported.
   This would allow access to, e.g., a broader set of :ref:`IMF` data.
@@ -77,5 +73,3 @@ Inline TODOs
 .. todolist::
 
 .. _pytest-profiling: https://pypi.org/project/pytest-profiling/
-.. _pysdmx: https://github.com/srault95/pysdmx
-.. _sdmx.py: https://github.com/mwilliamson/sdmx.py

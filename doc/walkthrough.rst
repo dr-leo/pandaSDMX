@@ -295,7 +295,7 @@ Attribute names and allowed values can be obtained in a similar fashion.
 Select and query data from a dataflow
 =====================================
 
-Next, we will query for some data.
+Next, we will query some data.
 The step is simple: call :meth:`.Request.get` with `resource_type='data'` as the first argument, or the alias :meth:`.Request.data`.
 
 First, however, we describe some of the many options offered by SDMX and :mod:`pandSDMX` for data queries.
@@ -443,7 +443,7 @@ Thus we can now generate our pandas DataFrame from daily exchange rate data only
 
     import pandas as pd
     daily = [s for sk, s in data.series.items() if sk.FREQ == 'D']
-    cur_df = pd.concat(sdmx.to_pandas(daily))
+    cur_df = pd.concat(sdmx.to_pandas(daily)).unstack()
     cur_df.shape
     cur_df.tail()
 

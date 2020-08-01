@@ -30,7 +30,7 @@ central banks, and international organisations.
 
 - explore the data available from `data providers
   <https://pandasdmx.readthedocs.io/en/latest/sources.html>`_
-  such as the World Bank, ILO, ECB, Eurostat, OECD, and United Nations;
+  such as the World Bank, ILO, ECB, Eurostat, OECD, UNICEF and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
   - from local files, or
@@ -70,3 +70,5 @@ under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 
+pandaSDMX contains code from `SDMX1 <https://sdmx1.readthedocs.io/>`_ which is itself
+a fork of  pandaSDMX.

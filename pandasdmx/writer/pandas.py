@@ -431,8 +431,15 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
 
     if param["freq"]:
         # Determine frequency string, Dimension, or Attribute
+        try:
+            # pandas version prior to 1.1.0
+            prefix_mapping = pd.offsets.prefix_mapping
+        except AttributeError:
+            # pandas version >= 1.1.0
+            # See also issue #35482 in the pandas-dev repo 
+            prefix_mapping = pd._libs.tslibs.offsets.prefix_mapping
         freq = param["freq"]
-        if isinstance(freq, str) and freq not in pd.offsets.prefix_mapping:
+        if isinstance(freq, str) and freq not in prefix_mapping:
             # ID of a Dimension or Attribute
             for component in chain(_get_dims(), _get_attrs()):
                 if component.id == freq:

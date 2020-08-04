@@ -219,7 +219,7 @@ SDMX-ML —
   include dataflows which UNSD does not actually provide.
 
 
-``UNICEF``: UN International Children's Emergency Fund``
+``UNICEF``: UN International Children's Emergency Fund
 ----------------------------------------------------------------
 
 SDMX-ML —

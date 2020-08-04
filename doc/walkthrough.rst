@@ -20,14 +20,14 @@ Working with statistical data often includes some or all of the following steps.
 2. Investigate *what data is available*.
       Using :mod:`pandaSDMX`, download the catalogue of data flows available from the data provider and select a data flow for further inspection.
 3. Understand *what form* the data comes in.
-      Using :mod:`pandaSDMX`, download structure and metadata on the selected data flow and the data it contains, including the data structure definition, concepts, codelists and content constraints.
-4. Decide *what data is required*.
-      Using :mod:`pandaSDMX`, analyze the structural metadata, by directly inspecting objects or converting them to :mod:`pandas` types.
+     Download structure and other metadata on the selected data flow and the data it contains, including the data structure definition, concepts, codelists and content constraints.
+4. Decide *what data points you need* from the dataflow.
+      Analyze the structural metadata, by directly inspecting objects or converting them to :mod:`pandas` types.
 5. Download the actual data.
       Using :mod:`pandaSDMX`, specify the needed portions of the data from the data flow by constructing a selection ('key') of series and a period/time range.
       Then, retrieve the data using :meth:`Request.get`.
 6. Analyze or manipulate the data.
-      Convert to :mod:`pandas` types using :meth:`pandasmdx.message.Message.to_pandas` or, equivalently, :func:`pandasdmx.api.to_pandas` 
+      Convert to :mod:`pandas` types using :meth:`~pandasmdx.message.Message.to_pandas` (or, equivalently, the top level function :func:`~pandasdmx.to_pandas`) 
       and use the result in further Python code.
 
 
@@ -295,7 +295,7 @@ Attribute names and allowed values can be obtained in a similar fashion.
 Select and query data from a dataflow
 =====================================
 
-Next, we will query for some data.
+Next, we will query some data.
 The step is simple: call :meth:`.Request.get` with `resource_type='data'` as the first argument, or the alias :meth:`.Request.data`.
 
 First, however, we describe some of the many options offered by SDMX and :mod:`pandSDMX` for data queries.
@@ -443,7 +443,7 @@ Thus we can now generate our pandas DataFrame from daily exchange rate data only
 
     import pandas as pd
     daily = [s for sk, s in data.series.items() if sk.FREQ == 'D']
-    cur_df = pd.concat(sdmx.to_pandas(daily))
+    cur_df = pd.concat(sdmx.to_pandas(daily)).unstack()
     cur_df.shape
     cur_df.tail()
 

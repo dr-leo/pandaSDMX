@@ -1,3 +1,7 @@
+try:
+    import fsspec
+except ImportError:
+    pass
 from pathlib import Path
 from typing import List, Mapping, Type
 
@@ -104,12 +108,24 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         For “structure-specific” `format`=``XML`` messages only.
     """
     reader = None
+    
+    # pop any dsd from kwargs as these are passed to any FS backend
+    dsd = kwargs.pop('dsd', None)
 
     try:
         path = Path(filename_or_obj)
+        
+        # Use fsspec if present
+        try:
+            open_ = fsspec.open_files
+        except NameError:
+            open_ = open
 
         # Open the file
-        obj = open(path, "rb")
+        obj = open_(path, mode="rb", **kwargs)
+        # fsspec.open_files returns a list. So get its 1st item
+        if isinstance(obj, list):
+            obj = obj[0]
     except TypeError:
         # Not path-like → opened file
         path = None
@@ -130,9 +146,10 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
 
     if not reader:
         # Read a line and then return the cursor to the initial position
-        pos = obj.tell()
-        first_line = obj.readline().strip()
-        obj.seek(pos)
+        with obj as o:
+            pos = o.tell()
+            first_line = o.readline().strip()
+            o.seek(pos)
 
         try:
             reader = detect_content_reader(first_line)
@@ -144,5 +161,9 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
             f"cannot infer SDMX message format from path {repr(path)}, "
             f"format={format}, or content '{first_line[:5].decode()}..'"
         )
-
-    return reader().read_message(obj, **kwargs)
+    with obj as o:
+        if dsd:
+            return reader().read_message(o, dsd=dsd)
+        else:
+            return reader().read_message(o)
+        

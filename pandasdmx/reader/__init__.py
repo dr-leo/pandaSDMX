@@ -1,7 +1,10 @@
 try:
     import fsspec
+    # Make  :func:read_sdmx use fsspec
+    open_ = fsspec.open_files
 except ImportError:
-    pass
+    # Make read_sdmx use stdlib open if fsspec is unavailable
+    open_ = open
 from pathlib import Path
 from typing import List, Mapping, Type
 
@@ -110,17 +113,12 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
     reader = None
     
     # pop any dsd from kwargs as these are passed to any FS backend
+    kwargs = kwargs.copy()
     dsd = kwargs.pop('dsd', None)
 
     try:
         path = Path(filename_or_obj)
         
-        # Use fsspec if present
-        try:
-            open_ = fsspec.open_files
-        except NameError:
-            open_ = open
-
         # Open the file
         obj = open_(path, mode="rb", **kwargs)
         # fsspec.open_files returns a list. So get its 1st item
@@ -140,28 +138,26 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
 
     if not reader:
         try:
-            reader = get_reader_for_path(Path(f"dummy.{format.lower()}"))
         except (AttributeError, ValueError):
             pass
 
-    if not reader:
-        # Read a line and then return the cursor to the initial position
-        with obj as o:
+    with obj as o:
+        if not reader:
+            # Read a line and then return the cursor to the initial position
             pos = o.tell()
             first_line = o.readline().strip()
             o.seek(pos)
+            try:
+                reader = detect_content_reader(first_line)
+            except ValueError:
+                pass
 
-        try:
-            reader = detect_content_reader(first_line)
-        except ValueError:
-            pass
-
-    if not reader:
-        raise RuntimeError(
-            f"cannot infer SDMX message format from path {repr(path)}, "
-            f"format={format}, or content '{first_line[:5].decode()}..'"
-        )
-    with obj as o:
+        if not reader:
+            raise RuntimeError(
+                f"cannot infer SDMX message format from path {repr(path)}, "
+                f"format={format}, or content '{first_line[:5].decode()}..'"
+            )
+            
         if dsd:
             return reader().read_message(o, dsd=dsd)
         else:

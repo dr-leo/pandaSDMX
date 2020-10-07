@@ -98,7 +98,9 @@ register(sdmxml.Reader)
 
 
 def read_sdmx(filename_or_obj, format=None, **kwargs):
-    """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
+    """
+    Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
+    A given file-like object is closed after loading.
 
     Parameters
     ----------
@@ -138,6 +140,7 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
 
     if not reader:
         try:
+            reader = get_reader_for_path(Path(f"dummy.{format.lower()}"))
         except (AttributeError, ValueError):
             pass
 

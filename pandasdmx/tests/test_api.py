@@ -33,6 +33,8 @@ def test_read_sdmx(tmp_path):
         pandasdmx.read_sdmx(bad_file)
 
     # Using the format= argument forces a certain reader to be used
+    # Create new open file:
+    bad_file = BytesIO(b"#! neither XML nor JSON")
     with pytest.raises(json.JSONDecodeError):
         pandasdmx.read_sdmx(bad_file, format="JSON")
 

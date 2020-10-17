@@ -316,8 +316,9 @@ class Request:
             Type of resource to retrieve.
         resource_id : str, optional
             ID of the resource to retrieve.
-        tofile : str or :class:`~os.PathLike` or `file-like object`, optional
+        tofile : str or :class:`~os.PathLike` or `file-like object` or dict, optional
             File path or file-like to write SDMX data as it is recieved.
+            A dict is **passed to  :func:`ffspec.open_files` or :func:`open`.
         use_cache : bool, optional
             If :obj:`True`, return a previously retrieved :class:`~.Message`
             from :attr:`cache`, or update the cache with a newly-retrieved

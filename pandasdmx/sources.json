@@ -122,5 +122,14 @@
       "agencyscheme": false,
       "provisionagreement": false
     }
+  },
+  {
+    "id": "WB_WDI",
+    "name": "World Bank World Development Indicators",
+    "url": "http://api.worldbank.org/v2/sdmx/rest",
+    "supports": {
+      "provisionagreement": false,
+      "structure-specific data": true
+    }
   }
 ]

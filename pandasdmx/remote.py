@@ -1,3 +1,11 @@
+try:
+    import fsspec
+    # use fsspec for file-handling if available
+    open_ = fsspec.open_files
+except ImportError:
+    # fall back to  stdlib open if fsspec is unavailable
+    open_ = open
+
 import logging
 from io import BufferedIOBase, BytesIO
 from warnings import warn
@@ -74,14 +82,29 @@ class ResponseIO(BufferedIOBase):
         self.response = response
         if tee is None:
             tee = BytesIO()
-        # If tee is a file-like object or tempfile, then use it as cache
-        if isinstance(tee, BufferedIOBase) or hasattr(tee, "file"):
+        # If tee is a file-like object, then use it as cache
+        if (isinstance(tee, BufferedIOBase) # normal file 
+            or 'tempfile' in str(tee) # tempfile 
+            or 'fsspec' in str(tee.__class__)): # fsspec.core.Openfiles
             self.tee = tee
+        elif isinstance(tee, dict):
+            tee.setdefault('mode', default='w+b')
+            self.tee = open_(**tee)
+            #  self.tee may be an open stdlib file or a fsspec not yet opened one
         else:
-            # So tee must be str or os.FilePath
-            self.tee = open(tee, "w+b")
-        self.tee.write(response.content)
-        self.tee.seek(0)
+            # So tee must be str or PathLike
+            self.tee = open_(tee, mode="w+b")
+        # if tee is a temp file, write content, but do not close it.
+        if hasattr(self.tee, "file"):
+            self.tee.write(response.content)
+            self.tee.flush()
+            self.tee.seek(0)
+        else:
+            # In all other cases: write content and close the file
+            with self.tee as f:
+                # If tee is an fsspec.OpenFile, f is a list. Take its first item.
+                f_ = f[0] if isinstance(f, list) else f
+                f_.write(response.content)
 
     def readable(self):
         return True

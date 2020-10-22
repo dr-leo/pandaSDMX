@@ -9,7 +9,7 @@ returned by data sources.
 """
 import logging
 from typing import List, Optional, Text, Union
-
+from warnings import warn
 from requests import Response
 
 from pandasdmx import model

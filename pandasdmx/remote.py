@@ -7,6 +7,7 @@ except ImportError:
     open_ = open
 
 import logging
+import os
 from io import BufferedIOBase, BytesIO
 from warnings import warn
 
@@ -80,31 +81,29 @@ class ResponseIO(BufferedIOBase):
 
     def __init__(self, response, tee=None):
         self.response = response
+        # Open a file or use an opened in various scenarios
         if tee is None:
             tee = BytesIO()
-        # If tee is a file-like object, then use it as cache
-        if (isinstance(tee, BufferedIOBase) # normal file 
-            or 'tempfile' in str(tee) # tempfile 
-            or 'fsspec' in str(tee.__class__)): # fsspec.core.Openfiles
-            self.tee = tee
         elif isinstance(tee, dict):
-            tee.setdefault('mode', default='w+b')
-            self.tee = open_(**tee)
-            #  self.tee may be an open stdlib file or a fsspec not yet opened one
-        else:
-            # So tee must be str or PathLike
-            self.tee = open_(tee, mode="w+b")
-        # if tee is a temp file, write content, but do not close it.
-        if hasattr(self.tee, "file"):
-            self.tee.write(response.content)
-            self.tee.flush()
-            self.tee.seek(0)
-        else:
-            # In all other cases: write content and close the file
-            with self.tee as f:
-                # If tee is an fsspec.OpenFile, f is a list. Take its first item.
-                f_ = f[0] if isinstance(f, list) else f
-                f_.write(response.content)
+            # e.g., to instantiate a fsspec.OpenFile for cloud access
+            tee_ = tee.copy()
+            tee_.setdefault('mode', default='w+b')
+            tee = open_(**tee_)
+        elif isinstance(tee, (str, os.PathLike)):
+            tee = open_(tee, mode="w+b")
+        # Handle the special case of a fsspec.OpenFile
+        if isinstance(tee, list):
+            assert len(tee) == 1 # Multiple files are not supported
+            tee = tee[0].open()
+        
+        #   use tee as instance cache
+        self.tee = tee
+        
+        # write content, but do not close the file.
+        tee.write(response.content)
+        tee.flush()
+        tee.seek(0)
+            
 
     def readable(self):
         return True

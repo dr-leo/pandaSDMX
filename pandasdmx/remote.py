@@ -1,11 +1,3 @@
-try:
-    import fsspec
-    # use fsspec for file-handling if available
-    open_ = fsspec.open_files
-except ImportError:
-    # fall back to  stdlib open if fsspec is unavailable
-    open_ = open
-
 import logging
 import os
 from io import BufferedIOBase, BytesIO
@@ -75,27 +67,27 @@ class ResponseIO(BufferedIOBase):
     ----------
     response : :class:`requests.Response`
         HTTP response to wrap.
-    tee : binary, writable :py:class:`io.BufferedIOBasè`, defaults to io.BytesIO()
-        *tee* is exposed as *self.tee* and not closed explicitly.
+    tee : binary, writable :py:class:`io.BufferedIOBase`, or :class:`fsspec.core.OpenFile` 
+        or :class:`io.PathLike`, defaults to io.BytesIO.
+        If *tee* is an open binary file, it is used to store the received data.
+        If *tee* is a PathLike, it is passed to  :func:`open`, .  
+        *tee* is exposed as *self.tee* and not closed, so this class may be instantiated
+        in a with-context. The latter is also 
+        recommended if a :class:`fsspec.core.OpenFile` is passed.
     """
 
     def __init__(self, response, tee=None):
         self.response = response
-        # Open a file or use an opened in various scenarios
+        # Open a new file in various scenarios, or assume that tee is an open file
         if tee is None:
             tee = BytesIO()
-        elif isinstance(tee, dict):
-            # e.g., to instantiate a fsspec.OpenFile for cloud access
-            tee_ = tee.copy()
-            tee_.setdefault('mode', default='w+b')
-            tee = open_(**tee_)
         elif isinstance(tee, (str, os.PathLike)):
-            tee = open_(tee, mode="w+b")
+            tee = open(tee, mode="w+b")
         # Handle the special case of a fsspec.OpenFile
         if isinstance(tee, list):
-            assert len(tee) == 1 # Multiple files are not supported
-            tee = tee[0].open()
-        
+            assert len(tee) == 1, ValueError(f'Only 1 file allowed, {len(tee)} given.')  
+            tee = tee[0]
+        # Now tee must be an open file, including when passed as such
         #   use tee as instance cache
         self.tee = tee
         
@@ -111,3 +103,6 @@ class ResponseIO(BufferedIOBase):
     def read(self, size=-1):
         """Read and return up to `size` bytes by calling ``self.tee.read()``."""
         return self.tee.read(size)
+
+    def close(self):
+        self.tee.close()

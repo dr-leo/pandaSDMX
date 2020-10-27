@@ -1,10 +1,3 @@
-try:
-    import fsspec
-    # Make  :func:read_sdmx use fsspec
-    open_ = fsspec.open_files
-except ImportError:
-    # Make read_sdmx use stdlib open if fsspec is unavailable
-    open_ = open
 from pathlib import Path
 from typing import List, Mapping, Type
 
@@ -104,7 +97,9 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
 
     Parameters
     ----------
-    filename_or_obj : str or :class:`~os.PathLike` or file
+    filename_or_obj : str or :class:`~os.PathLike` 
+        or open binary file. A file is not closed explicitly. So it should be passed
+        from a with-context.
     format : 'XML' or 'JSON', optional
 
     Other Parameters
@@ -119,17 +114,20 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
     dsd = kwargs.pop('dsd', None)
 
     try:
+        # Do we have a path/filename rather than file?
         path = Path(filename_or_obj)
         
         # Open the file
-        obj = open_(path, mode="rb", **kwargs)
-        # fsspec.open_files returns a list. So get its 1st item
-        if isinstance(obj, list):
-            obj = obj[0]
+        obj = open(path, mode="rb", **kwargs)
     except TypeError:
         # Not path-like → opened file
         path = None
         obj = filename_or_obj
+        # fsspec.open_files returns a list. So get its only item; 
+        # multiple files are not allowed.
+        if isinstance(obj, list):
+            assert len(obj) == 1, ValueError(f'Only one file allowed. {len(obj)} passed.') 
+            obj = obj[0]
 
     if path:
         try:
@@ -144,25 +142,24 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         except (AttributeError, ValueError):
             pass
 
-    with obj as o:
-        if not reader:
-            # Read a line and then return the cursor to the initial position
-            pos = o.tell()
-            first_line = o.readline().strip()
-            o.seek(pos)
-            try:
-                reader = detect_content_reader(first_line)
-            except ValueError:
-                pass
+    if not reader:
+        # Read a line and then return the cursor to the initial position
+        pos = obj.tell()
+        first_line = obj.readline().strip()
+        obj.seek(pos)
+        try:
+            reader = detect_content_reader(first_line)
+        except ValueError:
+            pass
 
-        if not reader:
-            raise RuntimeError(
-                f"cannot infer SDMX message format from path {repr(path)}, "
-                f"format={format}, or content '{first_line[:5].decode()}..'"
-            )
-            
-        if dsd:
-            return reader().read_message(o, dsd=dsd)
-        else:
-            return reader().read_message(o)
+    if not reader:
+        raise RuntimeError(
+            f"cannot infer SDMX message format from path {repr(path)}, "
+            f"format={format}, or content '{first_line[:5].decode()}..'"
+        )
         
+    if dsd:
+        return reader().read_message(obj, dsd=dsd)
+    else:
+        return reader().read_message(obj)
+    

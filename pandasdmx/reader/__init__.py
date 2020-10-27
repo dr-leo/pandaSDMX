@@ -91,11 +91,15 @@ register(sdmxml.Reader)
 
 
 def read_sdmx(filename_or_obj, format=None, **kwargs):
-    """Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
+    """
+    Load a SDMX-ML or SDMX-JSON message from a file or file-like object.
+    A given file-like object is closed after loading.
 
     Parameters
     ----------
-    filename_or_obj : str or :class:`~os.PathLike` or file
+    filename_or_obj : str or :class:`~os.PathLike` 
+        or open binary file. A file is not closed explicitly. So it should be passed
+        from a with-context.
     format : 'XML' or 'JSON', optional
 
     Other Parameters
@@ -104,16 +108,26 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         For “structure-specific” `format`=``XML`` messages only.
     """
     reader = None
+    
+    # pop any dsd from kwargs as these are passed to any FS backend
+    kwargs = kwargs.copy()
+    dsd = kwargs.pop('dsd', None)
 
     try:
+        # Do we have a path/filename rather than file?
         path = Path(filename_or_obj)
-
+        
         # Open the file
-        obj = open(path, "rb")
+        obj = open(path, mode="rb", **kwargs)
     except TypeError:
         # Not path-like → opened file
         path = None
         obj = filename_or_obj
+        # fsspec.open_files returns a list. So get its only item; 
+        # multiple files are not allowed.
+        if isinstance(obj, list):
+            assert len(obj) == 1, ValueError(f'Only one file allowed. {len(obj)} passed.') 
+            obj = obj[0]
 
     if path:
         try:
@@ -133,7 +147,6 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         pos = obj.tell()
         first_line = obj.readline().strip()
         obj.seek(pos)
-
         try:
             reader = detect_content_reader(first_line)
         except ValueError:
@@ -144,5 +157,9 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
             f"cannot infer SDMX message format from path {repr(path)}, "
             f"format={format}, or content '{first_line[:5].decode()}..'"
         )
-
-    return reader().read_message(obj, **kwargs)
+        
+    if dsd:
+        return reader().read_message(obj, dsd=dsd)
+    else:
+        return reader().read_message(obj)
+    

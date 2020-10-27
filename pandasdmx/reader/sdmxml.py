@@ -519,10 +519,11 @@ def _message(reader, elem):
     ):
         log.warning(f"sdmxml.Reader got no dsd=… argument for {QName(elem).localname}")
         ss_without_dsd = True
-    elif "StructureSpecific" not in elem.tag and reader.get_single(
-        model.DataStructureDefinition
-    ):
-        log.warning("Ambiguous: dsd=… argument for non–structure-specific message")
+    # The following seems to only confuse users. 
+    # Thus it is commented out post v1.1.0
+    # elif "StructureSpecific" not in elem.tag and reader.get_single(
+        # model.DataStructureDefinition
+        # log.warning("Ambiguous: dsd=… argument for non–structure-specific message")
 
     # Store values for other methods
     reader.push("SS without DSD", ss_without_dsd)

@@ -4,6 +4,15 @@ What's new?
 ===========
 
 
+v1.2.0 (2020-11-XX)
+-------------------------------
+
+* Add new data source: Worldbank - World Development Indicators
+* Pass files for reading and writing in a with-context. See the documentation for  :func:`pandasdmx.reader.read_sdmx` and :meth:`pandasdmx.api.Request.get` for details
+* Allow `FSSPEC <https://filesystem-spec.readthedocs.io/en/latest/>`_ files.
+  Hence, all major cloud storage providers can be leveraged directly, 
+  alonside many other features of FSSPEC.
+
 v1.1.0 (2020-08-02)
 -------------------------------
 

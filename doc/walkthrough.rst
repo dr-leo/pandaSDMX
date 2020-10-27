@@ -504,7 +504,15 @@ If given, the response from the web service is written to the specified file, *a
 
 .. versionadded:: 0.2.1
 
-:func:`.read_sdmx` can be used to load SDMX messages stored in local files:
+A file-like may be passed in a with-context. And OpenFile instances from 
+`FSSPEC <https://filesystem-spec.readthedocs.io/en/latest/>`_ may be used, 
+e.g., to access a cloud storage provider's file system.
+
+.. versionadded:: 1.2.0
+
+Likewise, :func:`.read_sdmx` can be used 
+to load SDMX messages stored in local files or 
+remote files using FSSPEC:
 
 .. ipython:: python
 

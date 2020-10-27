@@ -230,3 +230,12 @@ SDMX-ML —
 
 SDMX-ML —
 `Website <wits.worldbank.org>`__
+
+``WB_WDI``: World Bank Group's “World Development Indicators”
+----------------------------------------------------------------
+
+SDMX-ML —
+`Website <https://datahelpdesk.worldbank.org/knowledgebase/articles/1886701-sdmx-api-queries>`__
+This service also offers SDMXJSON datasets. This feature requires a specific 
+HTTP header as described on the website.
+Queries for a list of dataflows do not seem to be supported.

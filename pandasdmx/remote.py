@@ -1,4 +1,5 @@
 import logging
+import os
 from io import BufferedIOBase, BytesIO
 from warnings import warn
 
@@ -66,22 +67,35 @@ class ResponseIO(BufferedIOBase):
     ----------
     response : :class:`requests.Response`
         HTTP response to wrap.
-    tee : binary, writable :py:class:`io.BufferedIOBasè`, defaults to io.BytesIO()
-        *tee* is exposed as *self.tee* and not closed explicitly.
+    tee : binary, writable :py:class:`io.BufferedIOBase`, or :class:`fsspec.core.OpenFile` 
+        or :class:`io.PathLike`, defaults to io.BytesIO.
+        If *tee* is an open binary file, it is used to store the received data.
+        If *tee* is a PathLike, it is passed to  :func:`open`, .  
+        *tee* is exposed as *self.tee* and not closed, so this class may be instantiated
+        in a with-context. The latter is also 
+        recommended if a :class:`fsspec.core.OpenFile` is passed.
     """
 
     def __init__(self, response, tee=None):
         self.response = response
+        # Open a new file in various scenarios, or assume that tee is an open file
         if tee is None:
             tee = BytesIO()
-        # If tee is a file-like object or tempfile, then use it as cache
-        if isinstance(tee, BufferedIOBase) or hasattr(tee, "file"):
-            self.tee = tee
-        else:
-            # So tee must be str or os.FilePath
-            self.tee = open(tee, "w+b")
-        self.tee.write(response.content)
-        self.tee.seek(0)
+        elif isinstance(tee, (str, os.PathLike)):
+            tee = open(tee, mode="w+b")
+        # Handle the special case of a fsspec.OpenFile
+        if isinstance(tee, list):
+            assert len(tee) == 1, ValueError(f'Only 1 file allowed, {len(tee)} given.')  
+            tee = tee[0]
+        # Now tee must be an open file, including when passed as such
+        #   use tee as instance cache
+        self.tee = tee
+        
+        # write content, but do not close the file.
+        tee.write(response.content)
+        tee.flush()
+        tee.seek(0)
+            
 
     def readable(self):
         return True
@@ -89,3 +103,6 @@ class ResponseIO(BufferedIOBase):
     def read(self, size=-1):
         """Read and return up to `size` bytes by calling ``self.tee.read()``."""
         return self.tee.read(size)
+
+    def close(self):
+        self.tee.close()

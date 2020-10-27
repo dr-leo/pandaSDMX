@@ -14,7 +14,7 @@ requires = [
     "lxml >= 3.6",
     "pandas >= 1.0",
     "pydantic >= 1.1"]
-requires-python = ">=3.7.3,<4"
+requires-python = ">=3.7.3,<3.9"
 keywords = "statistics, SDMX, pandas, data, economics, science"
 classifiers = [
 "Intended Audience :: Developers",

@@ -3,11 +3,11 @@ from pandasdmx.source import add_source, list_sources, sources
 
 def test_list_sources():
     source_ids = list_sources()
-    assert len(source_ids) == 14
+    assert len(source_ids) == 15
 
     # Listed alphabetically
     assert source_ids[0] == "ABS"
-    assert source_ids[-1] == "WB"
+    assert source_ids[-1] == "WB_WDI"
 
 
 def test_source_support():

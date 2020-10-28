@@ -33,7 +33,7 @@ central banks, and international organisations.
   such as the World Bank, ILO, ECB, Eurostat, OECD, UNICEF and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
-  - from local files, or
+  - from local and remote files, or
   - retrieved from pandasdmx web services, with query validation and caching;
 
 - convert data and metadata into `pandas <https://pandas.pydata.org>`_ objects,

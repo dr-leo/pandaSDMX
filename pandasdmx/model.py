@@ -1585,6 +1585,21 @@ class AttributeValue(BaseModel):
     def __repr__(self):
         return "<{}: {}={}>".format(self.__class__.__name__, self.value_for, self.value)
 
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two AttributeValues are equal if their properties are equal.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return all(
+            compare(attr, self, other, strict)
+            for attr in ["start_date", "value", "value_for"]
+        )
+
 
 @validate_dictlike("attrib", "values")
 class Key(BaseModel):
@@ -1824,6 +1839,30 @@ class Observation(BaseModel):
     def __str__(self):
         return "{0.key}: {0.value}".format(self)
 
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two Observations are equal if:
+
+        - their :attr:`dimension`, :attr:`value`, :attr:`series_key`, and
+          :attr:`value_for` are all equal,
+        - their corresponding :attr:`attached_attribute` and :attr:`group_keys` are all
+          equal.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return (
+            all(
+                compare(attr, self, other, strict)
+                for attr in ["dimension", "series_key", "value", "value_for"]
+            )
+            and self.attached_attribute.compare(other.attached_attribute)
+            and self.group_keys == other.group_keys
+        )
+
 
 @validate_dictlike("attrib")
 class DataSet(AnnotableArtefact):
@@ -1893,6 +1932,30 @@ class DataSet(AnnotableArtefact):
             return value
         else:
             return ActionType[value]
+
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two DataSets are the same if:
+
+        - their :attr:`action`, :attr:`valid_from` compare equal.
+        - all dataset-level attached attributes compare equal.
+        - they have the same number of observations, series, and groups.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return (
+            compare("action", self, other, strict)
+            and compare("valid_from", self, other, strict)
+            and self.attrib.compare(other.attrib, strict)
+            and len(self.obs) == len(other.obs)
+            and len(self.series) == len(other.series)
+            and len(self.group) == len(other.group)
+            and all(o[0].compare(o[1], strict) for o in zip(self.obs, other.obs))
+        )
 
 
 class StructureSpecificDataSet(DataSet):

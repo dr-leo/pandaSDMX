@@ -3,7 +3,6 @@ import logging
 import pytest
 
 import pandasdmx
-from pandasdmx.message import DataMessage
 from pandasdmx.tests.data import specimen
 
 log = logging.getLogger(__name__)
@@ -43,6 +42,54 @@ _xf_not_equal = pytest.mark.xfail(raises=AssertionError)
 
 
 @pytest.mark.parametrize(
+    "data_id, structure_id",
+    [
+        (
+            "INSEE/CNA-2010-CONSO-SI-A17.xml",
+            "INSEE/CNA-2010-CONSO-SI-A17-structure.xml",
+        ),
+        ("INSEE/IPI-2010-A21.xml", "INSEE/IPI-2010-A21-structure.xml"),
+        ("ECB_EXR/1/M.USD.EUR.SP00.A.xml", "ECB_EXR/1/structure.xml"),
+        ("ECB_EXR/ng-ts.xml", "ECB_EXR/ng-structure-full.xml"),
+        # DSD reference does not round-trip correctly
+        pytest.param(
+            "ECB_EXR/rg-xs.xml",
+            "ECB_EXR/rg-structure-full.xml",
+            marks=pytest.mark.xfail(raises=RuntimeError),
+        ),
+        # Example of a not-implemented feature: DataSet with groups
+        pytest.param(
+            "ECB_EXR/sg-ts-gf.xml",
+            "ECB_EXR/sg-structure-full.xml",
+            marks=pytest.mark.xfail(raises=NotImplementedError),
+        ),
+    ],
+)
+def test_data_roundtrip(pytestconfig, data_id, structure_id, tmp_path):
+    """Test that SDMX-ML DataMessages can be 'round-tripped'."""
+
+    # Read structure from file
+    with specimen(structure_id) as f:
+        dsd = pandasdmx.read_sdmx(f).structure[0]
+
+    # Read data from file, using the DSD
+    with specimen(data_id) as f:
+        msg0 = pandasdmx.read_sdmx(f, dsd=dsd)
+
+    # Write to file
+    path = tmp_path / "output.xml"
+    path.write_bytes(pandasdmx.to_xml(msg0, pretty_print=True))
+
+    # Read again, using the same DSD
+    msg1 = pandasdmx.read_sdmx(path, dsd=dsd)
+
+    # Contents are identical
+    assert msg0.compare(msg1, strict=True), (
+        path.read_text() if pytestconfig.getoption("verbose") else path
+    )
+
+
+@pytest.mark.parametrize(
     "specimen_id, strict",
     [
         ("ECB/orgscheme.xml", True),
@@ -60,7 +107,7 @@ _xf_not_equal = pytest.mark.xfail(raises=AssertionError)
     ],
 )
 def test_structure_roundtrip(pytestconfig, specimen_id, strict, tmp_path):
-    """Test that pandasdmx.ML StructureMessages can be 'round-tripped'."""
+    """Test that SDMX-ML StructureMessages can be 'round-tripped'."""
 
     # Read a specimen file
     with specimen(specimen_id) as f:
@@ -77,10 +124,3 @@ def test_structure_roundtrip(pytestconfig, specimen_id, strict, tmp_path):
     assert msg0.compare(msg1, strict), (
         path.read_text() if pytestconfig.getoption("verbose") else path
     )
-
-
-def test_not_implemented():
-    msg = DataMessage()
-
-    with pytest.raises(NotImplementedError, match="write DataMessage to XML"):
-        pandasdmx.to_xml(msg)

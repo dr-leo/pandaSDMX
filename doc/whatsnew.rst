@@ -12,6 +12,7 @@ v1.2.0 (2020-11-XX)
 * Allow `FSSPEC <https://filesystem-spec.readthedocs.io/en/latest/>`_ files.
   Hence, all major cloud storage providers can be leveraged directly, 
   alonside many other features of FSSPEC.
+* merge improvements from khaeru/sdmx1 fork: write DataMessages to SDMXML
 
 v1.1.0 (2020-08-02)
 -------------------------------

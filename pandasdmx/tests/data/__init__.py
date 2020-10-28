@@ -1,6 +1,6 @@
 """Specimens and other data for tests.
 
-This directory contains files with pandasdmx.data and structure messages, in both
+This directory contains files with SDMX data and structure messages, in both
 SDMX-ML ('.xml') and JSON ('.json') formats.
 
 These files can be:
@@ -35,12 +35,14 @@ from pathlib import Path
 
 import pandas as pd
 
-
 BASE_PATH = Path(__file__).parent
 
 # List of specimen files.
 # Each is a tuple: (path, format (xml|json), kind (data|structure))
-TEST_FILES = [(BASE_PATH / "INSEE" / "IPI-2010-A21.xml", "xml", "data")]
+TEST_FILES = [
+    (BASE_PATH / "INSEE" / "CNA-2010-CONSO-SI-A17.xml", "xml", "data"),
+    (BASE_PATH / "INSEE" / "IPI-2010-A21.xml", "xml", "data"),
+]
 
 # XML data files for the ECB exchange rate data flow
 for path in (BASE_PATH / "ECB_EXR").rglob("*.xml"):

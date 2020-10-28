@@ -2,11 +2,11 @@
 # Contents of this file are organized in the order:
 #
 # - Utility methods and global variables.
-# - writer functions for sdmx.message classes, in the same order as message.py
-# - writer functions for sdmx.model classes, in the same order as model.py
+# - writer functions for pandasdmx.message classes, in the same order as message.py
+# - writer functions for pandasdmx.model classes, in the same order as model.py
 
 from itertools import chain
-from typing import cast
+from typing import Iterable, cast
 
 from lxml import etree
 from lxml.builder import ElementMaker
@@ -41,7 +41,7 @@ def to_xml(obj, **kwargs):
     ------
     NotImplementedError
         If writing specific objects to SDMX-ML has not been implemented in
-        :mod:`pandasdmx`.
+        :mod:`sdmx`.
     """
     return etree.tostring(writer.recurse(obj), **kwargs)
 
@@ -94,7 +94,36 @@ def reference(obj, parent=None, tag=None, style="URN"):
     return elem
 
 
-# Writers for sdmx.message classes
+# Writers for pandasdmx.message classes
+
+
+@writer
+def _dm(obj: message.DataMessage):
+    elem = Element("mes:GenericData")
+
+    header = writer.recurse(obj.header)
+    elem.append(header)
+
+    # Add DSD references to header
+    for ds in obj.data:
+        attrib = dict()
+        dsd_ref = None
+
+        if ds.structured_by:
+            attrib["structureID"] = ds.structured_by.id
+
+            # Reference by URN if possible, otherwise with a <Ref> tag
+            style = "URN" if ds.structured_by.urn else "Ref"
+            dsd_ref = reference(ds.structured_by, tag="com:Structure", style=style)
+        if isinstance(obj.observation_dimension, model.DimensionComponent):
+            attrib["dimensionAtObservation"] = obj.observation_dimension.id
+
+        header.append(Element("mes:Structure", **attrib))
+        header[-1].append(dsd_ref)
+
+        elem.append(writer.recurse(ds))
+
+    return elem
 
 
 @writer
@@ -138,15 +167,17 @@ def _header(obj: message.Header):
     if obj.id:
         elem.append(Element("mes:ID", obj.id))
     if obj.prepared:
-        elem.append(Element("mes:Prepared", obj.prepared))
+        elem.append(Element("mes:Prepared", obj.prepared.isoformat()))
     if obj.sender:
         elem.append(writer.recurse(obj.sender, _tag="mes:Sender"))
+    if obj.source:
+        elem.extend(i11lstring(obj.source, "mes:Source"))
     if obj.receiver:
         elem.append(writer.recurse(obj.receiver, _tag="mes:Receiver"))
     return elem
 
 
-# Writers for sdmx.model classes
+# Writers for pandasdmx.model classes
 # §3.2: Base structures
 
 
@@ -417,4 +448,59 @@ def _dfd(obj: model.DataflowDefinition):
 
 
 # §5.4: Data Set
-# TODO implement
+
+
+def _av(obj: Iterable[model.AttributeValue]):
+    for av in obj:
+        assert av.value_for
+        yield Element("gen:Value", id=av.value_for.id, value=av.value)
+
+
+@writer
+def _sk(obj: model.SeriesKey):
+    elem = []
+
+    elem.append(Element("gen:SeriesKey"))
+    elem[-1].extend(
+        Element("gen:Value", id=kv.value_for.id, value=kv.value) for kv in obj
+    )
+    if len(obj.attrib):
+        elem.append(Element("gen:Attributes"))
+        elem[-1].extend(_av(obj.attrib.values()))
+
+    return tuple(elem)
+
+
+@writer
+def _obs(obj: model.Observation):
+    elem = Element("gen:Obs")
+
+    assert obj.dimension and len(obj.dimension) == 1
+    elem.append(Element("gen:ObsDimension", value=obj.dimension.values[0].value))
+    elem.append(Element("gen:ObsValue", value=obj.value))
+
+    if len(obj.attached_attribute):
+        elem.append(Element("gen:Attributes"))
+        elem[-1].extend(_av(obj.attached_attribute.values()))
+
+    return elem
+
+
+@writer
+def _ds(obj: model.DataSet):
+    if len(obj.group):
+        raise NotImplementedError("to_xml() for DataSet with groups")
+
+    attrib = dict()
+    if obj.action:
+        attrib["action"] = str(obj.action)
+    if obj.structured_by:
+        attrib["structureRef"] = obj.structured_by.id
+    elem = Element("mes:DataSet", **attrib)
+
+    for sk, observations in obj.series.items():
+        elem.append(Element("gen:Series"))
+        elem[-1].extend(writer.recurse(sk))
+        elem[-1].extend(writer.recurse(obs) for obs in observations)
+
+    return elem

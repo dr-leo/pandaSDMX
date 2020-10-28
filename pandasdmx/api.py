@@ -38,7 +38,7 @@ class Request:
         or  a subclass. If given,
         it is  used for HTTP requests, and any   *session_opts* passed  will raise TypeError. 
         A typical  use case is the injection of alternative caching libraries such as Cache Control.
-    **session_opts
+    session_opts :
         Additional keyword arguments are passed to
         :class:`.Session`.
     """

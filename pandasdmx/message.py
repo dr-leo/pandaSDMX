@@ -8,12 +8,13 @@
 returned by data sources.
 """
 import logging
+from datetime import datetime
 from typing import List, Optional, Text, Union
 from warnings import warn
 from requests import Response
 
 from pandasdmx import model
-from pandasdmx.util import BaseModel, DictLike, summarize_dictlike
+from pandasdmx.util import BaseModel, DictLike, compare, summarize_dictlike
 
 
 
@@ -26,6 +27,8 @@ def _summarize(obj, fields):
         attr = getattr(obj, name)
         if attr is None:
             continue
+        elif isinstance(attr, datetime):
+            attr = attr.isoformat()
         yield f"{name}: {repr(attr)}"
 
 
@@ -37,16 +40,19 @@ class Header(BaseModel):
 
     #: (optional) Error code for the message.
     error: Optional[Text] = None
-    extracted: Optional[Text] = None
+    #: Date and time at which the data was extracted.
+    extracted: Optional[datetime] = None
     #: Identifier for the message.
     id: Optional[Text] = None
     #: Date and time at which the message was generated.
-    prepared: Optional[Text] = None
+    prepared: Optional[datetime] = None
+    #: Start of the time period covered by a :class:`.DataMessage`.
+    reporting_begin: Optional[datetime] = None
+    #: End of the time period covered by a :class:`.DataMessage`.
+    reporting_end: Optional[datetime] = None
     #: Intended recipient of the message, e.g. the user's name for an
     #: authenticated service.
     receiver: Optional[model.Agency] = None
-    reporting_begin: Optional[Text] = None
-    reporting_end: Optional[Text] = None
     #: The :class:`.Agency` associated with the data :class:`~.source.Source`.
     sender: Optional[model.Agency] = None
     #:
@@ -59,6 +65,32 @@ class Header(BaseModel):
         lines = ["<Header>"]
         lines.extend(_summarize(self, self.__fields__.keys()))
         return "\n  ".join(lines)
+
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two Headers are the same if their corresponding attributes are equal.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return all(
+            compare(attr, self, other, strict)
+            for attr in [
+                "error",
+                "extracted",
+                "id",
+                "prepared",
+                "reporting_begin",
+                "reporting_end",
+                "receiver",
+                "sender",
+                "source",
+                "test",
+            ]
+        )
 
 
 class Footer(BaseModel):
@@ -73,6 +105,21 @@ class Footer(BaseModel):
     text: List[model.InternationalString] = []
     #:
     code: Optional[int] = None
+
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two Footers are the same if their :attr:`code`, :attr:`severity`, and
+        :attr:`text` are equal.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return all(
+            compare(attr, self, other, strict) for attr in ["severity", "text", "code"]
+        )
 
 
 class Message(BaseModel):
@@ -109,6 +156,7 @@ class Message(BaseModel):
             DeprecationWarning)
         return self.to_pandas(*args, **kwargs)
 
+
     def __str__(self):
         return repr(self)
 
@@ -120,6 +168,22 @@ class Message(BaseModel):
         ]
         lines.extend(_summarize(self, ["footer", "response"]))
         return "\n  ".join(lines)
+
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two Messages are the same if their :attr:`header` and :attr:`footer` compare
+        equal.
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return self.header.compare(other.header, strict) and (
+            self.footer is other.footer is None
+            or self.footer.compare(other.footer, strict)
+        )
 
 
 class ErrorMessage(Message):
@@ -157,7 +221,7 @@ class StructureMessage(Message):
         strict : bool, optional
             Passed to :meth:`.DictLike.compare`.
         """
-        return all(
+        return super().compare(other, strict) and all(
             getattr(self, attr).compare(getattr(other, attr), strict)
             for attr in (
                 "categorisation",
@@ -222,3 +286,26 @@ class DataMessage(Message):
         lines.extend(_summarize(self, ("dataflow", "observation_dimension")))
 
         return "\n  ".join(lines)
+
+    def compare(self, other, strict=True):
+        """Return :obj:`True` if `self` is the same as `other`.
+
+        Two DataMessages are the same if:
+
+        - :meth:`.Message.compare` is :obj:`True`
+        - their :attr:`dataflow` and :attr:`observation_dimension` compare equal.
+        - they have the same number of :class:`DataSets <DataSet>`, and
+        - corresponding DataSets compare equal (see :meth:`.DataSet.compare`).
+
+        Parameters
+        ----------
+        strict : bool, optional
+            Passed to :func:`.compare`.
+        """
+        return (
+            super().compare(other, strict)
+            and compare("dataflow", self, other, strict)
+            and compare("observation_dimension", self, other, strict)
+            and len(self.data) == len(other.data)
+            and all(ds[0].compare(ds[1], strict) for ds in zip(self.data, other.data))
+        )

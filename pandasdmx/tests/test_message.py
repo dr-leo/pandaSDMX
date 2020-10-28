@@ -14,7 +14,7 @@ EXPECTED = [
         """<pandasdmx.StructureMessage>
   <Header>
     id: 'categorisation_1450864290565'
-    prepared: '2015-12-23T09:51:30.565Z'
+    prepared: '2015-12-23T09:51:30.565000+00:00'
     receiver: <Agency unknown>
     sender: <Agency FR1: Institut national de la statistique et des études économiques>
     source: fr: Banque de données macro-économiques
@@ -32,7 +32,7 @@ EXPECTED = [
         """<pandasdmx.StructureMessage>
   <Header>
     id: 'dataflow_ENQ-CONJ-TRES-IND-PERSP_1450865196042'
-    prepared: '2015-12-23T10:06:36.042Z'
+    prepared: '2015-12-23T10:06:36.042000+00:00'
     receiver: <Agency unknown>
     sender: <Agency FR1: Institut national de la statistique et des études économiques>
     source: fr: Banque de données macro-économiques
@@ -61,7 +61,7 @@ EXPECTED = [
         """<pandasdmx.DataMessage>
   <Header>
     id: '62b5f19d-f1c9-495d-8446-a3661ed24753'
-    prepared: '2012-11-29T08:40:26Z'
+    prepared: '2012-11-29T08:40:26+00:00'
     sender: <Agency ECB: European Central Bank>
     source: """
         """

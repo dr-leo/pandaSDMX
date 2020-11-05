@@ -7,6 +7,11 @@ from . import has_requests_cache
 
 @pytest.mark.skipif(has_requests_cache, reason="test without requests_cache")
 def test_session_without_requests_cache():  # pragma: no cover
+    """
+    Called by requests session for requests.
+
+    Args:
+    """
     # Passing cache= arguments when requests_cache is not installed triggers a
     # warning
     with pytest.warns(RuntimeWarning):
@@ -15,6 +20,12 @@ def test_session_without_requests_cache():  # pragma: no cover
 
 @pytest.mark.network
 def test_session_init_cache(tmp_path):
+    """
+    Create a session exists session.
+
+    Args:
+        tmp_path: (todo): write your description
+    """
     # Instantiate a REST object with cache
     cache_name = tmp_path / "pandasdmx_cache"
     s = Session(cache_name=str(cache_name), backend="sqlite")

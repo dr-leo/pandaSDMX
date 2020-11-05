@@ -2,6 +2,11 @@ from pandasdmx.source import add_source, list_sources, sources
 
 
 def test_list_sources():
+    """
+    Return a list of sources.
+
+    Args:
+    """
     source_ids = list_sources()
     assert len(source_ids) == 15
 
@@ -11,6 +16,11 @@ def test_list_sources():
 
 
 def test_source_support():
+    """
+    Determine if source. git.
+
+    Args:
+    """
     # Implicitly supported endpoint
     assert sources["ILO"].supports["categoryscheme"]
 
@@ -22,6 +32,11 @@ def test_source_support():
 
 
 def test_add_source():
+    """
+    Add a profile.
+
+    Args:
+    """
     profile = """{
         "id": "FOO",
         "name": "Demo source",

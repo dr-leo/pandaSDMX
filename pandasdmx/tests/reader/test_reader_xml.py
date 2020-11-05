@@ -15,16 +15,33 @@ from pandasdmx.tests.data import specimen, test_files
 # Read example data files
 @pytest.mark.parametrize("path", **test_files(format="xml", kind="data"))
 def test_read_xml(path):
+    """
+    Read xml file. xml.
+
+    Args:
+        path: (str): write your description
+    """
     pandasdmx.read_sdmx(path)
 
 
 # Read example structure files
 @pytest.mark.parametrize("path", **test_files(format="xml", kind="structure"))
 def test_read_xml_structure(path):
+    """
+    Test if the xml structure.
+
+    Args:
+        path: (str): write your description
+    """
     pandasdmx.read_sdmx(path)
 
 
 def test_read_xml_structure_insee():
+    """
+    Test ifsee xml file.
+
+    Args:
+    """
     with specimen("IPI-2010-A21-structure.xml") as f:
         msg = pandasdmx.read_sdmx(f)
 
@@ -40,6 +57,11 @@ def test_read_xml_structure_insee():
 
 # Read structure-specific messages
 def test_read_ss_xml():
+    """
+    Convert ms xml file.
+
+    Args:
+    """
     with specimen("M.USD.EUR.SP00.A.xml", opened=False) as f:
         msg_path = f
         dsd_path = f.parent / "structure.xml"

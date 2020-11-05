@@ -15,6 +15,12 @@ from pandasdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observa
     [DataSet, pytest.param(PandasDataSet, marks=pytest.mark.experimental)],
 )
 def test_add_obs(DataSetType):
+    """
+    Convenio.
+
+    Args:
+        DataSetType: (str): write your description
+    """
     # Create a Key and Attributes
     key = Key(CURRENCY="NZD", CURRENCY_DENOM="EUR", TIME_PERIOD="2018-01-01")
     obs_status = DataAttribute(id="OBS_STATUS")

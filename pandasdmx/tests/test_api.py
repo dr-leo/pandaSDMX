@@ -11,6 +11,12 @@ from .data import specimen
 
 
 def test_read_sdmx(tmp_path):
+    """
+    Read the sgfgf. json file.
+
+    Args:
+        tmp_path: (str): write your description
+    """
     # Copy the file to a temporary file with an urecognizable suffix
     target = tmp_path / "foo.badsuffix"
     with specimen("flat.json", opened=False) as original:
@@ -40,6 +46,11 @@ def test_read_sdmx(tmp_path):
 
 
 def test_request():
+    """
+    Test request.
+
+    Args:
+    """
     # Constructor
     r = pandasdmx.Request(log_level=logging.ERROR)
 
@@ -83,6 +94,11 @@ def test_request_get_exceptions():
 
 @pytest.mark.network
 def test_request_get_args():
+    """
+    Get request parameters
+
+    Args:
+    """
     req = pandasdmx.Request("ESTAT")
 
     # Request._make_key accepts '+'-separated values
@@ -122,6 +138,11 @@ def test_request_get_args():
 
 @pytest.mark.network
 def test_read_url():
+    """
+    Reads the url.
+
+    Args:
+    """
     # URL can be queried without instantiating Request
     pandasdmx.read_url(
         "http://sdw-wsrest.ecb.int/service/datastructure/ECB/"
@@ -131,6 +152,11 @@ def test_read_url():
 
 @pytest.mark.network
 def test_request_preview_data():
+    """
+    Test for preview data
+
+    Args:
+    """
     req = pandasdmx.Request("ECB")
 
     # List of keys can be retrieved

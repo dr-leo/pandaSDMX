@@ -97,6 +97,13 @@ class InternationalString:
     localizations: Dict[str, str] = {}
 
     def __init__(self, value=None, **kwargs):
+        """
+        Initialize a locale.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         super().__init__()
 
         # Handle initial values according to type
@@ -126,19 +133,48 @@ class InternationalString:
 
     # Convenience access
     def __getitem__(self, locale):
+        """
+        Return the item associated locale.
+
+        Args:
+            self: (todo): write your description
+            locale: (todo): write your description
+        """
         return self.localizations[locale]
 
     def __setitem__(self, locale, label):
+        """
+        Sets the locale for the given locale.
+
+        Args:
+            self: (todo): write your description
+            locale: (str): write your description
+            label: (str): write your description
+        """
         self.localizations[locale] = label
 
     # Duplicate of __getitem__, to pass existing tests in test_dsd.py
     def __getattr__(self, name):
+        """
+        Return the value of a attribute.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         try:
             return self.__dict__["localizations"][name]
         except KeyError:
             raise AttributeError(name) from None
 
     def __add__(self, other):
+        """
+        Return a new set with another.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         result = copy(self)
         result.localizations.update(other.localizations)
         return result
@@ -155,22 +191,57 @@ class InternationalString:
                 return ""
 
     def __str__(self):
+        """
+        Return the string : class : class.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.localized_default(DEFAULT_LOCALE)
 
     def __repr__(self):
+        """
+        Return a human - readable representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return "\n".join(
             ["{}: {}".format(*kv) for kv in sorted(self.localizations.items())]
         )
 
     def __eq__(self, other):
+        """
+        Determine if self and other.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return self.localizations == other.localizations
 
     @classmethod
     def __get_validators__(cls):
+        """
+        Return a generator of validators.
+
+        Args:
+            cls: (todo): write your description
+        """
         yield cls.__validate
 
     @classmethod
     def __validate(cls, value, values, config, field):
+        """
+        Validate a field.
+
+        Args:
+            cls: (callable): write your description
+            value: (todo): write your description
+            values: (str): write your description
+            config: (todo): write your description
+            field: (str): write your description
+        """
         # Any value that the constructor can handle can be assigned
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
@@ -210,9 +281,22 @@ class AnnotableArtefact(BaseModel):
 
 class _MissingID(str):
     def __str__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "(missing id)"
 
     def __eq__(self, other):
+        """
+        Determine if other objects are equal.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         return isinstance(other, self.__class__)
 
 
@@ -231,6 +315,12 @@ class IdentifiableArtefact(AnnotableArtefact):
     urn_group: Dict = dict()
 
     def __init__(self, *args, **kwargs):
+        """
+        Method to initialize and initialize the ids.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(*args, **kwargs)
 
         if self.urn:
@@ -274,12 +364,30 @@ class IdentifiableArtefact(AnnotableArtefact):
         )
 
     def __hash__(self):
+        """
+        Returns the unique identifier.
+
+        Args:
+            self: (todo): write your description
+        """
         return id(self) if self.id == MissingID else hash(self.id)
 
     def __str__(self):
+        """
+        Return the string representation of the string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.id
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"<{self.__class__.__name__} {self.id}>"
 
 
@@ -316,6 +424,12 @@ class NameableArtefact(IdentifiableArtefact):
         return False
 
     def _repr_kw(self):
+        """
+        Return a representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return dict(
             cls=self.__class__.__name__,
             id=self.id,
@@ -323,6 +437,12 @@ class NameableArtefact(IdentifiableArtefact):
         )
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{cls} {id}{name}>".format(**self._repr_kw())
 
 
@@ -335,6 +455,12 @@ class VersionableArtefact(NameableArtefact):
     valid_to: Optional[str] = None
 
     def __init__(self, **kwargs):
+        """
+        Initialize the version of - chain version.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(**kwargs)
         try:
             if self.version and self.version != self.urn_group["version"]:
@@ -364,6 +490,12 @@ class VersionableArtefact(NameableArtefact):
         )
 
     def _repr_kw(self) -> Mapping:
+        """
+        Return a representation of the __repr__ method.
+
+        Args:
+            self: (todo): write your description
+        """
         return ChainMap(
             super()._repr_kw(),
             dict(version=f"({self.version})" if self.version else ""),
@@ -385,6 +517,12 @@ class MaintainableArtefact(VersionableArtefact):
     maintainer: Optional["Agency"] = None
 
     def __init__(self, **kwargs):
+        """
+        Method to initialize and initialize.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(**kwargs)
         try:
             if self.maintainer and self.maintainer.id != self.urn_group["agency"]:
@@ -414,12 +552,24 @@ class MaintainableArtefact(VersionableArtefact):
         )
 
     def _repr_kw(self):
+        """
+        Return a representation of this field.
+
+        Args:
+            self: (todo): write your description
+        """
         return ChainMap(
             super()._repr_kw(),
             dict(maint=f"{self.maintainer}:" if self.maintainer else ""),
         )
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{cls} {maint}{id}{version}{name}>".format(**self._repr_kw())
 
 
@@ -462,6 +612,12 @@ class Item(NameableArtefact):
         validate_assignment_exclude = "parent"
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the parent.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(*args, **kwargs)
 
         # Add this Item as a child of its parent
@@ -480,6 +636,13 @@ class Item(NameableArtefact):
                 return True
 
     def __iter__(self, recurse=True):
+        """
+        Iterate over this node s children.
+
+        Args:
+            self: (todo): write your description
+            recurse: (bool): write your description
+        """
         yield self
         for c in self.child:
             yield c
@@ -499,6 +662,13 @@ class Item(NameableArtefact):
         return (f"{self.parent.hierarchical_id}." if self.parent else "") + self.id
 
     def append_child(self, other):
+        """
+        Append another child to self.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if other not in self.child:
             self.child.append(other)
         other.parent = self
@@ -556,12 +726,26 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
 
     @validator("items", pre=True)
     def convert_to_dict(cls, v):
+        """
+        Convert a dict to a dict.
+
+        Args:
+            cls: (todo): write your description
+            v: (str): write your description
+        """
         if isinstance(v, dict):
             return v
         return {i.id: i for i in v}
 
     # Convenience access to items
     def __getattr__(self, name: str) -> IT:
+        """
+        Return the value of an attribute.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         # Provided to pass test_dsd.py
         try:
             return self.__getitem__(name)
@@ -569,6 +753,13 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
             raise AttributeError(name)
 
     def __getitem__(self, name: str) -> IT:
+        """
+        Return the item with the given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.items[name]
 
     def get_hierarchical(self, id: str) -> IT:
@@ -593,6 +784,12 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
         return item in self.items.values()
 
     def __iter__(self):
+        """
+        Return an iterator over the items.
+
+        Args:
+            self: (todo): write your description
+        """
         return iter(self.items.values())
 
     def extend(self, items: Iterable[IT]):
@@ -607,6 +804,12 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
         self.items.update({i.id: i for i in items})
 
     def __len__(self):
+        """
+        Returns the number of items in bytes.
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.items)
 
     def append(self, item: IT):
@@ -647,6 +850,12 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
         return False
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{cls} {maint}{id}{version} ({N} items){name}>".format(
             **self._repr_kw(), N=len(self.items)
         )
@@ -735,6 +944,12 @@ class Representation(BaseModel):
     non_enumerated: List[Facet] = []
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{}: {}, {}>".format(
             self.__class__.__name__, self.enumerated, self.non_enumerated
         )
@@ -776,6 +991,13 @@ class Component(IdentifiableArtefact):
     local_representation: Optional[Representation] = None
 
     def __contains__(self, value):
+        """
+        Return true if the given value is contained in the concept.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         for repr in [
             self.concept_identity.core_representation,
             self.local_representation,
@@ -861,12 +1083,30 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
         return self.components[key]
 
     def __len__(self):
+        """
+        Returns the length of the component
+
+        Args:
+            self: (todo): write your description
+        """
         return len(self.components)
 
     def __iter__(self):
+        """
+        Iterate iterator over all components
+
+        Args:
+            self: (todo): write your description
+        """
         return iter(self.components)
 
     def __repr__(self):
+        """
+        Return a human - readable representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{}: {}>".format(
             self.__class__.__name__, "; ".join(map(repr, self.components))
         )
@@ -879,6 +1119,12 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
 
     # Must be reset because __eq__ is defined
     def __hash__(self):
+        """
+        Returns hash : class
+
+        Args:
+            self: (todo): write your description
+        """
         return super().__hash__()
 
     def compare(self, other, strict=True):
@@ -1057,9 +1303,22 @@ class MemberValue(SelectionValue):
     cascade_values: Optional[bool] = None
 
     def __hash__(self):
+        """
+        Returns the hash value
+
+        Args:
+            self: (todo): write your description
+        """
         return hash(self.value)
 
     def __eq__(self, other):
+        """
+        Determine if two values.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if isinstance(other, KeyValue):
             return self.value == other.value
         else:
@@ -1086,12 +1345,26 @@ class CubeRegion(BaseModel):
     member: Dict["Dimension", MemberSelection] = {}
 
     def __contains__(self, key):
+        """
+        Returns true if the specified member contains the given.
+
+        Args:
+            self: (todo): write your description
+            key: (todo): write your description
+        """
         for ms in self.member.values():
             if key[ms.values_for.id] not in ms:
                 return False
         return True
 
     def to_query_string(self, structure):
+        """
+        Returns a query string to a query string.
+
+        Args:
+            self: (todo): write your description
+            structure: (str): write your description
+        """
         all_values = []
 
         for dim in structure.dimensions:
@@ -1118,6 +1391,13 @@ class ContentConstraint(Constraint):
         validate_assignment_exclude = "data_content_region"
 
     def __contains__(self, value):
+        """
+        Checks if the given value is contained in - place.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         if self.data_content_region:
             return any(value in cr for cr in self.data_content_region)
         else:
@@ -1126,6 +1406,13 @@ class ContentConstraint(Constraint):
             )
 
     def to_query_string(self, structure):
+        """
+        Convert a structure to a query string.
+
+        Args:
+            self: (todo): write your description
+            structure: (str): write your description
+        """
         cr_count = len(self.data_content_region)
         try:
             if cr_count > 1:
@@ -1445,6 +1732,12 @@ class DataStructureDefinition(Structure, ConstrainableArtefact):
 
                 # Dimensions to be retrieved from the GDD
                 def dim(id):
+                    """
+                    Returns a new dimensions.
+
+                    Args:
+                        id: (int): write your description
+                    """
                     # Get from the DimensionDescriptor
                     new_dim = self.dimensions.getdefault(id)
                     # Add to the GDD
@@ -1532,6 +1825,12 @@ class KeyValue(BaseModel):
     value_for: Optional[Dimension] = None
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the instance.
+
+        Args:
+            self: (todo): write your description
+        """
         args, kwargs = value_for_dsd_ref("dimension", args, kwargs)
         super(KeyValue, self).__init__(*args, **kwargs)
 
@@ -1543,12 +1842,30 @@ class KeyValue(BaseModel):
             return self.value == other
 
     def __str__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "{0.id}={0.value}".format(self)
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{0.__class__.__name__}: {0.id}={0.value}>".format(self)
 
     def __hash__(self):
+        """
+        Returns the hash of the field.
+
+        Args:
+            self: (todo): write your description
+        """
         # KeyValue instances with the same id & value hash identically
         return hash(self.id + str(self.value))
 
@@ -1572,6 +1889,12 @@ class AttributeValue(BaseModel):
     start_date: Optional[date] = None
 
     def __init__(self, *args, **kwargs):
+        """
+        This method is called when initialisation__.
+
+        Args:
+            self: (todo): write your description
+        """
         args, kwargs = value_for_dsd_ref("attribute", args, kwargs)
         super(AttributeValue, self).__init__(*args, **kwargs)
 
@@ -1580,9 +1903,21 @@ class AttributeValue(BaseModel):
         return self.value == other
 
     def __str__(self):
+        """
+        Returns the string representation of the string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.value
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{}: {}={}>".format(self.__class__.__name__, self.value_for, self.value)
 
     def compare(self, other, strict=True):
@@ -1639,6 +1974,13 @@ class Key(BaseModel):
     values: DictLike[str, KeyValue] = DictLike()
 
     def __init__(self, arg: Mapping = None, **kwargs):
+        """
+        Initialize kwargs.
+
+        Args:
+            self: (todo): write your description
+            arg: (todo): write your description
+        """
         # DimensionDescriptor
         dd = kwargs.pop("described_by", None)
 
@@ -1684,13 +2026,34 @@ class Key(BaseModel):
             return False
 
     def __iter__(self):
+        """
+        Return an iterable of values.
+
+        Args:
+            self: (todo): write your description
+        """
         yield from self.values.values()
 
     # Convenience access to values by name
     def __getitem__(self, name):
+        """
+        Return the value of a given name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.values[name]
 
     def __setitem__(self, name, value):
+        """
+        Sets a new item.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (str): write your description
+        """
         # Convert a bare string or other Python object to a KeyValue instance
         if not isinstance(value, KeyValue):
             value = KeyValue(id=name, value=value)
@@ -1698,6 +2061,13 @@ class Key(BaseModel):
 
     # Convenience access to values by attribute
     def __getattr__(self, name):
+        """
+        Return the value from the attribute.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         try:
             return self.__getitem__(name)
         except KeyError as e:
@@ -1705,6 +2075,12 @@ class Key(BaseModel):
 
     # Copying
     def __copy__(self):
+        """
+        Returns a copy of this instance.
+
+        Args:
+            self: (todo): write your description
+        """
         result = Key()
         if self.described_by:
             result.described_by = self.described_by
@@ -1713,12 +2089,26 @@ class Key(BaseModel):
         return result
 
     def copy(self, arg=None, **kwargs):
+        """
+        Make a copy of this instance.
+
+        Args:
+            self: (todo): write your description
+            arg: (list): write your description
+        """
         result = copy(self)
         for id, value in kwargs.items():
             result[id] = value
         return result
 
     def __add__(self, other):
+        """
+        Add a new set with other.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if not isinstance(other, Key):
             raise NotImplementedError
         result = copy(self)
@@ -1727,12 +2117,26 @@ class Key(BaseModel):
         return result
 
     def __radd__(self, other):
+        """
+        Return a new raddset with other.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if other is None:
             return copy(self)
         else:
             raise NotImplementedError
 
     def __eq__(self, other):
+        """
+        Determine if two values are equal.
+
+        Args:
+            self: (todo): write your description
+            other: (todo): write your description
+        """
         if hasattr(other, "values"):
             return all([a == b for a, b in zip(self.values, other.values)])
         elif isinstance(other, str) and len(self.values) == 1:
@@ -1741,20 +2145,45 @@ class Key(BaseModel):
             raise ValueError(other)
 
     def __hash__(self):
+        """
+        Return a hash of the field.
+
+        Args:
+            self: (todo): write your description
+        """
         # Hash of the individual KeyValues, in order
         return hash(tuple(hash(kv) for kv in self.values.values()))
 
     # Representations
 
     def __str__(self):
+        """
+        Return a human - readable string representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return "({})".format(", ".join(map(str, self.values.values())))
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "<{}: {}>".format(
             self.__class__.__name__, ", ".join(map(str, self.values.values()))
         )
 
     def order(self, value=None):
+        """
+        Return the value.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if value is None:
             value = self
         try:
@@ -1763,6 +2192,12 @@ class Key(BaseModel):
             return value
 
     def get_values(self):
+        """
+        Return a tuple of ( key value ).
+
+        Args:
+            self: (todo): write your description
+        """
         return tuple([kv.value for kv in self.values.values()])
 
 
@@ -1773,6 +2208,13 @@ class GroupKey(Key):
     described_by: Optional[GroupDimensionDescriptor] = None
 
     def __init__(self, arg: Mapping = None, **kwargs):
+        """
+        Initialize the id from the class.
+
+        Args:
+            self: (todo): write your description
+            arg: (todo): write your description
+        """
         # Remove the 'id' keyword argument
         id = kwargs.pop("id", None)
         super().__init__(arg, **kwargs)
@@ -1825,6 +2267,12 @@ class Observation(BaseModel):
 
     @property
     def dim(self):
+        """
+        : return the dimension
+
+        Args:
+            self: (todo): write your description
+        """
         return self.dimension
 
     @property
@@ -1833,10 +2281,22 @@ class Observation(BaseModel):
         return self.series_key + self.dimension
 
     def __len__(self):
+        """
+        Returns the length of the key.
+
+        Args:
+            self: (todo): write your description
+        """
         # FIXME this is unintuitive; maybe deprecate/remove?
         return len(self.key)
 
     def __str__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return "{0.key}: {0.value}".format(self)
 
     def compare(self, other, strict=True):
@@ -1928,6 +2388,13 @@ class DataSet(AnnotableArtefact):
 
     @validator("action")
     def _validate_action(cls, value):
+        """
+        Return the action.
+
+        Args:
+            cls: (callable): write your description
+            value: (todo): write your description
+        """
         if value in ActionType:
             return value
         else:

@@ -30,6 +30,12 @@ file_marks = {
 
 
 def pytest_generate_tests(metafunc):
+    """
+    Generate solver files.
+
+    Args:
+        metafunc: (todo): write your description
+    """
     if "data_path" in metafunc.fixturenames:
         params = []
         tf = test_files(kind="data")
@@ -46,6 +52,11 @@ def pytest_generate_tests(metafunc):
 
 
 def test_write_data_arguments():
+    """
+    Writes the test data to the test.
+
+    Args:
+    """
     msg = pandasdmx.read_sdmx(test_files(kind="data")["argvalues"][0])
 
     # Attributes must be a string
@@ -58,6 +69,12 @@ def test_write_data_arguments():
 
 
 def test_write_data(data_path):
+    """
+    Test if the test data ascii.
+
+    Args:
+        data_path: (str): write your description
+    """
     msg = pandasdmx.read_sdmx(data_path)
 
     result = pandasdmx.to_pandas(msg)
@@ -73,6 +90,12 @@ def test_write_data(data_path):
 
 @pytest.mark.parametrize("path", **test_files(kind="data"))
 def test_write_data_attributes(path):
+    """
+    Write the dataframe attributes to a file.
+
+    Args:
+        path: (str): write your description
+    """
     msg = pandasdmx.read_sdmx(path)
 
     result = pandasdmx.to_pandas(msg, attributes="osgd")
@@ -81,6 +104,11 @@ def test_write_data_attributes(path):
 
 
 def test_write_agencyscheme():
+    """
+    Test for write_write_schemecheme.
+
+    Args:
+    """
     # Convert an agency scheme
     with specimen("ECB/orgscheme.xml") as f:
         msg = pandasdmx.read_sdmx(f)
@@ -104,6 +132,11 @@ def test_write_agencyscheme():
 
 
 def test_write_categoryscheme():
+    """
+    Writes out the scheme.
+
+    Args:
+    """
     with specimen("IPI-2010-A21-structure.xml") as f:
         msg = pandasdmx.read_sdmx(f)
         data = pandasdmx.to_pandas(msg)
@@ -117,6 +150,11 @@ def test_write_categoryscheme():
 
 
 def test_write_codelist():
+    """
+    Convert codelist specification file is a. cfg.
+
+    Args:
+    """
     # Retrieve codelists from a test specimen and convert to pandas
     with specimen("common-structure.xml") as f:
         dsd_common = pandasdmx.read_sdmx(f)
@@ -158,6 +196,11 @@ def test_write_codelist():
 
 
 def test_write_conceptscheme():
+    """
+    Writes a skosscheme
+
+    Args:
+    """
     with specimen("common-structure.xml") as f:
         msg = pandasdmx.read_sdmx(f)
         data = pandasdmx.to_pandas(msg)
@@ -167,6 +210,11 @@ def test_write_conceptscheme():
 
 
 def test_write_dataflow():
+    """
+    Writes out - write - write - write - write - write - dataflow.
+
+    Args:
+    """
     # Read the INSEE dataflow definition
     with specimen("INSEE/dataflow") as f:
         msg = pandasdmx.read_sdmx(f)
@@ -213,6 +261,16 @@ def test_write_dataset_datetime():
     )
 
     def expected(df, axis=0, cls=pd.DatetimeIndex):
+        """
+        Make a dataframe with expected axes.
+
+        Args:
+            df: (todo): write your description
+            axis: (int): write your description
+            cls: (todo): write your description
+            pd: (array): write your description
+            DatetimeIndex: (todo): write your description
+        """
         axes = ["index", "columns"] if axis else ["columns", "index"]
         assert getattr(df, axes[0]).names == other_dims
         assert isinstance(getattr(df, axes[1]), cls)
@@ -298,6 +356,12 @@ def test_write_dataset_datetime():
 
 @pytest.mark.parametrize("path", **test_files(kind="structure"))
 def test_writer_structure(path):
+    """
+    Test if the writer.
+
+    Args:
+        path: (str): write your description
+    """
     msg = pandasdmx.read_sdmx(path)
 
     pandasdmx.to_pandas(msg)

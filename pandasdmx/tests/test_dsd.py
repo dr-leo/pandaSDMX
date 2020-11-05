@@ -12,17 +12,45 @@ class Test_ESTAT_dsd_apro_mk_cola(MessageTest):
     filename = "apro_mk_cola-structure.xml"
 
     def test_codelists_keys(self, msg):
+        """
+        Determine if the keys exist.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert len(msg.codelist) == 6
         assert isinstance(msg.codelist.CL_GEO, model.Codelist)
 
     def test_codelist_name(self, msg):
+        """
+        Determine the name of the message.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert msg.codelist.CL_GEO.UK.name.en == "United Kingdom"
         assert msg.codelist.CL_FREQ.name.en == "FREQ"
 
     def test_code_cls(self, msg):
+        """
+        Test if the code code is test
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_writer(self, msg):
+        """
+        Test if a writer.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         cls_as_dfs = pandasdmx.to_pandas(msg.codelist)
 
         # Number of codes expected in each Codelist
@@ -53,16 +81,44 @@ class TestDSDCommon(MessageTest):
     filename = "common-structure.xml"
 
     def test_codelists_keys(self, msg):
+        """
+        Determine whether the given message exists.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert len(msg.codelist) == 5
         assert isinstance(msg.codelist.CL_FREQ, model.Codelist)
 
     def test_codelist_name(self, msg):
+        """
+        Determine the name of the qt name
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert msg.codelist.CL_FREQ.D.name.en == "Daily"
 
     def test_code_cls(self, msg):
+        """
+        Test if the code code is test
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg.codelist.CL_FREQ.D, model.Code)
 
     def test_annotations(self, msg):
+        """
+        Test for annotations.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         code = msg.codelist.CL_FREQ.A
         anno_list = list(code.annotations)
         assert len(anno_list) == 1
@@ -84,6 +140,11 @@ class TestECB_EXR1(MessageTest):
 
 
 def test_exr_constraints():
+    """
+    Test if the constraints.
+
+    Args:
+    """
     with specimen("1/structure-full.xml") as f:
         m = pandasdmx.read_sdmx(f)
     ECB_EXR1 = m.structure["ECB_EXR1"]

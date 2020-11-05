@@ -27,6 +27,12 @@ class MessageTest:
 
     @pytest.fixture(scope="class")
     def msg(self):
+        """
+        Reads the message from the filename.
+
+        Args:
+            self: (todo): write your description
+        """
         import pandasdmx
 
         return pandasdmx.read_sdmx(self.path / self.filename)
@@ -34,6 +40,13 @@ class MessageTest:
 
 # thanks to xarray
 def _importorskip(modname, minversion=None):
+    """
+    Import a tuple of ( importors.
+
+    Args:
+        modname: (str): write your description
+        minversion: (str): write your description
+    """
     try:
         mod = importlib.import_module(modname)
         has = True
@@ -47,6 +60,12 @@ def _importorskip(modname, minversion=None):
 
 
 def LooseVersion(vstring):
+    """
+    Returns the version string of a vstring.
+
+    Args:
+        vstring: (str): write your description
+    """
     # When the development version is something like '0.10.9+aac7bfc', this
     # function will just discard the git commit id.
     vstring = vstring.split("+")[0]

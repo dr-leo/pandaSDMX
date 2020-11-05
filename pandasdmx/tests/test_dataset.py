@@ -16,9 +16,23 @@ class TestGenericFlatDataSet(DataMessageTest):
     filename = "ng-flat.xml"
 
     def test_msg_type(self, msg):
+        """
+        Sets a test message type.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg, message.DataMessage)
 
     def test_header_attributes(self, msg):
+        """
+        Assigns the header attributes.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         # NB removed 2020-05-15. This is the <mes:Structure structureID="…"> attrib.
         #    pandasdmx.ommon.xsd states: "The structureID attribute uniquely identifies the
         #    structure for the purpose of referencing it from the payload. This is only
@@ -30,6 +44,13 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert msg.observation_dimension == model.AllDimensions
 
     def test_generic_obs(self, msg):
+        """
+        Check if the observation.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         # No series
@@ -49,6 +70,13 @@ class TestGenericFlatDataSet(DataMessageTest):
         assert o0.attrib.DECIMALS == "4"
 
     def test_to_pandas(self, msg):
+        """
+        Convert pandas dataframe to pandas dataframe.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         # Single data series is converted to pd.Series
         data_series = pandasdmx.to_pandas(msg.data[0])
         assert isinstance(data_series, pd.Series)
@@ -64,12 +92,26 @@ class TestGenericSeriesDataSet(DataMessageTest):
     filename = "ng-ts-gf.xml"
 
     def test_header_attributes(self, msg):
+        """
+        The header attributes.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         # NB remove 2020-05-15; see above.
         # assert msg.dataflow.id == "STR1"
         assert msg.structure.id == "ECB_EXR_NG"
         assert msg.observation_dimension == "TIME_PERIOD"
 
     def test_generic_obs(self, msg):
+        """
+        Check if a message.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         # Number of observations in the entire dataset
@@ -102,6 +144,13 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert o0.attrib.OBS_STATUS == "A"
 
     def test_pandas(self, msg):
+        """
+        Test for test for test data.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         series_keys = list(data.series.keys())
@@ -148,6 +197,13 @@ class TestGenericSeriesDataSet(DataMessageTest):
         assert s3.iloc[0].OBS_STATUS.value_for == "OBS_STATUS"  # consistency!
 
     def test_write2pandas(self, msg):
+        """
+        Writes a test message to a pandas dataframe.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         df = pandasdmx.to_pandas(msg, attributes="")
 
         assert isinstance(df, pd.Series)
@@ -165,6 +221,13 @@ class TestGenericSeriesDataSet2(DataMessageTest):
     filename = "ng-ts.xml"
 
     def test_header_attributes(self, msg):
+        """
+        The header attributes.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         # NB removed 2020-05-15; see above.
         # assert msg.dataflow.id == "STR1"
         assert msg.structure.id == "ECB_EXR_NG"
@@ -173,6 +236,13 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert msg.observation_dimension == "TIME_PERIOD"
 
     def test_generic_obs(self, msg):
+        """
+        Determine the observation.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         assert len(data.obs) == 12
@@ -199,6 +269,13 @@ class TestGenericSeriesDataSet2(DataMessageTest):
         assert o0.attrib.OBS_STATUS == "A"
 
     def test_dataframe(self, msg):
+        """
+        Test whether the dataframe is a pandas dataframe.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         df = pandasdmx.to_pandas(msg.data[0]).iloc[::-1]
 
         assert isinstance(df, pd.Series)
@@ -210,6 +287,13 @@ class TestGenericSeriesData_SiblingGroup_TS(DataMessageTest):
     filename = "sg-ts.xml"
 
     def test_groups(self, msg):
+        """
+        Check if a message is in the series.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         # Data have expected number of groups and series
@@ -233,6 +317,13 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
     filename = "rg-ts.xml"
 
     def test_groups(self, msg):
+        """
+        Check if a group of the same group.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         assert len(data.group) == 5
@@ -250,6 +341,12 @@ class TestGenericSeriesData_RateGroup_TS(DataMessageTest):
         assert len(g_attrib) == 5
 
     def test_footer(self):
+        """
+        Test if footer.
+
+        Args:
+            self: (todo): write your description
+        """
         with specimen("footer.xml") as f:
             f = pandasdmx.read_sdmx(f).footer
         assert f.code == 413

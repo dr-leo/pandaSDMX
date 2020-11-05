@@ -33,9 +33,22 @@ SERIES = {
 class TestINSEE:
     @pytest.fixture(scope="class")
     def req(self):
+        """
+        Returns the request object.
+
+        Args:
+            self: (todo): write your description
+        """
         return Request("INSEE")
 
     def test_load_dataset(self, req):
+        """
+        Reads the dataflow dataset.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+        """
         dataset_code = "IPI-2010-A21"
 
         # Load all dataflows
@@ -124,6 +137,13 @@ class TestINSEE:
         ]
 
     def test_freq_in_series_attribute(self, req):
+        """
+        Test if the series data is in the series
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+        """
         # Test that we don't have regression on Issues #39 and #41
         # INSEE time series provide the FREQ value as attribute on the series
         # instead of a dimension. This caused a runtime error when writing as

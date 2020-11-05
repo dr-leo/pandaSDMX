@@ -8,6 +8,11 @@ from .data import specimen
 
 
 def test_flat():
+    """
+    Display flat flat flat dataframe
+
+    Args:
+    """
     # Create a bare Message
     msg = DataMessage()
 
@@ -57,6 +62,11 @@ def test_flat():
 
 
 def test_bare_series():
+    """
+    Read series from the series
+
+    Args:
+    """
     with specimen("ng-ts.xml") as f:
         pandasdmx.read_sdmx(f)
 

@@ -19,18 +19,46 @@ class StructuredMessageTest(MessageTest):
     # Fixtures
     @pytest.fixture(scope="class")
     def dsd(self):
+        """
+        Return an iterator over dsdx file.
+
+        Args:
+            self: (todo): write your description
+        """
         yield pandasdmx.read_sdmx(self.path / self.dsd_filename).structure[0]
 
     @pytest.fixture(scope="class")
     def msg(self, dsd):
+        """
+        Yields the dbf file.
+
+        Args:
+            self: (todo): write your description
+            dsd: (int): write your description
+        """
         yield pandasdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     # Tests for every class
     def test_msg(self, dsd):
+        """
+        Reads the test dataset.
+
+        Args:
+            self: (todo): write your description
+            dsd: (str): write your description
+        """
         # The message can be parsed
         pandasdmx.read_sdmx(self.path / self.filename, dsd=dsd)
 
     def test_structured_by(self, dsd, msg):
+        """
+        Test if dsd is a test test.
+
+        Args:
+            self: (todo): write your description
+            dsd: (todo): write your description
+            msg: (str): write your description
+        """
         # The DSD was used to parse the message
         assert msg.data[0].structured_by is dsd
 
@@ -40,13 +68,34 @@ class TestFlatDataSet(StructuredMessageTest):
     dsd_filename = "ng-structure-full.xml"
 
     def test_msg_type(self, msg):
+        """
+        Sets a test message type.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg, message.DataMessage)
         # assert msg.data[0].dim_at_obs == 'AllDimensions'
 
     def test_dataset_cls(self, msg):
+        """
+        Sets the test test test.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg.data[0], model.DataSet)
 
     def test_generic_obs(self, msg):
+        """
+        Test if we have a obs_list.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
         # empty series list
         assert len(list(data.series)) == 0
@@ -66,6 +115,13 @@ class TestFlatDataSet(StructuredMessageTest):
         assert o0.attrib.DECIMALS == "4"
 
     def test_write2pandas(self, msg):
+        """
+        Writes a pandasdm message.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data_series = pandasdmx.to_pandas(msg, attributes="")
         assert isinstance(data_series, pd.Series)
 
@@ -75,13 +131,35 @@ class TestSeriesDataSet(StructuredMessageTest):
     dsd_filename = "ng-structure-full.xml"
 
     def test_msg_type(self, dsd, msg):
+        """
+        The test type of the message type.
+
+        Args:
+            self: (todo): write your description
+            dsd: (todo): write your description
+            msg: (str): write your description
+        """
         # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
         pass
 
     def test_dataset_cls(self, msg):
+        """
+        Sets the test test test.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg.data[0], model.DataSet)
 
     def test_obs(self, msg):
+        """
+        Determine the observation.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
         assert len(data.obs) == 12
         series_list = list(data.series)
@@ -111,6 +189,13 @@ class TestSeriesDataSet(StructuredMessageTest):
         assert o0.attrib.OBS_STATUS == "A"
 
     def test_pandas(self, msg):
+        """
+        Test for pandas in a pandas dataframe.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         # Expected number of observations and series
@@ -136,6 +221,13 @@ class TestSeriesDataSet(StructuredMessageTest):
         assert s3_attr.iloc[0].OBS_STATUS == "A"
 
     def test_write2pandas(self, msg):
+        """
+        Writes a test message to a pandas dataframe.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         df = pandasdmx.to_pandas(msg, attributes="")
         assert isinstance(df, pd.Series)
         assert df.shape == (12,)
@@ -150,13 +242,35 @@ class TestSeriesDataSet2(StructuredMessageTest):
     dsd_filename = "ng-structure-full.xml"
 
     def test_msg_type(self, dsd, msg):
+        """
+        The test type of the message type.
+
+        Args:
+            self: (todo): write your description
+            dsd: (todo): write your description
+            msg: (str): write your description
+        """
         # assert msg.data[0].dim_at_obs == 'TIME_PERIOD'
         pass
 
     def test_dataset_cls(self, msg):
+        """
+        Sets the test test test.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         assert isinstance(msg.data[0], model.DataSet)
 
     def test_structured_obs(self, msg):
+        """
+        Determine whether obs obs obs obs obs obs obs.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
 
         # Expected number of observations and series
@@ -185,6 +299,13 @@ class TestSeriesDataSet2(StructuredMessageTest):
         assert o0.attrib.OBS_STATUS == "A"
 
     def test_dataframe(self, msg):
+        """
+        Convert a test data to test.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
         s = pandasdmx.to_pandas(data, attributes="")
         assert isinstance(s, pd.Series)
@@ -196,6 +317,13 @@ class TestSeriesData_SiblingGroup_TS(StructuredMessageTest):
     dsd_filename = "sg-structure.xml"
 
     def test_groups(self, msg):
+        """
+        Test if the group of groups.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
         assert len(data.group) == 4
         assert len(data.series) == 4
@@ -215,6 +343,13 @@ class TestSeriesData_RateGroup_TS(StructuredMessageTest):
     dsd_filename = "rg-structure.xml"
 
     def test_groups(self, msg):
+        """
+        Check if a message is a member of groups.
+
+        Args:
+            self: (todo): write your description
+            msg: (str): write your description
+        """
         data = msg.data[0]
         assert len(data.group) == 5
         assert len(data.series) == 4

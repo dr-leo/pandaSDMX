@@ -29,6 +29,11 @@ logger = logging.getLogger(__name__)
 
 
 def _init_logger():
+    """
+    Initialize the logger.
+
+    Args:
+    """
     handler = logging.StreamHandler()
     fmt = "{asctime} {name} - {levelname}: {message}"
     handler.setFormatter(logging.Formatter(fmt, style="{"))

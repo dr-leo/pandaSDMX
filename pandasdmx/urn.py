@@ -41,4 +41,10 @@ def make(obj, maintainable_parent=None):
 
 
 def match(string):
+    """
+    Match a match of string.
+
+    Args:
+        string: (str): write your description
+    """
     return URN.match(string).groupdict()

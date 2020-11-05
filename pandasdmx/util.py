@@ -75,6 +75,12 @@ class Resource(str, Enum):
 
     @classmethod
     def describe(cls):
+        """
+        Return a string representation of the class name.
+
+        Args:
+            cls: (todo): write your description
+        """
         return "{" + " ".join(v.name for v in cls._member_map_.values()) + "}"
 
 
@@ -115,6 +121,14 @@ class BaseModel(pydantic.BaseModel):
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/521
     @classmethod
     def validate(cls: Type["Model"], value: Any) -> "Model":
+        """
+        Validate the given value.
+
+        Args:
+            cls: (callable): write your description
+            Type: (str): write your description
+            value: (todo): write your description
+        """
         if isinstance(value, dict):
             return cls(**value)
         elif isinstance(value, cls):
@@ -131,6 +145,14 @@ class BaseModel(pydantic.BaseModel):
     # Workaround for https://github.com/samuelcolvin/pydantic/issues/524
     @no_type_check
     def __setattr__(self, name, value):
+        """
+        Set a configuration value.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            value: (todo): write your description
+        """
         if self.__config__.extra is not Extra.allow and name not in self.__fields__:
             raise ValueError(
                 f'"{self.__class__.__name__}" object has no field' f' "{name}"'
@@ -161,6 +183,13 @@ class DictLike(collections.OrderedDict, typing.MutableMapping[KT, VT]):
     """Container with features of a dict & list, plus attribute access."""
 
     def __getitem__(self, key: Union[KT, int]) -> VT:
+        """
+        Return the value of a dict.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         try:
             return super().__getitem__(key)
         except KeyError:
@@ -172,18 +201,41 @@ class DictLike(collections.OrderedDict, typing.MutableMapping[KT, VT]):
                 raise
 
     def __setitem__(self, key: KT, value: VT) -> None:
+        """
+        Stores the given key to the given value.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+            value: (str): write your description
+        """
         key = self._apply_validators("key", key)
         value = self._apply_validators("value", value)
         super().__setitem__(key, value)
 
     # Access items as attributes
     def __getattr__(self, name) -> VT:
+        """
+        Return the value of an attribute.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         try:
             return self.__getitem__(name)
         except KeyError as e:
             raise AttributeError(*e.args) from None
 
     def validate(cls, value, field):
+        """
+        { type : dict }.
+
+        Args:
+            cls: (callable): write your description
+            value: (todo): write your description
+            field: (str): write your description
+        """
         if not isinstance(value, (dict, DictLike)):
             raise ValueError(value)
 
@@ -193,6 +245,14 @@ class DictLike(collections.OrderedDict, typing.MutableMapping[KT, VT]):
         return result
 
     def _apply_validators(self, which, value):
+        """
+        Apply validators to the given value.
+
+        Args:
+            self: (todo): write your description
+            which: (todo): write your description
+            value: (todo): write your description
+        """
         try:
             field = self.__fields[which]
         except AttributeError:
@@ -242,7 +302,19 @@ def summarize_dictlike(dl, maxwidth=72):
 
 
 def validate_dictlike(*fields):
+    """
+    Decorator to ensure a dictlike dictlike dict.
+
+    Args:
+        fields: (str): write your description
+    """
     def decorator(cls):
+        """
+        Decorator that adds post_validator.
+
+        Args:
+            cls: (todo): write your description
+        """
         v = make_generic_validator(DictLike.validate)
         for field in fields:
             cls.__fields__[field].post_validators = [v]

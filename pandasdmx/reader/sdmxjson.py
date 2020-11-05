@@ -31,9 +31,24 @@ class Reader(BaseReader):
 
     @classmethod
     def detect(cls, content):
+        """
+        Detect content of content.
+
+        Args:
+            cls: (callable): write your description
+            content: (str): write your description
+        """
         return content.startswith(b"{")
 
     def read_message(self, source, dsd=None):
+        """
+        Reads a message from disk. dbf file.
+
+        Args:
+            self: (todo): write your description
+            source: (str): write your description
+            dsd: (str): write your description
+        """
         # Initialize message instance
         msg = DataMessage()
 
@@ -122,6 +137,14 @@ class Reader(BaseReader):
         return msg
 
     def read_dataset(self, root, ds_key):
+        """
+        Read an hdf5 dataset.
+
+        Args:
+            self: (todo): write your description
+            root: (dict): write your description
+            ds_key: (str): write your description
+        """
         ds = DataSet(
             action=ActionType[root["action"].lower()],
             valid_from=root.get("validFrom", None),
@@ -139,6 +162,15 @@ class Reader(BaseReader):
         return ds
 
     def read_obs(self, root, series_key=None, base_key=None):
+        """
+        Read a series.
+
+        Args:
+            self: (todo): write your description
+            root: (dict): write your description
+            series_key: (str): write your description
+            base_key: (str): write your description
+        """
         for key, elem in root.get("observations", {}).items():
             value = elem.pop(0) if len(elem) else None
             o = Observation(

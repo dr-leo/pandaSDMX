@@ -52,9 +52,22 @@ class Source(BaseModel):
 
     @classmethod
     def from_dict(cls, info):
+        """
+        Create an instance from a dictionary.
+
+        Args:
+            cls: (todo): write your description
+            info: (dict): write your description
+        """
         return cls(**info)
 
     def __init__(self, **kwargs):
+        """
+        Initialize the object types.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(**kwargs)
 
         # Set default supported features
@@ -112,11 +125,25 @@ class Source(BaseModel):
 
     @validator("id")
     def _validate_id(cls, value):
+        """
+        Validate the id.
+
+        Args:
+            cls: (callable): write your description
+            value: (todo): write your description
+        """
         assert getattr(cls, "_id", value) == value
         return value
 
     @validator("data_content_type", pre=True)
     def _validate_dct(cls, value):
+        """
+        Validate the given value.
+
+        Args:
+            cls: (callable): write your description
+            value: (todo): write your description
+        """
         if isinstance(value, DataContentType):
             return value
         else:

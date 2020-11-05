@@ -43,6 +43,12 @@ def _copy(obj, pb_obj):
 
 
 def write_structuremessage(obj, *args, **kwargs):
+    """
+    Writes a protobuf to a protobuf.
+
+    Args:
+        obj: (todo): write your description
+    """
     envelope = pb.Envelope()
 
     for cl in obj.codelist.values():

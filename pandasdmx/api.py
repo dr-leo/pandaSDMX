@@ -90,14 +90,33 @@ class Request:
         return super().__dir__() + [ep.name for ep in Resource]
 
     def clear_cache(self):
+        """
+        Clear all cache.
+
+        Args:
+            self: (todo): write your description
+        """
         self.cache.clear()
 
     @property
     def timeout(self):
+        """
+        Return the request.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.session.timeout
 
     @timeout.setter
     def timeout(self, value):
+        """
+        Set the timeout of the request.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         self.session.timeout = value
 
     def series_keys(self, flow_id, use_cache=True):
@@ -249,6 +268,12 @@ class Request:
         return requests.Request("get", url, params=parameters, headers=headers)
 
     def _request_from_url(self, kwargs):
+        """
+        Make a http request.
+
+        Args:
+            self: (todo): write your description
+        """
         url = kwargs.pop("url")
         parameters = kwargs.pop("params", {})
         headers = kwargs.pop("headers", {})

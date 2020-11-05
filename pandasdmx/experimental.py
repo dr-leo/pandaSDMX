@@ -70,6 +70,12 @@ class DataSet(AnnotableArtefact):
 
     @property
     def obs(self):
+        """
+        Return an iterator over all obs obsobs.
+
+        Args:
+            self: (todo): write your description
+        """
         # In model.DataSet, .obs is typed as List[Observation].
         # Here, the Observations are generated on request.
         for key, data in self._data.iterrows():

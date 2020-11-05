@@ -3,6 +3,11 @@ from pandasdmx.model import AttributeValue, DataAttribute, DataStructureDefiniti
 
 
 def test_refcount():
+    """
+    Determine the refcount
+
+    Args:
+    """
     # Component (subclasses) created outside of a DataStructureDefinition
     da1 = DataAttribute(id="foo")
     da2 = DataAttribute(id="foo")

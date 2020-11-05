@@ -158,6 +158,12 @@ class Message(BaseModel):
 
 
     def __str__(self):
+        """
+        Return a human - readable representation of the object.
+
+        Args:
+            self: (todo): write your description
+        """
         return repr(self)
 
     def __repr__(self):

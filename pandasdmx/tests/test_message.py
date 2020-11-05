@@ -77,6 +77,13 @@ EXPECTED = [
     "pattern, expected", EXPECTED, ids=list(map(itemgetter(0), EXPECTED))
 )
 def test_message_repr(pattern, expected):
+    """
+    Check if a message matches of pattern.
+
+    Args:
+        pattern: (str): write your description
+        expected: (str): write your description
+    """
     with specimen(pattern) as f:
         msg = pandasdmx.read_sdmx(f)
     if isinstance(expected, re.Pattern):

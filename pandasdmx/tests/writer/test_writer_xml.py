@@ -9,11 +9,25 @@ log = logging.getLogger(__name__)
 
 
 def test_codelist(tmp_path, codelist):
+    """
+    Test if the xml file is a valid xml file.
+
+    Args:
+        tmp_path: (todo): write your description
+        codelist: (list): write your description
+    """
     result = pandasdmx.to_xml(codelist, pretty_print=True)
     print(result.decode())
 
 
 def test_structuremessage(tmp_path, structuremessage):
+    """
+    Convert a test test exists.
+
+    Args:
+        tmp_path: (str): write your description
+        structuremessage: (todo): write your description
+    """
     result = pandasdmx.to_xml(structuremessage, pretty_print=True)
     print(result.decode())
 

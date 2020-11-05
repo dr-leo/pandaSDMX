@@ -211,6 +211,11 @@ def test_doc_usage_data():
 
 
 def test_doc_howto_timeseries():
+    """
+    Convert a pandas dataframe to a pandas dataframe.
+
+    Args:
+    """
     with specimen("sg-ts.xml") as f:
         ds = pandasdmx.read_sdmx(f).data[0]
 

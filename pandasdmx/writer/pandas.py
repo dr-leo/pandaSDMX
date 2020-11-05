@@ -543,15 +543,37 @@ def write_itemscheme(obj: model.ItemScheme, locale=DEFAULT_LOCALE):
 
 @writer
 def _mv(obj: model.MemberValue):
+    """
+    Returns the value of a given member.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        MemberValue: (todo): write your description
+    """
     return obj.value
 
 
 @writer
 def _na(obj: model.NameableArtefact):
+    """
+    Return the name of an object.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        NameableArtefact: (str): write your description
+    """
     return str(obj.name)
 
 
 def write_serieskeys(obj):
+    """
+    Write a series of key / value pairs.
+
+    Args:
+        obj: (todo): write your description
+    """
     result = []
     for sk in obj:
         result.append({dim: kv.value for dim, kv in sk.order().values.items()})

@@ -25,6 +25,12 @@ class Source(BaseSource):
     _id = "ESTAT"
 
     def modify_request_args(self, kwargs):
+        """
+        Modifies request keyword arguments.
+
+        Args:
+            self: (todo): write your description
+        """
         super().modify_request_args(kwargs)
 
         kwargs.pop("get_footer_url", None)

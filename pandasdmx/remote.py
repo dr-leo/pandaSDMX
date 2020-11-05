@@ -26,6 +26,15 @@ class Session(MaybeCachedSession):
     """
 
     def __init__(self, timeout=30.1, proxies=None, stream=False, **kwargs):
+        """
+        Initialize the connection.
+
+        Args:
+            self: (todo): write your description
+            timeout: (int): write your description
+            proxies: (dict): write your description
+            stream: (todo): write your description
+        """
 
         if MaybeCachedSession is not requests.Session:
             # Using requests_cache.CachedSession
@@ -77,6 +86,14 @@ class ResponseIO(BufferedIOBase):
     """
 
     def __init__(self, response, tee=None):
+        """
+        Sets the response.
+
+        Args:
+            self: (todo): write your description
+            response: (list): write your description
+            tee: (todo): write your description
+        """
         self.response = response
         # Open a new file in various scenarios, or assume that tee is an open file
         if tee is None:
@@ -98,6 +115,12 @@ class ResponseIO(BufferedIOBase):
             
 
     def readable(self):
+        """
+        Returns true if the file is readable.
+
+        Args:
+            self: (todo): write your description
+        """
         return True
 
     def read(self, size=-1):
@@ -105,4 +128,10 @@ class ResponseIO(BufferedIOBase):
         return self.tee.read(size)
 
     def close(self):
+        """
+        Close the channel.
+
+        Args:
+            self: (todo): write your description
+        """
         self.tee.close()

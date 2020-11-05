@@ -9,5 +9,11 @@ class XMLParseError(Exception):
     """:class:`.sdmxml.Reader` is unable to parse a message."""
 
     def __str__(self):
+        """
+        Return a string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         c = str(self.__cause__)
         return f"{self.__cause__.__class__.__name__}{': ' + c if c else ''}"

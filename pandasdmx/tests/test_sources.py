@@ -118,6 +118,12 @@ class DataSourceTest:
 
     @pytest.fixture
     def req(self):
+        """
+        Return a tuple of the cache.
+
+        Args:
+            self: (todo): write your description
+        """
         # Use a common cache file for all agency tests
         (TEST_DATA_PATH / ".cache").mkdir(exist_ok=True)
         self._cache_path = TEST_DATA_PATH / ".cache" / self.source_id
@@ -127,6 +133,14 @@ class DataSourceTest:
 
     @pytest.mark.network
     def test_endpoints(self, req, endpoint, args):
+        """
+        Test for endpoints.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            endpoint: (str): write your description
+        """
         # See pytest_generate_tests() for values of 'endpoint'
         cache = self._cache_path.with_suffix(f".{endpoint}.xml")
         result = req.get(endpoint, tofile=cache, **args)
@@ -182,6 +196,12 @@ class TestESTAT(DataSourceTest):
 
     @pytest.fixture
     def mock(self):
+        """
+        Get a mock
+
+        Args:
+            self: (todo): write your description
+        """
         # Prepare the mock requests
         fixture = requests_mock.Mocker()
         for url, args in estat_mock.items():
@@ -193,6 +213,13 @@ class TestESTAT(DataSourceTest):
 
     @pytest.mark.network
     def test_xml_footer(self, mock):
+        """
+        Test if a footer.
+
+        Args:
+            self: (todo): write your description
+            mock: (todo): write your description
+        """
         req = Request(self.source_id)
 
         with mock:
@@ -248,6 +275,13 @@ class TestILO(DataSourceTest):
 
     @pytest.mark.network
     def test_codelist(self, req):
+        """
+        Test if the cache file exists.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+        """
         req.get(
             "codelist",
             "CL_ECO",
@@ -263,6 +297,14 @@ class TestINEGI(DataSourceTest):
 
     @pytest.mark.network
     def test_endpoints(self, req, endpoint, args):
+        """
+        Execute the endpoints.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            endpoint: (str): write your description
+        """
         # SSL certificate verification sometimes fails for this server; works
         # in Google Chrome
         req.session.verify = False
@@ -278,6 +320,14 @@ class TestINSEE(DataSourceTest):
 
     @pytest.mark.network
     def test_endpoints(self, req, endpoint, args):
+        """
+        Execute endpoints.
+
+        Args:
+            self: (todo): write your description
+            req: (todo): write your description
+            endpoint: (str): write your description
+        """
         # Using the default 'INSEE' agency in the URL gives a response "La
         # syntaxe de la requête est invalide."
         req.get(

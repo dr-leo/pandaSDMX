@@ -29,9 +29,22 @@ class BaseWriter:
     """
 
     def __init__(self, format_name):
+        """
+        Initialize the object.
+
+        Args:
+            self: (todo): write your description
+            format_name: (str): write your description
+        """
         # Create the single-dispatch function
         @singledispatch
         def func(obj, *args, **kwargs):
+            """
+            Evaluate the given object.
+
+            Args:
+                obj: (todo): write your description
+            """
             raise NotImplementedError(
                 f"write {obj.__class__.__name__} to " f"{format_name}"
             )

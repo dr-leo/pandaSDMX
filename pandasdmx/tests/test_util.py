@@ -6,6 +6,11 @@ from pandasdmx.util import BaseModel, DictLike, validate_dictlike
 
 
 def test_dictlike():
+    """
+    Test if the test dictionary.
+
+    Args:
+    """
     dl = DictLike()
 
     # Set by item name
@@ -30,6 +35,11 @@ def test_dictlike():
 
 
 def test_dictlike_anno():
+    """
+    Test if an annotation dict.
+
+    Args:
+    """
     @validate_dictlike("items")
     class Foo(BaseModel):
         items: DictLike[StrictStr, int] = DictLike()

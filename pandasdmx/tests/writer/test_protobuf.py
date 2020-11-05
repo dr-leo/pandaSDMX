@@ -8,6 +8,13 @@ from pandasdmx.writer.protobuf import write as to_protobuf
 
 @pytest.mark.xfail(raises=RuntimeError, match="sdmx.format.protobuf_pb2 missing")
 def test_codelist(caplog, codelist):
+    """
+    Prints a polynomial.
+
+    Args:
+        caplog: (todo): write your description
+        codelist: (list): write your description
+    """
     msg = StructureMessage()
     msg.codelist[codelist.id] = codelist
 

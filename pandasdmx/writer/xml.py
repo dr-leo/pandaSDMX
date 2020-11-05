@@ -22,6 +22,12 @@ writer = BaseWriter("XML")
 
 
 def Element(name, *args, **kwargs):
+    """
+    Create a new element.
+
+    Args:
+        name: (str): write your description
+    """
     # Remove None
     kwargs = dict(filter(lambda kv: kv[1] is not None, kwargs.items()))
 
@@ -99,6 +105,14 @@ def reference(obj, parent=None, tag=None, style="URN"):
 
 @writer
 def _dm(obj: message.DataMessage):
+    """
+    Convert datastore message. datastructure.
+
+    Args:
+        obj: (todo): write your description
+        message: (str): write your description
+        DataMessage: (str): write your description
+    """
     elem = Element("mes:GenericData")
 
     header = writer.recurse(obj.header)
@@ -128,6 +142,14 @@ def _dm(obj: message.DataMessage):
 
 @writer
 def _sm(obj: message.StructureMessage):
+    """
+    Convert an smtp message.
+
+    Args:
+        obj: (todo): write your description
+        message: (str): write your description
+        StructureMessage: (str): write your description
+    """
     # Store a reference to the overal Message for writing references
     setattr(writer, "_message", obj)
 
@@ -162,6 +184,14 @@ def _sm(obj: message.StructureMessage):
 
 @writer
 def _header(obj: message.Header):
+    """
+    Generate a header string.
+
+    Args:
+        obj: (todo): write your description
+        message: (str): write your description
+        Header: (dict): write your description
+    """
     elem = Element("mes:Header")
     elem.append(Element("mes:Test", str(obj.test).lower()))
     if obj.id:
@@ -198,6 +228,14 @@ def i11lstring(obj, name):
 
 @writer
 def _a(obj: model.Annotation):
+    """
+    Convert an element to an xml string.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Annotation: (todo): write your description
+    """
     elem = Element("com:Annotation")
     if obj.id:
         elem.attrib["id"] = obj.id
@@ -208,6 +246,12 @@ def _a(obj: model.Annotation):
 
 
 def annotable(obj, **kwargs):
+    """
+    Annotate an annotation.
+
+    Args:
+        obj: (todo): write your description
+    """
     cls = kwargs.pop("_tag", tag_for_class(obj.__class__))
     try:
         elem = Element(cls, **kwargs)
@@ -224,6 +268,12 @@ def annotable(obj, **kwargs):
 
 
 def identifiable(obj, **kwargs):
+    """
+    Annotate an object.
+
+    Args:
+        obj: (todo): write your description
+    """
     kwargs.setdefault("id", obj.id)
     try:
         kwargs.setdefault(
@@ -235,6 +285,12 @@ def identifiable(obj, **kwargs):
 
 
 def nameable(obj, **kwargs):
+    """
+    Return the name of an object.
+
+    Args:
+        obj: (todo): write your description
+    """
     elem = identifiable(obj, **kwargs)
     elem.extend(i11lstring(obj.name, "com:Name"))
     elem.extend(i11lstring(obj.description, "com:Description"))
@@ -242,6 +298,12 @@ def nameable(obj, **kwargs):
 
 
 def maintainable(obj, **kwargs):
+    """
+    Returns the nameable object to be able to call.
+
+    Args:
+        obj: (todo): write your description
+    """
     kwargs.setdefault("version", obj.version)
     kwargs.setdefault("isExternalReference", str(obj.is_external_reference).lower())
     kwargs.setdefault("isFinal", str(obj.is_final).lower())
@@ -254,6 +316,14 @@ def maintainable(obj, **kwargs):
 
 @writer
 def _item(obj: model.Item, **kwargs):
+    """
+    Convert an item for the given a list.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Item: (todo): write your description
+    """
     elem = nameable(obj, **kwargs)
 
     if obj.parent:
@@ -267,6 +337,14 @@ def _item(obj: model.Item, **kwargs):
 
 @writer
 def _is(obj: model.ItemScheme):
+    """
+    Returns true if obj is a list of obj.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        ItemScheme: (todo): write your description
+    """
     elem = maintainable(obj)
     elem.extend(writer.recurse(i) for i in obj.items.values())
     return elem
@@ -277,12 +355,30 @@ def _is(obj: model.ItemScheme):
 
 @writer
 def _facet(obj: model.Facet):
+    """
+    Return the facet by an object
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Facet: (todo): write your description
+    """
     # TODO textType should be CamelCase
     return Element("str:TextFormat", textType=getattr(obj.value_type, "name", None))
 
 
 @writer
 def _rep(obj: model.Representation, tag, style="URN"):
+    """
+    Represents an element.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Representation: (todo): write your description
+        tag: (str): write your description
+        style: (str): write your description
+    """
     elem = Element(f"str:{tag}")
     if obj.enumerated:
         elem.append(reference(obj.enumerated, tag="str:Enumeration", style=style))
@@ -296,6 +392,14 @@ def _rep(obj: model.Representation, tag, style="URN"):
 
 @writer
 def _concept(obj: model.Concept, **kwargs):
+    """
+    Convert a concept to a concept.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Concept: (todo): write your description
+    """
     elem = _item(obj, **kwargs)
 
     if obj.core_representation:
@@ -309,6 +413,14 @@ def _concept(obj: model.Concept, **kwargs):
 
 @writer
 def _component(obj: model.Component):
+    """
+    Create a component.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Component: (todo): write your description
+    """
     elem = identifiable(obj)
     if obj.concept_identity:
         elem.append(
@@ -328,6 +440,14 @@ def _component(obj: model.Component):
 
 @writer
 def _cl(obj: model.ComponentList):
+    """
+    Return a list of obj to model instances.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        ComponentList: (list): write your description
+    """
     elem = identifiable(obj)
     elem.extend(writer.recurse(c) for c in obj.components)
     return elem
@@ -338,6 +458,14 @@ def _cl(obj: model.ComponentList):
 
 @writer
 def _cat(obj: model.Categorisation):
+    """
+    Return a reference to an object
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Categorisation: (todo): write your description
+    """
     elem = maintainable(obj)
     elem.extend(
         [
@@ -353,6 +481,14 @@ def _cat(obj: model.Categorisation):
 
 @writer
 def _ms(obj: model.MemberSelection):
+    """
+    Return a list of elementtree objects into a list.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        MemberSelection: (todo): write your description
+    """
     elem = Element("com:KeyValue", id=obj.values_for.id)
     elem.extend(Element("com:Value", mv.value) for mv in obj.values)
     return elem
@@ -360,6 +496,14 @@ def _ms(obj: model.MemberSelection):
 
 @writer
 def _cr(obj: model.CubeRegion):
+    """
+    Generate the cront object.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        CubeRegion: (str): write your description
+    """
     elem = Element("str:CubeRegion", include=str(obj.included).lower())
     elem.extend(writer.recurse(ms) for ms in obj.member.values())
     return elem
@@ -367,6 +511,14 @@ def _cr(obj: model.CubeRegion):
 
 @writer
 def _cc(obj: model.ContentConstraint):
+    """
+    Generate a list of objects.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        ContentConstraint: (todo): write your description
+    """
     elem = maintainable(
         obj, type=obj.role.role.name.replace("allowable", "allowed").title()
     )
@@ -385,6 +537,14 @@ def _cc(obj: model.ContentConstraint):
 
 @writer
 def _nsr(obj: model.NoSpecifiedRelationship):
+    """
+    Return an elementtree element.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        NoSpecifiedRelationship: (todo): write your description
+    """
     elem = Element("str:AttributeRelationship")
     elem.append(Element("str:None"))
     return elem
@@ -392,6 +552,14 @@ def _nsr(obj: model.NoSpecifiedRelationship):
 
 @writer
 def _pmr(obj: model.PrimaryMeasureRelationship):
+    """
+    Generate a list of objects.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        PrimaryMeasureRelationship: (todo): write your description
+    """
     elem = Element("str:AttributeRelationship")
     elem.append(Element("str:PrimaryMeasure"))
     elem[-1].append(Element(":Ref", id="(not implemented)"))
@@ -400,6 +568,14 @@ def _pmr(obj: model.PrimaryMeasureRelationship):
 
 @writer
 def _dr(obj: model.DimensionRelationship):
+    """
+    Generate a list of element objects.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        DimensionRelationship: (int): write your description
+    """
     elem = Element("str:AttributeRelationship")
     for dim in obj.dimensions:
         elem.append(Element("str:Dimension"))
@@ -409,6 +585,14 @@ def _dr(obj: model.DimensionRelationship):
 
 @writer
 def _gr(obj: model.GroupRelationship):
+    """
+    Return group element group
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        GroupRelationship: (todo): write your description
+    """
     elem = Element("str:AttributeRelationship")
     elem.append(Element("str:Group"))
     elem[-1].append(Element(":Ref", id=getattr(obj.group_key, "id", None)))
@@ -417,6 +601,14 @@ def _gr(obj: model.GroupRelationship):
 
 @writer
 def _gdd(obj: model.GroupDimensionDescriptor):
+    """
+    Return a list of obj for each element
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        GroupDimensionDescriptor: (todo): write your description
+    """
     elem = identifiable(obj)
     for dim in obj.components:
         elem.append(Element("str:GroupDimension"))
@@ -427,6 +619,14 @@ def _gdd(obj: model.GroupDimensionDescriptor):
 
 @writer
 def _dsd(obj: model.DataStructureDefinition):
+    """
+    Convert dsdict objects into a list.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        DataStructureDefinition: (str): write your description
+    """
     elem = maintainable(obj)
     elem.append(Element("str:DataStructureComponents"))
 
@@ -442,6 +642,14 @@ def _dsd(obj: model.DataStructureDefinition):
 
 @writer
 def _dfd(obj: model.DataflowDefinition):
+    """
+    Convert a dataframe from a pandas dataframe objects into a pandas dataframe.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        DataflowDefinition: (todo): write your description
+    """
     elem = maintainable(obj)
     elem.append(reference(obj.structure, tag="str:Structure", style="Ref"))
     return elem
@@ -451,6 +659,15 @@ def _dfd(obj: model.DataflowDefinition):
 
 
 def _av(obj: Iterable[model.AttributeValue]):
+    """
+    Return an iterator over all the objects.
+
+    Args:
+        obj: (todo): write your description
+        Iterable: (todo): write your description
+        model: (todo): write your description
+        AttributeValue: (todo): write your description
+    """
     for av in obj:
         assert av.value_for
         yield Element("gen:Value", id=av.value_for.id, value=av.value)
@@ -458,6 +675,14 @@ def _av(obj: Iterable[model.AttributeValue]):
 
 @writer
 def _sk(obj: model.SeriesKey):
+    """
+    Return a sklearn element.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        SeriesKey: (str): write your description
+    """
     elem = []
 
     elem.append(Element("gen:SeriesKey"))
@@ -473,6 +698,14 @@ def _sk(obj: model.SeriesKey):
 
 @writer
 def _obs(obj: model.Observation):
+    """
+    Returns a list of a list.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        Observation: (dict): write your description
+    """
     elem = Element("gen:Obs")
 
     assert obj.dimension and len(obj.dimension) == 1
@@ -488,6 +721,14 @@ def _obs(obj: model.Observation):
 
 @writer
 def _ds(obj: model.DataSet):
+    """
+    Returns a list of - element objects to a list of model objects.
+
+    Args:
+        obj: (todo): write your description
+        model: (todo): write your description
+        DataSet: (todo): write your description
+    """
     if len(obj.group):
         raise NotImplementedError("to_xml() for DataSet with groups")
 

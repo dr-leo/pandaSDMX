@@ -29,6 +29,11 @@ from pandasdmx.model import (
 
 
 def test_contentconstraint():
+    """
+    Test the roles of the roles
+
+    Args:
+    """
     crole = ConstraintRole(role=ConstraintRoleType["allowable"])
     cr = ContentConstraint(role=crole)
     cr.content = {DataflowDefinition()}
@@ -36,6 +41,11 @@ def test_contentconstraint():
 
 
 def test_dataset():
+    """
+    Prints a test type.
+
+    Args:
+    """
     # Enumeration values can be used to initialize
     from pandasdmx.model import ActionType
 
@@ -44,6 +54,11 @@ def test_dataset():
 
 
 def test_datastructuredefinition():
+    """
+    Test for the datastructructefinition.
+
+    Args:
+    """
     dsd = DataStructureDefinition()
 
     # Convenience methods
@@ -78,11 +93,21 @@ def test_datastructuredefinition():
 
 
 def test_dimension():
+    """
+    Èi̇¥åıĸåįķ
+
+    Args:
+    """
     # Constructor
     Dimension(id="CURRENCY", order=0)
 
 
 def test_dimensiondescriptor():
+    """
+    Returns the dimensiondescriptor.
+
+    Args:
+    """
     # from_key()
     key1 = Key(foo=1, bar=2, baz=3)
     dd = DimensionDescriptor.from_key(key1)
@@ -95,6 +120,11 @@ def test_dimensiondescriptor():
 
 
 def test_identifiable():
+    """
+    Determine whether an identity.
+
+    Args:
+    """
     urn = "urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=IT1:VARIAB_ALL(9.6)"
     urn_pat = urn.replace("(", r"\(").replace(")", r"\)")
 
@@ -114,6 +144,12 @@ def test_identifiable():
 
 
 def test_nameable(caplog):
+    """
+    Determine nameable.
+
+    Args:
+        caplog: (bool): write your description
+    """
     na1 = model.NameableArtefact(
         name=dict(en="Name"), description=dict(en="Description"),
     )
@@ -135,6 +171,11 @@ def test_nameable(caplog):
 
 
 def test_maintainable():
+    """
+    Test if a maintain model.
+
+    Args:
+    """
     urn = "urn:sdmx:org.sdmx.infomodel.conceptscheme.ConceptScheme=IT1:VARIAB_ALL(9.6)"
     ma = model.MaintainableArtefact(id="VARIAB_ALL", urn=urn)
 
@@ -154,6 +195,11 @@ def test_maintainable():
 
 
 def test_internationalstring():
+    """
+    Return a string containing a - style.
+
+    Args:
+    """
     # Constructor; the .name attribute is an InternationalString
     i = Item(id="ECB")
 
@@ -216,6 +262,11 @@ def test_internationalstring():
 
 
 def test_item():
+    """
+    Test the test item.
+
+    Args:
+    """
     # Add a tree of 10 items
     items = []
     for i in range(10):
@@ -247,6 +298,11 @@ def test_item():
 
 
 def test_itemscheme():
+    """
+    Return a default item scheme.
+
+    Args:
+    """
     is0 = ItemScheme(id="is0")
     foo0 = Item(id="foo0")
 
@@ -309,6 +365,12 @@ def test_itemscheme():
 
 
 def test_itemscheme_compare(caplog):
+    """
+    Compares the itemscheme.
+
+    Args:
+        caplog: (todo): write your description
+    """
     is0 = model.ItemScheme()
     is1 = model.ItemScheme()
 
@@ -323,6 +385,11 @@ def test_itemscheme_compare(caplog):
 
 
 def test_key():
+    """
+    Test if two k1 and k2 are in k2.
+
+    Args:
+    """
     # Construct with a dict
     k1 = Key({"foo": 1, "bar": 2})
 
@@ -377,6 +444,11 @@ def test_key():
 
 
 def test_observation():
+    """
+    Set the observation observation.
+
+    Args:
+    """
     obs = Observation()
 
     # Set by item name
@@ -406,5 +478,10 @@ def test_observation():
 
 
 def test_get_class():
+    """
+    Get the test class.
+
+    Args:
+    """
     with pytest.raises(ValueError, match="Package 'codelist' invalid for Category"):
         model.get_class(name="Category", package="codelist")

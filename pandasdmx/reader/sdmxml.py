@@ -55,17 +55,49 @@ def add_localizations(target: model.InternationalString, values: list) -> None:
 
 
 def matching_class(cls):
+    """
+    Return true if item.
+
+    Args:
+        cls: (todo): write your description
+    """
     def func(item):
+        """
+        Decorator of the given item.
+
+        Args:
+            item: (todo): write your description
+        """
         return isclass(item) and issubclass(item, cls)
     return func
 
 def matching_class0(cls):
+    """
+    Return true if the item matches the item.
+
+    Args:
+        cls: (todo): write your description
+    """
     def func(item):
+        """
+        Return true if item is a function.
+
+        Args:
+            item: (todo): write your description
+        """
         return isclass(item[0]) and issubclass(item[0], cls)
     return func
 
 
 def setdefault_attrib(target, elem, *names):
+    """
+    Set elem of elem attribute of target.
+
+    Args:
+        target: (dict): write your description
+        elem: (todo): write your description
+        names: (str): write your description
+    """
     # for performance:
     if hasattr(elem, 'attrib'):
         a = elem.attrib
@@ -83,6 +115,12 @@ def start(*args, only=True):
     """Decorator for a function that parses "start" events for XML elements."""
 
     def decorator(func):
+        """
+        Decorator for decorators.
+
+        Args:
+            func: (todo): write your description
+        """
         for tag in to_tags(*args):
             PARSE[tag, "start"] = func
             if only:
@@ -96,6 +134,12 @@ def end(*args, only=True):
     """Decorator for a function that parses "end" events for XML elements."""
 
     def decorator(func):
+        """
+        Decorator for decorators.
+
+        Args:
+            func: (todo): write your description
+        """
         for tag in to_tags(*args):
             PARSE[tag, "end"] = func
             if only:
@@ -106,6 +150,11 @@ def end(*args, only=True):
 
 
 def to_tags(*args):
+    """
+    Convert a list of tags to a list of tags.
+
+    Args:
+    """
     return chain(*[[qname(tag) for tag in arg.split()] for arg in args])
 
 
@@ -132,6 +181,14 @@ class Reference:
     """
 
     def __init__(self, elem, cls_hint=None):
+        """
+        Initialize elem.
+
+        Args:
+            self: (todo): write your description
+            elem: (todo): write your description
+            cls_hint: (todo): write your description
+        """
         parent_tag = elem.tag
 
         try:
@@ -197,6 +254,12 @@ class Reference:
         self.target_id = target_id
 
     def __str__(self):  # pragma: no cover
+        """
+        Return a string representation of the object.
+
+        Args:
+            self: (todo): write your description
+        """
         return (
             f"{self.cls.__name__}={self.agency.id}:{self.id}({self.version}) → "
             f"{self.target_cls.__name__}={self.target_id}"
@@ -215,9 +278,24 @@ class Reader(BaseReader):
 
     @classmethod
     def detect(cls, content):
+        """
+        Detect content of content.
+
+        Args:
+            cls: (callable): write your description
+            content: (str): write your description
+        """
         return content.startswith(b"<")
 
     def read_message(self, source, dsd=None):
+        """
+        Reads a single message from a text.
+
+        Args:
+            self: (todo): write your description
+            source: (str): write your description
+            dsd: (str): write your description
+        """
         # Initialize stacks
         self.stack = defaultdict(list)
 
@@ -277,6 +355,12 @@ class Reader(BaseReader):
                 self.stack.pop(key)
 
     def _dump(self):  # pragma: no cover
+        """
+        Dump the stack.
+
+        Args:
+            self: (todo): write your description
+        """
         self._clean()
         print("\n\n")
         for key, values in self.stack.items():
@@ -537,6 +621,13 @@ def _message(reader, elem):
 
 @end("mes:Header")
 def _header(reader, elem):
+    """
+    Implements header.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Attach to the Message
     header = message.Header(
         extracted=reader.pop_single("Extracted") or None,
@@ -560,6 +651,13 @@ def _header(reader, elem):
 
 @end("mes:Receiver mes:Sender")
 def _header_org(reader, elem):
+    """
+    Pushes the element to the reader.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     reader.push(elem, reader.nameable(class_for_tag(elem.tag), elem))
 
 
@@ -644,6 +742,13 @@ def _header_structure(reader, elem):
 
 @end("footer:Footer")
 def _footer(reader, elem):
+    """
+    Display footer
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Get attributes from the child <footer:Messsage>
     args = dict()
     setdefault_attrib(args, elem[0], "code", "severity")
@@ -687,6 +792,13 @@ def _structures(reader, elem):
     "com:Value str:Email str:Telephone str:URI"
 )
 def _text(reader, elem):
+    """
+    Pushes text to the element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     reader.push(elem, elem.text)
 
 
@@ -695,6 +807,13 @@ def _text(reader, elem):
     "str:Role"
 )
 def _localization(reader, elem):
+    """
+    Parse elem element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     reader.push(
         elem, (elem.attrib.get(qname("xml:lang"), model.DEFAULT_LOCALE), elem.text)
     )
@@ -706,6 +825,13 @@ def _localization(reader, elem):
     "str:Target str:Enumeration"
 )
 def _ref(reader, elem):
+    """
+    Parse the given elem.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     cls_hint = None
     if "Parent" in elem.tag:
         # Use the *grand*-parent of the <Ref> or <URN> for a class hint
@@ -716,6 +842,13 @@ def _ref(reader, elem):
 
 @end("com:Annotation")
 def _a(reader, elem):
+    """
+    Create an xml element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     args = dict(
         title=reader.pop_single("AnnotationTitle"),
         type=reader.pop_single("AnnotationType"),
@@ -736,6 +869,13 @@ def _a(reader, elem):
 
 @start("str:Agency str:Code str:Category str:Concept str:DataProvider", only=False)
 def _item_start(reader, elem):
+    """
+    Return the start of the start of the start of an element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Avoid stealing the name & description of the parent ItemScheme from the stack
     # TODO check this works for annotations
 
@@ -752,6 +892,13 @@ def _item_start(reader, elem):
 
 @end("str:Agency str:Code str:Category str:DataProvider", only=False)
 def _item(reader, elem):
+    """
+    Convert an element into an elementtree.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     try:
         # <str:DataProvider> may be a reference, e.g. in <str:ConstraintAttachment>
         return Reference(elem)
@@ -790,6 +937,13 @@ def _item(reader, elem):
     "str:DataProviderScheme",
 )
 def _itemscheme(reader, elem):
+    """
+    Return an iterator over the item.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     cls = class_for_tag(elem.tag)
 
     # Iterate over all Item objects *and* their children
@@ -807,6 +961,13 @@ def _itemscheme(reader, elem):
 
 @end("str:EnumerationFormat str:TextFormat")
 def _facet(reader, elem):
+    """
+    Convert the given reader.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     attrib = copy(elem.attrib)
 
     # Parse facet value type; SDMX-ML default is 'String'
@@ -825,6 +986,13 @@ def _facet(reader, elem):
 
 @end("str:CoreRepresentation str:LocalRepresentation")
 def _rep(reader, elem):
+    """
+    Repair the given reader.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     return model.Representation(
         enumerated=reader.pop_resolved_ref("Enumeration"),
         non_enumerated=(
@@ -838,6 +1006,13 @@ def _rep(reader, elem):
 
 @end("str:Concept", only=False)
 def _concept(reader, elem):
+    """
+    Convert a concept.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     concept = _item(reader, elem)
     concept.core_representation = reader.pop_single(model.Representation)
     return concept
@@ -851,6 +1026,13 @@ def _concept(reader, elem):
     "str:PrimaryMeasure str:TimeDimension"
 )
 def _component(reader, elem):
+    """
+    Create a new component from an element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     try:
         # May be a reference
         return Reference(elem)
@@ -880,6 +1062,13 @@ def _component(reader, elem):
 
 @end("str:AttributeList str:DimensionList str:Group str:MeasureList")
 def _cl(reader, elem):
+    """
+    Create an elementtree from an elementtree.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     try:
         # <str:Group> may be a reference
         return Reference(elem, cls_hint=model.GroupDimensionDescriptor)
@@ -938,6 +1127,13 @@ def _cl(reader, elem):
 
 @end("str:Categorisation")
 def _cat(reader, elem):
+    """
+    Convert the category.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     return reader.maintainable(
         model.Categorisation,
         elem,
@@ -951,6 +1147,13 @@ def _cat(reader, elem):
 
 @end("str:Contact")
 def _contact(reader, elem):
+    """
+    Create a contact.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     contact = model.Contact(
         telephone=reader.pop_single("Telephone"),
         uri=reader.pop_all("URI"),
@@ -967,6 +1170,13 @@ def _contact(reader, elem):
 
 @end("str:Key")
 def _dk(reader, elem):
+    """
+    Convert an element into an elementtree.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     return model.DataKey(
         included=elem.attrib.get("isIncluded", True),
         # Convert MemberSelection/MemberValue from _ms() to ComponentValue
@@ -981,6 +1191,13 @@ def _dk(reader, elem):
 
 @end("str:DataKeySet")
 def _dks(reader, elem):
+    """
+    Convert a dks to dict.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     return model.DataKeySet(
         included=elem.attrib["isIncluded"], keys=reader.pop_all(model.DataKey)
     )
@@ -988,6 +1205,13 @@ def _dks(reader, elem):
 
 @end("com:Attribute com:KeyValue")
 def _ms(reader, elem):
+    """
+    Convert a component from an elementtree > element
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Values are for either a Dimension or Attribute, based on tag name
     kind = {
         "KeyValue": ("dimensions", model.Dimension),
@@ -1027,6 +1251,13 @@ def _ms(reader, elem):
 
 @end("str:CubeRegion")
 def _cr(reader, elem):
+    """
+    Convert the crontablection. crontab.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     return model.CubeRegion(
         included=elem.attrib["include"],
         # Combine member selections for Dimensions and Attributes
@@ -1036,6 +1267,13 @@ def _cr(reader, elem):
 
 @end("str:ContentConstraint")
 def _cc(reader, elem):
+    """
+    Constraint model.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     cr_str = elem.attrib["type"].lower().replace("allowed", "allowable")
 
     content = set()
@@ -1061,6 +1299,13 @@ def _cc(reader, elem):
 
 @end("str:AttributeRelationship")
 def _ar(reader, elem):
+    """
+    Create an arxml structure.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Retrieve the current DSD
     dsd = reader.peek(model.DataStructureDefinition)
 
@@ -1097,6 +1342,13 @@ def _ar(reader, elem):
 
 @start("str:DataStructure", only=False)
 def _dsd_start(reader, elem):
+    """
+    Start a dap from the dap.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # Get any external reference created earlier, or instantiate a new object.
     # Children are not parsed at this point
     dsd = reader.maintainable(model.DataStructureDefinition, elem)
@@ -1108,6 +1360,13 @@ def _dsd_start(reader, elem):
 
 @end("str:DataStructure", only=False)
 def _dsd_end(reader, elem):
+    """
+    Write endizations to endizations.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     dsd = reader.peek(model.DataStructureDefinition)
     add_localizations(dsd.name, reader.pop_all("Name"))
     add_localizations(dsd.description, reader.pop_all("Description"))
@@ -1116,6 +1375,13 @@ def _dsd_end(reader, elem):
 
 @end("str:Dataflow")
 def _dfd(reader, elem):
+    """
+    Deserialize a reader elementtree.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     try:
         # <str:Dataflow> may be a reference, e.g. in <str:ConstraintAttachment>
         return Reference(elem)
@@ -1140,6 +1406,13 @@ def _dfd(reader, elem):
 
 @end("gen:Attributes")
 def _avs(reader, elem):
+    """
+    Recursively xml element.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     ad = reader.get_single("DataSet").structured_by.attributes
 
     result = {}
@@ -1152,6 +1425,13 @@ def _avs(reader, elem):
 
 @end("gen:ObsKey gen:GroupKey gen:SeriesKey")
 def _key(reader, elem):
+    """
+    Convert an xml element into a dict.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     cls = class_for_tag(elem.tag)
 
     kv = {e.attrib["id"]: e.attrib["value"] for e in elem.iterchildren()}
@@ -1163,6 +1443,13 @@ def _key(reader, elem):
 
 @end("gen:Series")
 def _series(reader, elem):
+    """
+    Parse series element
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     ds = reader.get_single("DataSet")
     sk = reader.pop_single(model.SeriesKey)
     sk.attrib.update(reader.pop_single("Attributes") or {})
@@ -1171,6 +1458,13 @@ def _series(reader, elem):
 
 @end(":Series")
 def _series_ss(reader, elem):
+    """
+    Create a series.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     ds = reader.get_single("DataSet")
     ds.add_obs(
         reader.pop_all(model.Observation),
@@ -1182,6 +1476,13 @@ def _series_ss(reader, elem):
 
 @end("gen:Group")
 def _group(reader, elem):
+    """
+    Group a single group of a group
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     ds = reader.get_single("DataSet")
 
     gk = reader.pop_single(model.GroupKey)
@@ -1193,6 +1494,13 @@ def _group(reader, elem):
 
 @end(":Group")
 def _group_ss(reader, elem):
+    """
+    Parse a group into a - like object.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     ds = reader.get_single("DataSet")
     attrib = copy(elem.attrib)
 
@@ -1219,6 +1527,13 @@ def _group_ss(reader, elem):
 
 @end("gen:Obs")
 def _obs(reader, elem):
+    """
+    Reads obs observation.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     dim_at_obs = reader.get_single(message.Message).observation_dimension
     dsd = reader.get_single("DataSet").structured_by
 
@@ -1244,6 +1559,13 @@ def _obs(reader, elem):
 
 @end(":Obs")
 def _obs_ss(reader, elem):
+    """
+    Returns a dict containing the observation attributes.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     # StructureSpecificData message—all information stored as XML
     # attributes of the <Observation>.
     attrib = copy(elem.attrib)
@@ -1266,6 +1588,13 @@ def _obs_ss(reader, elem):
 
 @start("mes:DataSet", only=False)
 def _ds_start(reader, elem):
+    """
+    Process the start of datastore.
+
+    Args:
+        reader: (todo): write your description
+        elem: (str): write your description
+    """
     # Create an instance of a DataSet subclass
     ds = reader.peek("DataSetClass")()
 
@@ -1283,6 +1612,13 @@ def _ds_start(reader, elem):
 
 @end("mes:DataSet", only=False)
 def _ds_end(reader, elem):
+    """
+    Process end of ds.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     ds = reader.pop_single("DataSet")
 
     # Collect observations not grouped by SeriesKey
@@ -1301,6 +1637,13 @@ def _ds_end(reader, elem):
 
 @end("str:ProvisionAgreement")
 def _pa(reader, elem):
+    """
+    Parse a reader.
+
+    Args:
+        reader: (todo): write your description
+        elem: (todo): write your description
+    """
     return reader.maintainable(
         model.ProvisionAgreement,
         elem,

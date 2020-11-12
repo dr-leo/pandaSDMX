@@ -3,7 +3,7 @@ dist: bionic
 jobs:
   include:
   # Linux jobs
-  - python: 3.7.3  # earliest
+  - python: 3.9  # latest
   - python: 3.7
   - python: 3.8
   # Non-linux jobs

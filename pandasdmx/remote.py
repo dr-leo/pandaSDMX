@@ -25,7 +25,9 @@ class Session(MaybeCachedSession):
     If requests_cache is installed, this class caches responses.
     """
 
-    def __init__(self, timeout=30.1, proxies=None, stream=False, **kwargs):
+    def __init__(self, timeout=30.1, proxies=None, stream=False,
+        auth=None, cert=None, verify=True,    
+        **kwargs):
 
         if MaybeCachedSession is not requests.Session:
             # Using requests_cache.CachedSession
@@ -51,9 +53,14 @@ class Session(MaybeCachedSession):
             super(Session, self).__init__()
 
         # Overwrite values from requests.Session.__init__()
+        # TODO: consider passing these values to __init__, but manage
+        # the ugly 'get_footer' stuff
         self.proxies = proxies
         self.timeout = timeout
         self.stream = stream
+        self.auth = auth
+        self.cert = cert
+        self.verify = verify
 
 
 class ResponseIO(BufferedIOBase):

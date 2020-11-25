@@ -109,6 +109,14 @@
     }
   },
   {
+    "id": "SPC",
+    "name": "Pacific Data Hub",
+    "documentation":"https://stats.pacificdata.org/?locale=en",
+    "url": "https://stats-nsi-stable.pacificdata.org/rest",
+    "supports": {"preview": false, "provisionagreement": false}
+  },
+
+  {
     "id": "UNSD",
     "name": "United Nations Statistics Division",
     "url": "http://data.un.org/WS/rest",

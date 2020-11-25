@@ -76,7 +76,7 @@ class Request:
             # resource_id
             func = partial(self.get, Resource[name])
         except KeyError:
-            raise AttributeError
+            raise AttributeError(name)
         else:
             # Modify the docstring to explain the argument fixed by the
             # convenience method

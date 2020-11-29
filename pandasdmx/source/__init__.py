@@ -1,7 +1,8 @@
+from pydantic import HttpUrl
 from enum import Enum
 from importlib import import_module, resources
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from pandasdmx.model import DataStructureDefinition
 from pandasdmx.util import BaseModel, Resource, validator
@@ -30,10 +31,13 @@ class Source(BaseModel):
     id: str
 
     #: Base URL for queries
-    url: str
+    url: Optional[HttpUrl]
 
     #: Human-readable name of the data source
     name: str
+    
+    #: documentation URL of the data source
+    documentation: Optional[HttpUrl] 
 
     headers: Dict[str, Any] = {}
 
@@ -124,11 +128,9 @@ class Source(BaseModel):
 
 
 class _NoSource(Source):
-    id = ""
-    url = ""
-    name = ""
-
-
+    def __init__(self):
+        super().__init__(
+            id="", url=None, name="", documentation=None)
 NoSource = _NoSource()
 
 

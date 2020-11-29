@@ -206,6 +206,15 @@ SDMX-ML —
 .. autoclass:: pandasdmx.source.sgr.Source
    :members:
 
+``SPC``: Pacific Data Hub
+----------------------------------------------------------------
+
+SDMX-ML —
+`Website <:"https://stats.pacificdata.org/?locale=en>`__
+This service also offers SDMXJSON datasets. This feature requires a specific 
+HTTP header as described on the website.
+Queries for a list of dataflows do not seem to be supported. Moreover, there seems to be a bug on SPC's side
+in series-key-only data messages as the reference to the DSDsis missing or buggy.
 
 ``UNSD``: United Nations Statistics Division
 --------------------------------------------

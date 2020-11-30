@@ -41,8 +41,13 @@ First, we instantiate a :class:`.pandasdmx.Request` object, using the string ID 
     import pandasdmx as sdmx
     ecb = sdmx.Request('ECB')
 
-The object ``ecb`` is now ready to make multiple data and metadata queries to the European Central Bank's web service.
+The object ``ecb`` is now ready to make multiple data and metadata queries to the European Central Bank's web service. 
 To send requests to multiple web services, we could instantiate multiple :class:`Requests <.Request>`.
+
+pandaSDMX knows the URLs to the online documentation pages of each data source. 
+The  convenience method :meth:`pandasdmx.api.Request.view_doc` opens it in the standard browser.
+
+.. versionadded:: 1.3.0
 
 Configure the HTTP connection
 -----------------------------

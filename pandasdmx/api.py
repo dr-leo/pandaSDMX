@@ -76,7 +76,7 @@ class Request:
             # resource_id
             func = partial(self.get, Resource[name])
         except KeyError:
-            raise AttributeError
+            raise AttributeError(name)
         else:
             # Modify the docstring to explain the argument fixed by the
             # convenience method
@@ -89,6 +89,19 @@ class Request:
         """Include convenience methods in dir()."""
         return super().__dir__() + [ep.name for ep in Resource]
 
+    def view_doc(self):
+        """
+        Open documentation website of the data source, if given, in a new browser tab.
+        Otherwise, raise RuntimeError.
+        """
+        url = self.source.documentation
+        if url:
+            import webbrowser as wb
+            wb.open_new_tab(url)
+        else:
+            raise RuntimeError(
+                f"No documentation URL given for data source {self.source.id}.")
+            
     def clear_cache(self):
         self.cache.clear()
 

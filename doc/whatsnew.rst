@@ -4,14 +4,14 @@ What's new?
 ===========
 
 
-v1.3.0 (2020-11-XX)
+v1.3.0 (2020-12-01)
 -------------------------------
 
 * Add new data source `Pacific Data Hub <https://stats.pacificdata.org/?locale=en>`_
 * add support for Python 3.9
-* validate URLs in source.Source properly
+* properly validate URLs in source.Source
 * sources.json: add URLs to documentation on data sources 
-* api.Request: add method `view_documentation` to view doc website
+* api.Request: add method `view_doc` to view doc website
   in a new browser tab
 * bug fix: propagate all relevant  kwargs to remote.Session
 

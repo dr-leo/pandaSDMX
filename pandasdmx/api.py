@@ -89,7 +89,7 @@ class Request:
         """Include convenience methods in dir()."""
         return super().__dir__() + [ep.name for ep in Resource]
 
-    def view_documentation(self):
+    def view_doc(self):
         """
         Open documentation website of the data source, if given, in a new browser tab.
         Otherwise, raise RuntimeError.

@@ -17,7 +17,6 @@ from pandasdmx import model
 from pandasdmx.util import BaseModel, DictLike, compare, summarize_dictlike
 
 
-
 log = logging.getLogger(__name__)
 
 
@@ -144,6 +143,7 @@ class Message(BaseModel):
         .. seealso:: :meth:`write`
         """
         from . import writer
+
         return writer.to_pandas(self, *args, **kwargs)
 
     def write(self, *args, **kwargs):
@@ -152,10 +152,11 @@ class Message(BaseModel):
         .. deprecated:: 1.0
             Use :meth:`to_pandas` instead.
         """
-        warn('Message.write() is deprecated. Use Message.to_pandas() instead.',
-            DeprecationWarning)
+        warn(
+            "Message.write() is deprecated. Use Message.to_pandas() instead.",
+            DeprecationWarning,
+        )
         return self.to_pandas(*args, **kwargs)
-
 
     def __str__(self):
         return repr(self)

@@ -4,7 +4,7 @@ from collections import OrderedDict
 import pytest
 
 import pandasdmx
-from pandasdmx import  Request
+from pandasdmx import Request
 
 from .data import BASE_PATH as test_data_path
 

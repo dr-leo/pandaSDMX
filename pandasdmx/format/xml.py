@@ -62,7 +62,7 @@ _CLS_TAG = [
     (model.GroupKey, qname("gen:GroupKey")),
     (model.Key, qname("gen:ObsKey")),
     (model.MeasureDescriptor, qname("str:MeasureList")),
-        (model.MeasureDimension, qname("str:MeasureDimension")),
+    (model.MeasureDimension, qname("str:MeasureDimension")),
     (model.SeriesKey, qname("gen:SeriesKey")),
     (model.StructureUsage, qname("com:StructureUsage")),
 ] + [

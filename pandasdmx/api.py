@@ -51,22 +51,21 @@ class Request:
     #: :class:`.Session` for queries sent from the instance.
     session = None
 
-    def __init__(self, source=None, log_level=None, 
-            session=None, **session_opts):
+    def __init__(self, source=None, log_level=None, session=None, **session_opts):
         """Constructor."""
         try:
             self.source = sources[source.upper()] if source else NoSource
         except KeyError:
-            raise ValueError('source must be None or one of: %s' %
-                             ' '.join(list_sources()))
+            raise ValueError(
+                "source must be None or one of: %s" % " ".join(list_sources())
+            )
 
         if session and session_opts:
-            raise TypeError('When `session` is given, `session_opts` must be  empty.')
-        self.session = (session or 
-            remote.Session(**session_opts))
+            raise TypeError("When `session` is given, `session_opts` must be  empty.")
+        self.session = session or remote.Session(**session_opts)
 
         if log_level:
-            logging.getLogger('pandasdmx').setLevel(log_level)
+            logging.getLogger("pandasdmx").setLevel(log_level)
 
     def __getattr__(self, name):
         """Convenience methods."""
@@ -97,11 +96,13 @@ class Request:
         url = self.source.documentation
         if url:
             import webbrowser as wb
+
             wb.open_new_tab(url)
         else:
             raise RuntimeError(
-                f"No documentation URL given for data source {self.source.id}.")
-            
+                f"No documentation URL given for data source {self.source.id}."
+            )
+
     def clear_cache(self):
         self.cache.clear()
 

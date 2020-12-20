@@ -25,9 +25,16 @@ class Session(MaybeCachedSession):
     If requests_cache is installed, this class caches responses.
     """
 
-    def __init__(self, timeout=30.1, proxies=None, stream=False,
-        auth=None, cert=None, verify=True,    
-        **kwargs):
+    def __init__(
+        self,
+        timeout=30.1,
+        proxies=None,
+        stream=False,
+        auth=None,
+        cert=None,
+        verify=True,
+        **kwargs,
+    ):
 
         if MaybeCachedSession is not requests.Session:
             # Using requests_cache.CachedSession
@@ -92,17 +99,16 @@ class ResponseIO(BufferedIOBase):
             tee = open(tee, mode="w+b")
         # Handle the special case of a fsspec.OpenFile
         if isinstance(tee, list):
-            assert len(tee) == 1, ValueError(f'Only 1 file allowed, {len(tee)} given.')  
+            assert len(tee) == 1, ValueError(f"Only 1 file allowed, {len(tee)} given.")
             tee = tee[0]
         # Now tee must be an open file, including when passed as such
         #   use tee as instance cache
         self.tee = tee
-        
+
         # write content, but do not close the file.
         tee.write(response.content)
         tee.flush()
         tee.seek(0)
-            
 
     def readable(self):
         return True

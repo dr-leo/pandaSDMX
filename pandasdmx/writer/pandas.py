@@ -436,7 +436,7 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
             prefix_mapping = pd.offsets.prefix_mapping
         except AttributeError:
             # pandas version >= 1.1.0
-            # See also issue #35482 in the pandas-dev repo 
+            # See also issue #35482 in the pandas-dev repo
             prefix_mapping = pd._libs.tslibs.offsets.prefix_mapping
         freq = param["freq"]
         if isinstance(freq, str) and freq not in prefix_mapping:

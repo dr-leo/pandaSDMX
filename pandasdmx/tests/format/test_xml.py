@@ -1,4 +1,4 @@
-from pandasdmx import  model
+from pandasdmx import model
 from pandasdmx.format import xml
 
 

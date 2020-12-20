@@ -8,8 +8,8 @@ import pandasdmx
 
 # -- Project information -----------------------------------------------------
 
-project = 'pandaSDMX'
-copyright = '2014–2020 pandaSDMX developers'
+project = "pandaSDMX"
+copyright = "2014–2020 pandaSDMX developers"
 # The major project version, used as the replacement for |version|.
 version = pandasdmx.__version__[:3]
 # The full project version, used as the replacement for |release|.
@@ -22,32 +22,31 @@ release = pandasdmx.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "IPython.sphinxext.ipython_directive",
 ]
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 
 # -- Options for sphinx.ext.intersphinx --------------------------------------
 
 intersphinx_mapping = {
-    'np': ('https://numpy.org/doc/stable/', None),
-    'pd': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'py': ('https://docs.python.org/3/', None),
-    'requests': ('https://requests.readthedocs.io/en/master/', None),
-    'requests-cache': ('https://requests-cache.readthedocs.io/en/latest/',
-                       None),
+    "np": ("https://numpy.org/doc/stable/", None),
+    "pd": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "py": ("https://docs.python.org/3/", None),
+    "requests": ("https://requests.readthedocs.io/en/master/", None),
+    "requests-cache": ("https://requests-cache.readthedocs.io/en/latest/", None),
 }
 
 
@@ -61,4 +60,4 @@ todo_include_todos = True
 
 # Specify if the embedded Sphinx shell should import Matplotlib and set the
 # backend.
-ipython_mplbackend = ''
+ipython_mplbackend = ""

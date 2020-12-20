@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 import pandasdmx
-from pandasdmx import  Request
+from pandasdmx import Request
 from pandasdmx.model import GenericDataSet
 from pandasdmx.util import DictLike
 
@@ -34,8 +34,9 @@ def test_doc_example():
         "une_rt_a", key={"GEO": "EL+ES+IE"}, params={"startPeriod": "2007"}
     )
 
-    data = pandasdmx.to_pandas(resp, datetime=dict(dim='TIME_PERIOD', 
-        freq='FREQ')).xs("Y15-74", axis=1, level="AGE", drop_level=False)
+    data = pandasdmx.to_pandas(resp, datetime=dict(dim="TIME_PERIOD", freq="FREQ")).xs(
+        "Y15-74", axis=1, level="AGE", drop_level=False
+    )
 
     data.loc[:, ("Y15-74", "PC_ACT", "T")]
 

@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.testing as pdt
 
 import pandasdmx
-from pandasdmx import  message, model
+from pandasdmx import message, model
 
 from . import MessageTest
 from .data import specimen

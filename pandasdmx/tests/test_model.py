@@ -4,7 +4,7 @@ import pydantic
 import pytest
 from pytest import raises
 
-from pandasdmx import  model
+from pandasdmx import model
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AttributeDescriptor,

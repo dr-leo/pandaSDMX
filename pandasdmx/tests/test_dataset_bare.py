@@ -1,5 +1,5 @@
 import pandasdmx
-from pandasdmx import  model
+from pandasdmx import model
 from pandasdmx.message import DataMessage, Header
 from pandasdmx.model import AttributeValue, DataAttribute, DataSet, Key, Observation
 

@@ -35,9 +35,9 @@ class Source(BaseModel):
 
     #: Human-readable name of the data source
     name: str
-    
+
     #: documentation URL of the data source
-    documentation: Optional[HttpUrl] 
+    documentation: Optional[HttpUrl]
 
     headers: Dict[str, Any] = {}
 
@@ -129,8 +129,9 @@ class Source(BaseModel):
 
 class _NoSource(Source):
     def __init__(self):
-        super().__init__(
-            id="", url=None, name="", documentation=None)
+        super().__init__(id="", url=None, name="", documentation=None)
+
+
 NoSource = _NoSource()
 
 

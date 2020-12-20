@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import pandasdmx
-from pandasdmx import  message, model
+from pandasdmx import message, model
 from pandasdmx.model import Key
 
 from . import MessageTest

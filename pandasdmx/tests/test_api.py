@@ -63,6 +63,7 @@ def test_request():
         "session",
         "source",
         "timeout",
+        "view_doc",
     }
     expected |= set(ep.name for ep in pandasdmx.Resource)
     assert set(filter(lambda s: not s.startswith("_"), dir(r))) == expected

@@ -108,25 +108,27 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
         For “structure-specific” `format`=``XML`` messages only.
     """
     reader = None
-    
+
     # pop any dsd from kwargs as these are passed to any FS backend
     kwargs = kwargs.copy()
-    dsd = kwargs.pop('dsd', None)
+    dsd = kwargs.pop("dsd", None)
 
     try:
         # Do we have a path/filename rather than file?
         path = Path(filename_or_obj)
-        
+
         # Open the file
         obj = open(path, mode="rb", **kwargs)
     except TypeError:
         # Not path-like → opened file
         path = None
         obj = filename_or_obj
-        # fsspec.open_files returns a list. So get its only item; 
+        # fsspec.open_files returns a list. So get its only item;
         # multiple files are not allowed.
         if isinstance(obj, list):
-            assert len(obj) == 1, ValueError(f'Only one file allowed. {len(obj)} passed.') 
+            assert len(obj) == 1, ValueError(
+                f"Only one file allowed. {len(obj)} passed."
+            )
             obj = obj[0]
 
     if path:
@@ -157,9 +159,8 @@ def read_sdmx(filename_or_obj, format=None, **kwargs):
             f"cannot infer SDMX message format from path {repr(path)}, "
             f"format={format}, or content '{first_line[:5].decode()}..'"
         )
-        
+
     if dsd:
         return reader().read_message(obj, dsd=dsd)
     else:
         return reader().read_message(obj)
-    

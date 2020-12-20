@@ -1,7 +1,7 @@
 import pytest
 
 import pandasdmx
-from pandasdmx import  model
+from pandasdmx import model
 
 from . import MessageTest
 from .data import specimen

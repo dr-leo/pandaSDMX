@@ -57,17 +57,20 @@ def add_localizations(target: model.InternationalString, values: list) -> None:
 def matching_class(cls):
     def func(item):
         return isclass(item) and issubclass(item, cls)
+
     return func
+
 
 def matching_class0(cls):
     def func(item):
         return isclass(item[0]) and issubclass(item[0], cls)
+
     return func
 
 
 def setdefault_attrib(target, elem, *names):
     # for performance:
-    if hasattr(elem, 'attrib'):
+    if hasattr(elem, "attrib"):
         a = elem.attrib
         for name in names:
             if name in a:
@@ -239,11 +242,11 @@ class Reader(BaseReader):
                     log.warning(f"Parsing of  {t} not implemented.")
                     continue
 
-                if func: # else: do nothing
+                if func:  # else: do nothing
                     # Parse the element
-                    result =    func(self, element)
+                    result = func(self, element)
                     self.push(result)
-                    
+
                     if event == "end":
                         element.clear()  # Free memory
 
@@ -353,19 +356,14 @@ class Reader(BaseReader):
         else:
             cond = matching_class(cls_or_name)
             return list(
-                chain(
-                    *[
-                        self.stack.pop(k) if cond(k) else []
-                        for k in list(self.stack) 
-                    ]
-                )
+                chain(*[self.stack.pop(k) if cond(k) else [] for k in list(self.stack)])
             )
 
     def pop_single(self, cls_or_name):
         """Pop a single object from the stack for `cls_or_name` and return."""
         try:
             return self.stack[cls_or_name].pop()
-        except (KeyError, IndexError): 
+        except (KeyError, IndexError):
             return None
 
     def peek(self, cls_or_name):
@@ -472,7 +470,8 @@ class Reader(BaseReader):
         existing = self.get_single(cls, obj.id, strict=True)
 
         if existing and (
-            existing.compare(obj, strict=True) or existing.urn == pandasdmx.urn.make(obj)
+            existing.compare(obj, strict=True)
+            or existing.urn == pandasdmx.urn.make(obj)
         ):
             if elem is not None:
                 # Previously an external reference, now concrete
@@ -519,11 +518,11 @@ def _message(reader, elem):
     ):
         log.warning(f"sdmxml.Reader got no dsd=… argument for {QName(elem).localname}")
         ss_without_dsd = True
-    # The following seems to only confuse users. 
+    # The following seems to only confuse users.
     # Thus it is commented out post v1.1.0
     # elif "StructureSpecific" not in elem.tag and reader.get_single(
-        # model.DataStructureDefinition
-        # log.warning("Ambiguous: dsd=… argument for non–structure-specific message")
+    # model.DataStructureDefinition
+    # log.warning("Ambiguous: dsd=… argument for non–structure-specific message")
 
     # Store values for other methods
     reader.push("SS without DSD", ss_without_dsd)
@@ -681,7 +680,7 @@ def _structures(reader, elem):
 
 
 @end(
-    "mes:DataSetAction mes:DataSetID mes:Extracted mes:ID mes:Prepared " 
+    "mes:DataSetAction mes:DataSetID mes:Extracted mes:ID mes:Prepared "
     "mes:ReportingBegin mes:ReportingEnd mes:Test mes:Timezone "
     "com:AnnotationType com:AnnotationTitle com:AnnotationURL com:None com:URN "
     "com:Value str:Email str:Telephone str:URI"

@@ -318,7 +318,9 @@ def test_write_constraint():
     #    'ECB_EXR1' for the same data structure.
     id = "ECB_EXR1"
     dsd = (
-        pandasdmx.Request(msg.structure.maintainer.id).get("datastructure", id).structure[id]
+        pandasdmx.Request(msg.structure.maintainer.id)
+        .get("datastructure", id)
+        .structure[id]
     )
 
     # Create a ContentConstraint

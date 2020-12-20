@@ -30,7 +30,7 @@ from pandasdmx.util import DictLike
 
 #: Default return type for :func:`write_dataset` and similar methods. Either
 #: 'compat' or 'rows'. See the ref:`HOWTO <howto-rtype>`.
-DEFAULT_RTYPE = 'compat'
+DEFAULT_RTYPE = "compat"
 
 
 # Class → common write_*() methods
@@ -60,7 +60,7 @@ def write(obj, *args, **kwargs):
     behaviour, including accepted *args* and *kwargs*.
     """
     cls = obj.__class__
-    function = 'write_' + _ALIAS.get(cls, cls).__name__.lower()
+    function = "write_" + _ALIAS.get(cls, cls).__name__.lower()
     return globals()[function](obj, *args, **kwargs)
 
 
@@ -102,8 +102,10 @@ def write_dict(obj, *args, **kwargs):
     result_type = set(type(v) for v in result.values())
 
     if result_type <= {pd.Series, pd.DataFrame}:
-        if (len(set(map(lambda s: s.index.name, result.values()))) == 1 and
-                len(result) > 1):
+        if (
+            len(set(map(lambda s: s.index.name, result.values()))) == 1
+            and len(result) > 1
+        ):
             # Can safely concatenate these to a pd.MultiIndex'd Series.
             return pd.concat(result)
         else:
@@ -149,13 +151,13 @@ def write_datamessage(obj, *args, rtype=None, **kwargs):
         if `obj` has more than one data set.
     """
     # Pass the message's DSD to assist datetime handling
-    kwargs.setdefault('dsd', obj.dataflow.structure)
+    kwargs.setdefault("dsd", obj.dataflow.structure)
 
     # Pass the return type and associated information
-    kwargs['_rtype'] = rtype or DEFAULT_RTYPE
-    if kwargs['_rtype'] == 'compat':
-        kwargs['_message_class'] = obj.__class__
-        kwargs['_observation_dimension'] = obj.observation_dimension
+    kwargs["_rtype"] = rtype or DEFAULT_RTYPE
+    if kwargs["_rtype"] == "compat":
+        kwargs["_message_class"] = obj.__class__
+        kwargs["_observation_dimension"] = obj.observation_dimension
 
     if len(obj.data) == 1:
         return write(obj.data[0], *args, **kwargs)
@@ -181,13 +183,13 @@ def write_structuremessage(obj, include=None, **kwargs):
         Keys are StructureMessage attributes; values are pandas objects.
     """
     all_contents = {
-        'category_scheme',
-        'codelist',
-        'concept_scheme',
-        'constraint',
-        'dataflow',
-        'structure',
-        'organisation_scheme',
+        "category_scheme",
+        "codelist",
+        "concept_scheme",
+        "constraint",
+        "dataflow",
+        "structure",
+        "organisation_scheme",
     }
 
     # Handle arguments
@@ -211,6 +213,7 @@ def write_structuremessage(obj, include=None, **kwargs):
 
 # Functions for model classes
 
+
 def write_component(obj):
     """Convert :class:`.Component`.
 
@@ -232,13 +235,15 @@ def write_cuberegion(obj, **kwargs):
     """Convert :class:`.CubeRegion`."""
     result = DictLike()
     for dim, memberselection in obj.member.items():
-        result[dim] = pd.Series([mv.value for mv in memberselection.values],
-                                name=dim.id)
+        result[dim] = pd.Series(
+            [mv.value for mv in memberselection.values], name=dim.id
+        )
     return result
 
 
-def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
-                  datetime=False, **kwargs):
+def write_dataset(
+    obj, attributes="", dtype=np.float64, constraint=None, datetime=False, **kwargs
+):
     """Convert :class:`~.DataSet`.
 
     See the :ref:`walkthrough <datetime>` for examples of using the `datetime`
@@ -302,25 +307,24 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
     """
     # If called directly on a DataSet (rather than a parent DataMessage),
     # cannot determine the "dimension at observation level"
-    rtype = kwargs.setdefault('_rtype', 'rows')
+    rtype = kwargs.setdefault("_rtype", "rows")
 
     # Validate attributes argument
-    attributes = attributes or ''
+    attributes = attributes or ""
     try:
         attributes = attributes.lower()
     except AttributeError:
         raise TypeError("'attributes' argument must be str")
 
-    if rtype == 'compat' and \
-            kwargs['_observation_dimension'] is not AllDimensions:
+    if rtype == "compat" and kwargs["_observation_dimension"] is not AllDimensions:
         # Cannot return attributes in this case
-        attributes = ''
-    elif set(attributes) - {'o', 's', 'g', 'd'}:
+        attributes = ""
+    elif set(attributes) - {"o", "s", "g", "d"}:
         raise ValueError(f"attributes must be in 'osgd'; got {attributes}")
 
     # Iterate on observations
     result = {}
-    for observation in getattr(obj, 'obs', obj):
+    for observation in getattr(obj, "obs", obj):
         # Check that the Observation is within the constraint, if any
         key = observation.key.order()
         if constraint and key not in constraint:
@@ -329,20 +333,20 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
         # Add value and attributes
         row = {}
         if dtype:
-            row['value'] = observation.value
+            row["value"] = observation.value
         if attributes:
             row.update(observation.attrib)
 
         result[tuple(map(str, key.get_values()))] = row
 
-    result = pd.DataFrame.from_dict(result, orient='index')
+    result = pd.DataFrame.from_dict(result, orient="index")
 
     if len(result):
         result.index.names = observation.key.order().values.keys()
         if dtype:
-            result['value'] = result['value'].astype(dtype)
+            result["value"] = result["value"].astype(dtype)
             if not attributes:
-                result = result['value']
+                result = result["value"]
 
     # Reshape for compatibility with v0.9
     result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)
@@ -352,13 +356,13 @@ def write_dataset(obj, attributes='', dtype=np.float64, constraint=None,
 
 def _dataset_compat(df, datetime, kwargs):
     """Helper for :meth:`.write_dataset` 0.9 compatibility."""
-    rtype = kwargs.pop('_rtype')
-    if rtype != 'compat':
+    rtype = kwargs.pop("_rtype")
+    if rtype != "compat":
         return df, datetime, kwargs  # Do nothing
 
     # Remove compatibility arguments from kwargs
-    kwargs.pop('_message_class')
-    obs_dim = kwargs.pop('_observation_dimension')
+    kwargs.pop("_message_class")
+    obs_dim = kwargs.pop("_observation_dimension")
 
     if isinstance(obs_dim, list) and len(obs_dim) == 1:
         # Unwrap a length-1 list
@@ -375,9 +379,11 @@ def _dataset_compat(df, datetime, kwargs):
             datetime = obs_dim
         elif isinstance(datetime, dict):
             # Dict argument; ensure the 'dim' key is the same as obs_dim
-            if datetime.setdefault('dim', obs_dim) != obs_dim:
-                msg = (f"datetime={datetime} conflicts with rtype='compat' and"
-                       f" {obs_dim} at observation level")
+            if datetime.setdefault("dim", obs_dim) != obs_dim:
+                msg = (
+                    f"datetime={datetime} conflicts with rtype='compat' and"
+                    f" {obs_dim} at observation level"
+                )
                 raise ValueError(msg)
         else:
             assert datetime == obs_dim, (datetime, obs_dim)
@@ -411,9 +417,9 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
     # Check argument values
     param = dict(dim=None, axis=0, freq=False)
     if isinstance(arg, str):
-        param['dim'] = arg
+        param["dim"] = arg
     elif isinstance(arg, DimensionComponent):
-        param['dim'] = arg.id
+        param["dim"] = arg.id
     elif isinstance(arg, dict):
         extra_keys = set(arg.keys()) - set(param.keys())
         if extra_keys:
@@ -442,24 +448,24 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
         else:
             return []
 
-    if not param['dim']:
+    if not param["dim"]:
         # Determine time dimension
         dims = _get_dims()
         for dim in dims:
             if isinstance(dim, TimeDimension):
-                param['dim'] = dim
+                param["dim"] = dim
                 break
-        if not param['dim']:
-            raise ValueError(f'no TimeDimension in {dims}')
+        if not param["dim"]:
+            raise ValueError(f"no TimeDimension in {dims}")
 
     # Unstack all but the time dimension and convert
-    other_dims = list(filter(lambda d: d != param['dim'], df.index.names))
+    other_dims = list(filter(lambda d: d != param["dim"], df.index.names))
     df = df.unstack(other_dims)
     df.index = pd.to_datetime(df.index)
 
-    if param['freq']:
+    if param["freq"]:
         # Determine frequency string, Dimension, or Attribute
-        freq = param['freq']
+        freq = param["freq"]
         if isinstance(freq, str) and freq not in pd.offsets.prefix_mapping:
             # ID of a Dimension or Attribute
             for component in chain(_get_dims(), _get_attrs()):
@@ -482,8 +488,9 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
 
             if len(values) > 1:
                 values = sorted(values)
-                raise ValueError('cannot convert to PeriodIndex with '
-                                 f'non-unique freq={values}')
+                raise ValueError(
+                    "cannot convert to PeriodIndex with " f"non-unique freq={values}"
+                )
 
             # Store the unique value
             freq = values.pop()
@@ -495,7 +502,7 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
 
         df.index = df.index.to_period(freq=freq)
 
-    if param['axis'] in {1, 'columns'}:
+    if param["axis"] in {1, "columns"}:
         # Change axis
         df = df.transpose()
 
@@ -532,12 +539,12 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
             seen.add(item)
 
         # Localized name
-        row = {'name': item.name.localized_default(locale)}
+        row = {"name": item.name.localized_default(locale)}
         try:
             # Parent ID
-            row['parent'] = item.parent.id
+            row["parent"] = item.parent.id
         except AttributeError:
-            row['parent'] = ''
+            row["parent"] = ""
 
         items[item.id] = row
 
@@ -549,12 +556,13 @@ def write_itemscheme(obj, locale=DEFAULT_LOCALE):
         add_item(item)
 
     # Convert to DataFrame
-    result = pd.DataFrame.from_dict(items, orient='index', dtype=object) \
-               .rename_axis(obj.id, axis='index')
+    result = pd.DataFrame.from_dict(items, orient="index", dtype=object).rename_axis(
+        obj.id, axis="index"
+    )
 
-    if len(result) and not result['parent'].str.len().any():
+    if len(result) and not result["parent"].str.len().any():
         # 'parent' column is empty; convert to pd.Series and rename
-        result = result['name'].rename(obj.name.localized_default(locale))
+        result = result["name"].rename(obj.name.localized_default(locale))
 
     return result
 

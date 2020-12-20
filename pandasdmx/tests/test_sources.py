@@ -12,7 +12,7 @@ import pytest
 import requests_mock
 
 import pandasdmx
-from pandasdmx import  Resource
+from pandasdmx import Resource
 from pandasdmx.api import Request
 from pandasdmx.exceptions import HTTPError
 from pandasdmx.source import DataContentType, sources
@@ -344,8 +344,6 @@ class TestOECD(DataSourceTest):
 
 class TestSGR(DataSourceTest):
     source_id = "SGR"
-
-
 
 
 class TestUNSD(DataSourceTest):

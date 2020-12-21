@@ -16,13 +16,12 @@ jobs:
     strategy:
       matrix:
         include:      
-          - python-version: ['3.7']
+          - python-version: '3.7'
             os: macos-latest
           - python-version: '3.8'
             os: ubuntu-latest            
           - python-version: '3.9'
             os: windows-latest            
-
 
     steps:
     - uses: actions/checkout@v2

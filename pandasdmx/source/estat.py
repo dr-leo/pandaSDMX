@@ -2,6 +2,7 @@ from tempfile import NamedTemporaryFile
 from time import sleep
 from urllib.parse import urlparse
 from zipfile import ZipFile
+from typing import Tuple
 
 import requests
 
@@ -23,25 +24,24 @@ class Source(BaseSource):
     """
 
     _id = "ESTAT"
+    get_footer_url : Tuple[int, int] = (30, 3)
 
     def modify_request_args(self, kwargs):
         super().modify_request_args(kwargs)
+        # Configure instance for requesting any prepared zip file.
+        # Tuple of the form (`seconds`, `attempts`), controlling the interval
+        # between attempts to retrieve the data from the URL, and the
+        # maximum number of attempts to make.
+        # used by finish_message method below.
+        self.get_footer_url = kwargs.pop("get_footer_url", (30, 3))
 
-        kwargs.pop("get_footer_url", None)
-
-    def finish_message(self, message, request, get_footer_url=(30, 3), **kwargs):
+    def finish_message(self, message, request, **kwargs):
         """Handle the initial response.
 
         This hook identifies the URL in the footer of the initial response,
         makes a second request (polling as indicated by *get_footer_url*), and
         returns a new DataMessage with the parsed content.
-
-        Parameters
-        ----------
-        get_footer_url : (int, int)
-            Tuple of the form (`seconds`, `attempts`), controlling the interval
-            between attempts to retrieve the data from the URL, and the
-            maximum number of attempts to make.
+            
         """
         # Check the message footer for a text element that is a valid URL
         url = None
@@ -54,7 +54,7 @@ class Source(BaseSource):
             return message
 
         # Unpack arguments
-        wait_seconds, attempts = get_footer_url
+        wait_seconds, attempts = self.get_footer_url
 
         # Create a temporary file to store the ZIP response
         ntf = NamedTemporaryFile(prefix="pandasdmx-")
@@ -83,20 +83,17 @@ class Source(BaseSource):
         if response.headers["content-type"] != "application/octet-stream":
             return response, content
 
-        # Read all the input, forcing it to be copied to
-        # content.tee_filename
-        while True:
-            if len(content.read()) == 0:
-                break
-
         # Open the zip archive
-        with ZipFile(content.tee, mode="r") as zf:
-            # The archive should contain only one file
-            infolist = zf.infolist()
-            assert len(infolist) == 1
+        zf = ZipFile(content.tee, mode="r") 
+        # The archive should contain only one file
+        infolist = zf.infolist()
+        assert len(infolist) == 1
 
-            # Set the new content type
-            response.headers["content-type"] = "application/xml"
+        # Set the new content type
+        response.headers["content-type"] = "application/xml"
 
-            # Use the unzipped archive member as the response content
-            return response, zf.open(infolist[0])
+        # Use the unzipped archive member as the response content
+        ntf = NamedTemporaryFile(prefix="pandasdmx-")
+        ntf.write(zf.open(infolist[0]).read())
+        ntf.seek(0)
+        return response, ntf 

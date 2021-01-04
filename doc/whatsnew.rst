@@ -4,7 +4,7 @@ What's new?
 ===========
 
 
-v1.3.0 (2020-12-01)
+v1.3.0 (2021-01-03)
 -------------------------------
 
 * Add new data source `Pacific Data Hub <https://stats.pacificdata.org/?locale=en>`_
@@ -14,6 +14,8 @@ v1.3.0 (2020-12-01)
 * api.Request: add method `view_doc` to view doc website
   in a new browser tab
 * bug fix: propagate all relevant  kwargs to remote.Session
+* Bug fix in source.ESTAT: honor get_footer_url arg for interval and frequency to download zip file
+* CI: move from travis-ci to GitHub Actions
 
 v1.2.0 (2020-11-XX)
 -------------------------------

@@ -21,7 +21,7 @@ SDMX-JSON
 -------------
 
 The SDMX-JSON reader could be extended to support the new
-JSON-based structure message representation. Currently, only data messagesare supported.
+JSON-based structure message representation. Currently, only data messages are supported.
 
 
 Optimize parsing
@@ -48,15 +48,12 @@ SDMX features & miscellaneous
 
 - pandasdmx.api.Request._resources only contains a small subset of: https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1 (see "NOT SUPPORTED OPERATIONS"); provide the rest.
 
-- Serialize :class:`Message` objects SDMX-CSV (simplest), -JSON, or -ML (most complex).
+- re-add support for cascading content constraints. This features  was present in v0.9, but dropped in v1.0 as no consensus could be reached.
 
 - Use the `XML Schema <https://en.wikipedia.org/wiki/XML_Schema_(W3C)>`_ definitions of SDMX-ML to validate messages and snippets.
 
 - SOAP APIs. Currently only REST APIs are supported.
   This would allow access to, e.g., a broader set of :ref:`IMF` data.
-
-- Support SDMX-ML 2.0.
-  Several data providers still exist which only return SDMX-ML 2.0 messages.
 
 - Performance.
   Parsing some messages can be slow.

@@ -35,7 +35,7 @@
     "id": "ILO",
     "name": "International Labor Organization",
     "documentation": "https://www.ilo.org/ilostat/",
-    "url": "http://www.ilo.org/ilostat/sdmx/ws/rest",
+    "url": "https://www.ilo.org/sdmx/rest",
     "headers": {
         "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
     },

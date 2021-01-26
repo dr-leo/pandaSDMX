@@ -4,6 +4,14 @@ What's new?
 ===========
 
 
+
+v1.3.1 (2021-01-03)
+-------------------------------
+
+* Update data source config for ILO enabling access to its new API. 
+  Remove obsolete adapter. Please report any issues.
+
+
 v1.3.0 (2021-01-03)
 -------------------------------
 

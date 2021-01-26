@@ -39,5 +39,5 @@ test = ["pytest >= 5",
     Homepage = "https://pandasdmx.readthedocs.io/en/latest/"
 
 [tool.flit.sdist]
-include = ["LICENSE"]
+include = ["LICENSE", 'README.rst']
 exclude = ['pandasdmx/tests']

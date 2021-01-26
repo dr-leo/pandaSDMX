@@ -261,16 +261,6 @@ class TestILO(DataSourceTest):
 class TestINEGI(DataSourceTest):
     source_id = "INEGI"
 
-    @pytest.mark.network
-    def test_endpoints(self, req, endpoint, args):
-        # SSL certificate verification sometimes fails for this server; works
-        # in Google Chrome
-        req.session.verify = False
-
-        # Otherwise identical
-        super().test_endpoints(req, endpoint, args)
-
-
 class TestINSEE(DataSourceTest):
     source_id = "INSEE"
 

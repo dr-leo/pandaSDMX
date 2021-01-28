@@ -238,22 +238,6 @@ class TestIMF(DataSourceTest):
     source_id = "IMF"
 
 
-class TestILO(DataSourceTest):
-    source_id = "ILO"
-
-    xfail = {
-        # 413 Client Error: Request Entity Too Large
-        "codelist": HTTPError
-    }
-
-    @pytest.mark.network
-    def test_codelist(self, req):
-        req.get(
-            "codelist",
-            "CL_ECO",
-            tofile=self._cache_path.with_suffix("." + "codelist-CL_ECO"),
-        )
-
 
 @pytest.mark.xfail(
     reason="500 Server Error returned for all requests.", raises=HTTPError

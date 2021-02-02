@@ -84,6 +84,7 @@
       "structure-specific data": true
     }
   },
+  
   {
     "id": "OECD",
     "data_content_type": "JSON",
@@ -91,6 +92,13 @@
     "documentation": "http://stats.oecd.org/SDMX-JSON/",
     "name": "Organisation for Economic Co-operation and Development"
   },
+  {
+    "id": "NBB",
+    "data_content_type": "JSON",
+    "documentation": "https://www.nbb.be/doc/dq/migratie_belgostat/en/nbb_stat-technical-manual.pdf",
+    "url": "https://stat.nbb.be/sdmx-json",
+    "name": "National Bank of Belgium"
+  },  
   {
     "id": "NB",
     "name": "Norges Bank (NO)",
@@ -152,5 +160,24 @@
       "provisionagreement": false,
       "structure-specific data": true
     }
+  },
+  {
+  "id": "LSD",
+    "documentation": "https://osp.stat.gov.lt/rdb-rest",
+    "url": "https://osp-rs.stat.gov.lt/rest_xml",
+    "name": "Statistics Lithuania",
+    "supports": {
+      "categoryscheme": false,
+      "codelist": false,
+      "conceptscheme": false,
+      "provisionagreement": false
+      }
+      },
+       {
+       "id": "STAT_EE",
+    "data_content_type": "JSON",
+    "documentation": "https://www.stat.ee/sites/default/files/2020-09/API-instructions.pdf",
+    "url": "http://andmebaas.stat.ee/sdmx-json",
+    "name": "Statistics Estonia"
   }
 ]

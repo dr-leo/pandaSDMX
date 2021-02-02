@@ -5,12 +5,16 @@ What's new?
 
 
 
-v1.3.1 (2021-01-03)
+v1.4.0 (2021-02-03)
 -------------------------------
 
 * Update data source config for ILO enabling access to its new API. 
   Remove obsolete adapter. Please report any issues.
-
+* Add three new data sources (all of which support the sdmxjson format, 
+  hence only data requests are allowed:
+  - National Bank of Belgium (NBB)
+  - Statistics Lithuania (LSB)
+  - Statistics Estonia
 
 v1.3.0 (2021-01-03)
 -------------------------------

@@ -13,7 +13,7 @@
             "headers": {}
         }
     },
-    "url": "http://sdw-wsrest.ecb.int/service",
+    "url": "https://sdw-wsrest.ecb.europa.eu/service",
     "name": "European Central Bank",
     "documentation": "http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html",
     "supports": {"preview": true}

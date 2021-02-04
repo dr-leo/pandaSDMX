@@ -5,10 +5,11 @@ What's new?
 
 
 
-v1.4.0 (2021-02-03)
+v1.4.0 (2021-02-04)
 -------------------------------
 
-* Update data source config for ILO enabling access to its new API. 
+* update end point link for ECB data source
+* update data source config for ILO enabling access to its new API. 
   Remove obsolete adapter. Please report any issues.
 * Add three new data sources (all of which support the sdmxjson format, 
   hence only data requests are allowed:

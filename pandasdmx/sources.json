@@ -2,9 +2,9 @@
   {
     "id": "ABS",
     "data_content_type": "JSON",
-    "url": "http://stat.data.abs.gov.au/sdmx-json",
+    "url": "https://stat.data.abs.gov.au/sdmx-json",
     "name": "Australian Bureau of Statistics",
-    "documentation": "http://www.abs.gov.au/"
+    "documentation": "https://www.abs.gov.au/"
   },
   {
     "id": "ECB",
@@ -15,13 +15,13 @@
     },
     "url": "https://sdw-wsrest.ecb.europa.eu/service",
     "name": "European Central Bank",
-    "documentation": "http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html",
+    "documentation": "https://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html",
     "supports": {"preview": true}
   },
   {
     "id": "ESTAT",
-    "documentation": "http://data.un.org/Host.aspx?Content=API",
-    "url": "http://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+    "documentation": "https://data.un.org/Host.aspx?Content=API",
+    "url": "https://ec.europa.eu/eurostat/SDMX/diss-web/rest",
     "name": "Eurostat",
     "supports": {
       "agencyscheme": false,
@@ -53,7 +53,7 @@
   },
   {
     "id": "INEGI",
-    "url": "http://sdmx.snieg.mx/service/rest",
+    "url": "https://sdmx.snieg.mx/service/rest",
     "name": "Instituto Nacional de Estadística y Geografía (MX)",
     "documentation": "https://sdmx.snieg.mx/infrastructure",
     "supports": {
@@ -65,7 +65,7 @@
   {
     "id": "INSEE",
     "name": "Institut national de la statistique et des études économiques (FR)",
-    "documentation": "http://www.bdm.insee.fr/bdm2/statique?page=sdmx",
+    "documentation": "https://www.bdm.insee.fr/bdm2/statique?page=sdmx",
     "url": "https://www.bdm.insee.fr/series/sdmx",
     "headers": {
         "data": {
@@ -77,19 +77,18 @@
   {
     "id": "ISTAT",
     "name": "Instituto Nationale di Statistica (IT)",
-    "documentation": "http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1", 
-    "url": "http://sdmx.istat.it/SDMXWS/rest",
+    "documentation": "https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1", 
+    "url": "https://sdmx.istat.it/SDMXWS/rest",
     "supports": {
       "provisionagreement": false,
       "structure-specific data": true
     }
   },
-  
   {
     "id": "OECD",
     "data_content_type": "JSON",
     "url": "https://stats.oecd.org/SDMX-JSON",
-    "documentation": "http://stats.oecd.org/SDMX-JSON/",
+    "documentation": "https://stats.oecd.org/SDMX-JSON/",
     "name": "Organisation for Economic Co-operation and Development"
   },
   {
@@ -138,14 +137,14 @@
     "id": "UNSD",
     "name": "United Nations Statistics Division",
     "documentation": "https://unstats.un.org/home/",
-    "url": "http://data.un.org/WS/rest",
+    "url": "https://data.un.org/WS/rest",
     "supports": {"preview": true, "provisionagreement": false}
   },
   {
     "id": "WB",
     "name": "World Bank World Integrated Trade Solution",
     "documentation": "http://wits.worldbank.org",
-    "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
+    "url": "https://wits.worldbank.org/API/V1/SDMX/V21/rest",
     "supports": {
       "agencyscheme": false,
       "provisionagreement": false

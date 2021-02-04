@@ -125,7 +125,7 @@ def test_request_get_args():
 def test_read_url():
     # URL can be queried without instantiating Request
     pandasdmx.read_url(
-        "http://sdw-wsrest.ecb.int/service/datastructure/ECB/"
+        "https://sdw-wsrest.ecb.europa.eu/service/datastructure/ECB/"
         "ECB_EXR1/latest?references=all"
     )
 

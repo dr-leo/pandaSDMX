@@ -23,6 +23,7 @@ from .data import specimen
 log = logging.getLogger(__name__)
 
 
+
 pytestmark = pytest.mark.skipif(
     # Default value in get() ensures that when *not* on Travis, the tests run
     condition=os.environ.get("TRAVIS_EVENT_TYPE", "cron") != "cron",

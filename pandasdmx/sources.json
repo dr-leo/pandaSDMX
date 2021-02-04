@@ -78,7 +78,7 @@
     "id": "ISTAT",
     "name": "Instituto Nationale di Statistica (IT)",
     "documentation": "https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1", 
-    "url": "https://sdmx.istat.it/SDMXWS/rest",
+    "url": "http://sdmx.istat.it/SDMXWS/rest",
     "supports": {
       "provisionagreement": false,
       "structure-specific data": true
@@ -144,7 +144,7 @@
     "id": "WB",
     "name": "World Bank World Integrated Trade Solution",
     "documentation": "http://wits.worldbank.org",
-    "url": "https://wits.worldbank.org/API/V1/SDMX/V21/rest",
+    "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",
     "supports": {
       "agencyscheme": false,
       "provisionagreement": false

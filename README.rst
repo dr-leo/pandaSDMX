@@ -1,9 +1,9 @@
 pandaSDMX: Statistical Data and Metadata eXchange
 =================================================
 
-.. image:: https://travis-ci.com/dr-leo/pandaSDMX.svg?branch=master
-   :target: https://travis-ci.com/dr-leo/pandaSDMX
-   :alt: Travis-CI status
+.. image:: https://github.com/dr-leo/pandasdmx/workflows/Python%20package/badge.svg
+   :target: https://github.com/dr-leo/pandaSDMX/actions
+   :alt: Github actions CI status
 .. image:: https://codecov.io/gh/dr-leo/pandaSDMX/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/dr-leo/pandaSDMX
    :alt: Codecov status

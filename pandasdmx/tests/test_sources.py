@@ -23,6 +23,7 @@ from .data import specimen
 log = logging.getLogger(__name__)
 
 
+
 pytestmark = pytest.mark.skipif(
     # Default value in get() ensures that when *not* on Travis, the tests run
     condition=os.environ.get("TRAVIS_EVENT_TYPE", "cron") != "cron",
@@ -238,38 +239,12 @@ class TestIMF(DataSourceTest):
     source_id = "IMF"
 
 
-class TestILO(DataSourceTest):
-    source_id = "ILO"
-
-    xfail = {
-        # 413 Client Error: Request Entity Too Large
-        "codelist": HTTPError
-    }
-
-    @pytest.mark.network
-    def test_codelist(self, req):
-        req.get(
-            "codelist",
-            "CL_ECO",
-            tofile=self._cache_path.with_suffix("." + "codelist-CL_ECO"),
-        )
-
 
 @pytest.mark.xfail(
     reason="500 Server Error returned for all requests.", raises=HTTPError
 )
 class TestINEGI(DataSourceTest):
     source_id = "INEGI"
-
-    @pytest.mark.network
-    def test_endpoints(self, req, endpoint, args):
-        # SSL certificate verification sometimes fails for this server; works
-        # in Google Chrome
-        req.session.verify = False
-
-        # Otherwise identical
-        super().test_endpoints(req, endpoint, args)
-
 
 class TestINSEE(DataSourceTest):
     source_id = "INSEE"

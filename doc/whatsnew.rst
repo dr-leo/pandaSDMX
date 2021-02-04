@@ -4,6 +4,19 @@ What's new?
 ===========
 
 
+
+v1.4.0 (2021-02-04)
+-------------------------------
+
+* update end point link for ECB data source
+* update data source config for ILO enabling access to its new API. 
+  Remove obsolete adapter. Please report any issues.
+* Add three new data sources (all of which support the sdmxjson format, 
+  hence only data requests are allowed:
+  - National Bank of Belgium (NBB)
+  - Statistics Lithuania (LSB)
+  - Statistics Estonia
+
 v1.3.0 (2021-01-03)
 -------------------------------
 

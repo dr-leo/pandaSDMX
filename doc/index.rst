@@ -8,7 +8,7 @@ agencies, central banks, and international organisations.
 
 :mod:`pandaSDMX` can be used to:
 
-- explore the data available from 16 :doc:`data providers <sources>` such as the World Bank, ILO, ECB,  
+- explore the data available from about 20 :doc:`data providers <sources>` such as the World Bank, ILO, ECB,  
   Eurostat, OECD, UNICEF and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 

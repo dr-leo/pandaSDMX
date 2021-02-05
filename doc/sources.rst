@@ -172,6 +172,12 @@ SDMX-ML —
 - Italian name: Istituto Nazionale di Statistica.
 - Similar server platform to Eurostat, with similar capabilities.
 
+``LSD``: National Institute of Statistics (Lithuania)
+-----------------------------------------------------
+
+SDMX-ML —
+`Website <https://osp.stat.gov.lt/rdb-rest>`__
+
 
 ``NB``: Norges Bank (Norway)
 ----------------------------
@@ -182,6 +188,14 @@ SDMX-ML —
 - Few dataflows. So do not use categoryscheme.
 - It is unknown whether NB supports series-keys-only.
 
+``NBB``: National Bank of Belgium 
+-------------------------------------------
+
+SDMX-JSON only. Only data queries supported. Discover 
+dataflows on the website and query the required data sets.
+ 
+`Website <https://stat.nbb.be/>`__ —
+API documentation `(en) <https://www.nbb.be/doc/dq/migratie_belgostat/en/nbb_stat-technical-manual.pdf>`__
 
 ``OECD``: Organisation for Economic Cooperation and Development
 ---------------------------------------------------------------
@@ -210,6 +224,16 @@ This service also offers SDMXJSON datasets. This feature requires a specific
 HTTP header as described on the website.
 There seems to be an  on SPC's side
 in series-key-only data messages as the reference to the DSD's is not recognizsed.
+
+
+``STAT_EE``: Statistics Estonia 
+-----------------------------------------
+
+SDMX-JSON. Data queries only. No metadata. Discover dataflows through the website.
+ 
+`Website <http://andmebaas.stat.ee>`__ (et) —
+API documentation `(en) <https://www.stat.ee/sites/default/files/2020-09/API-instructions.pdf>`__, `(et) <https://www.stat.ee/sites/default/files/2020-09/API-juhend.pdf>`__
+
 
 ``UNSD``: United Nations Statistics Division
 --------------------------------------------

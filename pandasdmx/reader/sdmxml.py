@@ -210,6 +210,7 @@ class Reader(BaseReader):
     content_types = [
         "application/xml",
         "application/vnd.sdmx.genericdata+xml",
+        "application/vnd.sdmx.generic+xml",
         "application/vnd.sdmx.structure+xml",
         "application/vnd.sdmx.structurespecificdata+xml",
         "text/xml",

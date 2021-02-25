@@ -4,6 +4,11 @@ What's new?
 ===========
 
 
+v1.4.1 (2021-02-25)
+-------------------------------
+
+* Fix reader discovery for footer messages from ESTAT 
+  when  querying large datasets which ESTAT delivers through a link to a zip file 
 
 v1.4.0 (2021-02-04)
 -------------------------------

@@ -7,16 +7,25 @@
     "documentation": "https://www.abs.gov.au/"
   },
   {
+    "id": "BIS",
+    "name": "Bank for International Settlements",
+    "url": "https://stats.bis.org/api/v1",
+    "documentation": "https://stats.bis.org/api-doc/v1/",
+    "supports": {
+      "preview": true
+    }
+  },
+  {
     "id": "ECB",
     "resources": {
-        "data": {
-            "headers": {}
-        }
+      "data": {
+        "headers": {}
+      }
     },
     "url": "https://sdw-wsrest.ecb.europa.eu/service",
     "name": "European Central Bank",
     "documentation": "https://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html",
-    "supports": {"preview": true}
+    "supports": { "preview": true }
   },
   {
     "id": "ESTAT",
@@ -37,7 +46,7 @@
     "documentation": "https://www.ilo.org/ilostat/",
     "url": "https://www.ilo.org/sdmx/rest",
     "headers": {
-        "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
+      "accept": "application/vnd.sdmx.structurespecificdata+xml;version=2.1"
     },
     "supports": {
       "provisionagreement": false
@@ -68,16 +77,16 @@
     "documentation": "https://www.bdm.insee.fr/bdm2/statique?page=sdmx",
     "url": "https://www.bdm.insee.fr/series/sdmx",
     "headers": {
-        "data": {
-            "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
-        }
+      "data": {
+        "Accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+      }
     },
-    "supports": {"provisionagreement": false}
+    "supports": { "provisionagreement": false }
   },
   {
     "id": "ISTAT",
     "name": "Instituto Nationale di Statistica (IT)",
-    "documentation": "https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1", 
+    "documentation": "https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1",
     "url": "http://sdmx.istat.it/SDMXWS/rest",
     "supports": {
       "provisionagreement": false,
@@ -97,17 +106,17 @@
     "documentation": "https://www.nbb.be/doc/dq/migratie_belgostat/en/nbb_stat-technical-manual.pdf",
     "url": "https://stat.nbb.be/sdmx-json",
     "name": "National Bank of Belgium"
-  },  
+  },
   {
     "id": "NB",
     "name": "Norges Bank (NO)",
     "documentation": "https://www.norges-bank.no/en/topics/Statistics/open-data/",
     "url": "https://data.norges-bank.no/api",
-    "supports": {"categoryscheme": false, "structure-specific data": true},
+    "supports": { "categoryscheme": false, "structure-specific data": true },
     "headers": {
-        "data": {
-            "accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
-        }
+      "data": {
+        "accept": "application/vnd.sdmx.genericdata+xml;version=2.1"
+      }
     }
   },
   {
@@ -122,15 +131,15 @@
     "documentation": "https://data.unicef.org/",
     "url": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest",
     "headers": {
-        "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+      "accept": "application/vnd.sdmx.structure+xml;version=2.1"
     }
   },
   {
     "id": "SPC",
     "name": "Pacific Data Hub",
-    "documentation":"https://stats.pacificdata.org/?locale=en",
+    "documentation": "https://stats.pacificdata.org/?locale=en",
     "url": "https://stats-nsi-stable.pacificdata.org/rest",
-    "supports": {"preview": false, "provisionagreement": false}
+    "supports": { "preview": false, "provisionagreement": false }
   },
 
   {
@@ -138,7 +147,7 @@
     "name": "United Nations Statistics Division",
     "documentation": "https://unstats.un.org/home/",
     "url": "https://data.un.org/WS/rest",
-    "supports": {"preview": true, "provisionagreement": false}
+    "supports": { "preview": true, "provisionagreement": false }
   },
   {
     "id": "WB",
@@ -161,7 +170,7 @@
     }
   },
   {
-  "id": "LSD",
+    "id": "LSD",
     "documentation": "https://osp.stat.gov.lt/rdb-rest",
     "url": "https://osp-rs.stat.gov.lt/rest_xml",
     "name": "Statistics Lithuania",
@@ -170,10 +179,10 @@
       "codelist": false,
       "conceptscheme": false,
       "provisionagreement": false
-      }
-      },
-       {
-       "id": "STAT_EE",
+    }
+  },
+  {
+    "id": "STAT_EE",
     "data_content_type": "JSON",
     "documentation": "https://www.stat.ee/sites/default/files/2020-09/API-instructions.pdf",
     "url": "http://andmebaas.stat.ee/sdmx-json",

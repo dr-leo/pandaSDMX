@@ -79,6 +79,31 @@ SDMX-JSON —
    :members:
 
 
+.. _BIS:
+
+``BIS``: Bank for International Settlements
+---------------------------------------------
+
+SDMX-ML —
+`Website <https://stats.bis.org/api-doc/v1/>`__
+
+-  service went live  in  April 2021
+- Supports preview_data and series-key based key validation.
+
+
+
+``ECB``: European Central Bank
+------------------------------
+
+SDMX-ML —
+`Website <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`__
+
+- Supports categorisations of data-flows.
+- Supports preview_data and series-key based key validation.
+- In general short response times.
+
+
+
 .. _ESTAT:
 
 ``ESTAT``: Eurostat
@@ -95,17 +120,6 @@ SDMX-ML —
 
 .. autoclass:: pandasdmx.source.estat.Source
    :members:
-
-
-``ECB``: European Central Bank
-------------------------------
-
-SDMX-ML —
-`Website <http://www.ecb.europa.eu/stats/ecb_statistics/co-operation_and_standards/sdmx/html/index.en.html>`__
-
-- Supports categorisations of data-flows.
-- Supports preview_data and series-key based key validation.
-- In general short response times.
 
 
 ``ILO``: International Labour Organization

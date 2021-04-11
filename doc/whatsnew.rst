@@ -4,6 +4,12 @@ What's new?
 ===========
 
 
+v1.5.0 (2021-04-11)
+-------------------------------
+
+* Added Bank for International Settlements (BIS) as new data source
+
+
 v1.4.2 (2021-03-26)
 -------------------------------
 

@@ -45,7 +45,7 @@ intersphinx_mapping = {
     "np": ("https://numpy.org/doc/stable/", None),
     "pd": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "py": ("https://docs.python.org/3/", None),
-    "requests": ("https://requests.readthedocs.io/en/master/", None),
+    "requests": ("https://docs.python-requests.org/en/master/", None),
     "requests-cache": ("https://requests-cache.readthedocs.io/en/latest/", None),
 }
 

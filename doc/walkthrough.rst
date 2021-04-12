@@ -402,7 +402,7 @@ Finally, we request the data in generic format:
     data_msg.response.headers['content-type']
 
     # Number of bytes in the cached response
-    bytes1 = sys.getsizeof(ecb.session.cache.responses.popitem()[1][0]._content)
+    bytes1 = sys.getsizeof(ecb.session.cache.responses.popitem()[1].content)
     bytes1
 
 To demonstrate a query for a structure-specific data set, we pass the DSD obtained in the previous section:
@@ -416,7 +416,7 @@ To demonstrate a query for a structure-specific data set, we pass the DSD obtain
     ss_msg.response.headers['content-type']
 
     # Number of bytes in the cached response
-    bytes2 = sys.getsizeof(ecb.session.cache.responses.popitem()[1][0]._content)
+    bytes2 = sys.getsizeof(ecb.session.cache.responses.popitem()[1].content)
     bytes2 / bytes1
 
 The structure-specific message is a fraction of the size of the generic message.

@@ -267,6 +267,16 @@ SDMX-ML —
 SDMX-ML —
 `Website <https://data.unicef.org/>`_
 
+
+
+``CD2030``: Countdown 2030
+----------------------------------------------------------------
+
+SDMX-ML —
+`Website <https://profiles.countdown2030.org/>`_
+
+
+
 ``WB``: World Bank Group's “World Integrated Trade Solution”
 ------------------------------------------------------------
 

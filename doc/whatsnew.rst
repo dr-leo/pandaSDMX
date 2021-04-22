@@ -69,15 +69,15 @@ Changes
 ::::::::::
 
 - add support for new data source 
+  `Countdown2030 <https://profiles.countdown2030.org/>`_ 
+- add support for new data source 
   `UNICEF <https://data.unicef.org/sdmx-api-documentation/>`_
-- Remove data source UNESCO  as their SDMX web API has been   discontinued.
+- Remove data source UNESCO  as their SDMX web API has been discontinued.
   Bulk downloads should still be available though.
 - Ported code-base   from v1.2.0 of recent 
-  `fork <http://sdmx1.readthedocs.io/>`_. New features:
-  
+  `fork <http://sdmx1.readthedocs.io/>`_. New features: 
   * event-driven SDMXML reader
-  * new sdmxml writer to serialize a programmatically generated model representation as SDMXML file (in case anyone  needs this)
-  
+  * new sdmxml writer to serialize a programmatically generated model representation as SDMXML file (in case anyone  needs this)  
 - Fix crash when passing `str` typed filepath to :func:`pandasdmx.reader.read_sdmx`
 - Add support for :class:`pandasdmx.message.DataMessage` attributes 
   *reporting_begin*, *reporting_en* and *extracted*.

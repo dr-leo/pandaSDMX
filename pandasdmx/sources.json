@@ -134,6 +134,15 @@
       "accept": "application/vnd.sdmx.structure+xml;version=2.1"
     }
   },
+ {
+    "id": "CD2030",
+    "name": "COUNTDOWN 2030",
+    "documentation": "https://profiles.countdown2030.org/",
+    "url": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest",
+    "headers": {
+      "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+    }
+  },
   {
     "id": "SPC",
     "name": "Pacific Data Hub",

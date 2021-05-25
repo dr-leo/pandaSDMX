@@ -40,7 +40,14 @@ class Source(BaseModel):
     documentation: Optional[HttpUrl]
 
     headers: Dict[str, Any] = {}
-
+    
+    # resource-specific URLs for end-point. Overrides `url` param
+    resource_urls: Dict[str, HttpUrl] = {}
+    
+    default_version: str = "latest"
+    
+    
+    
     #: :class:`.DataContentType` indicating the type of data returned by the
     #: source.
     data_content_type: DataContentType = DataContentType.XML

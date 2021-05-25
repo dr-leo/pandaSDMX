@@ -4,6 +4,22 @@ What's new?
 ===========
 
 
+v1.6.0 (2021-05-25)
+-----------------------------------------------
+
+
+* add support for two new data sources:
+ 
+  - `Countdown2030 <https://profiles.countdown2030.org/>`_
+  - `Bundesbank (German Central Bank) <https://www.bundesbank.de/de/statistiken/zeitreihen-datenbanken/hilfe-zu-sdmx-webservice>`_
+
+* new feature: Source: allow resource-level URLs 
+  overriding the source-level URL
+* new feature: Source: optionally specify a default_version. 
+  may be ''. defaults to 'latest' as before
+* Bug fix: str representation of model.InternationalString: return first 
+  non-empty string if value for LOCALE is None or not given 
+
 v1.5.0 (2021-04-11)
 -------------------------------
 
@@ -67,9 +83,7 @@ This is a major feature release. The SDMXML reader has been refactored. It now u
 
 Changes
 ::::::::::
-
-- add support for new data source 
-  `Countdown2030 <https://profiles.countdown2030.org/>`_ 
+ 
 - add support for new data source 
   `UNICEF <https://data.unicef.org/sdmx-api-documentation/>`_
 - Remove data source UNESCO  as their SDMX web API has been discontinued.

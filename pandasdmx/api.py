@@ -170,9 +170,6 @@ class Request:
         parameters = kwargs.pop("params", {})
         headers = kwargs.pop("headers", {})
 
-        # Base URL
-        url_parts = [self.source.url]
-
         # Resource arguments
         resource = kwargs.pop("resource", None)
         resource_type = kwargs.pop("resource_type", None)
@@ -185,6 +182,15 @@ class Request:
             raise ValueError(
                 f"resource_type ({resource_type!r}) must be in " + Resource.describe()
             )
+            
+        # Base URL
+        try:
+            # base URL specific to resource_type (eg. Bundesbank)?
+            base_url = self.source.resource_urls[resource_type]
+        except KeyError:
+            # fall back to source-wide URL (most sources)
+            base_url = self.source.url
+        url_parts = [base_url]
 
         if resource:
             # Resource object is given
@@ -221,13 +227,13 @@ class Request:
                 warn(f"'provider' argument is redundant for {resource_type!r}")
             provider_id = None
         else:
-            provider_id = provider if provider else getattr(self.source, "id", None)
+            provider_id = provider or getattr(self.source, "id", None)
 
         url_parts.extend([provider_id, resource_id])
 
-        version = kwargs.pop("version", None)
-        if not version and resource_type != Resource.data:
-            url_parts.append("latest")
+        version = kwargs.pop("version", self.source.default_version)
+        if    resource_type != Resource.data:
+            url_parts.append(version)
 
         key = kwargs.pop("key", None)
         dsd = kwargs.pop("dsd", None)

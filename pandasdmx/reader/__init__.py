@@ -1,17 +1,13 @@
 from pathlib import Path
-from typing import List, Mapping, Type
 
-from . import sdmxjson, sdmxml
-
+from pandasdmx.reader import sdmxjson as json, sdmxml as xml
 
 #: Reader classes
-READERS: List[Type] = []
+READERS = [json.Reader, xml.Reader]
 
-#: Mapping from HTTP content type to reader class.
-CTYPE_READER: Mapping[str, Type] = {}
 
-#: Mapping from file path suffix to reader class.
-SUFFIX_READER: Mapping[str, Type] = {}
+def _readers():
+    return ", ".join(map(lambda cls: cls.__name__, READERS))
 
 
 def detect_content_reader(content):
@@ -30,7 +26,7 @@ def detect_content_reader(content):
         if cls.detect(content):
             return cls
 
-    raise ValueError(f"{repr(content)} not recognized by any of {READERS}")
+    raise ValueError(f"{repr(content)} not recognized by any of {_readers()}")
 
 
 def get_reader_for_content_type(ctype):
@@ -43,15 +39,13 @@ def get_reader_for_content_type(ctype):
 
     See also
     --------
-    CTYPE_READER
+    BaseReader.content_types
     """
-    # Split off e.g. "; version=2.1"
-    ctype = str(ctype).split(";")[0].strip()
+    for cls in READERS:
+        if cls.supports_content_type(ctype):
+            return cls
 
-    try:
-        return CTYPE_READER[ctype]
-    except KeyError:
-        raise ValueError(f"Unsupported content type: {ctype}") from None
+    raise ValueError(f"Content type {repr(ctype)} not supported by any of {_readers()}")
 
 
 def get_reader_for_path(path):
@@ -64,30 +58,14 @@ def get_reader_for_path(path):
 
     See also
     --------
-    SUFFIX_READER
+    BaseReader.suffixes
     """
-    try:
-        return SUFFIX_READER[path.suffix.lower()]
-    except KeyError:
-        raise ValueError(f"Unsupported file suffix: {path.suffix}") from None
+    suffix = Path(path).suffix
+    for cls in READERS:
+        if cls.supports_suffix(suffix):
+            return cls
 
-
-def register(reader_cls):
-    """Register `reader_cls`."""
-    global READERS, CTYPE_READER, SUFFIX_READER
-
-    READERS.append(reader_cls)
-
-    for ctype in reader_cls.content_types:
-        CTYPE_READER[ctype] = reader_cls
-
-    for suffix in reader_cls.suffixes:
-        SUFFIX_READER[suffix] = reader_cls
-
-
-# Register built-in readers
-register(sdmxjson.Reader)
-register(sdmxml.Reader)
+    raise ValueError(f"File suffix {repr(suffix)} not supported by any of {_readers()}")
 
 
 def read_sdmx(filename_or_obj, format=None, **kwargs):

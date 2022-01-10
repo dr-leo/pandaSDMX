@@ -86,14 +86,14 @@ def test_write_agencyscheme():
         msg = pandasdmx.read_sdmx(f)
         data = pandasdmx.to_pandas(msg)
 
-    assert data["organisation_scheme"]["AGENCIES"]["ESTAT"] == "Eurostat"
+    assert data["organisation_scheme"]["AGENCIES"]['name']["ESTAT"] == "Eurostat"
 
     # to_pandas only returns keys for non-empty attributes of StructureMessage
     # https://github.com/dr-leo/pandaSDMX/issues/90
     assert set(data.keys()) == {"organisation_scheme"}
 
     # Attribute access works
-    assert data.organisation_scheme.AGENCIES.ESTAT == "Eurostat"
+    assert data.organisation_scheme.AGENCIES.name.ESTAT == "Eurostat"
 
     with pytest.raises(AttributeError):
         data.codelist
@@ -130,10 +130,11 @@ def test_write_codelist():
 
     # Items names can be retrieved by ID
     freq = codelists["CL_FREQ"]
-    assert freq["A"] == "Annual"
+    assert freq['name']["A"] == "Annual"
 
     # Non-hierarchical code list has a string name
-    assert freq.name == "Code list for Frequency (FREQ)"
+    # does not work as DataFrame has no name.
+    # assert freq.name == "Code list for Frequency (FREQ)"
 
     # Hierarchical code list
     with specimen("codelist_partial.xml") as f:

@@ -1,3 +1,4 @@
+"""Information about the SDMX-ML file format."""
 import logging
 from functools import lru_cache
 from operator import itemgetter
@@ -5,8 +6,15 @@ from operator import itemgetter
 from lxml.etree import QName
 
 from pandasdmx import message, model
+from pandasdmx.format import list_content_types
 
 log = logging.getLogger(__name__)
+
+#: Known media types for SDMX-ML.
+CONTENT_TYPES = [
+    "application/xml",
+    "text/xml",
+] + list_content_types(base="xml")
 
 
 # XML Namespaces
@@ -43,17 +51,16 @@ _CLS_TAG = [
     (message.DataMessage, qname("mes:StructureSpecificTimeSeriesData")),
     (message.ErrorMessage, qname("mes:Error")),
     (message.StructureMessage, qname("mes:Structure")),
-    (model.Agency, qname("str:Agency")),
+    (model.Agency, qname("str:Agency")),  # Order matters
     (model.Agency, qname("mes:Receiver")),
     (model.Agency, qname("mes:Sender")),
     (model.AttributeDescriptor, qname("str:AttributeList")),
-    (model.Categorisation, qname("str:Categorisation")),
     (model.DataAttribute, qname("str:Attribute")),
     (model.DataflowDefinition, qname("str:Dataflow")),
     (model.DataStructureDefinition, qname("str:DataStructure")),
     (model.DataStructureDefinition, qname("com:Structure")),
     (model.DataStructureDefinition, qname("str:Structure")),
-    (model.Dimension, qname("str:Dimension")),
+    (model.Dimension, qname("str:Dimension")),  # Order matters
     (model.Dimension, qname("str:DimensionReference")),
     (model.Dimension, qname("str:GroupDimension")),
     (model.DimensionDescriptor, qname("str:DimensionList")),
@@ -62,13 +69,13 @@ _CLS_TAG = [
     (model.GroupKey, qname("gen:GroupKey")),
     (model.Key, qname("gen:ObsKey")),
     (model.MeasureDescriptor, qname("str:MeasureList")),
-    (model.MeasureDimension, qname("str:MeasureDimension")),
     (model.SeriesKey, qname("gen:SeriesKey")),
     (model.StructureUsage, qname("com:StructureUsage")),
 ] + [
     (getattr(model, name), qname("str", name))
     for name in (
         "AgencyScheme",
+        "Categorisation",
         "Category",
         "CategoryScheme",
         "Code",
@@ -76,9 +83,12 @@ _CLS_TAG = [
         "Concept",
         "ConceptScheme",
         "ContentConstraint",
+        "DataConsumer",
+        "DataConsumerScheme",
         "DataProvider",
         "DataProviderScheme",
         "PrimaryMeasure",
+        "MeasureDimension",
         "TimeDimension",
     )
 ]

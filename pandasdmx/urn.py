@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 
 from pandasdmx.model import PACKAGE, MaintainableArtefact
 
@@ -17,14 +18,14 @@ _BASE = (
 )
 
 
-def make(obj, maintainable_parent=None):
+def make(obj, maintainable_parent=None, strict=False):
     """Create an SDMX URN for `obj`.
 
     If `obj` is not :class:`.MaintainableArtefact`, then `maintainable_parent`
     must be supplied in order to construct the URN.
     """
-    if maintainable_parent:
-        ma = maintainable_parent
+    if not isinstance(obj, MaintainableArtefact):
+        ma = maintainable_parent or obj.get_scheme()
         extra_id = f".{obj.id}"
     else:
         ma = obj
@@ -34,11 +35,21 @@ def make(obj, maintainable_parent=None):
         raise ValueError(
             f"Neither {repr(obj)} nor {repr(maintainable_parent)} are maintainable"
         )
+    elif ma.maintainer is None:
+        raise ValueError(f"Cannot construct URN for {repr(ma)} without maintainer")
+    elif strict and ma.version is None:
+        raise ValueError(f"Cannot construct URN for {repr(ma)} without version")
 
     return _BASE.format(
         package=PACKAGE[obj.__class__], obj=obj, ma=ma, extra_id=extra_id
     )
 
 
-def match(string):
-    return URN.match(string).groupdict()
+def match(value: str) -> Dict[str, str]:
+    try:
+        match = URN.match(value)
+        assert match is not None
+    except AssertionError:
+        raise ValueError(f"not a valid SDMX URN: {value}")
+    else:
+        return match.groupdict()

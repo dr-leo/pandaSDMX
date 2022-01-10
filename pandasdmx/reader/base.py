@@ -1,5 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from typing import List
+
+from pandasdmx.util import parse_content_type
+
+log = logging.getLogger(__name__)
 
 
 class BaseReader(ABC):
@@ -19,6 +25,25 @@ class BaseReader(ABC):
             :obj:`True` if the reader can handle the content.
         """
         return False
+
+    @classmethod
+    @lru_cache()
+    def supports_content_type(cls, value: str) -> bool:
+        """:obj:`True` if the reader can handle content/media type `value`."""
+        other = parse_content_type(value)
+        for ctype in map(parse_content_type, cls.content_types):
+            if ctype[0] == other[0]:
+                if ctype[1] != other[1]:
+                    log.debug(
+                        f"Match {ctype[0]} with params {other[1]}; expected {ctype[1]}"
+                    )
+                return True
+        return False
+
+    @classmethod
+    def supports_suffix(cls, value: str) -> bool:
+        """:obj:`True` if the reader can handle files with suffix `value`."""
+        return value.lower() in cls.suffixes
 
     @abstractmethod
     def read_message(self, source, dsd=None):

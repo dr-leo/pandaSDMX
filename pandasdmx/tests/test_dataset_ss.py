@@ -103,7 +103,7 @@ class TestSeriesDataSet(StructuredMessageTest):
 
         # One remaining dimension is at the Observation Level
         assert len(o0.dimension) == 1
-        assert o0.dim == Key(TIME_PERIOD="2010-08")
+        assert o0.dim == Key(TIME_PERIOD="2010-10")
         assert o0.value == "1.3898"
 
         # Two remaining attributes are at the Observation level
@@ -180,7 +180,7 @@ class TestSeriesDataSet2(StructuredMessageTest):
         assert len(obs_list) == 3
         o0 = obs_list[2]
         assert len(o0.dimension) == 1
-        assert o0.dim == Key(TIME_PERIOD="2010-08")
+        assert o0.dim == Key(TIME_PERIOD="2010-10")
         assert o0.value == "1.3898"
         assert o0.attrib.OBS_STATUS == "A"
 

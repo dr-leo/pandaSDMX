@@ -1,7 +1,9 @@
 """SDMX-JSON v2.1 reader"""
 import json
+import logging
 
 from pandasdmx import model
+from pandasdmx.format.json import CONTENT_TYPES
 from pandasdmx.message import DataMessage, Header
 from pandasdmx.model import (
     ActionType,
@@ -16,17 +18,13 @@ from pandasdmx.model import (
 )
 from pandasdmx.reader.base import BaseReader
 
+log = logging.getLogger(__name__)
+
 
 class Reader(BaseReader):
-    """Read SDMXJSON 2.1 and expose it as instances from :mod:`pandasdmx.model`."""
+    """Read SDMX-JSON and expose it as instances from :mod:`sdmx.model`."""
 
-    content_types = [
-        "application/vnd.sdmx.draft-sdmx-json+json",
-        # For e.g. OECD
-        "draft-sdmx-json",
-        "text/json",
-    ]
-
+    content_types = CONTENT_TYPES
     suffixes = [".json"]
 
     @classmethod
@@ -96,19 +94,36 @@ class Reader(BaseReader):
         for level_name, level in structure["attributes"].items():
             for attr in level:
                 # Create a DataAttribute in the DSD
-                a = msg.structure.attributes.getdefault(
+                da = msg.structure.attributes.getdefault(
                     id=attr["id"], concept_identity=Concept(name=attr["name"])
                 )
 
-                # Record the level it appears at
-                self._attr_level[a] = level_name
-
                 # Record its values
-                self._attr_values[a] = list()
-                for value in attr.get("values", []):
-                    self._attr_values[a].append(
-                        AttributeValue(value=value["name"], value_for=a)
+                values = []
+                for v in attr.get("values", []):
+                    values.append(
+                        AttributeValue(
+                            value=model.Code(**v) if "id" in v else v["name"],
+                            value_for=da,
+                        )
                     )
+
+                # Handle https://github.com/khaeru/sdmx/issues/64: a DataAttribute with
+                # no values cannot be referenced, and is assumed to be erroneously
+                # included.
+                if not len(values):
+                    log.warning(f"No AttributeValues for attribute {repr(da)}; discard")
+
+                    # Remove the DataAttribute
+                    idx = msg.structure.attributes.components.index(da)
+                    msg.structure.attributes.components.pop(idx)
+
+                    continue
+
+                self._attr_values[da] = values
+
+                # Record the level it appears at
+                self._attr_level[da] = level_name
 
         self.msg = msg
 

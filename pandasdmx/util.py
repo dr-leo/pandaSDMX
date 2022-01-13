@@ -1,209 +1,299 @@
-import collections
 import logging
 import typing
+from collections.abc import Iterator
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Type, TypeVar, Union, no_type_check
+from functools import lru_cache
+from typing import Any, Dict, Mapping, Tuple, TypeVar, Union
 
 import pydantic
-from pydantic import DictError, Extra, ValidationError, validator  # noqa: F401
+import requests
+from pydantic import Field, ValidationError, validator
 from pydantic.class_validators import make_generic_validator
+from pydantic.typing import get_origin  # type: ignore [attr-defined]
+
+try:
+    import requests_cache
+except ImportError:  # pragma: no cover
+    HAS_REQUESTS_CACHE = False
+else:
+    HAS_REQUESTS_CACHE = True
+
 
 KT = TypeVar("KT")
 VT = TypeVar("VT")
 
-try:
-    from typing import OrderedDict
-except ImportError:
-    # Python < 3.7.2 compatibility; see
-    # https://github.com/python/cpython/commit/68b56d0
-    from typing import _alias  # type: ignore
-
-    OrderedDict = _alias(collections.OrderedDict, (KT, VT))
-
-
 log = logging.getLogger(__name__)
+
+__all__ = [
+    "BaseModel",
+    "DictLike",
+    "compare",
+    "dictlike_field",
+    "only",
+    "summarize_dictlike",
+    "validate_dictlike",
+    "validator",
+]
+
+
+
+# Mapping from Resource value to class name.
+CLASS_NAME = {
+    "dataflow": "DataflowDefinition",
+    "datastructure": "DataStructureDefinition",
+}
+
+# Inverse of :data:`CLASS_NAME`.
+VALUE = {v: k for k, v in CLASS_NAME.items()}
 
 
 class Resource(str, Enum):
-    """Enumeration of SDMX REST API endpoints.
+    """Enumeration of SDMX-REST API resources.
 
-    ====================== ================================================
-    :class:`Enum` member   :mod:`pandasdmx.model` class
-    ====================== ================================================
-    ``categoryscheme``     :class:`.CategoryScheme`
-    ``codelist``           :class:`.Codelist`
-    ``conceptscheme``      :class:`.ConceptScheme`
-    ``data``               :class:`.DataSet`
-    ``dataflow``           :class:`.DataflowDefinition`
-    ``datastructure``      :class:`.DataStructureDefinition`
-    ``provisionagreement`` :class:`.ProvisionAgreement`
-    ====================== ================================================
+    ============================= ======================================================
+    :class:`Enum` member          :mod:`pandasdmx.model` class
+    ============================= ======================================================
+    ``actualconstraint``          :class:`.ContentConstraint`
+    ``agencyscheme``              :class:`.AgencyScheme`
+    ``allowedconstraint``         :class:`.ContentConstraint`
+    ``attachementconstraint``     :class:`.AttachmentConstraint`
+    ``categorisation``            :class:`.Categorisation`
+    ``categoryscheme``            :class:`.CategoryScheme`
+    ``codelist``                  :class:`.Codelist`
+    ``conceptscheme``             :class:`.ConceptScheme`
+    ``contentconstraint``         :class:`.ContentConstraint`
+    ``data``                      :class:`.DataSet`
+    ``dataflow``                  :class:`.DataflowDefinition`
+    ``dataconsumerscheme``        :class:`.DataConsumerScheme`
+    ``dataproviderscheme``        :class:`.DataProviderScheme`
+    ``datastructure``             :class:`.DataStructureDefinition`
+    ``organisationscheme``        :class:`.OrganisationScheme`
+    ``provisionagreement``        :class:`.ProvisionAgreement`
+    ``structure``                 Mixed.
+    ----------------------------- ------------------------------------------------------
+    ``customtypescheme``          Not implemented.
+    ``hierarchicalcodelist``      Not implemented.
+    ``metadata``                  Not implemented.
+    ``metadataflow``              Not implemented.
+    ``metadatastructure``         Not implemented.
+    ``namepersonalisationscheme`` Not implemented.
+    ``organisationunitscheme``    Not implemented.
+    ``process``                   Not implemented.
+    ``reportingtaxonomy``         Not implemented.
+    ``rulesetscheme``             Not implemented.
+    ``schema``                    Not implemented.
+    ``structureset``              Not implemented.
+    ``transformationscheme``      Not implemented.
+    ``userdefinedoperatorscheme`` Not implemented.
+    ``vtlmappingscheme``          Not implemented.
+    ============================= ======================================================
+
     """
 
-    # agencyscheme = 'agencyscheme'
-    # attachementconstraint = 'attachementconstraint'
-    # categorisation = 'categorisation'
+    actualconstraint = "actualconstraint"
+    agencyscheme = "agencyscheme"
+    allowedconstraint = "allowedconstraint"
+    attachementconstraint = "attachementconstraint"
+    categorisation = "categorisation"
     categoryscheme = "categoryscheme"
     codelist = "codelist"
     conceptscheme = "conceptscheme"
-    # contentconstraint = 'contentconstraint'
+    contentconstraint = "contentconstraint"
+    customtypescheme = "customtypescheme"
     data = "data"
-    # dataconsumerscheme = 'dataconsumerscheme'
+    dataconsumerscheme = "dataconsumerscheme"
     dataflow = "dataflow"
-    # dataproviderscheme = 'dataproviderscheme'
+    dataproviderscheme = "dataproviderscheme"
     datastructure = "datastructure"
-    # hierarchicalcodelist = 'hierarchicalcodelist'
-    # metadata = 'metadata'
-    # metadataflow = 'metadataflow'
-    # metadatastructure = 'metadatastructure'
-    # organisationscheme = 'organisationscheme'
-    # organisationunitscheme = 'organisationunitscheme'
-    # process = 'process'
+    hierarchicalcodelist = "hierarchicalcodelist"
+    metadata = "metadata"
+    metadataflow = "metadataflow"
+    metadatastructure = "metadatastructure"
+    namepersonalisationscheme = "namepersonalisationscheme"
+    organisationscheme = "organisationscheme"
+    organisationunitscheme = "organisationunitscheme"
+    process = "process"
     provisionagreement = "provisionagreement"
-    # reportingtaxonomy = 'reportingtaxonomy'
-    # schema = 'schema'
-    # structure = 'structure'
-    # structureset = 'structureset'
+    reportingtaxonomy = "reportingtaxonomy"
+    rulesetscheme = "rulesetscheme"
+    schema = "schema"
+    structure = "structure"
+    structureset = "structureset"
+    transformationscheme = "transformationscheme"
+    userdefinedoperatorscheme = "userdefinedoperatorscheme"
+    vtlmappingscheme = "vtlmappingscheme"
 
     @classmethod
     def from_obj(cls, obj):
-        """Return an enumeration value based on the class of *obj*."""
-        clsname = {"DataStructureDefinition": "datastructure"}.get(
-            obj.__class__.__name__, obj.__class__.__name__
-        )
-        return cls[clsname.lower()]
+        """Return an enumeration value based on the class of `obj`."""
+        value = obj.__class__.__name__
+        return cls[VALUE.get(value, value)]
+
+    @classmethod
+    def class_name(cls, value: "Resource", default=None) -> str:
+        """Return the name of a :mod:`pandasdmx.model` class from an enum value.
+
+        Values are returned in lower case.
+        """
+        return CLASS_NAME.get(value.value, value.value)
 
     @classmethod
     def describe(cls):
         return "{" + " ".join(v.name for v in cls._member_map_.values()) + "}"
 
 
-if TYPE_CHECKING:
-    Model = TypeVar("Model", bound="BaseModel")
+#: Response codes defined by the SDMX-REST standard.
+RESPONSE_CODE = {
+    200: "OK",
+    304: "No changes",
+    400: "Bad syntax",
+    401: "Unauthorized",
+    403: "Semantic error",  # or "Forbidden"
+    404: "Not found",
+    406: "Not acceptable",
+    413: "Request entity too large",
+    414: "URI too long",
+    500: "Internal server error",
+    501: "Not implemented",
+    503: "Unavailable",
+}
 
 
 class BaseModel(pydantic.BaseModel):
-    """Shim for pydantic.BaseModel.
-
-    This class changes two behaviours in pydantic. The methods are direct
-    copies from pydantic's code, with marked changes.
-
-    1. https://github.com/samuelcolvin/pydantic/issues/524
-
-       - "Multiple RecursionErrors with self-referencing models"
-       - In e.g. :class:`.Item`, having both .parent and .child references
-         leads to infinite recursion during validation.
-       - Fix: override BaseModel.__setattr__.
-       - New value 'limited' for Config.validate_assignment: no sibling
-         field values are passed to Field.validate().
-       - New key Config.validate_assignment_exclude: list of field names that
-         are not validated per se *and* not passed to Field.validate() when
-         validating a sibling field.
-    2. https://github.com/samuelcolvin/pydantic/issues/521
-
-       - "Assignment to attribute changes id() but not referenced object,"
-         marked as wontfix by pydantic maintainer.
-       - When cls.attr is typed as BaseModel (or a subclass), then
-         a.attr is b.attr is always False, even when set to the same reference.
-       - Fix: override BaseModel.validate() without copy().
-    """
+    """Common settings for :class:`pydantic.BaseModel` in :mod:`pandasdmx`."""
 
     class Config:
-        validate_assignment = "limited"
-        validate_assignment_exclude: List[str] = []
-
-    # Workaround for https://github.com/samuelcolvin/pydantic/issues/521
-    @classmethod
-    def validate(cls: Type["Model"], value: Any) -> "Model":
-        if isinstance(value, dict):
-            return cls(**value)
-        elif isinstance(value, cls):
-            return value  # ***
-        elif cls.__config__.orm_mode:
-            return cls.from_orm(value)
-        else:
-            try:
-                value_as_dict = dict(value)
-            except (TypeError, ValueError) as e:
-                raise DictError() from e
-            return cls(**value_as_dict)
-
-    # Workaround for https://github.com/samuelcolvin/pydantic/issues/524
-    @no_type_check
-    def __setattr__(self, name, value):
-        if self.__config__.extra is not Extra.allow and name not in self.__fields__:
-            raise ValueError(
-                f'"{self.__class__.__name__}" object has no field' f' "{name}"'
-            )
-        elif not self.__config__.allow_mutation:
-            raise TypeError(
-                f'"{self.__class__.__name__}" is immutable and '
-                "does not support item assignment"
-            )
-        elif (
-            self.__config__.validate_assignment
-            and name not in self.__config__.validate_assignment_exclude
-        ):
-            if self.__config__.validate_assignment == "limited":
-                kw = {"include": {}}
-            else:
-                kw = {"exclude": {name}}
-            known_field = self.__fields__.get(name, None)
-            if known_field:
-                value, error_ = known_field.validate(value, self.dict(**kw), loc=name)
-                if error_:
-                    raise ValidationError([error_], type(self))
-        self.__dict__[name] = value
-        self.__fields_set__.add(name)
+        copy_on_model_validation = False
+        validate_assignment = True
 
 
-class DictLike(collections.OrderedDict, typing.MutableMapping[KT, VT]):
+class MaybeCachedSession(type):
+    """Metaclass to inherit from :class:`requests_cache.CachedSession`, if available.
+
+    If :mod:`requests_cache` is not installed, returns :class:`requests.Session` as a
+    base class.
+    """
+
+    def __new__(cls, name, bases, dct):
+        base = (
+            requests.Session if not HAS_REQUESTS_CACHE else requests_cache.CachedSession
+        )
+        return super().__new__(cls, name, (base,), dct)
+
+
+KT = TypeVar("KT")
+VT = TypeVar("VT")
+
+log = logging.getLogger(__name__)
+
+__all__ = [
+    "BaseModel",
+    "DictLike",
+    "compare",
+    "dictlike_field",
+    "only",
+    "summarize_dictlike",
+    "validate_dictlike",
+    "validator",
+]
+
+
+class BaseModel(pydantic.BaseModel):
+    """Common settings for :class:`pydantic.BaseModel` in :mod:`sdmx`."""
+
+    class Config:
+        copy_on_model_validation = False
+        validate_assignment = True
+
+
+class MaybeCachedSession(type):
+    """Metaclass to inherit from :class:`requests_cache.CachedSession`, if available.
+
+    If :mod:`requests_cache` is not installed, returns :class:`requests.Session` as a
+    base class.
+    """
+
+    def __new__(cls, name, bases, dct):
+        base = (
+            requests.Session if not HAS_REQUESTS_CACHE else requests_cache.CachedSession
+        )
+        return super().__new__(cls, name, (base,), dct)
+
+
+class DictLike(dict, typing.MutableMapping[KT, VT]):
     """Container with features of a dict & list, plus attribute access."""
 
+    __slots__ = ("__dict__", "__field")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Ensures attribute access to dict items
+        self.__dict__ = self
+
+        # Reference to the pydantic.field.ModelField for the entries
+        self.__field = None
+
     def __getitem__(self, key: Union[KT, int]) -> VT:
+        """:meth:`dict.__getitem__` with integer access."""
         try:
             return super().__getitem__(key)
         except KeyError:
             if isinstance(key, int):
+                # int() index access
                 return list(self.values())[key]
-            elif isinstance(key, str) and key.startswith("__"):
-                raise AttributeError
             else:
                 raise
 
+    def __getstate__(self):
+        """Exclude ``__field`` from items to be pickled."""
+        return {"__dict__": self.__dict__}
+
     def __setitem__(self, key: KT, value: VT) -> None:
-        key = self._apply_validators("key", key)
-        value = self._apply_validators("value", value)
-        super().__setitem__(key, value)
+        """:meth:`dict.__setitem` with validation."""
+        super().__setitem__(*self._validate_entry(key, value))
 
-    # Access items as attributes
-    def __getattr__(self, name) -> VT:
-        try:
-            return self.__getitem__(name)
-        except KeyError as e:
-            raise AttributeError(*e.args) from None
+    def __copy__(self):
+        # Construct explicitly to avoid returning the parent class, dict()
+        return DictLike(**self)
 
-    def validate(cls, value, field):
-        if not isinstance(value, (dict, DictLike)):
-            raise ValueError(value)
+    def copy(self):
+        """Return a copy of the DictLike."""
+        return self.__copy__()
 
-        result = DictLike()
-        result.__fields = {"key": field.key_field, "value": field}
-        result.update(value)
+    # pydantic compat
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._validate_whole
+
+    @classmethod
+    def _validate_whole(cls, v, field: pydantic.fields.ModelField):
+        """Validate `v` as an entire DictLike object."""
+        # Convert anything that can be converted to a dict(). pydantic internals catch
+        # most other invalid types, e.g. set(); no need to handle them here.
+        result = cls(v)
+
+        # Reference to the pydantic.field.ModelField for the entries
+        result.__field = field
+
         return result
 
-    def _apply_validators(self, which, value):
+    def _validate_entry(self, key, value):
+        """Validate one `key`/`value` pair."""
         try:
-            field = self.__fields[which]
+            # Use pydantic's validation machinery
+            v, error = self.__field._validate_mapping_like(
+                ((key, value),), values={}, loc=(), cls=None
+            )
         except AttributeError:
-            return value
-        result, error = field._apply_validators(
-            value, validators=field.validators, values={}, loc=(), cls=None
-        )
-        if error:
-            raise ValidationError([error], self.__class__)
+            # .__field is not populated
+            return key, value
         else:
-            return result
+            if error:
+                raise ValidationError([error], self.__class__)
+            else:
+                return (key, value)
 
     def compare(self, other, strict=True):
         """Return :obj:`True` if `self` is the same as `other`.
@@ -227,6 +317,18 @@ class DictLike(collections.OrderedDict, typing.MutableMapping[KT, VT]):
         return True
 
 
+# Utility methods for DictLike
+#
+# These are defined in separate functions to avoid collisions with keys and the
+# attribute access namespace, e.g. if the DictLike contains keys "summarize" or
+# "validate".
+
+
+def dictlike_field():
+    """Shorthand for :class:`pydantic.Field` with :class:`.DictLike` default factory."""
+    return Field(default_factory=DictLike)
+
+
 def summarize_dictlike(dl, maxwidth=72):
     """Return a string summary of the DictLike contents."""
     value_cls = dl[0].__class__.__name__
@@ -241,14 +343,25 @@ def summarize_dictlike(dl, maxwidth=72):
     return result
 
 
-def validate_dictlike(*fields):
-    def decorator(cls):
-        v = make_generic_validator(DictLike.validate)
-        for field in fields:
-            cls.__fields__[field].post_validators = [v]
-        return cls
+def validate_dictlike(cls):
+    """Adjust `cls` so that its DictLike members are validated.
 
-    return decorator
+    This is necessary because DictLike is a subclass of :class:`dict`, and so
+    :mod:`pydantic` fails to call :meth:`~DictLike.__get_validators__` and register
+    those on BaseModels which include DictLike members.
+    """
+    # Iterate over annotated members of `cls`; only those which are DictLike
+    for name, anno in filter(
+        lambda item: get_origin(item[1]) is DictLike, cls.__annotations__.items()
+    ):
+        # Add the validator(s)
+        field = cls.__fields__[name]
+        field.post_validators = field.post_validators or []
+        field.post_validators.extend(
+            make_generic_validator(v) for v in DictLike.__get_validators__()
+        )
+
+    return cls
 
 
 def compare(attr, a, b, strict: bool) -> bool:
@@ -262,3 +375,58 @@ def compare(attr, a, b, strict: bool) -> bool:
     # if not result:
     #     log.info(f"Not identical: {attr}={getattr(a, attr)} / {getattr(b, attr)}")
     # return result
+
+
+def only(iterator: Iterator) -> Any:
+    """Return the only element of `iterator`, or :obj:`None`."""
+    try:
+        result = next(iterator)
+        flag = object()
+        assert flag is next(iterator, flag)
+    except (StopIteration, AssertionError):
+        return None  # 0 or ≥2 matches
+    else:
+        return result
+
+
+def parse_content_type(value: str) -> Tuple[str, Dict[str, Any]]:
+    """Return content type and parameters from `value`.
+
+    Modified from :mod:`requests.util`.
+    """
+    tokens = value.split(";")
+    content_type, params_raw = tokens[0].strip(), tokens[1:]
+    params = {}
+    to_strip = "\"' "
+
+    for param in params_raw:
+        k, *v = param.strip().split("=")
+
+        if not k and not v:
+            continue
+
+        params[k.strip(to_strip).lower()] = v[0].strip(to_strip) if len(v) else True
+
+    return content_type, params
+
+
+@lru_cache()
+def direct_fields(cls) -> Mapping[str, pydantic.fields.ModelField]:
+    """Return the :mod:`pydantic` fields defined on `obj` or its class.
+
+    This is like the ``__fields__`` attribute, but excludes the fields defined on any
+    parent class(es).
+    """
+    return {
+        name: info
+        for name, info in cls.__fields__.items()
+        if name not in set(cls.mro()[1].__fields__.keys())
+    }
+
+
+try:
+    from typing import get_args  # type: ignore [attr-defined]
+except ImportError:  # pragma: no cover
+    # For Python <3.8
+    def get_args(tp) -> Tuple[Any, ...]:
+        return tp.__args__

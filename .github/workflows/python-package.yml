@@ -22,6 +22,9 @@ jobs:
             os: ubuntu-latest            
           - python-version: '3.9'
             os: windows-latest            
+          - python-version: '3.10'
+            os: windows-latest            
+            
 
     steps:
     - uses: actions/checkout@v2
@@ -36,5 +39,5 @@ jobs:
         pip install -r requirements.txt
     - name: Test with pytest
       run: |
-        pytest -ra -m "not experimental" --cov pandasdmx --cov-report term-missing
+        pytest -ra  --cov pandasdmx --cov-report term-missing
 

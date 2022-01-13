@@ -1,4 +1,5 @@
 import importlib
+from setuptools import distutils
 from distutils import version
 from pathlib import Path
 

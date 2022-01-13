@@ -2,10 +2,9 @@
 # Contents of this file are organized in the order:
 #
 # - Utility methods and global variables.
-# - writer functions for pandasdmx.message classes, in the same order as message.py
-# - writer functions for pandasdmx.model classes, in the same order as model.py
+# - writer functions for sdmx.message classes, in the same order as message.py
+# - writer functions for sdmx.model classes, in the same order as model.py
 
-from itertools import chain
 from typing import Iterable, cast
 
 from lxml import etree
@@ -34,48 +33,48 @@ def to_xml(obj, **kwargs):
     Parameters
     ----------
     kwargs
-        Passed to :meth:`lxml.etree.to_string`, e.g. `pretty_print` =
-        :obj:`True`.
+        Passed to :meth:`lxml.etree.to_string`, e.g. `pretty_print` = :obj:`True`.
 
     Raises
     ------
     NotImplementedError
-        If writing specific objects to SDMX-ML has not been implemented in
-        :mod:`sdmx`.
+        If writing specific objects to SDMX-ML has not been implemented in :mod:`sdmx`.
     """
     return etree.tostring(writer.recurse(obj), **kwargs)
 
 
-def reference(obj, parent=None, tag=None, style="URN"):
-    """Write a reference to `obj`."""
+def reference(obj, parent=None, tag=None, style=None):
+    """Write a reference to `obj`.
+
+    .. todo:: Currently other functions in :mod:`.writer.xml` all pass the `style`
+       argument to this function. As an enhancement, allow user or automatic selection
+       of different reference styles.
+    """
     tag = tag or tag_for_class(obj.__class__)
 
     elem = Element(tag)
 
+    if isinstance(obj, model.MaintainableArtefact):
+        ma = obj
+    else:
+        try:
+            # Get the ItemScheme for an Item
+            parent = parent or obj.get_scheme()
+        except AttributeError:  # pragma: no cover
+            # No `parent` and `obj` is not an Item with a .get_scheme() method
+            # NB this does not occur in the test suite
+            pass
+
+        if not parent:
+            raise NotImplementedError(
+                f"Cannot write reference to {repr(obj)} without parent"
+            )
+
+        ma = parent
+
     if style == "URN":
         ref = Element(":URN", obj.urn)
     elif style == "Ref":
-        if isinstance(obj, model.MaintainableArtefact):
-            ma = obj
-        else:
-            # TODO handle references to non-maintainable children of parent
-            #      objects
-            if not parent:
-                for is_ in chain(
-                    writer._message.concept_scheme.values(),
-                    writer._message.category_scheme.values(),
-                ):
-                    if obj in is_:
-                        parent = is_
-                        break
-
-            if not parent:
-                raise NotImplementedError(
-                    f"Cannot write reference to {repr(obj)} without parent"
-                )
-
-            ma = parent
-
         args = {
             "id": obj.id,
             "maintainableParentID": ma.id if parent else None,
@@ -94,34 +93,50 @@ def reference(obj, parent=None, tag=None, style="URN"):
     return elem
 
 
-# Writers for pandasdmx.message classes
+# Writers for sdmx.message classes
 
 
 @writer
 def _dm(obj: message.DataMessage):
-    elem = Element("mes:GenericData")
+    struct_spec = len(obj.data) and isinstance(
+        obj.data[0],
+        (model.StructureSpecificDataSet, model.StructureSpecificTimeSeriesDataSet),
+    )
+
+    elem = Element("mes:StructureSpecificData" if struct_spec else "mes:GenericData")
 
     header = writer.recurse(obj.header)
     elem.append(header)
 
-    # Add DSD references to header
+    # Set of DSDs already referenced in the header
+    structures = set()
+
     for ds in obj.data:
         attrib = dict()
         dsd_ref = None
 
-        if ds.structured_by:
+        # Add any new DSD reference to header
+        if ds.structured_by and id(ds.structured_by) not in structures:
             attrib["structureID"] = ds.structured_by.id
 
             # Reference by URN if possible, otherwise with a <Ref> tag
             style = "URN" if ds.structured_by.urn else "Ref"
             dsd_ref = reference(ds.structured_by, tag="com:Structure", style=style)
-        if isinstance(obj.observation_dimension, model.DimensionComponent):
-            attrib["dimensionAtObservation"] = obj.observation_dimension.id
 
-        header.append(Element("mes:Structure", **attrib))
-        header[-1].append(dsd_ref)
+            if isinstance(obj.observation_dimension, model.DimensionComponent):
+                attrib["dimensionAtObservation"] = obj.observation_dimension.id
 
+            header.append(Element("mes:Structure", **attrib))
+            header[-1].append(dsd_ref)
+
+            # Record this object so it is not added a second time
+            structures.add(id(ds.structured_by))
+
+        # Add data
         elem.append(writer.recurse(ds))
+
+    if obj.footer:
+        elem.append(writer.recurse(obj.footer))
 
     return elem
 
@@ -157,27 +172,60 @@ def _sm(obj: message.StructureMessage):
         container.extend(writer.recurse(s) for s in getattr(obj, attr).values())
         structures.append(container)
 
+    if obj.footer:
+        elem.append(writer.recurse(obj.footer))
+
+    return elem
+
+
+@writer
+def _em(obj: message.ErrorMessage):
+    elem = Element("mes:Error")
+    elem.append(writer.recurse(obj.header))
+
+    if obj.footer:
+        elem.append(writer.recurse(obj.footer))
+
     return elem
 
 
 @writer
 def _header(obj: message.Header):
     elem = Element("mes:Header")
-    elem.append(Element("mes:Test", str(obj.test).lower()))
     if obj.id:
         elem.append(Element("mes:ID", obj.id))
+    elem.append(Element("mes:Test", str(obj.test).lower()))
     if obj.prepared:
         elem.append(Element("mes:Prepared", obj.prepared.isoformat()))
     if obj.sender:
         elem.append(writer.recurse(obj.sender, _tag="mes:Sender"))
-    if obj.source:
-        elem.extend(i11lstring(obj.source, "mes:Source"))
     if obj.receiver:
         elem.append(writer.recurse(obj.receiver, _tag="mes:Receiver"))
+    if obj.source:
+        elem.extend(i11lstring(obj.source, "mes:Source"))
     return elem
 
 
-# Writers for pandasdmx.model classes
+@writer
+def _footer(obj: message.Footer):
+    elem = Element("footer:Footer")
+
+    attrs = dict()
+    if obj.code:
+        attrs["code"] = str(obj.code)
+    if obj.severity:
+        attrs["severity"] = str(obj.severity)
+
+    mes = Element("footer:Message", **attrs)
+    elem.append(mes)
+
+    for text in obj.text:
+        mes.extend(i11lstring(text, "com:Text"))
+
+    return elem
+
+
+# Writers for sdmx.model classes
 # §3.2: Base structures
 
 
@@ -224,11 +272,19 @@ def annotable(obj, **kwargs):
 
 
 def identifiable(obj, **kwargs):
+    """Write :class:`.IdentifiableArtefact`.
+
+    Unless the keyword argument `_with_urn` is :data:`False`, a URN is generated for
+    objects lacking one, and forwarded to :func:`annotable`
+    """
     kwargs.setdefault("id", obj.id)
     try:
-        kwargs.setdefault(
-            "urn", obj.urn or pandasdmx.urn.make(obj, kwargs.pop("parent", None))
+        with_urn = kwargs.pop("_with_urn", True)
+        urn = obj.urn or (
+            pandasdmx.urn.make(obj, kwargs.pop("parent", None)) if with_urn else None
         )
+        if urn:
+            kwargs.setdefault("urn", urn)
     except (AttributeError, ValueError):
         pass
     return annotable(obj, **kwargs)
@@ -256,10 +312,10 @@ def maintainable(obj, **kwargs):
 def _item(obj: model.Item, **kwargs):
     elem = nameable(obj, **kwargs)
 
-    if obj.parent:
+    if isinstance(obj.parent, obj.__class__):
         # Reference to parent Item
         e_parent = Element("str:Parent")
-        e_parent.append(Element(":Ref", id=obj.parent.id))
+        e_parent.append(Element(":Ref", id=obj.parent.id, style="Ref"))
         elem.append(e_parent)
 
     return elem
@@ -268,7 +324,10 @@ def _item(obj: model.Item, **kwargs):
 @writer
 def _is(obj: model.ItemScheme):
     elem = maintainable(obj)
-    elem.extend(writer.recurse(i) for i in obj.items.values())
+
+    # Pass _with_urn to identifiable(): don't generate URNs for Items in `obj` which do
+    # not already have them
+    elem.extend(writer.recurse(i, _with_urn=False) for i in obj.items.values())
     return elem
 
 
@@ -312,7 +371,7 @@ def _component(obj: model.Component):
     elem = identifiable(obj)
     if obj.concept_identity:
         elem.append(
-            reference(obj.concept_identity, tag="str:ConceptIdentity", style="Ref",)
+            reference(obj.concept_identity, tag="str:ConceptIdentity", style="Ref")
         )
     if obj.local_representation:
         elem.append(
@@ -323,6 +382,12 @@ def _component(obj: model.Component):
         elem.append(writer.recurse(cast(model.DataAttribute, obj).related_to))
     except AttributeError:
         pass
+    except NotImplementedError:  # pragma: no cover
+        if getattr(obj, "related_to", None) is None:
+            pass  # .related_to not set
+        else:
+            raise  # Some other NotImplementedError
+
     return elem
 
 
@@ -352,9 +417,29 @@ def _cat(obj: model.Categorisation):
 
 
 @writer
+def _dk(obj: model.DataKey):
+    elem = Element("str:Key", isIncluded=str(obj.included).lower())
+    for value_for, cv in obj.key_value.items():
+        elem.append(Element("com:KeyValue", id=value_for.id))
+        elem[-1].append(Element("com:Value", cv.value))
+    return elem
+
+
+@writer
+def _dks(obj: model.DataKeySet):
+    elem = Element("str:DataKeySet", isIncluded=str(obj.included).lower())
+    elem.extend(writer.recurse(dk) for dk in obj.keys)
+    return elem
+
+
+@writer
 def _ms(obj: model.MemberSelection):
     elem = Element("com:KeyValue", id=obj.values_for.id)
-    elem.extend(Element("com:Value", mv.value) for mv in obj.values)
+    elem.extend(
+        # cast(): as of PR#30, only MemberValue is supported here
+        Element("com:Value", cast(model.MemberValue, mv).value)
+        for mv in obj.values
+    )
     return elem
 
 
@@ -371,12 +456,18 @@ def _cc(obj: model.ContentConstraint):
         obj, type=obj.role.role.name.replace("allowable", "allowed").title()
     )
 
-    # Constraint attachment
+    # Constraint attachment: written before data_content_keys or data_content_region
     for ca in obj.content:
         elem.append(Element("str:ConstraintAttachment"))
         elem[-1].append(reference(ca, style="Ref"))
 
+    # NB this is a property of Constraint, not ContentConstraint, so the code should be
+    #    copied/reused for AttachmentConstraint.
+    if obj.data_content_keys is not None:
+        elem.append(writer.recurse(obj.data_content_keys))
+
     elem.extend(writer.recurse(dcr) for dcr in obj.data_content_region)
+
     return elem
 
 
@@ -384,14 +475,14 @@ def _cc(obj: model.ContentConstraint):
 
 
 @writer
-def _nsr(obj: model.NoSpecifiedRelationship):
+def _nsr(obj: model._NoSpecifiedRelationship):
     elem = Element("str:AttributeRelationship")
     elem.append(Element("str:None"))
     return elem
 
 
 @writer
-def _pmr(obj: model.PrimaryMeasureRelationship):
+def _pmr(obj: model._PrimaryMeasureRelationship):
     elem = Element("str:AttributeRelationship")
     elem.append(Element("str:PrimaryMeasure"))
     elem[-1].append(Element(":Ref", id="(not implemented)"))
@@ -450,38 +541,69 @@ def _dfd(obj: model.DataflowDefinition):
 # §5.4: Data Set
 
 
-def _av(obj: Iterable[model.AttributeValue]):
+def _av(name: str, obj: Iterable[model.AttributeValue]):
+    elements = []
     for av in obj:
         assert av.value_for
-        yield Element("gen:Value", id=av.value_for.id, value=av.value)
+        elements.append(Element("gen:Value", id=av.value_for.id, value=av.value))
+    return Element(name, *elements)
+
+
+def _kv(name: str, obj: Iterable[model.KeyValue]):
+    elements = []
+    for kv in obj:
+        assert kv.value_for
+        elements.append(Element("gen:Value", id=kv.value_for.id, value=str(kv.value)))
+    return Element(name, *elements)
 
 
 @writer
 def _sk(obj: model.SeriesKey):
     elem = []
 
-    elem.append(Element("gen:SeriesKey"))
-    elem[-1].extend(
-        Element("gen:Value", id=kv.value_for.id, value=kv.value) for kv in obj
-    )
+    elem.append(_kv("gen:SeriesKey", obj))
     if len(obj.attrib):
-        elem.append(Element("gen:Attributes"))
-        elem[-1].extend(_av(obj.attrib.values()))
+        elem.append(_av("gen:Attributes", obj.attrib.values()))
 
     return tuple(elem)
 
 
 @writer
-def _obs(obj: model.Observation):
+def _obs(obj: model.Observation, struct_spec=False):
+    if struct_spec:
+        obs_attrs = {}
+        for key, av in obj.attached_attribute.items():
+            obs_attrs[key] = str(av.value)
+        if obj.value is not None:
+            if obj.value_for is None:
+                raise ValueError(
+                    "Observation.value_for is None when writing structure-specific data"
+                )
+            # NB this is usually OBS_VALUE, but not necessarily; see #67.
+            value_key = obj.value_for.id
+            obs_attrs[value_key] = str(obj.value)
+        if obj.dimension:
+            for key, dv in obj.dimension.values.items():
+                obs_attrs[key] = str(dv.value)
+
+        return Element(":Obs", **obs_attrs)
+
     elem = Element("gen:Obs")
 
-    assert obj.dimension and len(obj.dimension) == 1
-    elem.append(Element("gen:ObsDimension", value=obj.dimension.values[0].value))
-    elem.append(Element("gen:ObsValue", value=obj.value))
+    if obj.dimension:
+        if len(obj.dimension) == 1:
+            # Observation in a series; at most one dimension given by the Key
+            elem.append(
+                Element("gen:ObsDimension", value=obj.dimension.values[0].value)
+            )
+        else:
+            # Top-level observation, not associated with a SeriesKey
+            elem.append(_kv("gen:ObsKey", obj.dimension))
+
+    elem.append(Element("gen:ObsValue", value=str(obj.value)))
 
     if len(obj.attached_attribute):
-        elem.append(Element("gen:Attributes"))
-        elem[-1].extend(_av(obj.attached_attribute.values()))
+        elem.append(_av("gen:Attributes", obj.attached_attribute.values()))
 
     return elem
 
@@ -498,9 +620,30 @@ def _ds(obj: model.DataSet):
         attrib["structureRef"] = obj.structured_by.id
     elem = Element("mes:DataSet", **attrib)
 
+    obs_to_write = set(map(id, obj.obs))
+
+    struct_spec = isinstance(
+        obj, (model.StructureSpecificDataSet, model.StructureSpecificTimeSeriesDataSet)
+    )
+
     for sk, observations in obj.series.items():
-        elem.append(Element("gen:Series"))
-        elem[-1].extend(writer.recurse(sk))
-        elem[-1].extend(writer.recurse(obs) for obs in observations)
+        if struct_spec:
+            series_attrs = {}
+            for key, sk_dim in sk.values.items():
+                series_attrs[key] = str(sk_dim.value)
+            for key, sk_att in sk.attrib.items():
+                series_attrs[key] = str(sk_att.value)
+            elem.append(Element(":Series", **series_attrs))
+        else:
+            elem.append(Element("gen:Series"))
+            elem[-1].extend(writer.recurse(sk))
+        elem[-1].extend(
+            writer.recurse(obs, struct_spec=struct_spec) for obs in observations
+        )
+        obs_to_write -= set(map(id, observations))
+
+    # Observations not in any series
+    for obs in filter(lambda o: id(o) in obs_to_write, obj.obs):
+        elem.append(writer.recurse(obs, struct_spec=struct_spec))
 
     return elem

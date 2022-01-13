@@ -1,6 +1,6 @@
 import pytest
 
-from pandasdmx.message import StructureMessage
+from pandasdmx import message
 from pandasdmx.model import Agency, Annotation, Code, Codelist
 
 CL_ITEMS = [
@@ -39,10 +39,30 @@ def codelist():
     return cl
 
 
-@pytest.fixture
-def structuremessage(codelist):
-    """A StructureMessage for writer testing."""
-    sm = StructureMessage()
-    sm.codelist[codelist.id] = codelist
+# Classes from sdmx.message
 
-    return sm
+
+@pytest.fixture
+def footer():
+    """A :class:`.Footer` for writer testing."""
+    return message.Footer(
+        code=123,
+        severity="information",
+        text=["Here is one string.", "Here is another."],
+    )
+
+
+@pytest.fixture
+def structuremessage(codelist, footer):
+    """A :class:`.StructureMessage.` for writer testing."""
+    return message.StructureMessage(codelist={codelist.id: codelist}, footer=footer)
+
+
+@pytest.fixture
+def datamessage(footer):
+    return message.DataMessage(footer=footer)
+
+
+@pytest.fixture
+def errormessage(footer):
+    return message.ErrorMessage(footer=footer)

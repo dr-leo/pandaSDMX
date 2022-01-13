@@ -123,6 +123,19 @@ class Message(BaseModel):
     #: returned the Message. This is not part of the SDMX standard.
     response: Optional[Any] = None
 
+    def to_pandas(self, *args, **kwargs):
+        """Convert a Message instance to :mod:`pandas` object(s).
+
+        :func:`pandasdmx.writer.write` is called and passed
+        the `Message` instance  as first argument, followed  by any `args` and `kwargs`.
+
+        .. seealso:: :meth:`write`
+        """
+        from . import writer
+
+        return writer.to_pandas(self, *args, **kwargs)
+
+
     def __str__(self):
         return repr(self)
 

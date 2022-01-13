@@ -3,10 +3,15 @@
 What's new?
 ===========
 
+v1.7.0 (2022-01-13)
+-----------------------------------------------
+
+* Python 3.10 and pydantic 1.9 compat
+* remove deprecated Message.write method
+
 
 v1.6.0 (2021-05-25)
 -----------------------------------------------
-
 
 * add support for two new data sources:
  

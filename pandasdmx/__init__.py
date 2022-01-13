@@ -20,7 +20,7 @@ __all__ = [
     "to_xml",
 ]
 
-__version__ = "1.7.0dev"
+__version__ = "1.7.0"
 
 
 #: Top-level logger.

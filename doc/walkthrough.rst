@@ -284,6 +284,7 @@ Let's return to explore the :class:`.ContentConstraint` that came with our metad
 
     # Explore the contents
     # Currencies that are valid for CURRENCY_DENOM, but not CURRENCY
+    c1, c2 = set(c1), set(c2)
     c2 - c1
     # The opposite:
     c1 - c2

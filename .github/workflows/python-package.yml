@@ -39,5 +39,5 @@ jobs:
         pip install -r requirements.txt
     - name: Test with pytest
       run: |
-        pytest -ra -m "not experimental" --cov pandasdmx --cov-report term-missing
+        pytest -ra  --cov pandasdmx --cov-report term-missing
 

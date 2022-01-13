@@ -8,6 +8,7 @@ v1.7.0 (2022-01-13)
 
 * update some internals from khaeru/sdmx
 * Python 3.10 and pydantic 1.9 compat
+* remove obsolete  and unstable tests that depend on external data. TODO: improve coverage
 * remove deprecated Message.write method
 
 

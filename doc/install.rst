@@ -85,11 +85,16 @@ the tests suite has grown too large; on first run it downloads about 300MB of da
 You can run it anyway by installing the  source from Github, including the ``tests`` optional dependencies.
 Then, in the package directory, issue::
 
-    $ py.test
+    $ pytest
 
 By default, tests that involve retrieving data over the network are skipped. To
 run these tests, use::
 
     $ pytest -m network
+
+.. note:: Many tests requesting data or metadata from SDMX data providers 
+    are out of sync with either the data provided 
+    or with the source code. So expect a lot  of failures when
+    running tests with the `-m network` option.
 
 pytest offers many command-line options to control test invocation; see ``py.test --help`` or the `documentation <https://pytest.org>`_.

@@ -3,6 +3,14 @@
 What's new?
 ===========
 
+v1.7.0 (2022-01-27)
+-----------------------------------------------
+
+* fix regression regarding model.InternationLString.__str__
+* add ABS_XML as new agency, but does not seem to work, yet. ABS 
+  API is in beta.
+  
+  
 v1.7.0 (2022-01-13)
 -----------------------------------------------
 

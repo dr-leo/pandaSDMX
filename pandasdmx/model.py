@@ -157,15 +157,14 @@ class InternationalString:
         return result
 
     def localized_default(self, locale=None):
-        """Return the string in *locale*, or else the first defined."""
-        try:
+        """Return the string in *locale* if not  empty, or else the first defined."""
+        if locale and (locale in self.localizations) and self.localizations[locale]:  
             return self.localizations[locale]
-        except KeyError:
-            if len(self.localizations):
-                # No label in the default locale; use the first stored value
-                return next(iter(self.localizations.values()))
-            else:
-                return ""
+        if len(self.localizations):
+            # No label in the default locale; use the first stored non-empty str value
+            return next(filter(None, self.localizations.values()))
+        else:
+            return ""
 
     def __str__(self):
         return self.localized_default(DEFAULT_LOCALE)

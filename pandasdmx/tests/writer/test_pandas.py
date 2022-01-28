@@ -86,7 +86,7 @@ def test_write_agencyscheme():
         msg = pandasdmx.read_sdmx(f)
         data = pandasdmx.to_pandas(msg)
 
-    assert data["organisation_scheme"]["AGENCIES"]['name']["ESTAT"] == "Eurostat"
+    assert data["organisation_scheme"]["AGENCIES"]["name"]["ESTAT"] == "Eurostat"
 
     # to_pandas only returns keys for non-empty attributes of StructureMessage
     # https://github.com/dr-leo/pandaSDMX/issues/90
@@ -130,7 +130,7 @@ def test_write_codelist():
 
     # Items names can be retrieved by ID
     freq = codelists["CL_FREQ"]
-    assert freq['name']["A"] == "Annual"
+    assert freq["name"]["A"] == "Annual"
 
     # Non-hierarchical code list has a string name
     # does not work as DataFrame has no name.

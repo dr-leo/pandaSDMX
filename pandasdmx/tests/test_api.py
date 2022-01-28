@@ -51,21 +51,6 @@ def test_request():
     r.timeout = 300
     assert r.timeout == 300
 
-    # dir() includes convenience methods for resource endpoints
-    expected = {
-        "cache",
-        "clear_cache",
-        "get",
-        "preview_data",
-        "series_keys",
-        "session",
-        "source",
-        "timeout",
-        "view_doc",
-    }
-    expected |= set(ep.name for ep in pandasdmx.Resource)
-    assert set(filter(lambda s: not s.startswith("_"), dir(r))) == expected
-
 
 def test_request_get_exceptions():
     """Tests of Request.get() that don't require remote data."""

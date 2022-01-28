@@ -8,7 +8,13 @@ v1.8.0 (2022-01-28)
 -----------------------------------------------
 
 * model: make validation level configurable. Default is sloppy. This is 
-  currently used to omit URN matching as it  fails for  DSDs from BBK
+  currently used to omit URN matching as it  fails 
+  for  DSDs from BBK. And this feature is hardly needed anyway.
+* add :meth:`pandasdmx.api.Request.set_validation_level` and corresponding
+  :meth:`pandasdmx.api.Request.get_validation_level` static convenience methods
+* New source added: ABS_XML 
+  for the new XML-based API of Australian Bureau of Stats
+* add àpi_id` item for sources. Can be different from `id`.
 
   
 v1.7.0 (2022-01-27)

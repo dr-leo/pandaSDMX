@@ -135,7 +135,6 @@ class Message(BaseModel):
 
         return writer.to_pandas(self, *args, **kwargs)
 
-
     def __str__(self):
         return repr(self)
 
@@ -211,8 +210,7 @@ class StructureMessage(Message):
         for field, field_info in direct_fields(self.__class__).items():
             # NB for some reason mypy complains here, but not in __contains__(), below
             if isinstance(
-                obj,
-                get_args(field_info.outer_type_)[1],  # type: ignore [attr-defined]
+                obj, get_args(field_info.outer_type_)[1],  # type: ignore [attr-defined]
             ):
                 getattr(self, field)[obj.id] = obj
                 return

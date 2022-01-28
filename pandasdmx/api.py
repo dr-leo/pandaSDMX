@@ -12,11 +12,12 @@ from warnings import warn
 
 import requests
 
-from pandasdmx import remote
-from pandasdmx.reader import get_reader_for_content_type
+from . import remote
+from .reader import get_reader_for_content_type
 
 from .message import Message
-from .model import DataStructureDefinition, MaintainableArtefact
+from pandasdmx import model
+from .model import DataStructureDefinition, MaintainableArtefact, ValidationLevels
 from .source import NoSource, list_sources, sources
 from .util import Resource
 
@@ -66,6 +67,22 @@ class Request:
 
         if log_level:
             logging.getLogger("pandasdmx").setLevel(log_level)
+
+    @staticmethod
+    def set_validation_level(level):
+        """
+        Set validation level to `level`. Allowed values aref"strict" and "slopp" (default). "sloppy" means thatURNs are not validated against the regex defined in:mod:`urn`. 
+        Returns None.
+        """
+        model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
+
+    @staticmethod
+    def get_validation_level():
+        """
+        Return current validation level. For semantics 
+        of values see :meth:`set_validation_level`
+        """
+        return model.DEFAULT_VAL_LEVEL
 
     def __getattr__(self, name):
         """Convenience methods."""
@@ -182,7 +199,7 @@ class Request:
             raise ValueError(
                 f"resource_type ({resource_type!r}) must be in " + Resource.describe()
             )
-            
+
         # Base URL
         try:
             # base URL specific to resource_type (eg. Bundesbank)?
@@ -227,12 +244,16 @@ class Request:
                 warn(f"'provider' argument is redundant for {resource_type!r}")
             provider_id = None
         else:
-            provider_id = provider or getattr(self.source, "id", None)
+            provider_id = (
+                provider
+                or getattr(self.source, "api_id", None)
+                or getattr(self.source, "id", None)
+            )
 
         url_parts.extend([provider_id, resource_id])
 
         version = kwargs.pop("version", self.source.default_version)
-        if    resource_type != Resource.data:
+        if resource_type != Resource.data:
             url_parts.append(version)
 
         key = kwargs.pop("key", None)

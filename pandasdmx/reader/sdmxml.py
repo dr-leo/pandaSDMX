@@ -506,7 +506,8 @@ class Reader(BaseReader):
         existing = self.get_single(cls, obj.id)
 
         if existing and (
-            existing.compare(obj, strict=True) or existing.urn == pandasdmx.urn.make(obj)
+            existing.compare(obj, strict=True)
+            or existing.urn == pandasdmx.urn.make(obj)
         ):
             if elem is not None:
                 # Previously an external reference, now concrete

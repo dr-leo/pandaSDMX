@@ -17,7 +17,11 @@ agencies, central banks, and international organisations.
 
 - convert data and metadata into `pandas <http://pandas.pydata.org>`_ objects,
   for use with the analysis, plotting, and other tools in the Python data
-  science ecosystem;
+  science ecosystem; 
+  See also the **companion project `intake_sdmx
+  <htps://intake_sdmx.readthedocs.io>`_**, a plugin for the 
+  `intake <htps://intake_sdmx.readthedocs.io>`_ data acquisition
+  and distribution framework;
 - apply the :doc:`SDMX Information Model <implementation>` to your own data;
 
 …and much more.

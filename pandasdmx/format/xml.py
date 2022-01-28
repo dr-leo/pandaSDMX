@@ -11,10 +11,7 @@ from pandasdmx.format import list_content_types
 log = logging.getLogger(__name__)
 
 #: Known media types for SDMX-ML.
-CONTENT_TYPES = [
-    "application/xml",
-    "text/xml",
-] + list_content_types(base="xml")
+CONTENT_TYPES = ["application/xml", "text/xml",] + list_content_types(base="xml")
 
 
 # XML Namespaces

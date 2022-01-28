@@ -29,7 +29,7 @@ from pandasdmx.model import (
 
 
 # set validation level
-model.DEFAULT_VAL_LEVEL = model.ValidationLevels.strict  
+model.DEFAULT_VAL_LEVEL = model.ValidationLevels.strict
 
 
 def test_contentconstraint():

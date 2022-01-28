@@ -29,6 +29,9 @@ class Source(BaseModel):
 
     #: ID of the data source
     id: str
+    #: Optional API IDTakes precedence over id when URL is constructed
+    # Useful if a provider offers several APIs
+    api_id: Optional[str]
 
     #: Base URL for queries
     url: Optional[HttpUrl]
@@ -40,14 +43,12 @@ class Source(BaseModel):
     documentation: Optional[HttpUrl]
 
     headers: Dict[str, Any] = {}
-    
+
     # resource-specific URLs for end-point. Overrides `url` param
     resource_urls: Dict[str, HttpUrl] = {}
-    
+
     default_version: str = "latest"
-    
-    
-    
+
     #: :class:`.DataContentType` indicating the type of data returned by the
     #: source.
     data_content_type: DataContentType = DataContentType.XML

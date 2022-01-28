@@ -75,9 +75,24 @@ In order to anticipate and handle these differences:
 SDMX-JSON —
 `Website <http://www.abs.gov.au/>`__
 
+.. note:: This is deprecated. Use new XML-based
+    API with ID "ABS_XML". Se below. In future versions,
+    ABS will refer to the new API.
+    
 .. autoclass:: pandasdmx.source.abs.Source
    :members:
 
+.. _ABS_XML:
+
+``ABS_XML``: Australian Bureau of Statistics - XML-based API
+----------------------------------------------------------------
+
+SDMX-XML —
+
+This will be renamed to "ABS" in future versions.
+The new API supports dataflow, datastructure and other SDMX 2.1-compliant resources.
+It is recommended to use this new API. However, ABS still marks itas Beta (2022-01-25) and hints at potential
+delays in data publication.
 
 
 .. _BBK:

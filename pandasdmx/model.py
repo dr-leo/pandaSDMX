@@ -66,6 +66,11 @@ log = logging.getLogger(__name__)
 #      Currently set to 'en' because test_dsd.py expects it.
 DEFAULT_LOCALE = "en"
 
+# Configure validation level (new in v1.8.0)
+# This is currently used only to prevent URN matching
+ValidationLevels = Enum("ValidationLevels", "strict sloppy")
+DEFAULT_VAL_LEVEL = ValidationLevels.sloppy
+
 
 # §3.2: Base structures
 
@@ -279,7 +284,7 @@ class IdentifiableArtefact(AnnotableArtefact):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.urn:
+        if self.urn and DEFAULT_VAL_LEVEL == ValidationLevels.strict:
             import pandasdmx.urn
 
             self.urn_group = pandasdmx.urn.match(self.urn)

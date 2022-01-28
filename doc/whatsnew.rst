@@ -3,6 +3,14 @@
 What's new?
 ===========
 
+
+v1.8.0 (2022-01-28)
+-----------------------------------------------
+
+* model: make validation level configurable. Default is sloppy. This is 
+  currently used to omit URN matching as it  fails for  DSDs from BBK
+
+  
 v1.7.0 (2022-01-27)
 -----------------------------------------------
 

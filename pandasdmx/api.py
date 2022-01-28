@@ -457,7 +457,8 @@ when using a fsspec.core.OpenFile.
             return req
 
         try:
-            response = self.session.send(req)
+            response = self.session.send(req, 
+                timeout=self.session.timeout)
             response.raise_for_status()
         except requests.exceptions.ConnectionError as e:
             raise e from None

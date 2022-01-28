@@ -24,7 +24,7 @@ class Source(BaseSource):
     """
 
     _id = "ESTAT"
-    get_footer_url : Tuple[int, int] = (30, 3)
+    get_footer_url: Tuple[int, int] = (30, 3)
 
     def modify_request_args(self, kwargs):
         super().modify_request_args(kwargs)
@@ -84,7 +84,7 @@ class Source(BaseSource):
             return response, content
 
         # Open the zip archive
-        zf = ZipFile(content.tee, mode="r") 
+        zf = ZipFile(content.tee, mode="r")
         # The archive should contain only one file
         infolist = zf.infolist()
         assert len(infolist) == 1
@@ -96,4 +96,4 @@ class Source(BaseSource):
         ntf = NamedTemporaryFile(prefix="pandasdmx-")
         ntf.write(zf.open(infolist[0]).read())
         ntf.seek(0)
-        return response, ntf 
+        return response, ntf

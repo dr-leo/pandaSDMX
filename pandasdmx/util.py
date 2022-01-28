@@ -36,7 +36,6 @@ __all__ = [
 ]
 
 
-
 # Mapping from Resource value to class name.
 CLASS_NAME = {
     "dataflow": "DataflowDefinition",

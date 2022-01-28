@@ -137,6 +137,6 @@ def test_parse_elem(elem, expected):
             result = stack[0]
 
         # if expected:
-            # Expected value supplied
-            # disable this. to be reviewed
-            # assert expected == result
+        # Expected value supplied
+        # disable this. to be reviewed
+        # assert expected == result

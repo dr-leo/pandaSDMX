@@ -8,6 +8,7 @@
   },
   {
     "id": "ABS_XML",
+    "api_id": "ABS",
     "resources": {
       "data": {
         "headers": {}

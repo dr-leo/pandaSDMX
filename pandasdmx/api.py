@@ -52,8 +52,10 @@ class Request:
     #: :class:`.Session` for queries sent from the instance.
     session = None
 
-    def __init__(self, source=None, log_level=None, session=None, **session_opts):
+    def __init__(self, source=None, log_level=None, session=None,
+        timeout=30.1,     **session_opts):
         """Constructor."""
+        self.timeout = timeout
         try:
             self.source = sources[source.upper()] if source else NoSource
         except KeyError:
@@ -142,14 +144,6 @@ class Request:
 
     def clear_cache(self):
         self.cache.clear()
-
-    @property
-    def timeout(self):
-        return self.session.timeout
-
-    @timeout.setter
-    def timeout(self, value):
-        self.session.timeout = value
 
     def series_keys(self, flow_id, use_cache=True):
         """Return all :class:`.SeriesKey` for *flow_id*.
@@ -478,7 +472,7 @@ when using a fsspec.core.OpenFile.
 
         try:
             response = self.session.send(req, 
-                timeout=self.session.timeout)
+                timeout=self.timeout)
             response.raise_for_status()
         except requests.exceptions.ConnectionError as e:
             raise e from None

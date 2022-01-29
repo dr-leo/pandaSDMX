@@ -68,21 +68,41 @@ class Request:
         if log_level:
             logging.getLogger("pandasdmx").setLevel(log_level)
 
-    @staticmethod
-    def set_validation_level(level):
+
+    @property
+    def default_locale(self):
         """
-        Set validation level to `level`. Allowed values aref"strict" and "slopp" (default). "sloppy" means thatURNs are not validated against the regex defined in:mod:`urn`. 
+        Return global default locale
+        for international strings
+        used, eg. by writers 
+        """
+        return model.DEFAULT_LOCALE
+
+
+    @default_locale.setter
+    def default_locale(self, locale):
+        """
+        Set DEFAULT_LOCALE used eg. bywriters for international strings instructural metadata.
+        """
+        model.DEFAULT_LOCALE = locale
+
+
+    @property
+    def validation_level(self):
+        """
+        Return current validation level.  
+        """
+        return model.DEFAULT_VAL_LEVEL
+
+
+    @validation_level.setter
+    def validation_level(self, level):
+        """
+        Set validation level to `level`. Allowed values aref"strict" and "sloppy" (default). "sloppy" means thatURNs are not validated against the regex defined in:mod:`urn`. 
         Returns None.
         """
         model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
 
-    @staticmethod
-    def get_validation_level():
-        """
-        Return current validation level. For semantics 
-        of values see :meth:`set_validation_level`
-        """
-        return model.DEFAULT_VAL_LEVEL
 
     def __getattr__(self, name):
         """Convenience methods."""

@@ -182,7 +182,7 @@ def add_source(info, id=None, override=False, **kwargs):
 
     info.update(kwargs)
 
-    if id in sources:
+    if id in sources and not override:
         raise ValueError("Data source '%s' already defined; use override=True", id)
 
     # Maybe import a subclass that defines a hook

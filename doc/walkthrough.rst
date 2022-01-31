@@ -236,7 +236,7 @@ Among other things, the DSD defines:
     dsd.attributes.components
     dsd.measures.components
 
-Chosing just the ``FREQ`` dimension, we can explore the :class:`.Codelist` that contains valid values for this dimension in the data flow:
+Choosing just the ``FREQ`` dimension, we can explore the :class:`.Codelist` that contains valid values for this dimension in the data flow:
 
 .. ipython:: python
 
@@ -252,8 +252,31 @@ Chosing just the ``FREQ`` dimension, we can explore the :class:`.Codelist` that 
     sdmx.to_pandas(cl)
 
 
-Understand constraints
-----------------------
+Internationalisation
+-------------------------
+
+Data providers may include names and descriptions of dataflows,
+dimensions, codes etc. in multiple languages. In the information model, this is reflected in the :class:`model.InternationalString`.
+When exporting such metadata to a pandas object, the language is selected in two stages. First, a global default locale 
+setting is used. When importing pandaSDMX, this default locale is always set to"en" as most data providers  commonly  include English strings. Second, if there is noEnglish version of a given attribute, the fallback is to take the first language found in the InternationalString. 
+
+You can change the default locale prior to exporting metadata to pandas through a convenient
+property on the :class:`Request` as follows:
+
+.. ipython:: python
+
+    ecb.default_locale
+    ecb.default_locale = "fr"
+    # Note that this setting is global, not per Request instance.    
+    insee_flows = sdmx.Request('insee').dataflow()
+    sdmx.to_pandas(insee_flows.dataflow).head()
+    ecb.default_locale = "en"
+    sdmx.to_pandas(insee_flows.dataflow).head()
+
+.. versionadded:: 1.8.1
+
+Understanding constraints
+-------------------------
 
 The ``CURRENCY`` and ``CURRENCY_DENOM`` dimensions of this DSD are both represented using the same ``CL_CURRENCY`` code list.
 In order to be reusable for as many data sets as possible, this code list is extensive and complete:
@@ -296,7 +319,7 @@ Let's return to explore the :class:`.ContentConstraint` that came with our metad
 We also see that 'USD' and 'JPY' are valid values along both dimensions.
 
 Attribute names and allowed values can be obtained in a similar fashion.
-
+    
 
 Select and query data from a dataflow
 =====================================

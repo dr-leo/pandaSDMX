@@ -27,7 +27,6 @@ class Session(MaybeCachedSession):
 
     def __init__(
         self,
-        timeout=30.1,
         proxies=None,
         stream=False,
         auth=None,
@@ -63,7 +62,6 @@ class Session(MaybeCachedSession):
         # TODO: consider passing these values to __init__, but manage
         # the ugly 'get_footer' stuff
         self.proxies = proxies
-        self.timeout = timeout
         self.stream = stream
         self.auth = auth
         self.cert = cert

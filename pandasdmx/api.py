@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 class Request:
     """Client for a SDMX REST web service.
 
-    Parameters
-    ----------
+    Parameters:
+    
     source : str or source.Source
         Identifier of a data source. If a string, must be one of the known
         sources in :meth:`list_sources`.
@@ -37,11 +37,20 @@ class Request:
         :ref:`standard logging levels <py:levels>`.
     session : optional instance of :class:`requests.Session`, 
         or  a subclass. If given,
-        it is  used for HTTP requests, and any   *session_opts* passed  will raise TypeError. 
-        A typical  use case is the injection of alternative caching libraries such as Cache Control.
+        it is  used for HTTP requests, 
+        and any   *session_opts* passed  will raise TypeError. 
+        A typical  use case is the injection of alternative 
+        caching libraries such as Cache Control.
+    timeout : float or 2-tuple. 
+        It is stored as :attr:`Request.timeout`. It is  passed on to each 
+        HTTP request to an SDMX source. Default is 30.1.
+        If it is a float, it denotes the 
+        number of seconds to wait
+        for a response from the server. 
+        See the docs for the`requests` library for more details.    
     session_opts :
         Additional keyword arguments are passed to
-        :class:`.Session`.
+        :class:`.Session`. Typical uses are to specify proxies, auth or cert.
     """
 
     cache: Dict[str, Message] = {}
@@ -52,8 +61,10 @@ class Request:
     #: :class:`.Session` for queries sent from the instance.
     session = None
 
-    def __init__(self, source=None, log_level=None, session=None, **session_opts):
+    def __init__(self, source=None, log_level=None, session=None,
+        timeout=30.1,     **session_opts):
         """Constructor."""
+        self.timeout = timeout
         try:
             self.source = sources[source.upper()] if source else NoSource
         except KeyError:
@@ -68,21 +79,34 @@ class Request:
         if log_level:
             logging.getLogger("pandasdmx").setLevel(log_level)
 
-    @staticmethod
-    def set_validation_level(level):
-        """
-        Set validation level to `level`. Allowed values aref"strict" and "slopp" (default). "sloppy" means thatURNs are not validated against the regex defined in:mod:`urn`. 
-        Returns None.
-        """
-        model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
 
-    @staticmethod
-    def get_validation_level():
+    @property
+    def default_locale(self):
         """
-        Return current validation level. For semantics 
-        of values see :meth:`set_validation_level`
+        Return global default locale
+        for international strings
+        used, eg. by writers 
+        """
+        return model.DEFAULT_LOCALE
+
+
+    @default_locale.setter
+    def default_locale(self, locale):
+        model.DEFAULT_LOCALE = locale
+
+
+    @property
+    def validation_level(self):
+        """
+        Return current validation level.  
         """
         return model.DEFAULT_VAL_LEVEL
+
+
+    @validation_level.setter
+    def validation_level(self, level):
+        model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
+
 
     def __getattr__(self, name):
         """Convenience methods."""
@@ -123,19 +147,11 @@ class Request:
     def clear_cache(self):
         self.cache.clear()
 
-    @property
-    def timeout(self):
-        return self.session.timeout
-
-    @timeout.setter
-    def timeout(self, value):
-        self.session.timeout = value
-
     def series_keys(self, flow_id, use_cache=True):
         """Return all :class:`.SeriesKey` for *flow_id*.
 
         Returns
-        -------
+        
         list
         """
         # download an empty dataset with all available series keys
@@ -351,8 +367,8 @@ class Request:
         - 'references': control which item(s) related to a metadata resource
           are retrieved, e.g. `references='parentsandsiblings'`.
 
-        Parameters
-        ----------
+        Parameters:
+        
         resource_type : str or :class:`Resource`, optional
             Type of resource to retrieve.
         resource_id : str, optional
@@ -360,8 +376,9 @@ class Request:
         tofile : str or :class:`~os.PathLike` or `file-like object`, 
             or :class:`fsspec.core.OpenFile` with 1 item, optional
             File path or file-like to write SDMX data as it is recieved.
-            *file-like* must be binary and writable. It may be used in a with-context (recommended
-when using a fsspec.core.OpenFile.
+            *file-like* must be binary and writable. It may be used in a with-context 
+            (recommended
+            when using a fsspec.core.OpenFile.
         use_cache : bool, optional
             If :obj:`True`, return a previously retrieved :class:`~.Message`
             from :attr:`cache`, or update the cache with a newly-retrieved
@@ -373,8 +390,8 @@ when using a fsspec.core.OpenFile.
         **kwargs
             Other, optional parameters (below).
 
-        Other Parameters
-        ----------------
+        Other Parameters:
+        
         dsd : :class:`~.DataStructureDefinition`
             Existing object used to validate the `key` argument. If not
             provided, an additional query executed to retrieve a DSD in order
@@ -413,14 +430,14 @@ when using a fsspec.core.OpenFile.
             :attr:`~.VersionableArtefact.version>` of a resource to retrieve.
             Default: the keyword 'latest'.
 
-        Returns
-        -------
+        Returns:
+        
         :class:`~.Message` or :class:`~requests.Request`
             The requested SDMX message or, if `dry_run` is :obj:`True`, the
             prepared request object.
 
-        Raises
-        ------
+        Raises:
+        
         NotImplementedError
             If the :attr:`source` does not support the given `resource_type`
             and `force` is not :obj:`True`.
@@ -458,7 +475,7 @@ when using a fsspec.core.OpenFile.
 
         try:
             response = self.session.send(req, 
-                timeout=self.session.timeout)
+                timeout=self.timeout)
             response.raise_for_status()
         except requests.exceptions.ConnectionError as e:
             raise e from None
@@ -526,8 +543,8 @@ when using a fsspec.core.OpenFile.
 
             keys_df = sdmx.to_pandas(keys)
 
-        Parameters
-        ----------
+        Parameters:
+        
         flow_id : str
             Dataflow to preview.
         key : dict, optional
@@ -536,8 +553,8 @@ when using a fsspec.core.OpenFile.
             *key* are returned. If not given, preview_data is equivalent to
             ``list(req.series_keys(flow_id))``.
 
-        Returns
-        -------
+        Returns:
+        
         list of :class:`.SeriesKey`
         """
         # Retrieve the series keys

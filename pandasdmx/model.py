@@ -62,8 +62,8 @@ from pandasdmx.util import (
 
 log = logging.getLogger(__name__)
 
-# TODO read this from the environment, or use any value set in the SDMX-ML spec.
-#      Currently set to 'en' because test_dsd.py expects it.
+# Used by writers to select from InternationalString. 
+# Exposed through pandasdmx.api.Request.default_locale
 DEFAULT_LOCALE = "en"
 
 # Configure validation level (new in v1.8.0)

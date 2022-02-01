@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 class Request:
     """Client for a SDMX REST web service.
 
-    Parameters
-    ----------
+    Parameters:
+    
     source : str or source.Source
         Identifier of a data source. If a string, must be one of the known
         sources in :meth:`list_sources`.
@@ -37,11 +37,20 @@ class Request:
         :ref:`standard logging levels <py:levels>`.
     session : optional instance of :class:`requests.Session`, 
         or  a subclass. If given,
-        it is  used for HTTP requests, and any   *session_opts* passed  will raise TypeError. 
-        A typical  use case is the injection of alternative caching libraries such as Cache Control.
+        it is  used for HTTP requests, 
+        and any   *session_opts* passed  will raise TypeError. 
+        A typical  use case is the injection of alternative 
+        caching libraries such as Cache Control.
+    timeout : float or 2-tuple. 
+        It is stored as :attr:`Request.timeout`. It is  passed on to each 
+        HTTP request to an SDMX source. Default is 30.1.
+        If it is a float, it denotes the 
+        number of seconds to wait
+        for a response from the server. 
+        See the docs for the`requests` library for more details.    
     session_opts :
         Additional keyword arguments are passed to
-        :class:`.Session`.
+        :class:`.Session`. Typical uses are to specify proxies, auth or cert.
     """
 
     cache: Dict[str, Message] = {}
@@ -83,9 +92,6 @@ class Request:
 
     @default_locale.setter
     def default_locale(self, locale):
-        """
-        Set DEFAULT_LOCALE used eg. bywriters for international strings instructural metadata.
-        """
         model.DEFAULT_LOCALE = locale
 
 
@@ -99,10 +105,6 @@ class Request:
 
     @validation_level.setter
     def validation_level(self, level):
-        """
-        Set validation level to `level`. Allowed values aref"strict" and "sloppy" (default). "sloppy" means thatURNs are not validated against the regex defined in:mod:`urn`. 
-        Returns None.
-        """
         model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
 
 
@@ -149,7 +151,7 @@ class Request:
         """Return all :class:`.SeriesKey` for *flow_id*.
 
         Returns
-        -------
+        
         list
         """
         # download an empty dataset with all available series keys
@@ -365,8 +367,8 @@ class Request:
         - 'references': control which item(s) related to a metadata resource
           are retrieved, e.g. `references='parentsandsiblings'`.
 
-        Parameters
-        ----------
+        Parameters:
+        
         resource_type : str or :class:`Resource`, optional
             Type of resource to retrieve.
         resource_id : str, optional
@@ -374,8 +376,9 @@ class Request:
         tofile : str or :class:`~os.PathLike` or `file-like object`, 
             or :class:`fsspec.core.OpenFile` with 1 item, optional
             File path or file-like to write SDMX data as it is recieved.
-            *file-like* must be binary and writable. It may be used in a with-context (recommended
-when using a fsspec.core.OpenFile.
+            *file-like* must be binary and writable. It may be used in a with-context 
+            (recommended
+            when using a fsspec.core.OpenFile.
         use_cache : bool, optional
             If :obj:`True`, return a previously retrieved :class:`~.Message`
             from :attr:`cache`, or update the cache with a newly-retrieved
@@ -387,8 +390,8 @@ when using a fsspec.core.OpenFile.
         **kwargs
             Other, optional parameters (below).
 
-        Other Parameters
-        ----------------
+        Other Parameters:
+        
         dsd : :class:`~.DataStructureDefinition`
             Existing object used to validate the `key` argument. If not
             provided, an additional query executed to retrieve a DSD in order
@@ -427,14 +430,14 @@ when using a fsspec.core.OpenFile.
             :attr:`~.VersionableArtefact.version>` of a resource to retrieve.
             Default: the keyword 'latest'.
 
-        Returns
-        -------
+        Returns:
+        
         :class:`~.Message` or :class:`~requests.Request`
             The requested SDMX message or, if `dry_run` is :obj:`True`, the
             prepared request object.
 
-        Raises
-        ------
+        Raises:
+        
         NotImplementedError
             If the :attr:`source` does not support the given `resource_type`
             and `force` is not :obj:`True`.
@@ -540,8 +543,8 @@ when using a fsspec.core.OpenFile.
 
             keys_df = sdmx.to_pandas(keys)
 
-        Parameters
-        ----------
+        Parameters:
+        
         flow_id : str
             Dataflow to preview.
         key : dict, optional
@@ -550,8 +553,8 @@ when using a fsspec.core.OpenFile.
             *key* are returned. If not given, preview_data is equivalent to
             ``list(req.series_keys(flow_id))``.
 
-        Returns
-        -------
+        Returns:
+        
         list of :class:`.SeriesKey`
         """
         # Retrieve the series keys

@@ -3,7 +3,22 @@
 What's new?
 ===========
 
+v1.8.1 (2022-02-XX)
+-----------------------------------------------
 
+
+* make default locale configurable via 
+  :attr:`pandasdmx.api.Request.default_locale` property. This controls output  
+  of multi-lingual strings when generating pandas objects.
+* add documentation on configuring the default locale. See walkthrough.
+* `default_validation_level` is now a property of :class:`pandasdmx.api.Request`
+* Bug fix: make `timeout` a kwarg of :class:`pandasdmx.api.Request` constructor and store 
+  it  as an attribute. A property is no longer needed. 
+  propagate `timeout` param to each HTTP request. Befor, it 
+  was erroneously attached to the Session instance, thus it had no effect.
+
+  
+ 
 v1.8.0 (2022-01-28)
 -----------------------------------------------
 

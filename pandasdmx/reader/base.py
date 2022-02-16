@@ -1,3 +1,12 @@
+from pathlib import Path
+try:
+    from appdirs import user_data_dir
+    schema_dir_base = Path(user_data_dir(
+            appname="pandasdmx", 
+            appauthor=False))
+except ImportError:
+    schema_dir_base = None
+
 import logging
 from abc import ABC, abstractmethod
 from functools import lru_cache

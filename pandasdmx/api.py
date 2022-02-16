@@ -14,7 +14,7 @@ import requests
 
 from . import remote
 from .reader import get_reader_for_content_type
-
+from .reader.base import schema_dir_base
 from .message import Message
 from pandasdmx import model
 from .model import DataStructureDefinition, MaintainableArtefact, ValidationLevels
@@ -314,6 +314,7 @@ class Request:
             raise ValueError(f"unrecognized arguments: {kwargs!r}")
 
         return requests.Request("get", url, params=parameters, headers=headers)
+        
 
     def get(
         self,
@@ -573,6 +574,24 @@ class Request:
             # No key is provided
             return list(all_keys)
 
+
+    def validate(self, msg):
+        # reload message
+        msg_response = self.session.get(msg.response.url)
+        msg_content = remote.ResponseIO(msg_response)
+        # Select reader class
+        content_type = msg.response.headers.get("content-type")
+        Reader = get_reader_for_content_type(content_type)
+        # Get the schema
+        schema_url = msg.sdmx_schema_location.split()[1]
+        schema_fn = requests.urllib3.util.parse_url(schema_url).path.split("/")[-1]
+        if "sdmxml" not in Reader.__module__:
+            raise TypeError("Validation of message in sdmx-json format is not supported.")
+        schema_path = schema_dir_base.joinpath("sdmx_2_1", "xml", schema_fn)
+        schema_content = schema_path.open("rb")
+        # Validate message against the schema
+        return Reader.validate_message(msg_content, schema_content)        
+    
 
 def read_url(url, **kwargs):
     """Request a URL directly."""

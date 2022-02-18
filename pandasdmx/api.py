@@ -14,7 +14,6 @@ import requests
 
 from . import remote
 from .reader import get_reader_for_content_type
-from .reader.base import schema_dir_base
 from .message import Message
 from pandasdmx import model
 from .model import DataStructureDefinition, MaintainableArtefact, ValidationLevels
@@ -575,22 +574,25 @@ class Request:
             return list(all_keys)
 
 
-    def validate(self, msg):
-        # reload message
-        msg_response = self.session.get(msg.response.url)
-        msg_content = remote.ResponseIO(msg_response)
+    def validate(self, msg, schema_dir=None):
+        # reload message 
+        if  isinstance(msg, Message):
+            msg_response = self.session.get(msg.response.url)
+            msg_content = remote.ResponseIO(msg_response)
+        else:
+            raise TypeError(f"`msg` arg must be an instance of  a \
+                subclass of pandasdmx.message.Message. {type(msg)} given.")
         # Select reader class
         content_type = msg.response.headers.get("content-type")
         Reader = get_reader_for_content_type(content_type)
         # Get the schema
         schema_url = msg.sdmx_schema_location.split()[1]
         schema_fn = requests.urllib3.util.parse_url(schema_url).path.split("/")[-1]
-        if "sdmxml" not in Reader.__module__:
-            raise TypeError("Validation of message in sdmx-json format is not supported.")
-        schema_path = schema_dir_base.joinpath("sdmx_2_1", "xml", schema_fn)
+        schema_dir = schema_dir or Reader.get_schema_dir() 
+        schema_path = schema_dir.joinpath(schema_fn)
         schema_content = schema_path.open("rb")
         # Validate message against the schema
-        return Reader.validate_message(msg_content, schema_content)        
+        return Reader.validate_message(msg_content, schema_content, schema_dir=schema_dir)        
     
 
 def read_url(url, **kwargs):

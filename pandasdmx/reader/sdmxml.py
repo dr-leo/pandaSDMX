@@ -22,8 +22,7 @@ import pandasdmx.urn
 from pandasdmx import message, model
 from pandasdmx.exceptions import XMLParseError  # noqa: F401
 from pandasdmx.format.xml import CONTENT_TYPES, class_for_tag, qname
-from pandasdmx.reader.base import BaseReader, schema_dir_base 
-
+from pandasdmx.reader.base import BaseReader 
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -105,17 +104,6 @@ def to_tags(*args):
 
 PARSE.update({k: None for k in product(to_tags(SKIP), ["start", "end"])})
 
-class XSDResolver(etree.Resolver):
-    """
-    Resolve XSD imports to locate them within <user_data_dir>/pandaSDMX/sdmx_2_1. 
-    """
-    def resolve(self, url, id, context):
-        "See lxml docs for background info."
-        if schema_dir_base is None:
-            raise RuntimeError("Validation failed. `appdirs` package not installed.")
-        fn = schema_dir_base.joinpath("sdmx_2_1", "xml", url)
-        return self.resolve_filename(str(fn),  context)
-        
 
 class NotReference(Exception):
     pass
@@ -208,6 +196,20 @@ class Reference:
         )
 
 
+class XSDResolver(etree.Resolver):
+    """
+    Resolve XSD imports to locate them within <user_data_dir>/pandaSDMX/sdmx_2_1. 
+    """
+    def __init__(self, *args, schema_dir=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.schema_dir = schema_dir
+        
+    def resolve(self, url, id, context):
+        "See lxml docs for background info."
+        fn = self.schema_dir.joinpath(url)
+        return self.resolve_filename(str(fn),  context)
+        
+
 class Reader(BaseReader):
     content_types = CONTENT_TYPES
     suffixes = [".xml"]
@@ -222,6 +224,23 @@ class Reader(BaseReader):
     @classmethod
     def detect(cls, content):
         return content.startswith(b"<")
+
+    @staticmethod
+    def get_schema_dir():
+        base_dir = BaseReader.get_schema_dir()
+        return base_dir.joinpath("sdmx_2_1/xml")
+
+    @staticmethod    
+    def validate_message(msg, schema_content, schema_dir=None):
+        p = etree.XMLParser()
+        p.resolvers.add(XSDResolver(schema_dir=schema_dir or Reader.get_schema_dir()))
+        schema_doc = etree.parse(schema_content, parser=p)
+        xmlschema = etree.XMLSchema(schema_doc)
+        msg_doc = etree.parse(msg)
+        # TODO: extract schema filename from root attrib here
+        # rather than in api
+        return xmlschema.validate(msg_doc)
+    
 
     def read_message(
         self, source, dsd: model.DataStructureDefinition = None
@@ -238,7 +257,7 @@ class Reader(BaseReader):
         # parsing finishes
         self.push(dsd)
         self.ignore.add(id(dsd))
-        
+
         try:
             # Use the etree event-driven parser
             for event, element in etree.iterparse(source, events=("start", "end")):
@@ -290,17 +309,6 @@ class Reader(BaseReader):
 
         return cast(message.Message, self.get_single(message.Message, subclass=True))
 
-        
-    @staticmethod    
-    def validate_message(msg, schema):
-        p = etree.XMLParser()
-        p.resolvers.add(XSDResolver())
-        schema_doc = etree.parse(schema, parser=p)
-        xmlschema = etree.XMLSchema(schema_doc)
-        msg_doc = etree.parse(msg)
-        return xmlschema.validate(msg_doc)
-    
-    
     def _clean(self):  # pragma: no cover
         """Remove empty stacks."""
         for key in list(self.stack.keys()):
@@ -570,12 +578,6 @@ def _message(reader, elem):
     # _header_structure() below.
     if getattr(elem.getparent(), "tag", None) == qname("mes", "Header"):
         return
-    # Get schema_location
-    # should be in the first and oand attrib of the root
-    if QName(elem.attrib.keys()[0]).localname == "schemaLocation":
-        schema_location = elem.attrib.values()[0]
-    else:
-        schema_location = None
 
     ss_without_dsd = False
 
@@ -595,10 +597,16 @@ def _message(reader, elem):
     reader.push("SS without DSD", ss_without_dsd)
     if "Data" in elem.tag:
         reader.push("DataSetClass", model.get_class(f"{QName(elem).localname}Set"))
-
+        
+    # Get schema_location
+    # should be in the first and oand attrib of the root
+    if elem.attrib and QName(elem.attrib.keys()[0]).localname == "schemaLocation":
+        schema_location = elem.attrib.values()[0]
+    else:
+        schema_location = None
     # Instantiate the message object
     cls = class_for_tag(elem.tag)
-    return cls(sdmx_schema_location=schema_location)
+    return cls(sdmx_schema_location = schema_location)
 
 
 @end("mes:Header")

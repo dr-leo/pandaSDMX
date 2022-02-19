@@ -492,7 +492,7 @@ class Request:
         response_content = remote.ResponseIO(response, tee=tofile)
 
         # Select reader class
-        content_type = response.headers.get("content-type", None)
+        content_type = response.headers.get("content-type")
         try:
             Reader = get_reader_for_content_type(content_type)
         except ValueError:
@@ -575,24 +575,16 @@ class Request:
 
 
     def validate(self, msg, schema_dir=None):
-        # reload message 
-        if  isinstance(msg, Message):
+        # reload message file if Message is provided 
+        if  isinstance(msg, Message): # and not str
             msg_response = self.session.get(msg.response.url)
-            msg_content = remote.ResponseIO(msg_response)
-        else:
-            raise TypeError(f"`msg` arg must be an instance of  a \
-                subclass of pandasdmx.message.Message. {type(msg)} given.")
+            msg = remote.ResponseIO(msg_response)
         # Select reader class
-        content_type = msg.response.headers.get("content-type")
-        Reader = get_reader_for_content_type(content_type)
-        # Get the schema
-        schema_url = msg.sdmx_schema_location.split()[1]
-        schema_fn = requests.urllib3.util.parse_url(schema_url).path.split("/")[-1]
-        schema_dir = schema_dir or Reader.get_schema_dir() 
-        schema_path = schema_dir.joinpath(schema_fn)
-        schema_content = schema_path.open("rb")
-        # Validate message against the schema
-        return Reader.validate_message(msg_content, schema_content, schema_dir=schema_dir)        
+        # Currently, the only reader that can validate
+        # sdmx files is the sdmxml reader.
+        from .reader.sdmxml import Reader
+        # Validate message against the schema referenced in the msg
+        return Reader.validate_message(msg,  schema_dir=schema_dir)        
     
 
 def read_url(url, **kwargs):

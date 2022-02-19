@@ -231,15 +231,17 @@ class Reader(BaseReader):
         return base_dir.joinpath("sdmx_2_1/xml")
 
     @staticmethod    
-    def validate_message(msg, schema_content, schema_dir=None):
-        p = etree.XMLParser()
-        p.resolvers.add(XSDResolver(schema_dir=schema_dir or Reader.get_schema_dir()))
-        schema_doc = etree.parse(schema_content, parser=p)
-        xmlschema = etree.XMLSchema(schema_doc)
+    def validate_message(msg,  schema_dir=None):
         msg_doc = etree.parse(msg)
-        # TODO: extract schema filename from root attrib here
-        # rather than in api
-        return xmlschema.validate(msg_doc)
+        schema_fn = (msg_doc.getroot().
+            attrib['{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'].
+            split("/")[-1])
+        schema_dir = schema_dir or Reader.get_schema_dir()
+        schema_path = str(schema_dir.joinpath(schema_fn))
+        p = etree.XMLParser()
+        p.resolvers.add(XSDResolver(schema_dir=schema_dir))
+        schema_doc = etree.parse(schema_path, parser=p)
+        return etree.XMLSchema(schema_doc).validate(msg_doc)
     
 
     def read_message(
@@ -599,11 +601,8 @@ def _message(reader, elem):
         reader.push("DataSetClass", model.get_class(f"{QName(elem).localname}Set"))
         
     # Get schema_location
-    # should be in the first and oand attrib of the root
-    if elem.attrib and QName(elem.attrib.keys()[0]).localname == "schemaLocation":
-        schema_location = elem.attrib.values()[0]
-    else:
-        schema_location = None
+    schema_location = elem.attrib.get(
+    '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
     # Instantiate the message object
     cls = class_for_tag(elem.tag)
     return cls(sdmx_schema_location = schema_location)

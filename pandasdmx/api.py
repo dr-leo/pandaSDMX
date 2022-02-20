@@ -590,3 +590,32 @@ class Request:
 def read_url(url, **kwargs):
     """Request a URL directly."""
     return Request().get(url=url, **kwargs)
+
+def install_schemas():
+    from zipfile import ZipFile
+    import certifi
+    url = "https://sdmx.org/wp-content/uploads/SDMX_2-1_SECTION_3B_SDMX_ML_Schemas_Samples_2020-07.zip"
+    logger.info("Downloading schemas from www.sdmx.org...")
+    response = requests.get(url=url, verify=False)
+    raw = remote.ResponseIO(response)
+    zf = ZipFile(raw.tee)
+    logger.info("Done.")
+    schema_iter = (f for f in zf.infolist() 
+        if f.filename.startswith("schemas/"))
+    from .reader.sdmxml import Reader
+    schema_dir = Reader.get_schema_dir()
+    for s in schema_iter:
+        fn = s.filename[8:]
+        filepath = schema_dir.joinpath(fn)
+        src = zf.open(s)
+        with  open(filepath, "wb") as target:
+            target.write(src.read())
+        
+        
+        
+    
+    
+    
+    
+    
+    

@@ -32,6 +32,7 @@ classifiers = [
 
 [tool.flit.metadata.requires-extra]  
 cache = ["requests_cache"]
+schema = ["appdirs >= 1.4"]
 doc = ["sphinx >= 2.3", 
 "IPython"]
 test = ["pytest >= 5", 

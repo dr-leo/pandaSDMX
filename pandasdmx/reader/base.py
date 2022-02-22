@@ -1,6 +1,7 @@
 from pathlib import Path
+
 try:
-    import appdirs 
+    import appdirs
 except ImportError:
     pass
 
@@ -68,14 +69,11 @@ class BaseReader(ABC):
             An instance of a Message subclass.
         """
         pass  # pragma: no cover
-        
+
     @staticmethod
     def get_schema_dir():
-        return Path(appdirs.user_data_dir(
-            appname="pandasdmx",
-            appauthor=False))
+        return Path(appdirs.user_data_dir(appname="pandasdmx", appauthor=False))
 
-    @staticmethod            
+    @staticmethod
     def validate_message(msg, schema_dir=None):
         raise NotImplementedError
-    

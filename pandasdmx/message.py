@@ -122,7 +122,7 @@ class Message(BaseModel):
     #: :class:`requests.Response` instance for the response to the HTTP request that
     #: returned the Message. This is not part of the SDMX standard.
     response: Optional[Any] = None
-    # Location of .xsd or 
+    # Location of .xsd or
     # in the future jsonschema for validation
     sdmx_schema_location: Optional[str] = None
 

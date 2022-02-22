@@ -60,8 +60,9 @@ class Request:
     #: :class:`.Session` for queries sent from the instance.
     session = None
 
-    def __init__(self, source=None, log_level=None, session=None,
-        timeout=30.1,     **session_opts):
+    def __init__(
+        self, source=None, log_level=None, session=None, timeout=30.1, **session_opts
+    ):
         """Constructor."""
         self.timeout = timeout
         try:
@@ -78,7 +79,6 @@ class Request:
         if log_level:
             logging.getLogger("pandasdmx").setLevel(log_level)
 
-
     @property
     def default_locale(self):
         """
@@ -88,11 +88,9 @@ class Request:
         """
         return model.DEFAULT_LOCALE
 
-
     @default_locale.setter
     def default_locale(self, locale):
         model.DEFAULT_LOCALE = locale
-
 
     @property
     def validation_level(self):
@@ -101,11 +99,9 @@ class Request:
         """
         return model.DEFAULT_VAL_LEVEL
 
-
     @validation_level.setter
     def validation_level(self, level):
         model.DEFAULT_VAL_LEVEL = ValidationLevels[level]
-
 
     def __getattr__(self, name):
         """Convenience methods."""
@@ -313,7 +309,6 @@ class Request:
             raise ValueError(f"unrecognized arguments: {kwargs!r}")
 
         return requests.Request("get", url, params=parameters, headers=headers)
-        
 
     def get(
         self,
@@ -474,8 +469,7 @@ class Request:
             return req
 
         try:
-            response = self.session.send(req, 
-                timeout=self.timeout)
+            response = self.session.send(req, timeout=self.timeout)
             response.raise_for_status()
         except requests.exceptions.ConnectionError as e:
             raise e from None
@@ -573,49 +567,83 @@ class Request:
             # No key is provided
             return list(all_keys)
 
-
     def validate(self, msg, schema_dir=None):
-        # reload message file if Message is provided 
-        if  isinstance(msg, Message): # and not str
+        """
+        Validate `msg` against the XML schemas which must
+        be installed first. 
+        
+        Args:
+        
+        `msg`(pandasdmx.message.Message or file-like):
+            the XML message to be validated. If a
+            message.Message instance is provided, the file is
+            re-downloaded, ideally from cache.
+        schema_dir (path-like or str): Optional custom dir where schemas
+            are installed. 
+            
+        Returns True on success.
+        
+        See also the LXML documentation on the actual validation process.
+        """
+        # reload message file if Message is provided
+        if isinstance(msg, Message):  # and not str
             msg_response = self.session.get(msg.response.url)
             msg = remote.ResponseIO(msg_response)
         # Select reader class
         # Currently, the only reader that can validate
         # sdmx files is the sdmxml reader.
         from .reader.sdmxml import Reader
+
         # Validate message against the schema referenced in the msg
-        return Reader.validate_message(msg,  schema_dir=schema_dir)        
-    
+        return Reader.validate_message(msg, schema_dir=schema_dir)
+
 
 def read_url(url, **kwargs):
     """Request a URL directly."""
     return Request().get(url=url, **kwargs)
 
-def install_schemas():
+
+def install_schemas(schema_dir=None, verify=False, **kwargs):
+    """
+    Download the complete set of XML schemas from `sdmx.org <http://www.sdmx.org>`_. 
+    and install them in <schema_dir>. The schemas
+    are included in Section 3b of the SDMXML 2.1 standard. Installation
+    steps are logged.
+    
+    Args:
+    
+    schema_dir (pyth-like or str): defaults to the
+        platform-specific appdata dir of the user. As <appname>, "pandasdmx"
+        is set.
+    verify (bool or path-like): See the 
+        `requests` docs on security for details. 
+        Default is False to avoid an SSL error.
+    **kwargs: optional kwargs passed to
+        `requests.get()` to configure the 
+        HTTP connection, eg. proxies.
+        
+    Returns None on success.
+    """
     from zipfile import ZipFile
-    import certifi
+
     url = "https://sdmx.org/wp-content/uploads/SDMX_2-1_SECTION_3B_SDMX_ML_Schemas_Samples_2020-07.zip"
-    logger.info("Downloading schemas from www.sdmx.org...")
-    response = requests.get(url=url, verify=False)
-    raw = remote.ResponseIO(response)
-    zf = ZipFile(raw.tee)
+    logger.info("Downloading SDMX 2.1 Standard, Section 3b from www.sdmx.org...")
+    response = requests.get(url=url, verify=verify, **kwargs)
+    content = remote.ResponseIO(response)
+    zf = ZipFile(content.tee)
     logger.info("Done.")
-    schema_iter = (f for f in zf.infolist() 
-        if f.filename.startswith("schemas/"))
     from .reader.sdmxml import Reader
-    schema_dir = Reader.get_schema_dir()
-    for s in schema_iter:
-        fn = s.filename[8:]
-        filepath = schema_dir.joinpath(fn)
-        src = zf.open(s)
-        with  open(filepath, "wb") as target:
-            target.write(src.read())
-        
-        
-        
-    
-    
-    
-    
-    
-    
+    from pathlib import Path
+    import os
+
+    schema_dir = Path(schema_dir or Reader.get_schema_dir())
+    logger.info(f"Installing schema files in {str(schema_dir)}")
+    for s in zf.infolist():
+        if s.filename.startswith("schemas/"):
+            fn = s.filename[8:]
+            filepath = schema_dir.joinpath(fn)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with zf.open(s, "r") as src:
+                with open(filepath, "wb") as target:
+                    target.write(src.read())
+    logger.info("Done.")

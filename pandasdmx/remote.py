@@ -26,13 +26,7 @@ class Session(MaybeCachedSession):
     """
 
     def __init__(
-        self,
-        proxies=None,
-        stream=False,
-        auth=None,
-        cert=None,
-        verify=True,
-        **kwargs,
+        self, proxies=None, stream=False, auth=None, cert=None, verify=True, **kwargs,
     ):
 
         if MaybeCachedSession is not requests.Session:

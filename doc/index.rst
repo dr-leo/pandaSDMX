@@ -25,6 +25,7 @@ agencies, central banks, and international organisations.
   data acquisition
   and distribution framework;
 - apply the :doc:`SDMX Information Model <implementation>` to your own data;
+- validate SDMX files against the official XML schemas;
 
 …and much more.
 

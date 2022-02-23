@@ -62,7 +62,7 @@ from pandasdmx.util import (
 
 log = logging.getLogger(__name__)
 
-# Used by writers to select from InternationalString. 
+# Used by writers to select from InternationalString.
 # Exposed through pandasdmx.api.Request.default_locale
 DEFAULT_LOCALE = "en"
 

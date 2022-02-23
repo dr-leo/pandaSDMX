@@ -26,6 +26,9 @@ Optional dependencies for extra features
 
 - for ``cache``, allowing the caching of SDMX messages in memory, MongoDB,
   Redis, and more: `requests-cache <https://requests-cache.readthedocs.io>`_.
+- for ``schema``, allowing validation of SDMXML messages against the XML schemas
+  included in section 3b of the SDMX 2.1 standard: 
+  `appdirs <https://pypi.org/project/appdirs>`_.
 - for ``doc``, to build the documentation: `sphinx <https://sphinx-doc.org>`_
   and `IPython <https://ipython.org>`_.
 - for ``test``, to run the test suite: `pytest <https://pytest.org>`_,

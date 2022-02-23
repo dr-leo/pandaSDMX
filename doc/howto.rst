@@ -187,3 +187,34 @@ pandaSDMX can also be used with `odo <https://github.com/blaze/odo>`_ by registe
 .. versionadded:: 0.4
 
    :meth:`pandasdmx.odo_register` was added, providing automatic registration.
+
+.. _howto_validation::
+
+Validate SDMXML files against the official XML schemas
+--------------------------------------------------------
+
+You can validate SDMXML messages against the XML schemas
+included in the SDMX 2.1 standard. To do this, you
+need to download the schemas from the sdmx.org website and
+copy them to a  local path. The  convenience function
+:func:`pandasdmx.api.install_schemas`
+does this for you. By default, the schemas are installed in the platform- and user-specific
+appdata dir. On Linux this is in /etc, on Windows in c:/users/<username>/appdata/local/pandasdmx/...
+Optionally, you can pass  a custom schema_dir  .
+
+After installing the schemas, you can request some SDMX message 
+as usual and pass it to 
+:meth:`pandasdmx.api.Request.validate`  
+Alternatively,  you can pass a file-like containing the XML data.
+Here is an example:
+
+.. code:: python
+
+    import pandasdmx
+    pandasdmx.install_schemas()
+    ecb = pandasdmx.Request("ECB")
+    exr = ecb.dataflow("EXR")
+    ecb.validate(exr) # should return True
+    
+    
+    

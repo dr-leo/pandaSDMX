@@ -3,7 +3,17 @@
 What's new?
 ===========
 
-v1.8.1 (2022-02-XX)
+v1.9.0dev (2022-02-XX)
+-------------------------
+
+* new feature: validate SDMXML messages against the XML schemas
+  included in the SDMX 2.1 standard. Simply install the schemas locally
+  using the convenience function :func:`pandasdmx.api.install_schemas`, 
+  then call :meth:`pandasdmx.api.Request.validate` 
+  passing any :class:`pandasdmx.message.Message`
+  instance or a file-like containing the XML data.
+
+v1.8.1 (2022-02-01)
 -----------------------------------------------
 
 

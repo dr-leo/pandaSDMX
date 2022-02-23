@@ -196,6 +196,21 @@ class Reference:
         )
 
 
+class XSDResolver(etree.Resolver):
+    """
+    Resolve XSD imports to locate them within <user_data_dir>/pandaSDMX/sdmx_2_1. 
+    """
+
+    def __init__(self, *args, schema_dir=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.schema_dir = schema_dir
+
+    def resolve(self, url, id, context):
+        "See lxml docs for background."
+        fn = self.schema_dir.joinpath(url)
+        return self.resolve_filename(str(fn), context)
+
+
 class Reader(BaseReader):
     content_types = CONTENT_TYPES
     suffixes = [".xml"]
@@ -210,6 +225,41 @@ class Reader(BaseReader):
     @classmethod
     def detect(cls, content):
         return content.startswith(b"<")
+
+    @staticmethod
+    def get_schema_dir():
+        """
+        Calls BaseReader.get_schema_dir() to get the user's appdata dir.
+        Appends reader-specific subdirs.
+        """
+        base_dir = BaseReader.get_schema_dir()
+        return base_dir.joinpath("sdmx_2_1/xml")
+
+    @staticmethod
+    def validate_message(msg, schema_dir=None):
+        """
+        Validate msg against XML schemas. These
+        must be installed first. See the docs on
+        :func:`pandasdmx.api.install_schemas` and
+        :meth:`pandasdmx.api.Request.validate`.
+        
+        Returns whatever lxml.etree.XMLSchema.validate returns
+        """
+        msg_doc = etree.parse(msg)
+        # Extract schema filename
+        schema_fn = (
+            msg_doc.getroot()
+            .attrib["{http://www.w3.org/2001/XMLSchema-instance}schemaLocation"]
+            .split("/")[-1]
+        )
+        # Get default schema_dir if not given
+        schema_dir = schema_dir or Reader.get_schema_dir()
+        schema_path = str(schema_dir.joinpath(schema_fn))
+        p = etree.XMLParser()
+        # Add filename resolver to enable   recursive schema imports
+        p.resolvers.add(XSDResolver(schema_dir=schema_dir))
+        schema_doc = etree.parse(schema_path, parser=p)
+        return etree.XMLSchema(schema_doc).validate(msg_doc)
 
     def read_message(
         self, source, dsd: model.DataStructureDefinition = None
@@ -567,9 +617,13 @@ def _message(reader, elem):
     if "Data" in elem.tag:
         reader.push("DataSetClass", model.get_class(f"{QName(elem).localname}Set"))
 
+    # Get schema_location
+    schema_location = elem.attrib.get(
+        "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation"
+    )
     # Instantiate the message object
     cls = class_for_tag(elem.tag)
-    return cls()
+    return cls(sdmx_schema_location=schema_location)
 
 
 @end("mes:Header")

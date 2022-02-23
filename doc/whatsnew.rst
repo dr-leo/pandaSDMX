@@ -3,7 +3,7 @@
 What's new?
 ===========
 
-v1.9.0dev (2022-02-XX)
+v1.9.0dev (2022-02-23)
 -------------------------
 
 * new feature: validate SDMXML messages against the XML schemas

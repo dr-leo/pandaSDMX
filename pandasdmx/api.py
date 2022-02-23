@@ -572,21 +572,22 @@ class Request:
         Validate `msg` against the XML schemas which must
         be installed first. 
         
-        Args:
+        Parameters:
         
-        `msg`(pandasdmx.message.Message or file-like):
+        msg: pandasdmx.message.Message or file-like
             the XML message to be validated. If a
             message.Message instance is provided, the file is
             re-downloaded, ideally from cache.
-        schema_dir (path-like or str): Optional custom dir where schemas
+        schema_dir: path-like or str 
+            Optional custom dir where schemas
             are installed. 
             
         Returns True on success.
         
-        See also the LXML documentation on the actual validation process.
+        See also the LXML documentation.
         """
-        # reload message file if Message is provided
-        if isinstance(msg, Message):  # and not str
+        # reload message file if message.Message object is provided rather than file-like
+        if isinstance(msg, Message): 
             msg_response = self.session.get(msg.response.url)
             msg = remote.ResponseIO(msg_response)
         # Select reader class
@@ -603,47 +604,47 @@ def read_url(url, **kwargs):
     return Request().get(url=url, **kwargs)
 
 
-def install_schemas(schema_dir=None, verify=False, **kwargs):
+def install_schemas(schema_dir=None, **kwargs):
     """
     Download the complete set of XML schemas from `sdmx.org <http://www.sdmx.org>`_. 
     and install them in <schema_dir>. The schemas
     are included in Section 3b of the SDMXML 2.1 standard. Installation
     steps are logged.
     
-    Args:
+    Parameters:
     
-    schema_dir (pyth-like or str): defaults to the
-        platform-specific appdata dir of the user. As <appname>, "pandasdmx"
-        is set.
-    verify (bool or path-like): See the 
-        `requests` docs on security for details. 
-        Default is False to avoid an SSL error.
-    **kwargs: optional kwargs passed to
+    schema_dir path-like or str 
+        defaults to the platform-specific appdata dir 
+        of the user. <appname> 
+        is set to "pandasdmx".
+    **kwargs: 
+        optional kwargs passed to
         `requests.get()` to configure the 
-        HTTP connection, eg. proxies.
+        HTTP connection, eg. `verify`or `proxies`.
         
     Returns None on success.
     """
     from zipfile import ZipFile
-
-    url = "https://sdmx.org/wp-content/uploads/SDMX_2-1_SECTION_3B_SDMX_ML_Schemas_Samples_2020-07.zip"
-    logger.info("Downloading SDMX 2.1 Standard, Section 3b from www.sdmx.org...")
-    response = requests.get(url=url, verify=verify, **kwargs)
-    content = remote.ResponseIO(response)
-    zf = ZipFile(content.tee)
-    logger.info("Done.")
     from .reader.sdmxml import Reader
     from pathlib import Path
     import os
 
+    url = "https://sdmx.org/wp-content/uploads/SDMX_2-1_SECTION_3B_SDMX_ML_Schemas_Samples_2020-07.zip"
+    logger.info("Downloading SDMX 2.1 Standard, Section 3b from www.sdmx.org...")
+    response = requests.get(url=url, **kwargs)
+    content = remote.ResponseIO(response)
+    zf = ZipFile(content.tee)
+    logger.info("Done.")
     schema_dir = Path(schema_dir or Reader.get_schema_dir())
-    logger.info(f"Installing schema files in {str(schema_dir)}")
+    # Create any non-existent dirs
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)    
+    logger.info(f"Installing schema files in {str(schema_dir)}...")
     for s in zf.infolist():
         if s.filename.startswith("schemas/"):
-            fn = s.filename[8:]
-            filepath = schema_dir.joinpath(fn)
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with zf.open(s, "r") as src:
+                # cut off the previx "schemas/"
+                fn = s.filename[8:]
+                filepath = schema_dir.joinpath(fn)
                 with open(filepath, "wb") as target:
                     target.write(src.read())
     logger.info("Done.")

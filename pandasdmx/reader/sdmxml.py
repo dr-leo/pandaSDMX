@@ -206,7 +206,7 @@ class XSDResolver(etree.Resolver):
         self.schema_dir = schema_dir
 
     def resolve(self, url, id, context):
-        "See lxml docs for background info."
+        "See lxml docs for background."
         fn = self.schema_dir.joinpath(url)
         return self.resolve_filename(str(fn), context)
 
@@ -246,14 +246,17 @@ class Reader(BaseReader):
         Returns whatever lxml.etree.XMLSchema.validate returns
         """
         msg_doc = etree.parse(msg)
+        # Extract schema filename
         schema_fn = (
             msg_doc.getroot()
             .attrib["{http://www.w3.org/2001/XMLSchema-instance}schemaLocation"]
             .split("/")[-1]
         )
+        # Get default schema_dir if not given
         schema_dir = schema_dir or Reader.get_schema_dir()
         schema_path = str(schema_dir.joinpath(schema_fn))
         p = etree.XMLParser()
+        # Add filename resolver to enable   recursive schema imports
         p.resolvers.add(XSDResolver(schema_dir=schema_dir))
         schema_doc = etree.parse(schema_path, parser=p)
         return etree.XMLSchema(schema_doc).validate(msg_doc)

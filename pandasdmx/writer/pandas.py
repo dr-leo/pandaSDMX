@@ -17,6 +17,7 @@ from pandasdmx.model import (
     SeriesKey,
     TimeDimension,
 )
+from pandasdmx.model import FacetValueType as FVT
 from pandasdmx.util import DictLike
 from pandasdmx.writer.base import BaseWriter
 
@@ -24,7 +25,23 @@ from pandasdmx.writer.base import BaseWriter
 #: 'compat' or 'rows'. See the ref:`HOWTO <howto-rtype>`.
 DEFAULT_RTYPE = "rows"
 
-
+FVT_MAP = {
+    FVT.string: pd.StringDtype,
+    FVT.bigInteger: pd.Int64Dtype,
+    FVT.integer: pd.Int32Dtype,
+    FVT.long: pd.Int32Dtype,
+    FVT.short: pd.Int16Dtype,
+    FVT.decimal: None,
+    FVT.float: float,
+    FVT.boolean: pd.BooleanDtype,
+    FVT.double: np.float64,
+    FVT.uri: pd.StringDtype,
+    FVT.count: pd.Int64Dtype,
+    FVT.incremental: pd.Int64Dtype,
+    FVT.inclusiveValueRange: pd.CategoricalDtype,
+}
+    
+    
 writer = BaseWriter("pandas")
 
 
@@ -311,8 +328,8 @@ def write_dataset(
         result.index.names = observation.key.order().values.keys()
         if dtype:
             result["value"] = result["value"].astype(dtype)
-            if not attributes:
-                result = result["value"]
+        if not attributes:
+            result = result["value"]
 
     # Reshape for compatibility with v0.9
     result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from itertools import chain
 from typing import Set, Union
 
@@ -12,12 +13,12 @@ from pandasdmx.model import (
     DataSet,
     Dimension,
     DimensionComponent,
+    FacetValueType as FVT,
     Item,
     Observation,
     SeriesKey,
     TimeDimension,
 )
-from pandasdmx.model import FacetValueType as FVT
 from pandasdmx.util import DictLike
 from pandasdmx.writer.base import BaseWriter
 
@@ -304,32 +305,39 @@ def write_dataset(
         raise ValueError(f"attributes must be in 'osgd'; got {attributes}")
 
     # Iterate on observations
-    data = {}
+    data = defaultdict(list)
     for observation in getattr(obj, "obs", obj):
         # Check that the Observation is within the constraint, if any
         key = observation.key.order()
-        if constraint and key not in constraint:
-            continue
+        if (not constraint) or key in constraint:
+            key = tuple(map(str, key.get_values()))
+            # Add value and attributes
+            if dtype:
+                data["value"].append((key, observation.value))
+            if attributes and attributes != "d":
+                # attributes at levels obs, series and group
+                for k, v in             observation.attrib.items():
+                    data[k].append((key, v))
+            if attributes and "d" in attributes:
+                # attributes at levels obs, series and group
+                for k, v in             obj.attrib.items():
+                    data[k].append((key, v))
 
-        # Add value and attributes
-        row = {}
-        if dtype:
-            row["value"] = observation.value
-        if attributes:
-            row.update(observation.attrib)
+    # Convert each list of tuples to a pd.Series of correct dtype
+    for col_name in data:
+        if col_name == "value":
+            dt = dtype
+        else: # must be an attribute. Let dtype be inferred
+            dt = None
+        idx, d = zip(*data[col_name])
+        # Make pd index adding names
+        idx = pd.MultiIndex.from_tuples(idx, names=observation.key.order().values.keys())
+        data[col_name] = pd.Series(d, idx, dtype=dt, name=col_name)
+    
+    result: pd.DataFrame = pd.DataFrame.from_dict(data)
 
-        data[tuple(map(str, key.get_values()))] = row
-
-    result: Union[pd.Series, pd.DataFrame] = pd.DataFrame.from_dict(
-        data, orient="index"
-    )
-
-    if len(result):
-        result.index.names = observation.key.order().values.keys()
-        if dtype:
-            result["value"] = result["value"].astype(dtype)
-        if not attributes:
-            result = result["value"]
+    if not attributes:
+        result = result["value"]
 
     # Reshape for compatibility with v0.9
     result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)

@@ -11,6 +11,7 @@ from pandasdmx.model import (
     AllDimensions,
     DataAttribute,
     DataSet,
+    DataStructureDefinition,
     Dimension,
     DimensionComponent,
     FacetValueType as FVT,
@@ -216,6 +217,17 @@ def _cr(obj: model.CubeRegion, **kwargs):
         )
     return result
 
+def get_component_type(component):
+    lr = component.local_representation
+    try:
+        if lr.enumerated:
+            return "category"
+        # Get the facet value type
+        fvt = lr.non_enumerated[0].value_type
+        return FVT_MAP.get(fvt) or pd.StringDtype()
+    except (AttributeError, KeyError):
+        return "object"
+        
 
 @writer
 def write_dataset(
@@ -224,6 +236,7 @@ def write_dataset(
     dtype=np.float64,
     constraint=None,
     datetime=False,
+    dsd=None,
     **kwargs,
 ):
     """Convert :class:`~.DataSet`.
@@ -326,11 +339,21 @@ def write_dataset(
     # Convert each list of tuples to a pd.Series of correct dtype
     for col_name in data:
         if col_name == "value":
-            dt = dtype
-        else: # so we have an attribute. Let dtype be object by default
-            dt = "object"
+            if dsd:
+                dt = get_component_type(dsd.measures.get("OBS_VALUE")) 
+            else:
+                dt = dtype
+        else: # column for an attribute
+            if dsd:
+                dt = get_component_type(dsd.attributes.get(col_name))
+            else:
+                dt = "object"
         # Extract raw index tuples and values for this column
         idx, d = zip(*data[col_name])
+        # For dtype category, we stringify the data
+        if dt == "category":
+            tmp = d
+            d = map(str, tmp)
         # Make pd index adding names
         idx = pd.MultiIndex.from_tuples(
             idx, names=observation.key.order().values.keys())

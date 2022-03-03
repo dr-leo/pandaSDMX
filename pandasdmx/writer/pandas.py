@@ -27,7 +27,7 @@ from pandasdmx.writer.base import BaseWriter
 DEFAULT_RTYPE = "rows"
 
 FVT_MAP = {
-    FVT.string: pd.StringDtype,
+    FVT.string: pd.StringDtype(),
     FVT.bigInteger: pd.Int64Dtype,
     FVT.integer: pd.Int32Dtype,
     FVT.long: pd.Int32Dtype,
@@ -36,7 +36,7 @@ FVT_MAP = {
     FVT.float: float,
     FVT.boolean: pd.BooleanDtype,
     FVT.double: np.float64,
-    FVT.uri: pd.StringDtype,
+    FVT.uri: pd.StringDtype(),
     FVT.count: pd.Int64Dtype,
     FVT.incremental: pd.Int64Dtype,
     FVT.inclusiveValueRange: pd.CategoricalDtype,
@@ -318,8 +318,8 @@ def write_dataset(
                 # attributes at levels obs, series and group
                 for k, v in             observation.attrib.items():
                     data[k].append((key, v))
-            if attributes and "d" in attributes:
-                # attributes at levels obs, series and group
+            if isinstance(obj, DataSet) and attributes and "d" in attributes:
+                # attributes at dataset level 
                 for k, v in             obj.attrib.items():
                     data[k].append((key, v))
 
@@ -327,17 +327,20 @@ def write_dataset(
     for col_name in data:
         if col_name == "value":
             dt = dtype
-        else: # must be an attribute. Let dtype be inferred
-            dt = None
+        else: # so we have an attribute. Let dtype be object by default
+            dt = "object"
+        # Extract raw index tuples and values for this column
         idx, d = zip(*data[col_name])
         # Make pd index adding names
-        idx = pd.MultiIndex.from_tuples(idx, names=observation.key.order().values.keys())
+        idx = pd.MultiIndex.from_tuples(
+            idx, names=observation.key.order().values.keys())
+        # Replace raw list with pd.Series
         data[col_name] = pd.Series(d, idx, dtype=dt, name=col_name)
-    
-    result: pd.DataFrame = pd.DataFrame.from_dict(data)
-
-    if not attributes:
-        result = result["value"]
+    # Convert to pd.DataFrame if needed
+    if attributes:
+        result = pd.DataFrame.from_dict(data)
+    else:
+        result = data["value"]
 
     # Reshape for compatibility with v0.9
     result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)

@@ -9,6 +9,7 @@ from pandasdmx import message, model
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AllDimensions,
+    Codelist,
     DataAttribute,
     DataSet,
     DataStructureDefinition,
@@ -220,7 +221,7 @@ def _cr(obj: model.CubeRegion, **kwargs):
 def get_component_type(component):
     lr = component.local_representation
     try:
-        if lr.enumerated:
+        if isinstance(lr.enumerated, Codelist):
             return "category"
         # Get the facet value type
         fvt = lr.non_enumerated[0].value_type

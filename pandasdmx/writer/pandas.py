@@ -237,7 +237,7 @@ def write_dataset(
     dtype=np.float64,
     constraint=None,
     datetime=False,
-    dsd=None,
+    dtypes_from_dsd=False,
     **kwargs,
 ):
     """Convert :class:`~.DataSet`.
@@ -338,14 +338,15 @@ def write_dataset(
                     data[k].append((key, v))
 
     # Convert each list of tuples to a pd.Series of correct dtype
+    dsd = kwargs["dsd"]
     for col_name in data:
         if col_name == "value":
-            if dsd:
+            if dtypes_from_dsd:
                 dt = get_component_type(dsd.measures.get("OBS_VALUE")) 
             else:
                 dt = dtype
         else: # column for an attribute
-            if dsd:
+            if dtypes_from_dsd:
                 dt = get_component_type(dsd.attributes.get(col_name))
             else:
                 dt = "object"

@@ -337,8 +337,12 @@ def write_dataset(
                 for k, v in             obj.attrib.items():
                     data[k].append((key, v))
 
-    # Convert each list of tuples to a pd.Series of correct dtype
-    dsd = kwargs["dsd"]
+    # Check for a DSD
+    dsd = kwargs.get("dsd")
+    if dtypes_from_dsd and not isinstance(dsd, DataStructureDefinition):
+        raise TypeError(f"If `dtypes_from_dsd` is True, \
+        `dsd` must be a DataStructureDefinition object.\
+        Got {type(dsd)}.")
     for col_name in data:
         if col_name == "value":
             if dtypes_from_dsd:

@@ -319,7 +319,7 @@ def write_dataset(
         raise ValueError(f"attributes must be in 'osgd'; got {attributes}")
 
     # Iterate on observations
-    data = defaultdict(list)
+    data, indices = defaultdict(list), defaultdict(list)
     for observation in getattr(obj, "obs", obj):
         # Check that the Observation is within the constraint, if any
         key = observation.key.order()
@@ -327,15 +327,18 @@ def write_dataset(
             key = tuple(map(str, key.get_values()))
             # Add value and attributes
             if dtype:
-                data["value"].append((key, observation.value))
+                data["value"].append(observation.value)
+                indices['value'].append(key)
             if attributes and attributes != "d":
                 # attributes at levels obs, series and group
                 for k, v in             observation.attrib.items():
-                    data[k].append((key, v))
+                    data[k].append(v)
+                    indices[k].append(key)
             if isinstance(obj, DataSet) and attributes and "d" in attributes:
                 # attributes at dataset level 
                 for k, v in             obj.attrib.items():
-                    data[k].append((key, v))
+                    data[k].append(v)
+                    indices[k].append(key)
 
     # Check for a DSD
     dsd = kwargs.get("dsd")
@@ -355,16 +358,14 @@ def write_dataset(
             else:
                 dt = "object"
         # Extract raw index tuples and values for this column
-        idx, d = zip(*data[col_name])
         # For dtype category, we stringify the data
         if dt == "category":
-            tmp = d
-            d = map(str, tmp)
+            data[col_name] = map(str, data[col_name])
         # Make pd index adding names
         idx = pd.MultiIndex.from_tuples(
-            idx, names=observation.key.order().values.keys())
+            indices[col_name], names=observation.key.order().values.keys())
         # Replace raw list with pd.Series
-        data[col_name] = pd.Series(d, idx, dtype=dt, name=col_name)
+        data[col_name] = pd.Series(data[col_name], idx, dtype=dt, name=col_name)
     # Convert to pd.DataFrame if needed
     if attributes:
         result = pd.DataFrame.from_dict(data)

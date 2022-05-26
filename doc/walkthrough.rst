@@ -327,7 +327,7 @@ Select and query data from a dataflow
 Next, we will query some data.
 The step is simple: call :meth:`.Request.get` with `resource_type='data'` as the first argument, or the alias :meth:`.Request.data`.
 
-First, however, we describe some of the many options offered by SDMX and :mod:`pandSDMX` for data queries.
+First, however, we describe some of the many options offered by SDMX and :mod:`pandaSDMX` for data queries.
 
 Choose a data format
 --------------------

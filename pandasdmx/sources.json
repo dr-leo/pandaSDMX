@@ -40,6 +40,15 @@
     }
   },
   {
+    "id": "CD2030",
+    "name": "COUNTDOWN 2030",
+    "documentation": "https://profiles.countdown2030.org/",
+    "url": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest",
+    "headers": {
+      "accept": "application/vnd.sdmx.structure+xml;version=2.1"
+    }
+  },
+  {
     "id": "ECB",
     "resources": {
       "data": {
@@ -118,11 +127,16 @@
     }
   },
   {
-    "id": "OECD",
-    "data_content_type": "JSON",
-    "url": "https://stats.oecd.org/SDMX-JSON",
-    "documentation": "https://stats.oecd.org/SDMX-JSON/",
-    "name": "Organisation for Economic Co-operation and Development"
+    "id": "LSD",
+    "documentation": "https://osp.stat.gov.lt/rdb-rest",
+    "url": "https://osp-rs.stat.gov.lt/rest_xml",
+    "name": "Statistics Lithuania",
+    "supports": {
+      "categoryscheme": false,
+      "codelist": false,
+      "conceptscheme": false,
+      "provisionagreement": false
+    }
   },
   {
     "id": "NBB",
@@ -144,10 +158,31 @@
     }
   },
   {
+    "id": "OECD",
+    "data_content_type": "JSON",
+    "url": "https://stats.oecd.org/SDMX-JSON",
+    "documentation": "https://stats.oecd.org/SDMX-JSON/",
+    "name": "Organisation for Economic Co-operation and Development"
+  },
+  {
     "id": "SGR",
     "url": "https://registry.sdmx.org/ws/rest",
     "name": "SDMX Global Registry",
     "documentation": "https://registry.sdmx.org/ws/rest"
+  },
+  {
+    "id": "SPC",
+    "name": "Pacific Data Hub",
+    "documentation": "https://stats.pacificdata.org/?locale=en",
+    "url": "https://stats-nsi-stable.pacificdata.org/rest",
+    "supports": { "preview": false, "provisionagreement": false }
+  },
+  {
+    "id": "STAT_EE",
+    "data_content_type": "JSON",
+    "documentation": "https://www.stat.ee/sites/default/files/2020-09/API-instructions.pdf",
+    "url": "http://andmebaas.stat.ee/sdmx-json",
+    "name": "Statistics Estonia"
   },
   {
     "id": "UNICEF",
@@ -158,23 +193,6 @@
       "accept": "application/vnd.sdmx.structure+xml;version=2.1"
     }
   },
- {
-    "id": "CD2030",
-    "name": "COUNTDOWN 2030",
-    "documentation": "https://profiles.countdown2030.org/",
-    "url": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest",
-    "headers": {
-      "accept": "application/vnd.sdmx.structure+xml;version=2.1"
-    }
-  },
-  {
-    "id": "SPC",
-    "name": "Pacific Data Hub",
-    "documentation": "https://stats.pacificdata.org/?locale=en",
-    "url": "https://stats-nsi-stable.pacificdata.org/rest",
-    "supports": { "preview": false, "provisionagreement": false }
-  },
-
   {
     "id": "UNSD",
     "name": "United Nations Statistics Division",
@@ -201,24 +219,5 @@
       "provisionagreement": false,
       "structure-specific data": true
     }
-  },
-  {
-    "id": "LSD",
-    "documentation": "https://osp.stat.gov.lt/rdb-rest",
-    "url": "https://osp-rs.stat.gov.lt/rest_xml",
-    "name": "Statistics Lithuania",
-    "supports": {
-      "categoryscheme": false,
-      "codelist": false,
-      "conceptscheme": false,
-      "provisionagreement": false
-    }
-  },
-  {
-    "id": "STAT_EE",
-    "data_content_type": "JSON",
-    "documentation": "https://www.stat.ee/sites/default/files/2020-09/API-instructions.pdf",
-    "url": "http://andmebaas.stat.ee/sdmx-json",
-    "name": "Statistics Estonia"
   }
 ]

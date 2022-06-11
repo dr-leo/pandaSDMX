@@ -106,6 +106,7 @@
   },
   {
     "id": "INSEE",
+    "api_id": "ALL",
     "name": "Institut national de la statistique et des études économiques (FR)",
     "documentation": "https://www.bdm.insee.fr/bdm2/statique?page=sdmx",
     "url": "https://www.bdm.insee.fr/series/sdmx",
@@ -118,6 +119,7 @@
   },
   {
     "id": "ISTAT",
+    "api_id": "all",
     "name": "Instituto Nationale di Statistica (IT)",
     "documentation": "https://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1",
     "url": "http://sdmx.istat.it/SDMXWS/rest",
@@ -166,6 +168,7 @@
   },
   {
     "id": "SGR",
+    "api_id": "all",
     "url": "https://registry.sdmx.org/ws/rest",
     "name": "SDMX Global Registry",
     "documentation": "https://registry.sdmx.org/ws/rest"
@@ -202,6 +205,7 @@
   },
   {
     "id": "WB",
+    "api_id": "WBG_WITS",
     "name": "World Bank World Integrated Trade Solution",
     "documentation": "http://wits.worldbank.org",
     "url": "http://wits.worldbank.org/API/V1/SDMX/V21/rest",

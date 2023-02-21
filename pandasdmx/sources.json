@@ -62,15 +62,19 @@
   },
   {
     "id": "ESTAT",
-    "documentation": "https://data.un.org/Host.aspx?Content=API",
-    "url": "https://ec.europa.eu/eurostat/SDMX/diss-web/rest",
+    "documentation": "https://wikis.ec.europa.eu/pages/viewpage.action?pageId=44165555",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1",
+    "default_version": "",
     "name": "Eurostat",
     "supports": {
       "agencyscheme": false,
-      "categoryscheme": false,
-      "codelist": false,
-      "conceptscheme": false,
-      "provisionagreement": false
+      "provisionagreement": false,
+      "contentconstraint": false,
+      "dataproviderscheme": false,
+      "hierarchicalcodelist": false,
+      "organisationscheme": false,
+      "structure": false,
+      "structureset": false
     }
   },
   {

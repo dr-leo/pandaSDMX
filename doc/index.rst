@@ -19,7 +19,7 @@ agencies, central banks, and international organisations.
   for use with the analysis, plotting, and other tools in the Python data
   science ecosystem; 
   See also the **companion project 
-  `intake_sdmx <https://intake_sdmx.readthedocs.io>`_**, 
+  `intake_sdmx <https://intake_sdmx.readthedocs.io>`__**, 
   a plugin for the 
   `intake <https://intake_sdmx.readthedocs.io>`_ 
   data acquisition

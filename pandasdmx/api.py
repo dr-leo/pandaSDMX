@@ -119,7 +119,15 @@ class Request:
                 ".\n", f" with resource_type={repr(name)}.\n", 1
             )
             return func
-
+            
+    def __repr__(self):
+        s1 = f"{str(self.__class__)} instance, "
+        if self.source.id: s2 = f"source: \
+               {self.source.id} ({self.source.name})"
+        else:
+            s2 = "no source specified."
+        return s1 + s2
+            
     def __dir__(self):
         """Include convenience methods in dir()."""
         return super().__dir__() + [ep.name for ep in Resource]

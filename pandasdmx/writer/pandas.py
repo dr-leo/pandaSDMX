@@ -27,7 +27,7 @@ from pandasdmx.writer.base import BaseWriter
 #: Default return type for :func:`write_dataset` and similar methods. Either
 #: 'compat' or 'rows'. See the ref:`HOWTO <howto-rtype>`.
 DEFAULT_RTYPE = "rows"
-
+# map facet value types to pandas dtypes (incomplete)
 FVT_MAP = {
     FVT.string: pd.StringDtype(),
     FVT.bigInteger: pd.Int64Dtype,

@@ -7,9 +7,9 @@ All we need to know in advance is the data provider: Eurostat.
 pandaSDMX makes it easy to search the directory of dataflows, and the complete structural metadata about the datasets available through the selected dataflow.
 (This example skips these steps; see :doc:`the walkthrough <walkthrough>`.)
 
-The data we want is in a *data flow* with the identifier ``une_rt_a``.
-This dataflow references a *data structure definition* (DSD) with the ID ``DSD_une_rt_a``.
-The DSD, in turn, contains or references all the metadata describing data sets available through this dataflow: the concepts, things measured, dimensions, and lists of codes used to label each dimension.
+The data we want is in a *data flow* with the identifier ``UNE_RT_A``.
+This dataflow references a *data structure definition* (DSD) with that same ID.
+The DSD contains or references all the metadata describing data sets available through this dataflow: the concepts, things measured, dimensions, and lists of codes used to label each dimension.
 
 .. ipython:: python
 
@@ -20,7 +20,7 @@ Download the metadata:
 
 .. ipython:: python
 
-    metadata = estat.datastructure('DSD_une_rt_a')
+    metadata = estat.datastructure('UNE_RT_A')
     metadata
 
 Explore the contents of some code lists:
@@ -37,9 +37,9 @@ We also use a query *parameter*, 'startPeriod', to limit the scope of the data r
 .. ipython:: python
 
     resp = estat.data(
-        'une_rt_a',
+        'UNE_RT_A',
         key={'GEO': 'EL+ES+IE'},
-        params={'startPeriod': '2007'},
+        params={'startPeriod': '2015'},
         )
 
 ``resp`` is  a :class:`.DataMessage` object.

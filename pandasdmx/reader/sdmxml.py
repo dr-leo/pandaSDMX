@@ -112,6 +112,13 @@ class NotReference(Exception):
 _NO_AGENCY = model.Agency()
 
 
+class _NoText:
+    pass
+
+
+# Sentinel value for XML elements with no text; used to distinguish from "" and None
+NoText = _NoText()
+
 class Reference:
     """Temporary class for references.
 
@@ -784,7 +791,7 @@ def _structures(reader, elem):
     "str:Email str:Telephone str:URI"
 )
 def _text(reader, elem):
-    reader.push(elem, elem.text)
+    reader.push(elem, elem.text or NoText)
 
 
 @end("mes:Extracted mes:Prepared mes:ReportingBegin mes:ReportingEnd")
@@ -822,10 +829,11 @@ def _ref(reader, elem):
 
 @end("com:Annotation")
 def _a(reader, elem):
+    url=reader.pop_single("AnnotationURL")
     args = dict(
         title=reader.pop_single("AnnotationTitle"),
         type=reader.pop_single("AnnotationType"),
-        url=reader.pop_single("AnnotationURL"),
+        url=None if url is NoText else url,
     )
 
     # Optional 'id' attribute

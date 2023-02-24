@@ -4,7 +4,7 @@ Installation
 Required dependencies
 ---------------------
 
-pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.7 or higher, which can be installed:
+pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.9 or higher, which can be installed:
 
 - from `the Python website <https://www.python.org/downloads/>`_, or
 - using a scientific Python distribution that includes other packages useful
@@ -17,7 +17,7 @@ pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.7 
 pandaSDMX also depends on:
 
 - `pandas <http://pandas.pydata.org>`_ for data structures,
-- `pydantic <https://pydantic-docs.helpmanual.io>`_ to implement the IM,
+- `pydantic <https://docs.pydantic.dev>`_ to implement the IM,
 - `requests <https://pypi.python.org/pypi/requests/>`_ for HTTP requests, and
 - `lxml <http://www.lxml.de>`_ for XML processing.
 
@@ -83,8 +83,7 @@ From source
 Running tests
 -------------
 
-As per v1.1.0, the test suite is no longer packaged with any pandaSDMX distribution because
-the tests suite has grown too large; on first run it downloads about 300MB of data.
+As per v1.1.0, the test suite is no longer packaged with any pandaSDMX distribution.
 You can run it anyway by installing the  source from Github, including the ``tests`` optional dependencies.
 Then, in the package directory, issue::
 

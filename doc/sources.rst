@@ -118,7 +118,7 @@ SDMX-ML —
 
 .. _European Commission:
 
-``EC_DG_COMP``: European Commission - DG Competition
+``EC_COMP``: European Commission - DG Competition
 --------------------------------------
 
 SDMX-ML —
@@ -130,7 +130,7 @@ SDMX-ML —
 .. _European Commission:
 
 
-``EC_DG_EMPL``: European Commission - DG Employment
+``EC_EMPL``: European Commission - DG Employment
 --------------------------------------
 
 SDMX-ML —
@@ -140,7 +140,7 @@ SDMX-ML —
 
 .. _European Commission:
 
-``EC_DG_GROW``: European Commission - DG Growth
+``EC_GROW``: European Commission - DG Growth
 --------------------------------------
 
 SDMX-ML —

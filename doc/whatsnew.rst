@@ -4,21 +4,21 @@ What's new?
 ===========
 
 
-v1.10.0 (2023-02-26)
+v1.10.0 (2023-02-25)
 -------------------------
 
 
 * update ESTAT config to support new API 
-  Asynchronous endpoints are not yet supported
+  Asynchronous endpoints are not yet supported though.
 * added data sources by the European Commission: EC_COMP (DG Competition), 
   EC_EMPL (DG Employment) and EC_DG_GROW (Growth). Asynchronous endpoints are not yet supported
 * Add __repr__ method to :obj:`pandasdmx.api.Request`,
-* Add the option to derive data type from 
+* to_pandas: Add the option to derive the pandas dtype from 
   the datastructure definition's facet value types 
   when exporting to a pandas DataFrame or series. 
   The  default behavior (i.e. try to convert 
   to `float64`) remains unchanged.  
-* clean up sources: remove unnecessary adaptors for ESTAT, INSEE and ISTAT
+* clean up sources: remove unnecessary adaptors for  INSEE and ISTAT
 * require Python 3.9+ and pydantic 1.9.2+
 
 v1.9.0 (2022-02-23)

@@ -125,7 +125,7 @@ class Resource(str, Enum):
     @classmethod
     def from_obj(cls, obj):
         """Return an enumeration value based on the class of `obj`."""
-        value = obj.__class__.__name__.lower()
+        value = obj.__class__.__name__
         return cls[VALUE.get(value, value)]
 
     @classmethod

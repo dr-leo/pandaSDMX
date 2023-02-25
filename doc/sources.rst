@@ -141,7 +141,7 @@ SDMX-ML —
 .. _European Commission:
 
 ``EC_GROW``: European Commission - DG Growth
---------------------------------------
+--------------------------------------------------
 
 SDMX-ML —
 `Website <https://wikis.ec.europa.eu/pages/viewpage.action?pageId=44165555>`__

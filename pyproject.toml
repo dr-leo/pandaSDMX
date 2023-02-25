@@ -30,7 +30,7 @@ classifiers = [
 "License :: OSI Approved :: Apache Software License"]
 
 [tool.flit.metadata.requires-extra]  
-cache = ["requests_cache"]
+cache = ["requests_cache >= 0.9.5"]
 schema = ["appdirs >= 1.4"]
 doc = ["sphinx >= 5.2", 
 "IPython >= 7.20"]

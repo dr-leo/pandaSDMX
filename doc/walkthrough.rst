@@ -555,15 +555,8 @@ e.g., to access a cloud storage provider's file system.
 
 Likewise, :func:`.read_sdmx` can be used 
 to load SDMX messages stored in local files or 
-remote files using FSSPEC:
-
-.. ipython:: python
-
-    # Use an example ('specimen') file from the pandaSDMX test suite
-    from pandasdmx.tests.data import specimen
-    # …with time-series exchange rate data from the EU Central Bank
-    with specimen('ECB_EXR/ng-ts.xml') as f:
-        sdmx.read_sdmx(f)
+remote files using 
+`FSSPEC <https://filesystem-spec.readthedocs.io/en/latest/>`__.
 
 
 Handle errors

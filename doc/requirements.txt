@@ -1,0 +1,6 @@
+lxml=4.9.2
+requests==2.28
+pandas==1.5.2
+sphinx==5.3
+ipython==8.7.0
+

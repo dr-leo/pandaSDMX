@@ -5,7 +5,7 @@ build:
   tools:
     python: "3.11"
     
-  install:
+install:
   - method: pip
     path: .
     extra_requirements:

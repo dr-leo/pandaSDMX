@@ -207,7 +207,8 @@ def list_sources():
 
 def load_package_sources():
     """Discover all sources listed in ``sources.json``."""
-    with resources.files("pandasdmx").joinpath("sources.json").open("rb") as f:
+    # py3.9+: with resources.files("pandasdmx").joinpath("sources.json").open("rb") as f:
+    with resources.open_binary("pandasdmx", "sources.json") as f:
         for info in json.load(f):
             add_source(info)
 

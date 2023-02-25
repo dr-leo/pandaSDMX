@@ -197,28 +197,6 @@ __all__ = [
 ]
 
 
-class BaseModel(pydantic.BaseModel):
-    """Common settings for :class:`pydantic.BaseModel` in :mod:`sdmx`."""
-
-    class Config:
-        copy_on_model_validation = False
-        validate_assignment = True
-
-
-class MaybeCachedSession(type):
-    """Metaclass to inherit from :class:`requests_cache.CachedSession`, if available.
-
-    If :mod:`requests_cache` is not installed, returns :class:`requests.Session` as a
-    base class.
-    """
-
-    def __new__(cls, name, bases, dct):
-        base = (
-            requests.Session if not HAS_REQUESTS_CACHE else requests_cache.CachedSession
-        )
-        return super().__new__(cls, name, (base,), dct)
-
-
 class DictLike(dict, typing.MutableMapping[KT, VT]):
     """Container with features of a dict & list, plus attribute access."""
 

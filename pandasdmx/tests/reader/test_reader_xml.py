@@ -9,17 +9,18 @@ import pandasdmx
 from pandasdmx.format.xml import qname
 from pandasdmx.model import Facet, FacetType, FacetValueType
 from pandasdmx.reader.sdmxml import Reader, XMLParseError
-from pandasdmx.tests.data import specimen, test_files
+from pandasdmx.tests.data import specimen 
+from pandasdmx.tests.data import test_files as _test_files
 
 
 # Read example data files
-@pytest.mark.parametrize("path", **test_files(format="xml", kind="data"))
+@pytest.mark.parametrize("path", **_test_files(format="xml", kind="data"))
 def test_read_xml(path):
     pandasdmx.read_sdmx(path)
 
 
 # Read example structure files
-@pytest.mark.parametrize("path", **test_files(format="xml", kind="structure"))
+@pytest.mark.parametrize("path", **_test_files(format="xml", kind="structure"))
 def test_read_xml_structure(path):
     pandasdmx.read_sdmx(path)
 

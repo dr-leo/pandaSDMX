@@ -6,7 +6,8 @@ from pytest import raises
 import pandasdmx
 from pandasdmx.model import TimeDimension
 from pandasdmx.tests import assert_pd_equal
-from pandasdmx.tests.data import expected_data, specimen, test_files
+from pandasdmx.tests.data import expected_data, specimen
+from pandasdmx.tests.data import test_files as _test_files
 
 # file name → (exception raised, exception message, comment/reason)
 ssds = (
@@ -32,7 +33,7 @@ file_marks = {
 def pytest_generate_tests(metafunc):
     if "data_path" in metafunc.fixturenames:
         params = []
-        tf = test_files(kind="data")
+        tf = _test_files(kind="data")
         for value, id in zip(tf["argvalues"], tf["ids"]):
             kwargs = dict(id=id)
             for cond, info in file_marks.items():
@@ -46,7 +47,7 @@ def pytest_generate_tests(metafunc):
 
 
 def test_write_data_arguments():
-    msg = pandasdmx.read_sdmx(test_files(kind="data")["argvalues"][0])
+    msg = pandasdmx.read_sdmx(_test_files(kind="data")["argvalues"][0])
 
     # Attributes must be a string
     with raises(TypeError):
@@ -71,7 +72,7 @@ def test_write_data(data_path):
     assert isinstance(result, (pd.Series, pd.DataFrame, list)), type(result)
 
 
-@pytest.mark.parametrize("path", **test_files(kind="data"))
+@pytest.mark.parametrize("path", **_test_files(kind="data"))
 def test_write_data_attributes(path):
     msg = pandasdmx.read_sdmx(path)
 
@@ -297,7 +298,7 @@ def test_write_dataset_datetime():
         pandasdmx.to_pandas(ds, datetime=43)
 
 
-@pytest.mark.parametrize("path", **test_files(kind="structure"))
+@pytest.mark.parametrize("path", **_test_files(kind="structure"))
 def test_writer_structure(path):
     msg = pandasdmx.read_sdmx(path)
 

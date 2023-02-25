@@ -60,7 +60,8 @@ def test_request_get_exceptions():
     exc = "unrecognized arguments: {'foo': 'bar'}"
     with pytest.raises(ValueError, match=exc):
         req.get("datastructure", foo="bar")
-
+        
+    exc = "unrecognized arguments: {'foo': 'bar', 'resource_type': None, 'resource_id': None}"
     with pytest.raises(ValueError, match=exc):
         pandasdmx.read_url("https://example.com", foo="bar")
 

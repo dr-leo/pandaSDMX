@@ -5,10 +5,5 @@ build:
   tools:
     python: "3.11"
     
-install:
-  - method: pip
-    path: .
-    extra_requirements:
-    - cache
-    - doc
-    - test
+sphinx:
+   configuration: doc/conf.py

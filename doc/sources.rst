@@ -89,7 +89,7 @@ SDMX-JSON —
 
 SDMX-XML —
 
-This will be renamed to "ABS" in future versions.
+This will be renamed to "ABS" in a future version.
 The new API supports dataflow, datastructure and other SDMX 2.1-compliant resources.
 It is recommended to use this new API. However, ABS still marks itas Beta (2022-01-25) and hints at potential
 delays in data publication.
@@ -105,8 +105,6 @@ SDMX-ML —
 
 
 
-
-
 .. _BIS:
 
 ``BIS``: Bank for International Settlements
@@ -117,6 +115,38 @@ SDMX-ML —
 
 -  service went live  in  April 2021
 - Supports preview_data and series-key based key validation.
+
+.. _European Commission:
+
+``EC_COMP``: European Commission - DG Competition
+--------------------------------------
+
+SDMX-ML —
+`Website <https://wikis.ec.europa.eu/pages/viewpage.action?pageId=44165555>`__
+
+- Dataflows on competition, mainly on state aids.
+
+
+.. _European Commission:
+
+
+``EC_EMPL``: European Commission - DG Employment
+--------------------------------------
+
+SDMX-ML —
+`Website <https://wikis.ec.europa.eu/pages/viewpage.action?pageId=44165555>`__
+
+- Dataflows on employment.
+
+.. _European Commission:
+
+``EC_GROW``: European Commission - DG Growth
+--------------------------------------------------
+
+SDMX-ML —
+`Website <https://wikis.ec.europa.eu/pages/viewpage.action?pageId=44165555>`__
+
+- Dataflows on growth / industrial policy.
 
 
 
@@ -141,9 +171,6 @@ SDMX-ML —
 `Website <http://ec.europa.eu/eurostat/web/sdmx-web-services/rest-sdmx-2.1>`__
 
 - Thousands of dataflows on a wide range of topics.
-- No categorisations available.
-- Long response times are reported. Increase the timeout attribute to avoid
-  timeout exceptions.
 - Does not return DSDs for dataflow requests with the ``references='all'`` query parameter.
 
 .. autoclass:: pandasdmx.source.estat.Source

@@ -1,10 +1,11 @@
 import pytest
 
 import pandasdmx
-from pandasdmx.tests.data import specimen, test_files
+from pandasdmx.tests.data import specimen 
+from pandasdmx.tests.data import test_files as _test_files
 
 
-@pytest.mark.parametrize("path", **test_files(format="json"))
+@pytest.mark.parametrize("path", **_test_files(format="json"))
 def test_json_read(path):
     """Test that the samples from the pandasdmx.JSON spec can be read."""
     pandasdmx.read_sdmx(path)

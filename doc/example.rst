@@ -7,9 +7,9 @@ All we need to know in advance is the data provider: Eurostat.
 pandaSDMX makes it easy to search the directory of dataflows, and the complete structural metadata about the datasets available through the selected dataflow.
 (This example skips these steps; see :doc:`the walkthrough <walkthrough>`.)
 
-The data we want is in a *data flow* with the identifier ``une_rt_a``.
-This dataflow references a *data structure definition* (DSD) with the ID ``DSD_une_rt_a``.
-The DSD, in turn, contains or references all the metadata describing data sets available through this dataflow: the concepts, things measured, dimensions, and lists of codes used to label each dimension.
+The data we want is in a *data flow* with the identifier ``UNE_RT_A``.
+This dataflow references a *data structure definition* (DSD) with that same ID.
+The DSD contains or references all the metadata describing data sets available through this dataflow: the concepts, things measured, dimensions, and lists of codes used to label each dimension.
 
 .. ipython:: python
 
@@ -20,35 +20,35 @@ Download the metadata:
 
 .. ipython:: python
 
-    metadata = estat.datastructure('DSD_une_rt_a')
+    metadata = estat.datastructure('UNE_RT_A')
     metadata
 
 Explore the contents of some code lists:
 
 .. ipython:: python
 
-    for cl in 'CL_AGE', 'CL_UNIT':
+    for cl in 'AGE', 'UNIT':
         print(sdmx.to_pandas(metadata.codelist[cl]))
 
 Next we download a dataset.
-To obtain data on Greece, Ireland and Spain only, we use codes from the code list 'CL_GEO' to specify a *key* for the dimension named ‘GEO’.
+To obtain data on Greece, Ireland and Spain only, we use codes from the code list 'GEO' to specify a *key* for the dimension named ‘geo’.
 We also use a query *parameter*, 'startPeriod', to limit the scope of the data returned:
 
 .. ipython:: python
 
     resp = estat.data(
-        'une_rt_a',
-        key={'GEO': 'EL+ES+IE'},
-        params={'startPeriod': '2007'},
+        'UNE_RT_A',
+        key={'geo': 'EL+ES+IE'},
+        params={'startPeriod': '2015'},
         )
 
 ``resp`` is  a :class:`.DataMessage` object.
-We use its :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.DataFrame`, and select on the ``AGE`` dimension we saw   in the ``metadata`` above:
+We use its :meth:`~pandasdmx.message.Message.to_pandas` method to convert it to a :class:`pandas.DataFrame`, and select on the ``age`` dimension we saw   in the ``metadata`` above:
 
 .. ipython:: python
 
     data = resp.to_pandas(
-        datetime={'dim': 'TIME_PERIOD', 'freq': 'FREQ'}).xs('Y15-74', level='AGE', 
+        datetime={'dim': 'TIME_PERIOD', 'freq': 'freq'}).xs('Y15-74', level='age', 
             axis=1, drop_level=False)
 
 We can now explore the data set as expressed in a familiar pandas object.

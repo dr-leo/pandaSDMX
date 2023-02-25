@@ -13,8 +13,8 @@ requires = [
     "requests >=2.15",
     "lxml >= 4.1",
     "pandas >= 1.2",
-    "pydantic >=1.8.1, < 3.10"]
-requires-python = ">=3.7.8,<3.11"
+    "pydantic >=1.9.2, < 2.0"]
+requires-python = ">=3.9.6,<3.12"
 keywords = "statistics, SDMX, pandas, data, economics, science"
 classifiers = [
 "Intended Audience :: Developers",
@@ -22,10 +22,9 @@ classifiers = [
     "Intended Audience :: Financial and Insurance Industry",
 "Development Status :: 4 - Beta",
 "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Information Analysis",
 "License :: OSI Approved :: Apache Software License"]

@@ -524,7 +524,21 @@ Use the advanced functionality to specify a dimension for the frequency of a Per
 
 .. warning:: For large datasets, parsing datetimes may reduce performance.
 
+Data types
+-------------
 
+By default, pandaSDMX converts observation values to 
+`float64`, other values to `str`. While this is a pragmatic choice
+in most scenarios, the default behavior can be overridden in two ways:
+
+* specify the dtype to which observation values will be converted.
+  To achieve this, pass `dtype=<sometype>` to :meth:`pandasdmx.api.to_pandas`.
+* Cast the facet value type for observation values to a corresponding
+  pandas dtype. To do this, call :meth:`pandas.api.to_pandas` 
+  with `dtype_from_dsd=True, dsd=<my_dsd` 
+  (new in verson 1.10.0).
+    
+    
 Work with files
 ===============
 

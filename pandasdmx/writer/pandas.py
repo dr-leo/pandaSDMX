@@ -1,3 +1,4 @@
+from collections import defaultdict
 from itertools import chain
 from typing import Set, Union
 
@@ -8,10 +9,13 @@ from pandasdmx import message, model
 from pandasdmx.model import (
     DEFAULT_LOCALE,
     AllDimensions,
+    Codelist,
     DataAttribute,
     DataSet,
+    DataStructureDefinition,
     Dimension,
     DimensionComponent,
+    FacetValueType as FVT,
     Item,
     Observation,
     SeriesKey,
@@ -23,8 +27,24 @@ from pandasdmx.writer.base import BaseWriter
 #: Default return type for :func:`write_dataset` and similar methods. Either
 #: 'compat' or 'rows'. See the ref:`HOWTO <howto-rtype>`.
 DEFAULT_RTYPE = "rows"
-
-
+# map facet value types to pandas dtypes (incomplete)
+FVT_MAP = {
+    FVT.string: pd.StringDtype(),
+    FVT.bigInteger: pd.Int64Dtype,
+    FVT.integer: pd.Int32Dtype,
+    FVT.long: pd.Int32Dtype,
+    FVT.short: pd.Int16Dtype,
+    FVT.decimal: None,
+    FVT.float: float,
+    FVT.boolean: pd.BooleanDtype,
+    FVT.double: np.float64,
+    FVT.uri: pd.StringDtype(),
+    FVT.count: pd.Int64Dtype,
+    FVT.incremental: pd.Int64Dtype,
+    FVT.inclusiveValueRange: pd.CategoricalDtype,
+}
+    
+    
 writer = BaseWriter("pandas")
 
 
@@ -198,6 +218,17 @@ def _cr(obj: model.CubeRegion, **kwargs):
         )
     return result
 
+def get_component_type(component):
+    lr = component.local_representation
+    try:
+        if isinstance(lr.enumerated, Codelist):
+            return "category"
+        # Get the facet value type
+        fvt = lr.non_enumerated[0].value_type
+        return FVT_MAP.get(fvt) or pd.StringDtype()
+    except (AttributeError, KeyError):
+        return "object"
+        
 
 @writer
 def write_dataset(
@@ -206,6 +237,7 @@ def write_dataset(
     dtype=np.float64,
     constraint=None,
     datetime=False,
+    dtypes_from_dsd=False,
     **kwargs,
 ):
     """Convert :class:`~.DataSet`.
@@ -287,32 +319,58 @@ def write_dataset(
         raise ValueError(f"attributes must be in 'osgd'; got {attributes}")
 
     # Iterate on observations
-    data = {}
+    data, indices = defaultdict(list), defaultdict(list)
     for observation in getattr(obj, "obs", obj):
         # Check that the Observation is within the constraint, if any
         key = observation.key.order()
-        if constraint and key not in constraint:
-            continue
+        if (not constraint) or key in constraint:
+            key = tuple(map(str, key.get_values()))
+            # Add value and attributes
+            if dtype:
+                data["value"].append(observation.value)
+                indices['value'].append(key)
+            if attributes and attributes != "d":
+                # attributes at levels obs, series and group
+                for k, v in             observation.attrib.items():
+                    data[k].append(v)
+                    indices[k].append(key)
+            if isinstance(obj, DataSet) and attributes and "d" in attributes:
+                # attributes at dataset level 
+                for k, v in             obj.attrib.items():
+                    data[k].append(v)
+                    indices[k].append(key)
 
-        # Add value and attributes
-        row = {}
-        if dtype:
-            row["value"] = observation.value
-        if attributes:
-            row.update(observation.attrib)
-
-        data[tuple(map(str, key.get_values()))] = row
-
-    result: Union[pd.Series, pd.DataFrame] = pd.DataFrame.from_dict(
-        data, orient="index"
-    )
-
-    if len(result):
-        result.index.names = observation.key.order().values.keys()
-        if dtype:
-            result["value"] = result["value"].astype(dtype)
-            if not attributes:
-                result = result["value"]
+    # Check for a DSD
+    dsd = kwargs.get("dsd")
+    if dtypes_from_dsd and not isinstance(dsd, DataStructureDefinition):
+        raise TypeError(f"If `dtypes_from_dsd` is True, \
+        `dsd` must be a DataStructureDefinition object.\
+        Got {type(dsd)}.")
+    for col_name in data:
+        if col_name == "value":
+            if dtypes_from_dsd:
+                dt = get_component_type(dsd.measures.get("OBS_VALUE")) 
+            else:
+                dt = dtype
+        else: # column for an attribute
+            if dtypes_from_dsd:
+                dt = get_component_type(dsd.attributes.get(col_name))
+            else:
+                dt = "object"
+        # Extract raw index tuples and values for this column
+        # For dtype category, we stringify the data
+        if dt == "category":
+            data[col_name] = map(str, data[col_name])
+        # Make pd index adding names
+        idx = pd.MultiIndex.from_tuples(
+            indices[col_name], names=observation.key.order().values.keys())
+        # Replace raw list with pd.Series
+        data[col_name] = pd.Series(data[col_name], idx, dtype=dt, name=col_name)
+    # Convert to pd.DataFrame if needed
+    if attributes:
+        result = pd.DataFrame.from_dict(data)
+    else:
+        result = data["value"]
 
     # Reshape for compatibility with v0.9
     result, datetime, kwargs = _dataset_compat(result, datetime, kwargs)

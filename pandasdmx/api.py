@@ -119,7 +119,15 @@ class Request:
                 ".\n", f" with resource_type={repr(name)}.\n", 1
             )
             return func
-
+            
+    def __repr__(self):
+        s1 = f"{str(self.__class__)} instance, "
+        if self.source.id: s2 = f"source: \
+               {self.source.id} ({self.source.name})"
+        else:
+            s2 = "no source specified."
+        return s1 + s2
+            
     def __dir__(self):
         """Include convenience methods in dir()."""
         return super().__dir__() + [ep.name for ep in Resource]
@@ -438,17 +446,14 @@ class Request:
             and `force` is not :obj:`True`.
 
         """
-        # Allow sources to modify request args
-        # TODO this should occur after most processing, defaults, checking etc.
-        #      are performed, so that core code does most of the work.
-        if self.source:
-            self.source.modify_request_args(kwargs)
+        
+        kwargs.update(resource_type=resource_type, resource_id=resource_id)
+        self._handle_get_kwargs(kwargs)
 
         # Handle arguments
         if "url" in kwargs:
             req = self._request_from_url(kwargs)
         else:
-            kwargs.update(dict(resource_type=resource_type, resource_id=resource_id))
             req = self._request_from_args(kwargs)
 
         req = self.session.prepare_request(req)
@@ -519,6 +524,20 @@ class Request:
             self.cache[req.url] = msg
 
         return msg
+
+
+    def _handle_get_kwargs(self, kwargs):
+        # Ensure a member of the Enum
+        resource_type = kwargs.get("resource_type")
+        if resource_type is not None:
+            kwargs["resource_type"] = Resource[resource_type]
+
+        # Allow Source class to modify request args
+        # TODO this should occur after most processing, defaults, checking etc. are
+        #      performed, so that core code does most of the work.
+        if self.source:
+            self.source.modify_request_args(kwargs)
+
 
     def preview_data(self, flow_id, key={}):
         """Return a preview of data.

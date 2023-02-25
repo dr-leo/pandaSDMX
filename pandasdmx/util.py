@@ -125,7 +125,7 @@ class Resource(str, Enum):
     @classmethod
     def from_obj(cls, obj):
         """Return an enumeration value based on the class of `obj`."""
-        value = obj.__class__.__name__.lower()
+        value = obj.__class__.__name__
         return cls[VALUE.get(value, value)]
 
     @classmethod
@@ -162,7 +162,7 @@ class BaseModel(pydantic.BaseModel):
     """Common settings for :class:`pydantic.BaseModel` in :mod:`pandasdmx`."""
 
     class Config:
-        copy_on_model_validation = False
+        copy_on_model_validation = 'none'
         validate_assignment = True
 
 
@@ -195,28 +195,6 @@ __all__ = [
     "validate_dictlike",
     "validator",
 ]
-
-
-class BaseModel(pydantic.BaseModel):
-    """Common settings for :class:`pydantic.BaseModel` in :mod:`sdmx`."""
-
-    class Config:
-        copy_on_model_validation = False
-        validate_assignment = True
-
-
-class MaybeCachedSession(type):
-    """Metaclass to inherit from :class:`requests_cache.CachedSession`, if available.
-
-    If :mod:`requests_cache` is not installed, returns :class:`requests.Session` as a
-    base class.
-    """
-
-    def __new__(cls, name, bases, dct):
-        base = (
-            requests.Session if not HAS_REQUESTS_CACHE else requests_cache.CachedSession
-        )
-        return super().__new__(cls, name, (base,), dct)
 
 
 class DictLike(dict, typing.MutableMapping[KT, VT]):

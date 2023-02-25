@@ -136,7 +136,7 @@ With the argument `rtype` = 'rows', or by setting :data:`.DEFAULT_RTYPE` to 'row
 
 .. ipython:: python
 
-   sdmx.writer.DEFAULT_RYPE = 'rows'
+   sdmx.writer.DEFAULT_RTYPE = 'rows'
 
 …data are *always* returned with one row per observation.
 

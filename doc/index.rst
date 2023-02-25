@@ -8,7 +8,7 @@ agencies, central banks, and international organisations.
 
 :mod:`pandaSDMX` can be used to:
 
-- explore the data available from about 20 :doc:`data providers <sources>` such as the World Bank, BIS, ILO, ECB,  
+- explore the data available from over 20 :doc:`data providers <sources>` such as the World Bank, BIS, ILO, ECB,  
   Eurostat, OECD, UNICEF and United Nations;
 - parse data and metadata in SDMX-ML (XML) or SDMX-JSON formats—either:
 
@@ -19,7 +19,7 @@ agencies, central banks, and international organisations.
   for use with the analysis, plotting, and other tools in the Python data
   science ecosystem; 
   See also the **companion project 
-  `intake_sdmx <https://intake_sdmx.readthedocs.io>`_**, 
+  `intake_sdmx <https://intake_sdmx.readthedocs.io>`__**, 
   a plugin for the 
   `intake <https://intake_sdmx.readthedocs.io>`_ 
   data acquisition
@@ -32,7 +32,7 @@ agencies, central banks, and international organisations.
 Get started
 ===========
 
-Assuming  a working copy of `Python 3.7 or higher <https://www.python.org/downloads/>`_ 
+Assuming  a working copy of `Python 3.9 or higher <https://www.python.org/downloads/>`_ 
 is installed on your system,
 you can get :mod:`pandaSDMX` either   by typing from the  command prompt::
 

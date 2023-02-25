@@ -33,7 +33,7 @@ classifiers = [
 cache = ["requests_cache"]
 schema = ["appdirs >= 1.4"]
 doc = ["sphinx >= 5.2", 
-"IPython"]
+"IPython >= 7.20"]
 test = ["pytest >= 5", 
 "requests-mock >= 1.4"]
 

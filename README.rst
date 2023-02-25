@@ -56,7 +56,7 @@ Documentation
 License
 -------
 
-Copyright 2014–2020, `pandaSDMX developers <AUTHORS>`_
+Copyright 2014–2023, `pandaSDMX developers <AUTHORS>`_
 
 Licensed under the Apache License, Version 2.0 (the “License”); you may not use
 these files except in compliance with the License. You may obtain a copy of the

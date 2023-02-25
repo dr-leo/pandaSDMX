@@ -7,5 +7,4 @@ python:
     path: .
     extra_requirements:
     - cache
-    - docs
-    - tests
+    - doc

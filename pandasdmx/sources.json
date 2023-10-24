@@ -1,12 +1,5 @@
 [
   {
-    "id": "ABS",
-    "data_content_type": "JSON",
-    "url": "https://stat.data.abs.gov.au/sdmx-json",
-    "name": "Australian Bureau of Statistics",
-    "documentation": "https://www.abs.gov.au/"
-  },
-  {
     "id": "ABS_XML",
     "api_id": "ABS",
     "resources": {

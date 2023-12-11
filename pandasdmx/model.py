@@ -33,6 +33,7 @@ from itertools import product
 from operator import attrgetter, itemgetter
 from typing import (
     Any,
+    ClassVar,
     Dict,
     Generator,
     Generic,
@@ -745,9 +746,6 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
         return obj
 
 
-Item.update_forward_refs()
-
-
 # §3.6: Structure
 
 
@@ -863,7 +861,7 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
     #:
     components: List[CT] = []
     #:
-    auto_order = 1
+    auto_order: ClassVar[str] = 1
 
     # The default type of the Components in the ComponentList. See comment on
     # ItemScheme._Item
@@ -1040,7 +1038,7 @@ class Agency(Organisation):
 # Update forward references to 'Agency'
 for cls in list(locals().values()):
     if isclass(cls) and issubclass(cls, MaintainableArtefact):
-        cls.update_forward_refs()
+        cls.model_rebuild()
 
 
 class OrganisationScheme:
@@ -1464,8 +1462,8 @@ class GroupDimensionDescriptor(DimensionDescriptor):
         pass
 
 
-DimensionRelationship.update_forward_refs()
-GroupRelationship.update_forward_refs()
+DimensionRelationship.model_rebuild()
+GroupRelationship.model_rebuild()
 
 
 class _NullConstraintClass:
@@ -2300,6 +2298,9 @@ class ProvisionAgreement(MaintainableArtefact, ConstrainableArtefact):
     structure_usage: Optional[StructureUsage] = None
     #:
     data_provider: Optional[DataProvider] = None
+
+
+Item.model_rebuild()
 
 
 #: The SDMX-IM defines 'packages'; these are used in URNs.

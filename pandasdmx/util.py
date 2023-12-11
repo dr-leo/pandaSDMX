@@ -8,8 +8,8 @@ from typing import Any, Dict, Mapping, Tuple, TypeVar, Union
 import pydantic
 import requests
 from pydantic import Field, ValidationError, validator
-from pydantic.class_validators import make_generic_validator
-from pydantic.typing import get_origin  # type: ignore [attr-defined]
+from pydantic import validator
+from typing import get_origin  # type: ignore [attr-defined]
 
 try:
     import requests_cache
@@ -162,7 +162,7 @@ class BaseModel(pydantic.BaseModel):
     """Common settings for :class:`pydantic.BaseModel` in :mod:`pandasdmx`."""
 
     class Config:
-        copy_on_model_validation = 'none'
+        copy_on_model_validation = "none"
         validate_assignment = True
 
 
@@ -245,14 +245,14 @@ class DictLike(dict, typing.MutableMapping[KT, VT]):
         yield cls._validate_whole
 
     @classmethod
-    def _validate_whole(cls, v, field: pydantic.fields.ModelField):
+    def _validate_whole(cls, v, field: str):
         """Validate `v` as an entire DictLike object."""
         # Convert anything that can be converted to a dict(). pydantic internals catch
         # most other invalid types, e.g. set(); no need to handle them here.
         result = cls(v)
 
         # Reference to the pydantic.field.ModelField for the entries
-        result.__field = field
+        result.__field = cls.model_fields[field]
 
         return result
 
@@ -260,7 +260,7 @@ class DictLike(dict, typing.MutableMapping[KT, VT]):
         """Validate one `key`/`value` pair."""
         try:
             # Use pydantic's validation machinery
-            v, error = self.__field._validate_mapping_like(
+            v, error = self.__class.model_fields[self.__field]._validate_mapping_like(
                 ((key, value),), values={}, loc=(), cls=None
             )
         except AttributeError:
@@ -332,11 +332,11 @@ def validate_dictlike(cls):
         lambda item: get_origin(item[1]) is DictLike, cls.__annotations__.items()
     ):
         # Add the validator(s)
-        field = cls.__fields__[name]
-        field.post_validators = field.post_validators or []
-        field.post_validators.extend(
-            make_generic_validator(v) for v in DictLike.__get_validators__()
-        )
+        for v in DictLike.__get_validators__():
+
+            @validator(name, allow_reuse=True, pre=False)
+            def _validator(cls, value):
+                return v(cls, value, name, None)
 
     return cls
 
@@ -388,7 +388,7 @@ def parse_content_type(value: str) -> Tuple[str, Dict[str, Any]]:
 
 
 @lru_cache()
-def direct_fields(cls) -> Mapping[str, pydantic.fields.ModelField]:
+def direct_fields(cls) -> Mapping[str, str]:
     """Return the :mod:`pydantic` fields defined on `obj` or its class.
 
     This is like the ``__fields__`` attribute, but excludes the fields defined on any
@@ -396,8 +396,8 @@ def direct_fields(cls) -> Mapping[str, pydantic.fields.ModelField]:
     """
     return {
         name: info
-        for name, info in cls.__fields__.items()
-        if name not in set(cls.mro()[1].__fields__.keys())
+        for name, info in cls.model_fields.items()
+        if name not in set(cls.mro()[1].model_fields.keys())
     }
 
 

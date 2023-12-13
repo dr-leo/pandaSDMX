@@ -119,6 +119,7 @@ class _NoText:
 # Sentinel value for XML elements with no text; used to distinguish from "" and None
 NoText = _NoText()
 
+
 class Reference:
     """Temporary class for references.
 
@@ -205,7 +206,7 @@ class Reference:
 
 class XSDResolver(etree.Resolver):
     """
-    Resolve XSD imports to locate them within <user_data_dir>/pandaSDMX/sdmx_2_1. 
+    Resolve XSD imports to locate them within <user_data_dir>/pandaSDMX/sdmx_2_1.
     """
 
     def __init__(self, *args, schema_dir=None, **kwargs):
@@ -249,7 +250,7 @@ class Reader(BaseReader):
         must be installed first. See the docs on
         :func:`pandasdmx.api.install_schemas` and
         :meth:`pandasdmx.api.Request.validate`.
-        
+
         Returns whatever lxml.etree.XMLSchema.validate returns
         """
         msg_doc = etree.parse(msg)
@@ -829,7 +830,7 @@ def _ref(reader, elem):
 
 @end("com:Annotation")
 def _a(reader, elem):
-    url=reader.pop_single("AnnotationURL")
+    url = reader.pop_single("AnnotationURL")
     args = dict(
         title=reader.pop_single("AnnotationTitle"),
         type=reader.pop_single("AnnotationType"),
@@ -912,7 +913,7 @@ def _itemscheme(reader, elem):
     is_ = reader.maintainable(cls, elem)
 
     # Iterate over all Item objects *and* their children
-    iter_all = chain(*[iter(item) for item in reader.pop_all(cls._Item)])
+    iter_all = chain(*[iter(item) for item in reader.pop_all(cls._Item.default)])
 
     # Set of objects already added to `items`
     seen = dict()

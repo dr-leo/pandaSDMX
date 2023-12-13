@@ -1,4 +1,5 @@
 import logging
+import pdb
 import typing
 from collections.abc import Iterator
 from enum import Enum
@@ -249,6 +250,9 @@ class DictLike(dict, typing.MutableMapping[KT, VT]):
         """Validate `v` as an entire DictLike object."""
         # Convert anything that can be converted to a dict(). pydantic internals catch
         # most other invalid types, e.g. set(); no need to handle them here.
+        if cls == DictLike:
+            return v
+
         result = cls(v)
 
         # Reference to the pydantic.field.ModelField for the entries

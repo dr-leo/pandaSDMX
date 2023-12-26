@@ -31,6 +31,7 @@ from functools import lru_cache
 from inspect import isclass
 from itertools import product
 from operator import attrgetter, itemgetter
+import pdb
 from typing import (
     Any,
     ClassVar,
@@ -861,7 +862,7 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
     #:
     components: List[CT] = []
     #:
-    auto_order: ClassVar[str] = 1
+    auto_order: ClassVar[int] = 1
 
     # The default type of the Components in the ComponentList. See comment on
     # ItemScheme._Item
@@ -914,7 +915,7 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
             # order property
             try:
                 component.order = self.auto_order
-                self.auto_order += 1
+                self.__class__.auto_order += 1
             except ValueError:
                 pass
 
@@ -1787,7 +1788,7 @@ class KeyValue(BaseModel):
     #: The actual value.
     value: Any
     #:
-    value_for: Optional[Dimension] = None
+    value_for: Optional[DimensionComponent] = None
 
     def __init__(self, *args, **kwargs):
         args, kwargs = value_for_dsd_ref("dimension", args, kwargs)

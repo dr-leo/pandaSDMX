@@ -290,7 +290,8 @@ class Request:
         url_parts.append(key)
 
         # Assemble final URL
-        url = "/".join(filter(None, url_parts))
+        url_parts = [str(x) for x in filter(None, url_parts)]
+        url = "/".join(url_parts)
 
         # Parameters: set 'references' to sensible defaults
         if "references" not in parameters:

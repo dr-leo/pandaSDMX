@@ -31,7 +31,7 @@ class Source(BaseModel):
     id: str
     #: Optional API IDTakes precedence over id when URL is constructed
     # Useful if a provider offers several APIs
-    api_id: Optional[str]
+    api_id: Optional[str] = None
 
     #: Base URL for queries
     url: Optional[HttpUrl]
@@ -40,7 +40,7 @@ class Source(BaseModel):
     name: str
 
     #: documentation URL of the data source
-    documentation: Optional[HttpUrl]
+    documentation: Optional[HttpUrl] = None
 
     headers: Dict[str, Any] = {}
 
@@ -124,7 +124,7 @@ class Source(BaseModel):
 
     @validator("id")
     def _validate_id(cls, value):
-        assert getattr(cls, "_id", value) == value
+        assert cls.__dict__.get("_id", value) == value
         return value
 
     @validator("data_content_type", pre=True)

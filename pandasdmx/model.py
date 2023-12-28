@@ -33,6 +33,7 @@ from itertools import product
 from operator import attrgetter, itemgetter
 from typing import (
     Any,
+    ClassVar,
     Dict,
     Generator,
     Generic,
@@ -48,6 +49,10 @@ from typing import (
     Union,
 )
 from warnings import warn
+
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema
+from pydantic_core import core_schema
 
 from pandasdmx.util import (
     BaseModel,
@@ -186,18 +191,28 @@ class InternationalString:
             return NotImplemented
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.__validate
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return core_schema.chain_schema(
+            [
+                core_schema.with_info_plain_validator_function(
+                    function=cls.__validate,
+                ),
+            ]
+        )
 
     @classmethod
-    def __validate(cls, value, values, config, field):
-        # Any value that the constructor can handle can be assigned
+    def __validate(cls, value, info):
+        # Any value except None that the constructor can handle can be assigned
+        if value == None:
+            raise ValueError
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
 
         try:
             # Update existing value
-            existing = values[field.name]
+            existing = info.data[info.field_name]
             existing.localizations.update(value.localizations)
             return existing
         except KeyError:
@@ -602,7 +617,7 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
     # TODO add delete()
     # TODO add sorting capability; perhaps sort when new items are inserted
 
-    is_partial: Optional[bool]
+    is_partial: Optional[bool] = None
 
     #: Members of the ItemScheme. Both ItemScheme and Item are abstract classes.
     #: Concrete classes are paired: for example, a :class:`.Codelist` contains
@@ -734,7 +749,7 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
                 kwargs["parent"] = self[parent]
 
             # Instantiate an object of the correct class
-            obj = self._Item(**kwargs)
+            obj = self.__class__._Item.get_default()(**kwargs)
 
         try:
             # Add the object to the ItemScheme
@@ -743,9 +758,6 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
             pass  # Already present
 
         return obj
-
-
-Item.update_forward_refs()
 
 
 # §3.6: Structure
@@ -863,7 +875,7 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
     #:
     components: List[CT] = []
     #:
-    auto_order = 1
+    auto_order: ClassVar[int] = 1
 
     # The default type of the Components in the ComponentList. See comment on
     # ItemScheme._Item
@@ -916,7 +928,7 @@ class ComponentList(IdentifiableArtefact, Generic[CT]):
             # order property
             try:
                 component.order = self.auto_order
-                self.auto_order += 1
+                self.__class__.auto_order += 1
             except ValueError:
                 pass
 
@@ -1040,7 +1052,7 @@ class Agency(Organisation):
 # Update forward references to 'Agency'
 for cls in list(locals().values()):
     if isclass(cls) and issubclass(cls, MaintainableArtefact):
-        cls.update_forward_refs()
+        cls.model_rebuild()
 
 
 class OrganisationScheme:
@@ -1464,8 +1476,8 @@ class GroupDimensionDescriptor(DimensionDescriptor):
         pass
 
 
-DimensionRelationship.update_forward_refs()
-GroupRelationship.update_forward_refs()
+DimensionRelationship.model_rebuild()
+GroupRelationship.model_rebuild()
 
 
 class _NullConstraintClass:
@@ -1789,7 +1801,7 @@ class KeyValue(BaseModel):
     #: The actual value.
     value: Any
     #:
-    value_for: Optional[Dimension] = None
+    value_for: Optional[DimensionComponent] = None
 
     def __init__(self, *args, **kwargs):
         args, kwargs = value_for_dsd_ref("dimension", args, kwargs)
@@ -1809,6 +1821,9 @@ class KeyValue(BaseModel):
             return self.value == other.value
         else:
             return self.value == other
+
+    def __lt__(self, other):
+        return self.value < other.value
 
     def __str__(self):
         return "{0.id}={0.value}".format(self)
@@ -2300,6 +2315,9 @@ class ProvisionAgreement(MaintainableArtefact, ConstrainableArtefact):
     structure_usage: Optional[StructureUsage] = None
     #:
     data_provider: Optional[DataProvider] = None
+
+
+Item.model_rebuild()
 
 
 #: The SDMX-IM defines 'packages'; these are used in URNs.

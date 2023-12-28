@@ -1822,6 +1822,9 @@ class KeyValue(BaseModel):
         else:
             return self.value == other
 
+    def __lt__(self, other):
+        return self.value < other.value
+
     def __str__(self):
         return "{0.id}={0.value}".format(self)
 

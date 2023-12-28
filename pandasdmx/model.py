@@ -749,7 +749,7 @@ class ItemScheme(MaintainableArtefact, Generic[IT]):
                 kwargs["parent"] = self[parent]
 
             # Instantiate an object of the correct class
-            obj = self._Item(**kwargs)
+            obj = self.__class__._Item.get_default()(**kwargs)
 
         try:
             # Add the object to the ItemScheme

@@ -50,6 +50,10 @@ from typing import (
 )
 from warnings import warn
 
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema
+from pydantic_core import core_schema
+
 from pandasdmx.util import (
     BaseModel,
     DictLike,
@@ -187,18 +191,28 @@ class InternationalString:
             return NotImplemented
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.__validate
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return core_schema.chain_schema(
+            [
+                core_schema.with_info_plain_validator_function(
+                    function=cls.__validate,
+                ),
+            ]
+        )
 
     @classmethod
-    def __validate(cls, value, values, config, field):
-        # Any value that the constructor can handle can be assigned
+    def __validate(cls, value, info):
+        # Any value except None that the constructor can handle can be assigned
+        if value == None:
+            raise ValueError
         if not isinstance(value, InternationalString):
             value = InternationalString(value)
 
         try:
             # Update existing value
-            existing = values[field.name]
+            existing = info.data[info.field_name]
             existing.localizations.update(value.localizations)
             return existing
         except KeyError:

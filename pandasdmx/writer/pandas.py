@@ -485,31 +485,33 @@ def _maybe_convert_datetime(df, arg, obj, dsd=None):
     # Unstack all but the time dimension and convert
     other_dims = list(filter(lambda d: d != param["dim"], df.index.names))
     df = df.unstack(other_dims)
-    df.index = pd.to_datetime(df.index)
+    df.index = pd.to_datetime(df.index, format='ISO8601')
 
     if param["freq"]:
         # Determine frequency string, Dimension, or Attribute
-        try:
-            # pandas version prior to 1.1.0
-            prefix_mapping = pd.offsets.prefix_mapping
-        except AttributeError:
-            # pandas version >= 1.1.0
-            # See also issue #35482 in the pandas-dev repo
-            prefix_mapping = pd._libs.tslibs.offsets.prefix_mapping
-        freq = param["freq"]
-        if isinstance(freq, str) and freq not in prefix_mapping:
-            # ID of a Dimension or Attribute
-            for component in chain(_get_dims(), _get_attrs()):
-                if component.id == freq:
-                    freq = component
-                    break
+        from pandas.tseries.frequencies import to_offset
 
-            # No named dimension in the DSD; but perhaps on the df
-            if isinstance(freq, str):
-                if freq in df.columns.names:
-                    freq = Dimension(id=freq)
-                else:
-                    raise ValueError(freq)
+        freq = param["freq"]
+        if isinstance(freq, str):
+            # First, try to interpret as a pandas frequency string
+            try:
+                to_offset(freq)
+                # Valid pandas frequency string, use as-is
+            except (ValueError, KeyError):
+                # Not a valid pandas frequency; try as Dimension or Attribute ID
+                found = False
+                for component in chain(_get_dims(), _get_attrs()):
+                    if component.id == freq:
+                        freq = component
+                        found = True
+                        break
+
+                # No named dimension in the DSD; but perhaps on the df
+                if not found:
+                    if freq in df.columns.names:
+                        freq = Dimension(id=freq)
+                    else:
+                        raise ValueError(freq)
 
         if isinstance(freq, Dimension):
             # Retrieve Dimension values from pd.MultiIndex level

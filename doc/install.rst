@@ -17,7 +17,7 @@ pandaSDMX is a pure `Python <https://python.org>`_ package requiring Python 3.9 
 pandaSDMX also depends on:
 
 - `pandas <http://pandas.pydata.org>`_ for data structures,
-- `pydantic <https://docs.pydantic.dev>`_ to implement the IM,
+- `pydantic 2.x <https://docs.pydantic.dev>`_ to implement the IM,
 - `requests <https://pypi.python.org/pypi/requests/>`_ for HTTP requests, and
 - `lxml <http://www.lxml.de>`_ for XML processing.
 

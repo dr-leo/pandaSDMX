@@ -1,4 +1,7 @@
-from pydantic import HttpUrl
+try:
+    from pydantic.v1 import HttpUrl
+except Exception:
+    from pydantic import HttpUrl
 from enum import Enum
 from importlib import import_module, resources
 import json

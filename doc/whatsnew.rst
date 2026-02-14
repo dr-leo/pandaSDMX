@@ -3,6 +3,11 @@
 What's new?
 ===========
 
+Unreleased
+----------
+
+* Update dependency to pydantic 2.x and run the internal model layer via
+  ``pydantic.v1`` compatibility imports.
 
 v1.10.0 (2023-02-25)
 -------------------------

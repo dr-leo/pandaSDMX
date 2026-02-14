@@ -1,6 +1,9 @@
 # TODO test str() and repr() implementations
 
-import pydantic
+try:
+    import pydantic.v1 as pydantic
+except Exception:
+    import pydantic
 import pytest
 from pytest import raises
 
